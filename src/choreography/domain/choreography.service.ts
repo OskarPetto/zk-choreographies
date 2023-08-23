@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ChoreographyId, Choreography, ExecutionStatus } from './choreography';
-import { Model, ModelService, Transition, TransitionId, TransitionType } from 'model';
+import { Model, Transition, TransitionId, TransitionType } from 'src/model/domain/model';
+import { ModelService } from 'src/model/domain/model.service';
 
 @Injectable()
 export class ChoreographyService {
@@ -10,8 +11,17 @@ export class ChoreographyService {
 
     fire(choreographyId: ChoreographyId, transitionId: TransitionId) {
         const choreography = this.choreographies.get(choreographyId);
+        if (!choreography) {
+            throw Error(`Choreography ${choreographyId} not found`);
+        }
         const model = this.modelService.find(choreography.model);
+        if (!model) {
+            throw Error(`Model ${choreography.model} not found`);
+        }
         const transition = model.transitions.get(transitionId);
+        if (!transition) {
+            throw Error(`Transition ${transitionId} in choreography ${choreographyId} not found`);
+        }
         this.deactivateFromPlaces(choreography, transition);
         this.activateToPlaces(choreography, model, transition);
     }

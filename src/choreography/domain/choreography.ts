@@ -1,4 +1,4 @@
-import { ModelId, PlaceId } from 'model'
+import { ModelId, PlaceId } from "src/model/domain/model";
 
 export enum ExecutionStatus {
   NOT_ACTIVE,
