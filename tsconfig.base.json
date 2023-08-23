@@ -15,7 +15,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "model": ["model/src/index.ts"]
+      "choreography": ["choreography/src/index.ts"],
+      "model": ["model/src/index.ts"],
+      "participant": ["participant/src/index.ts"],
+      "proof": ["proof/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
