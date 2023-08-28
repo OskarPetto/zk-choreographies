@@ -30,13 +30,9 @@ export class ChoreographyService {
         if (instance.finished) {
             return false;
         }
-        for (const fromPlace of transition.fromPlaces) {
-            const exectionStatus = instance.executionStatuses[fromPlace];
-            if (exectionStatus === ExecutionStatus.NOT_ACTIVE) {
-                return false;
-            }
-        }
-        return true;
+        return transition.fromPlaces
+            .map(placeId => instance.executionStatuses[placeId])
+            .every(executionStatus => executionStatus === ExecutionStatus.ACTIVE);
     }
 
     private setExecutionStatuses(instance: Instance, transition: Transition) {
