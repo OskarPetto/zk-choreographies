@@ -4,6 +4,14 @@ import { Transition, TransitionType, } from 'src/model';
 
 @Injectable()
 export class ChoreographyService {
+    executeTransitions(instance: Instance, transitions: Transition[]): Instance {
+        let instanceNew = instance;
+        for (const transition of transitions) {
+            instanceNew = this.executeTransition(instanceNew, transition);
+        }
+        return instanceNew;
+    }
+
     executeTransition(instance: Instance, transition: Transition): Instance {
         if (!this.isTransitionExecutable(instance, transition)) {
             throw Error(`Transition ${transition.id} cannot fire`);
