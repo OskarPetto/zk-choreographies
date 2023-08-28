@@ -1,5 +1,5 @@
 import { ExecutionStatus, Instance } from "src/choreography";
-import { Model, Transition, TransitionId, TransitionType, findTransition } from "src/model";
+import { Model, TransitionType } from "src/model";
 
 export class Testdata {
     static getModel1(): Model {
@@ -21,10 +21,6 @@ export class Testdata {
                 { id: 'Af', type: TransitionType.END, fromPlaces: [8], toPlaces: [] },
             ]
         }
-    }
-
-    static getModel1Transition(transitionId: TransitionId): Transition {
-        return findTransition(this.getModel1(), transitionId);
     }
 
     static getInstance1(): Instance {
