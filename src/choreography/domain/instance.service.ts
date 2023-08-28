@@ -19,12 +19,10 @@ export class InstanceService {
 
     instantiateModel(modelId: ModelId): Instance {
         const model = this.modelService.findModel(modelId);
-        const InstanceId = this.createInstanceId();
-        const mapPlaceFunction: (_: PlaceId) => [PlaceId, ExecutionStatus] = placeId => [placeId, ExecutionStatus.NOT_ACTIVE];
         return {
-            id: InstanceId,
+            id: this.createInstanceId(),
             model: model.id,
-            executionStatuses: new Map(model.places.map(mapPlaceFunction))
+            executionStatuses: Array(model.placeCount).fill(ExecutionStatus.NOT_ACTIVE)
         };
     }
 

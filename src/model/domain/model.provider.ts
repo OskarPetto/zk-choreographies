@@ -4,7 +4,7 @@ export class ModelProvider {
     static getModel1(): Model {
         return {
             id: 'model1',
-            places: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+            placeCount: 9,
             transitions: [
                 { id: 'As', type: TransitionType.START, fromPlaces: [], toPlaces: [0] },
                 { id: 'Da1', type: TransitionType.TASK, fromPlaces: [0], toPlaces: [8] },
