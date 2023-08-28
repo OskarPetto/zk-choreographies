@@ -1,27 +1,27 @@
 import { Test } from '@nestjs/testing';
 
 import { InstanceService } from './instance.service';
-import { ModelService, ModelProvider } from 'src/model';
+import { ExecutionStatus } from './instance';
+import { Testdata } from 'test/testdata';
 
 describe('InstanceService', () => {
     let instanceService: InstanceService;
-    let modelService: ModelService;
-    const model1 = ModelProvider.getModel1();
+    const model1 = Testdata.getModel1();
 
     beforeAll(async () => {
         const app = await Test.createTestingModule({
-            providers: [InstanceService, ModelService],
+            providers: [InstanceService],
         }).compile();
 
         instanceService = app.get<InstanceService>(InstanceService);
-        modelService = app.get<ModelService>(ModelService);
     });
 
     describe('instantiateModel', () => {
-        it('should reference model correctly', () => {
-            jest.spyOn(modelService, 'findModel').mockImplementation(() => model1);
-            const instance = instanceService.instantiateModel(model1.id);
+        it('should instantiate model correctly', () => {
+            const instance = instanceService.instantiateModel(model1);
             expect(instance.model).toEqual(model1.id);
+            expect(instance.executionStatuses).toEqual(Array(model1.placeCount).fill(ExecutionStatus.NOT_ACTIVE));
+            expect(instance.finished).toBeFalsy();
         });
     });
 });

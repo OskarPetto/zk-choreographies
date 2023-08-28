@@ -27,3 +27,11 @@ export interface Model {
   placeCount: number;
   transitions: Transition[];
 }
+
+export function findTransition(model: Model, transitionId: TransitionId) {
+  const transition = model.transitions.find(transition => transition.id === transitionId);
+  if (!transition) {
+    throw Error(`Transition ${transitionId} in model ${model.id} not found`);
+  }
+  return transition;
+}

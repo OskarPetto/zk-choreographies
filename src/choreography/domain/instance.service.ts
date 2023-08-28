@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InstanceId, Instance, ExecutionStatus } from './instance';
-import { ModelId, ModelService, PlaceId } from 'src/model';
+import { Model } from 'src/model';
 import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class InstanceService {
-    constructor(private modelService: ModelService) { }
-
     instances: Map<InstanceId, Instance>;
 
     findInstance(instanceId: InstanceId): Instance {
@@ -17,12 +15,12 @@ export class InstanceService {
         return instance;
     }
 
-    instantiateModel(modelId: ModelId): Instance {
-        const model = this.modelService.findModel(modelId);
+    instantiateModel(model: Model): Instance {
         return {
             id: this.createInstanceId(),
             model: model.id,
-            executionStatuses: Array(model.placeCount).fill(ExecutionStatus.NOT_ACTIVE)
+            executionStatuses: Array(model.placeCount).fill(ExecutionStatus.NOT_ACTIVE),
+            finished: false
         };
     }
 

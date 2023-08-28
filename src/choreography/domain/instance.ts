@@ -1,4 +1,4 @@
-import { ModelId, PlaceId } from "src/model";
+import { ModelId } from "src/model";
 
 export enum ExecutionStatus {
   NOT_ACTIVE,
@@ -11,4 +11,5 @@ export interface Instance {
   id: InstanceId;
   model: ModelId;
   executionStatuses: ExecutionStatus[];
+  finished: boolean;
 }

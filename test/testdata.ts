@@ -1,6 +1,7 @@
-import { Model, TransitionType } from "src/model";
+import { ExecutionStatus, Instance } from "src/choreography";
+import { Model, Transition, TransitionId, TransitionType, findTransition } from "src/model";
 
-export class ModelProvider {
+export class Testdata {
     static getModel1(): Model {
         return {
             id: 'model1',
@@ -20,5 +21,18 @@ export class ModelProvider {
                 { id: 'Af', type: TransitionType.END, fromPlaces: [8], toPlaces: [] },
             ]
         }
+    }
+
+    static getModel1Transition(transitionId: TransitionId): Transition {
+        return findTransition(this.getModel1(), transitionId);
+    }
+
+    static getInstance1(): Instance {
+        return {
+            id: 'instance1',
+            model: this.getModel1().id,
+            executionStatuses: Array(this.getModel1().placeCount).fill(ExecutionStatus.NOT_ACTIVE),
+            finished: false
+        };
     }
 }

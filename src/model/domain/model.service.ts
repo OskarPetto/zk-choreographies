@@ -16,12 +16,4 @@ export class ModelService {
         }
         return model;
     }
-
-    findTransition(model: Model, transitionId: TransitionId) {
-        const transition = model.transitions.find(transition => transition.id === transitionId);
-        if (!transition) {
-            throw Error(`Transition ${transitionId} in model ${model.id} not found`);
-        }
-        return transition;
-    }
 }
