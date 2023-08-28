@@ -1,11 +1,27 @@
 import { Injectable } from '@nestjs/common';
-import { ModelId, Model } from './model';
+import { ModelId, Model, TransitionId, Transition } from './model';
 
 @Injectable()
 export class ModelService {
-    models: Map<ModelId, Model>;
+    models: Map<ModelId, Model>
 
-    find(modelId: ModelId): Model | undefined {
-        return this.models.get(modelId);
+    saveModel(model: Model) {
+        this.models.set(model.id, model);
+    }
+
+    findModel(modelId: ModelId): Model {
+        const model = this.models.get(modelId);
+        if (!model) {
+            throw Error(`Model ${modelId} not found`);
+        }
+        return model;
+    }
+
+    findTransition(model: Model, transitionId: TransitionId) {
+        const transition = model.transitions.find(transition => transition.id === transitionId);
+        if (!transition) {
+            throw Error(`Transition ${transitionId} in model ${model.id} not found`);
+        }
+        return transition;
     }
 }

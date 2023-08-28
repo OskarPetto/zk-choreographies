@@ -1,49 +1,46 @@
 import { Injectable } from '@nestjs/common';
-import { ChoreographyId, Choreography, ExecutionStatus } from './choreography';
-import { Model, Transition, TransitionId, TransitionType } from 'src/model/domain/model';
-import { ModelService } from 'src/model/domain/model.service';
+import { InstanceId, Instance, ExecutionStatus } from './instance';
+import { InstanceService } from './instance.service';
+import { Model, Transition, TransitionId, TransitionType, ModelService, } from 'src/model';
 
 @Injectable()
 export class ChoreographyService {
-    constructor(private modelService: ModelService) { }
+    constructor(
+        private instanceService: InstanceService,
+        private modelService: ModelService
+    ) { }
 
-    choreographies: Map<ChoreographyId, Choreography>;
-
-    fire(choreographyId: ChoreographyId, transitionId: TransitionId) {
-        const choreography = this.choreographies.get(choreographyId);
-        if (!choreography) {
-            throw Error(`Choreography ${choreographyId} not found`);
+    executeTransition(instanceId: InstanceId, transitionId: TransitionId) {
+        const instance = this.instanceService.findInstance(instanceId);
+        const model = this.modelService.findModel(instance.model);
+        const transition = this.modelService.findTransition(model, transitionId);
+        if (!this.canTransitionFire(instance, transition)) {
+            throw Error(`Transition ${transitionId} cannot fire`);
         }
-        const model = this.modelService.find(choreography.model);
-        if (!model) {
-            throw Error(`Model ${choreography.model} not found`);
-        }
-        const transition = model.transitions.get(transitionId);
-        if (!transition) {
-            throw Error(`Transition ${transitionId} in choreography ${choreographyId} not found`);
-        }
-        this.deactivateFromPlaces(choreography, transition);
-        this.activateToPlaces(choreography, model, transition);
+        this.deactivateFromPlaces(instance, transition);
+        this.activateToPlaces(instance, transition);
     }
 
-    private deactivateFromPlaces(choreography: Choreography, transition: Transition) {
+    private canTransitionFire(Instance: Instance, transition: Transition) {
         for (const fromPlace of transition.fromPlaces) {
-            const exectionStatus = choreography.executionStatuses.get(fromPlace);
+            const exectionStatus = Instance.executionStatuses.get(fromPlace);
             if (exectionStatus === ExecutionStatus.NOT_ACTIVE) {
-                throw Error(`Place ${fromPlace} is not active`);
+                return false;
             }
-            choreography.executionStatuses.set(fromPlace, ExecutionStatus.NOT_ACTIVE);
+        }
+        return true;
+    }
+
+
+    private deactivateFromPlaces(instance: Instance, transition: Transition) {
+        for (const fromPlace of transition.fromPlaces) {
+            instance.executionStatuses.set(fromPlace, ExecutionStatus.NOT_ACTIVE);
         }
     }
 
-    private activateToPlaces(choreography: Choreography, model: Model, transition: Transition) {
+    private activateToPlaces(instance: Instance, transition: Transition) {
         for (const toPlace of transition.toPlaces) {
-            choreography.executionStatuses.set(toPlace, ExecutionStatus.ACTIVE);
-            for (const nextTransition of model.transitions.values()) {
-                if (nextTransition.fromPlaces.has(toPlace) && nextTransition.type === TransitionType.AND_JOIN) {
-                    break;
-                }
-            }
+            instance.executionStatuses.set(toPlace, ExecutionStatus.ACTIVE);
         }
     }
 }

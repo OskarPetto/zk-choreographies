@@ -5,10 +5,10 @@ export enum TransitionType {
   START,
   END,
   TASK,
-  XOR_SPLIT,
-  XOR_JOIN,
-  AND_SPLIT,
-  AND_JOIN
+  // XOR_SPLIT,
+  // XOR_JOIN,
+  // AND_SPLIT,
+  // AND_JOIN
 }
 
 export type PlaceId = number;
@@ -16,13 +16,14 @@ export type PlaceId = number;
 export interface Transition {
   id: TransitionId;
   type: TransitionType;
-  fromPlaces: Set<PlaceId>;
-  toPlaces: Set<PlaceId>;
+  fromPlaces: PlaceId[];
+  toPlaces: PlaceId[];
 }
 
 export type ModelId = string;
 
 export interface Model {
   id: ModelId;
-  transitions: Map<TransitionId, Transition>;
+  places: PlaceId[];
+  transitions: Transition[];
 }
