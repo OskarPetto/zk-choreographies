@@ -1,4 +1,4 @@
-import { ModelId } from "src/model";
+import { ModelId, PlaceId } from "src/model";
 
 export enum ExecutionStatus {
   NOT_ACTIVE,
@@ -10,6 +10,10 @@ export type InstanceId = string;
 export interface Instance {
   id: InstanceId;
   model: ModelId;
-  executionStatuses: ExecutionStatus[];
+  executionStatuses: Map<PlaceId, ExecutionStatus>;
   finished: boolean;
+}
+
+export function copyInstance(instance: Instance): Instance {
+  return JSON.parse(JSON.stringify(instance));
 }

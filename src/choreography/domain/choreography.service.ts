@@ -1,46 +1,44 @@
 import { Injectable } from '@nestjs/common';
-import { Instance, ExecutionStatus } from './instance';
+import { Instance, ExecutionStatus, copyInstance } from './instance';
 import { Transition, TransitionType, } from 'src/model';
 
 @Injectable()
 export class ChoreographyService {
     executeTransitions(instance: Instance, transitions: Transition[]): Instance {
-        let instanceNew = instance;
+        let newInstance = copyInstance(instance);
         for (const transition of transitions) {
-            instanceNew = this.executeTransition(instanceNew, transition);
+            this.updateInstance(newInstance, transition);
         }
-        return instanceNew;
+        return newInstance;
     }
 
     executeTransition(instance: Instance, transition: Transition): Instance {
+        const newInstance = copyInstance(instance);
+        this.updateInstance(newInstance, transition);
+        return newInstance;
+    }
+
+    private updateInstance(instance: Instance, transition: Transition) {
         if (!this.isTransitionExecutable(instance, transition)) {
             throw Error(`Transition ${transition.id} cannot fire`);
         }
-        const newInstance: Instance = {
-            ...instance,
+        for (const fromPlace of transition.fromPlaces) {
+            instance.executionStatuses.set(fromPlace, ExecutionStatus.NOT_ACTIVE);
         }
-        this.setExecutionStatuses(newInstance, transition);
+        for (const toPlace of transition.toPlaces) {
+            instance.executionStatuses.set(toPlace, ExecutionStatus.ACTIVE);
+        }
         if (transition.type == TransitionType.END) {
-            newInstance.finished = true;
+            instance.finished = true;
         }
-        return newInstance;
     }
 
     private isTransitionExecutable(instance: Instance, transition: Transition) {
         if (instance.finished) {
             return false;
         }
-        return transition.fromPlaces
-            .map(placeId => instance.executionStatuses[placeId])
+        return [...transition.fromPlaces]
+            .map(placeId => instance.executionStatuses.get(placeId))
             .every(executionStatus => executionStatus === ExecutionStatus.ACTIVE);
-    }
-
-    private setExecutionStatuses(instance: Instance, transition: Transition) {
-        for (const fromPlace of transition.fromPlaces) {
-            instance.executionStatuses[fromPlace] = ExecutionStatus.NOT_ACTIVE;
-        }
-        for (const toPlace of transition.toPlaces) {
-            instance.executionStatuses[toPlace] = ExecutionStatus.ACTIVE;
-        }
     }
 }

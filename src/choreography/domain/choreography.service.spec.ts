@@ -1,13 +1,13 @@
 import { Test } from '@nestjs/testing';
 import { ChoreographyService } from './choreography.service';
-import { Testdata } from 'test/testdata';
+import { TestdataProvider } from 'test/data/provider';
 import { ExecutionStatus } from './instance';
 import { findTransition } from 'src/model';
 
 describe('ChoreographyService', () => {
     let choreographyService: ChoreographyService;
-    const model1 = Testdata.getModel1();
-    const instance1 = Testdata.getInstance1();
+    const model1 = TestdataProvider.getModel1();
+    const instance1 = TestdataProvider.getInstance1();
 
     beforeAll(async () => {
         const app = await Test.createTestingModule({
@@ -21,7 +21,13 @@ describe('ChoreographyService', () => {
         it('should execute start transition', () => {
             const startTransition = findTransition(model1, 'As');
             const result = choreographyService.executeTransition(instance1, startTransition);
-            expect(result.executionStatuses[0]).toEqual(ExecutionStatus.ACTIVE);
+            expect(result.executionStatuses.get(0)).toEqual(ExecutionStatus.ACTIVE);
+        });
+
+        it('should not alter original instance', () => {
+            const startTransition = findTransition(model1, 'As');
+            const result = choreographyService.executeTransition(instance1, startTransition);
+            expect(instance1.executionStatuses.get(0)).toEqual(ExecutionStatus.NOT_ACTIVE);
         });
 
         it('should execute full trace 1', () => {
