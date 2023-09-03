@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import BpmnModdle from 'bpmn-moddle';
+const BpmnModdle = require('bpmn-moddle');
 
 const moddle = new BpmnModdle();
 
@@ -11,5 +11,5 @@ export async function readBPMN() {
 
     const definitions = await moddle.fromXML(xmlStr);
 
-    //console.log(definitions);
+    console.log(definitions.elementsById);
 }

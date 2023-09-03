@@ -1,4 +1,4 @@
-import { readBPMN } from "./bpmn";
+import { readBPMN } from './bpmn';
 
 describe('BPMN', () => {
 
