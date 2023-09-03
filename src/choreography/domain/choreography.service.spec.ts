@@ -21,13 +21,13 @@ describe('ChoreographyService', () => {
         it('should execute start transition', () => {
             const startTransition = findTransition(model1, 'As');
             const result = choreographyService.executeTransition(instance1, startTransition);
-            expect(result.executionStatuses.get(0)).toEqual(ExecutionStatus.ACTIVE);
+            expect(result.executionStatuses[0]).toEqual(ExecutionStatus.ACTIVE);
         });
 
         it('should not alter original instance', () => {
             const startTransition = findTransition(model1, 'As');
             const result = choreographyService.executeTransition(instance1, startTransition);
-            expect(instance1.executionStatuses.get(0)).toEqual(ExecutionStatus.NOT_ACTIVE);
+            expect(instance1.executionStatuses[0]).toEqual(ExecutionStatus.NOT_ACTIVE);
         });
 
         it('should execute full trace 1', () => {

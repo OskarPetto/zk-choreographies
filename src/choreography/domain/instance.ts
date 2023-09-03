@@ -10,7 +10,7 @@ export type InstanceId = string;
 export interface Instance {
   id: InstanceId;
   model: ModelId;
-  executionStatuses: Map<PlaceId, ExecutionStatus>;
+  executionStatuses: ExecutionStatus[];
   finished: boolean;
 }
 

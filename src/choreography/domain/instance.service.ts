@@ -19,7 +19,7 @@ export class InstanceService {
         return {
             id: this.createInstanceId(),
             model: model.id,
-            executionStatuses: new Map(Array.from(model.places).map(placeId => [placeId, ExecutionStatus.NOT_ACTIVE])),
+            executionStatuses: Array(model.placeCount).fill(ExecutionStatus.NOT_ACTIVE),
             finished: false
         };
     }

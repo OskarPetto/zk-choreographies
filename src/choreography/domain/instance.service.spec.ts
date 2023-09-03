@@ -20,7 +20,7 @@ describe('InstanceService', () => {
         it('should instantiate model correctly', () => {
             const instance = instanceService.instantiateModel(model1);
             expect(instance.model).toEqual(model1.id);
-            expect(Array.from(instance.executionStatuses.values())).toEqual(Array(model1.places.size).fill(ExecutionStatus.NOT_ACTIVE));
+            expect(instance.executionStatuses).toEqual(Array(model1.placeCount).fill(ExecutionStatus.NOT_ACTIVE));
             expect(instance.finished).toBeFalsy();
         });
     });

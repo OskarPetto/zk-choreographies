@@ -23,10 +23,10 @@ export class ChoreographyService {
             throw Error(`Transition ${transition.id} cannot fire`);
         }
         for (const fromPlace of transition.fromPlaces) {
-            instance.executionStatuses.set(fromPlace, ExecutionStatus.NOT_ACTIVE);
+            instance.executionStatuses[fromPlace] = ExecutionStatus.NOT_ACTIVE;
         }
         for (const toPlace of transition.toPlaces) {
-            instance.executionStatuses.set(toPlace, ExecutionStatus.ACTIVE);
+            instance.executionStatuses[toPlace] = ExecutionStatus.ACTIVE;
         }
         if (transition.type == TransitionType.END) {
             instance.finished = true;
@@ -38,7 +38,7 @@ export class ChoreographyService {
             return false;
         }
         return [...transition.fromPlaces]
-            .map(placeId => instance.executionStatuses.get(placeId))
+            .map(placeId => instance.executionStatuses[placeId])
             .every(executionStatus => executionStatus === ExecutionStatus.ACTIVE);
     }
 }

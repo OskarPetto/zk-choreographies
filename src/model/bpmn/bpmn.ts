@@ -11,5 +11,5 @@ export async function readBPMN() {
 
     const definitions = await moddle.fromXML(xmlStr);
 
-    console.log(definitions);
+    //console.log(definitions);
 }
