@@ -2,7 +2,15 @@ import { Test } from '@nestjs/testing';
 import { ChoreographyService } from './choreography.service';
 import { TestdataProvider } from 'test/data/provider';
 import { ExecutionStatus } from './instance';
-import { findTransition } from 'src/model';
+import { Model, Transition, TransitionId } from 'src/model';
+
+function findTransition(model: Model, transitionId: TransitionId): Transition {
+    const transition = model.transitions.get(transitionId);
+    if (!transition) {
+        throw Error(`Transition ${transitionId} in model ${model.id} not found`);
+    }
+    return transition;
+}
 
 describe('ChoreographyService', () => {
     let choreographyService: ChoreographyService;

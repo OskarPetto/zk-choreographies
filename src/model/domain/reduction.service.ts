@@ -28,9 +28,9 @@ export class ReductionService {
     private updatePlaceCount(model: Model) {
         let places: PlaceId[] = [];
         for (const transition of model.transitions.values()) {
-            places = this.union(places, [...transition.fromPlaces, ...transition.toPlaces]);
+            places = [...places, ...transition.fromPlaces, ...transition.toPlaces];
         }
-        model.placeCount = places.length;
+        model.placeCount = new Set(places).size;
     }
 
     private removeTransitionAndToPlaces(model: Model, transitionToRemove: Transition) {

@@ -28,14 +28,6 @@ export interface Model {
   transitions: Map<TransitionId, Transition>;
 }
 
-export function findTransition(model: Model, transitionId: TransitionId): Transition {
-  const transition = model.transitions.get(transitionId);
-  if (!transition) {
-    throw Error(`Transition ${transitionId} in model ${model.id} not found`);
-  }
-  return transition;
-}
-
 export function copyModel(model: Model): Model {
   const newTransitions = [...model.transitions.values()].map(transition => ({
     id: transition.id,
@@ -52,7 +44,7 @@ export function copyModel(model: Model): Model {
 }
 
 export function modelEquals(model1: Model, model2: Model): boolean {
-  return this.findPlaceMapping(model1, model2) !== undefined;
+  return findPlaceMapping(model1, model2) !== undefined;
 }
 
 export function findPlaceMapping(model1: Model, model2: Model): Map<PlaceId, PlaceId> | undefined {

@@ -2,7 +2,6 @@ import { Test } from '@nestjs/testing';
 
 import { TestdataProvider } from 'test/data/provider';
 import { ReductionService } from './reduction.service';
-import { logObject } from 'src/utils/utils';
 import { modelEquals } from './model';
 
 describe('ReductionService', () => {
@@ -21,9 +20,7 @@ describe('ReductionService', () => {
     describe('reduceModel', () => {
         it('should reduce model correctly', () => {
             const result = reductionService.reduceModel(model2);
-            logObject(result);
-            logObject(model1);
-            expect(modelEquals(result, model1)).toBeTruthy();
+            expect(modelEquals(model1, result)).toBeTruthy();
         });
     });
 });

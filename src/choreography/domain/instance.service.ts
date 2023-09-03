@@ -15,20 +15,7 @@ export class InstanceService {
         return instance;
     }
 
-    instantiateModel(model: Model): Instance {
-        return {
-            id: this.createInstanceId(),
-            model: model.id,
-            executionStatuses: Array(model.placeCount).fill(ExecutionStatus.NOT_ACTIVE),
-            finished: false
-        };
-    }
-
     saveInstance(instance: Instance) {
         this.instances.set(instance.id, instance);
-    }
-
-    private createInstanceId(): InstanceId {
-        return uuid();
     }
 }
