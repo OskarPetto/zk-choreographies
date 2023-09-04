@@ -22,11 +22,11 @@ export class ChoreographyService {
         if (!this.isTransitionExecutable(instance, transition)) {
             throw Error(`Transition ${transition.id} cannot fire`);
         }
-        for (const fromPlace of transition.fromPlaces) {
-            instance.executionStatuses[fromPlace] = ExecutionStatus.NOT_ACTIVE;
+        for (const fromFlow of transition.fromFlows) {
+            instance.executionStatuses[fromFlow] = ExecutionStatus.NOT_ACTIVE;
         }
-        for (const toPlace of transition.toPlaces) {
-            instance.executionStatuses[toPlace] = ExecutionStatus.ACTIVE;
+        for (const toFlow of transition.toFlows) {
+            instance.executionStatuses[toFlow] = ExecutionStatus.ACTIVE;
         }
         if (transition.type == TransitionType.END) {
             instance.finished = true;
@@ -37,8 +37,8 @@ export class ChoreographyService {
         if (instance.finished) {
             return false;
         }
-        return [...transition.fromPlaces]
-            .map(placeId => instance.executionStatuses[placeId])
+        return [...transition.fromFlows]
+            .map(flowId => instance.executionStatuses[flowId])
             .every(executionStatus => executionStatus === ExecutionStatus.ACTIVE);
     }
 }

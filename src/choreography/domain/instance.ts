@@ -23,7 +23,7 @@ export function instantiateModel(model: Model): Instance {
   return {
     id: creadeId(),
     model: model.id,
-    executionStatuses: Array(model.placeCount).fill(ExecutionStatus.NOT_ACTIVE),
+    executionStatuses: Array(model.flowCount).fill(ExecutionStatus.NOT_ACTIVE),
     finished: false
   };
 }

@@ -11,67 +11,67 @@ export enum TransitionType {
   AND_JOIN
 }
 
-export type PlaceId = number;
+export type FlowId = number;
 
 export interface Transition {
   id: TransitionId;
   type: TransitionType;
-  fromPlaces: PlaceId[];
-  toPlaces: PlaceId[];
+  fromFlows: FlowId[];
+  toFlows: FlowId[];
 }
 
 export type ModelId = string;
 
 export interface Model {
   id: ModelId;
-  placeCount: number;
+  flowCount: number;
   transitions: Map<TransitionId, Transition>;
 }
 
 export function copyModel(model: Model): Model {
-  const newTransitions = [...model.transitions.values()].map(transition => ({
+  const newTransitions: Transition[] = [...model.transitions.values()].map(transition => ({
     id: transition.id,
     type: transition.type,
-    fromPlaces: [...transition.fromPlaces],
-    toPlaces: [...transition.toPlaces]
+    fromFlows: [...transition.fromFlows],
+    toFlows: [...transition.toFlows]
   }))
 
   return {
     id: model.id,
-    placeCount: model.placeCount,
+    flowCount: model.flowCount,
     transitions: new Map(newTransitions.map(t => [t.id, t]))
   }
 }
 
 export function modelEquals(model1: Model, model2: Model): boolean {
-  return findPlaceMapping(model1, model2) !== undefined;
+  return findFlowMapping(model1, model2) !== undefined;
 }
 
-export function findPlaceMapping(model1: Model, model2: Model): Map<PlaceId, PlaceId> | undefined {
-  if (model1.placeCount != model2.placeCount) {
+export function findFlowMapping(model1: Model, model2: Model): Map<FlowId, FlowId> | undefined {
+  if (model1.flowCount != model2.flowCount) {
     return undefined;
   }
   if (model1.transitions.size != model2.transitions.size) {
     return undefined;
   }
-  const placeMapping = new Map<PlaceId, PlaceId>();
+  const flowMapping = new Map<FlowId, FlowId>();
   for (const transition1 of model1.transitions.values()) {
     const transition2 = model2.transitions.get(transition1.id);
     if (!transition2) {
       return undefined;
     }
-    const allPlaces1 = [...transition1.fromPlaces, ...transition1.toPlaces];
-    const allPlaces2 = [...transition2.fromPlaces, ...transition2.toPlaces];
-    if (allPlaces1.length != allPlaces2.length) {
+    const allFlows1 = [...transition1.fromFlows, ...transition1.toFlows];
+    const allFlows2 = [...transition2.fromFlows, ...transition2.toFlows];
+    if (allFlows1.length != allFlows2.length) {
       return undefined;
     }
-    for (const [index, placeId1] of allPlaces1.entries()) {
-      const placeId2 = allPlaces2[index];
-      if (placeMapping.has(placeId1) && placeMapping.get(placeId1) != placeId2) {
+    for (const [index, flowId1] of allFlows1.entries()) {
+      const flowId2 = allFlows2[index];
+      if (flowMapping.has(flowId1) && flowMapping.get(flowId1) != flowId2) {
         return undefined;
       }
-      placeMapping.set(placeId1, placeId2);
+      flowMapping.set(flowId1, flowId2);
     }
   }
-  return placeMapping;
+  return flowMapping;
 }

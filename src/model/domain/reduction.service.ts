@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Model, PlaceId, Transition, TransitionType, copyModel } from './model';
+import { Model, FlowId, Transition, TransitionType, copyModel } from './model';
 
 @Injectable()
 export class ReductionService {
@@ -13,57 +13,57 @@ export class ReductionService {
                     break;
                 case TransitionType.XOR_SPLIT:
                 case TransitionType.AND_JOIN:
-                    this.removeTransitionAndToPlaces(newModel, transition);
+                    this.removeTransitionAndToFlows(newModel, transition);
                     break;
                 case TransitionType.XOR_JOIN:
                 case TransitionType.AND_SPLIT:
-                    this.removeTransitionAndFromPlaces(newModel, transition);
+                    this.removeTransitionAndFromFlows(newModel, transition);
                     break;
             }
         }
-        this.updatePlaceCount(newModel)
+        this.updateFlowCount(newModel)
         return newModel;
     }
 
-    private updatePlaceCount(model: Model) {
-        let places: PlaceId[] = [];
+    private updateFlowCount(model: Model) {
+        let flows: FlowId[] = [];
         for (const transition of model.transitions.values()) {
-            places = [...places, ...transition.fromPlaces, ...transition.toPlaces];
+            flows = [...flows, ...transition.fromFlows, ...transition.toFlows];
         }
-        model.placeCount = new Set(places).size;
+        model.flowCount = new Set(flows).size;
     }
 
-    private removeTransitionAndToPlaces(model: Model, transitionToRemove: Transition) {
+    private removeTransitionAndToFlows(model: Model, transitionToRemove: Transition) {
         for (const transition of model.transitions.values()) {
-            const intersect = this.intersect(transition.fromPlaces, transitionToRemove.toPlaces);
+            const intersect = this.intersect(transition.fromFlows, transitionToRemove.toFlows);
             if (intersect.length > 0) {
-                transition.fromPlaces = this.setMinus(transition.fromPlaces, transitionToRemove.toPlaces);
-                transition.fromPlaces = this.union(transition.fromPlaces, transitionToRemove.fromPlaces);
+                transition.fromFlows = this.setMinus(transition.fromFlows, transitionToRemove.toFlows);
+                transition.fromFlows = this.union(transition.fromFlows, transitionToRemove.fromFlows);
             }
         }
         model.transitions.delete(transitionToRemove.id);
     }
 
-    private removeTransitionAndFromPlaces(model: Model, transitionToRemove: Transition) {
+    private removeTransitionAndFromFlows(model: Model, transitionToRemove: Transition) {
         for (const transition of model.transitions.values()) {
-            const intersect = this.intersect(transition.toPlaces, transitionToRemove.fromPlaces);
+            const intersect = this.intersect(transition.toFlows, transitionToRemove.fromFlows);
             if (intersect.length > 0) {
-                transition.toPlaces = this.setMinus(transition.toPlaces, transitionToRemove.fromPlaces);
-                transition.toPlaces = this.union(transition.toPlaces, transitionToRemove.toPlaces);
+                transition.toFlows = this.setMinus(transition.toFlows, transitionToRemove.fromFlows);
+                transition.toFlows = this.union(transition.toFlows, transitionToRemove.toFlows);
             }
         }
         model.transitions.delete(transitionToRemove.id);
     }
 
-    private setMinus(places1: PlaceId[], places2: PlaceId[]): PlaceId[] {
-        return places1.filter(place1 => !places2.includes(place1));
+    private setMinus(flows1: FlowId[], flows2: FlowId[]): FlowId[] {
+        return flows1.filter(flow1 => !flows2.includes(flow1));
     }
 
-    private intersect(places1: PlaceId[], places2: PlaceId[]): PlaceId[] {
-        return places1.filter(place1 => places2.includes(place1));
+    private intersect(flows1: FlowId[], flows2: FlowId[]): FlowId[] {
+        return flows1.filter(flow1 => flows2.includes(flow1));
     }
 
-    private union(places1: PlaceId[], places2: PlaceId[]): PlaceId[] {
-        return [...new Set([...places1, ...places2])];
+    private union(flows1: FlowId[], flows2: FlowId[]): FlowId[] {
+        return [...new Set([...flows1, ...flows2])];
     }
 }
