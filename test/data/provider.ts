@@ -1,26 +1,26 @@
 import { ExecutionStatus, Instance } from "src/choreography";
-import { Model, Transition, TransitionType } from "src/model";
+import { Model, Element, ElementType, FlowId } from "src/model";
 
 export class TestdataProvider {
     static getModel1(): Model {
-        const transitions: Transition[] = [
-            { id: 'As', type: TransitionType.START, fromFlows: [], toFlows: [0] },
-            { id: 'Da1', type: TransitionType.TASK, fromFlows: [0], toFlows: [8] },
-            { id: 'Aa', type: TransitionType.TASK, fromFlows: [0], toFlows: [1, 3] },
-            { id: 'Fa', type: TransitionType.TASK, fromFlows: [1], toFlows: [2] },
-            { id: 'Sso', type: TransitionType.TASK, fromFlows: [3], toFlows: [4] },
-            { id: 'Ro', type: TransitionType.TASK, fromFlows: [4], toFlows: [5] },
-            { id: 'Co', type: TransitionType.TASK, fromFlows: [5], toFlows: [3] },
-            { id: 'Ao', type: TransitionType.TASK, fromFlows: [2, 5], toFlows: [6] },
-            { id: 'Aaa', type: TransitionType.TASK, fromFlows: [6], toFlows: [8] },
-            { id: 'Do', type: TransitionType.TASK, fromFlows: [2, 5], toFlows: [7] },
-            { id: 'Da2', type: TransitionType.TASK, fromFlows: [7], toFlows: [8] },
-            { id: 'Af', type: TransitionType.END, fromFlows: [8], toFlows: [] },
+        const elements: Element[] = [
+            { id: 'As', name: 'Application submitted', type: ElementType.START, incomingFlows: [], outgoingFlows: ['0'] },
+            { id: 'Da1', name: 'Decline application', type: ElementType.TASK, incomingFlows: ['0'], outgoingFlows: ['8'] },
+            { id: 'Aa', name: 'Accept application', type: ElementType.TASK, incomingFlows: ['0'], outgoingFlows: ['1', '3'] },
+            { id: 'Fa', name: 'Finalize application', type: ElementType.TASK, incomingFlows: ['1'], outgoingFlows: ['2'] },
+            { id: 'Sso', name: 'Select and send offer', type: ElementType.TASK, incomingFlows: ['3'], outgoingFlows: ['4'] },
+            { id: 'Ro', name: 'Receive offer', type: ElementType.TASK, incomingFlows: ['4'], outgoingFlows: ['5'] },
+            { id: 'Co', name: 'Cancel offer', type: ElementType.TASK, incomingFlows: ['5'], outgoingFlows: ['3'] },
+            { id: 'Ao', name: 'Accept offer', type: ElementType.TASK, incomingFlows: ['2', '5'], outgoingFlows: ['6'] },
+            { id: 'Aaa', name: 'Approve and activate application', type: ElementType.TASK, incomingFlows: ['6'], outgoingFlows: ['8'] },
+            { id: 'Do', name: 'Decline offer', type: ElementType.TASK, incomingFlows: ['2', '5'], outgoingFlows: ['7'] },
+            { id: 'Da2', name: 'Decline application', type: ElementType.TASK, incomingFlows: ['7'], outgoingFlows: ['8'] },
+            { id: 'Af', name: 'Application finished', type: ElementType.END, incomingFlows: ['8'], outgoingFlows: [] },
         ];
         return {
             id: 'model1',
-            flowCount: 9,
-            transitions: new Map(transitions.map(t => [t.id, t])),
+            flows: [...Array(9).keys()].map(i => '' + i),
+            elements: new Map(elements.map(t => [t.id, t])),
         }
     }
 
@@ -28,43 +28,53 @@ export class TestdataProvider {
         return {
             id: 'instance1',
             model: this.getModel1().id,
-            executionStatuses: Array(this.getModel1().flowCount).fill(ExecutionStatus.NOT_ACTIVE),
+            executionStatuses: new Map([
+                ['0', ExecutionStatus.NOT_ACTIVE],
+                ['1', ExecutionStatus.NOT_ACTIVE],
+                ['2', ExecutionStatus.NOT_ACTIVE],
+                ['3', ExecutionStatus.NOT_ACTIVE],
+                ['4', ExecutionStatus.NOT_ACTIVE],
+                ['5', ExecutionStatus.NOT_ACTIVE],
+                ['6', ExecutionStatus.NOT_ACTIVE],
+                ['7', ExecutionStatus.NOT_ACTIVE],
+                ['8', ExecutionStatus.NOT_ACTIVE]
+            ]),
             finished: false
         };
     }
 
     static getModel2(): Model {
-        const transitions: Transition[] = [
-            { id: 'As', type: TransitionType.START, fromFlows: [], toFlows: [0] },
-            { id: 'Da1', type: TransitionType.TASK, fromFlows: [1], toFlows: [2] },
-            { id: 'Aa', type: TransitionType.TASK, fromFlows: [3], toFlows: [4] },
-            { id: 'Fa', type: TransitionType.TASK, fromFlows: [5], toFlows: [6] },
-            { id: 'Sso', type: TransitionType.TASK, fromFlows: [9], toFlows: [10] },
-            { id: 'Ro', type: TransitionType.TASK, fromFlows: [10], toFlows: [11] },
-            { id: 'Co', type: TransitionType.TASK, fromFlows: [12], toFlows: [8] },
-            { id: 'Ao', type: TransitionType.TASK, fromFlows: [15], toFlows: [16] },
-            { id: 'Aaa', type: TransitionType.TASK, fromFlows: [16], toFlows: [17] },
-            { id: 'Do', type: TransitionType.TASK, fromFlows: [18], toFlows: [19] },
-            { id: 'Da2', type: TransitionType.TASK, fromFlows: [19], toFlows: [20] },
-            { id: 'Af', type: TransitionType.END, fromFlows: [21], toFlows: [] },
-            { id: 't0', type: TransitionType.XOR_SPLIT, fromFlows: [0], toFlows: [1] },
-            { id: 't1', type: TransitionType.XOR_JOIN, fromFlows: [2], toFlows: [21] },
-            { id: 't2', type: TransitionType.XOR_SPLIT, fromFlows: [0], toFlows: [3] },
-            { id: 't3', type: TransitionType.AND_SPLIT, fromFlows: [4], toFlows: [5, 7] },
-            { id: 't4', type: TransitionType.XOR_JOIN, fromFlows: [7], toFlows: [9] },
-            { id: 't5', type: TransitionType.XOR_SPLIT, fromFlows: [11], toFlows: [13] },
-            { id: 't6', type: TransitionType.XOR_SPLIT, fromFlows: [11], toFlows: [12] },
-            { id: 't7', type: TransitionType.XOR_JOIN, fromFlows: [8], toFlows: [9] },
-            { id: 't8', type: TransitionType.AND_JOIN, fromFlows: [6, 13], toFlows: [14] },
-            { id: 't9', type: TransitionType.XOR_SPLIT, fromFlows: [14], toFlows: [15] },
-            { id: 't10', type: TransitionType.XOR_JOIN, fromFlows: [17], toFlows: [21] },
-            { id: 't11', type: TransitionType.XOR_SPLIT, fromFlows: [14], toFlows: [18] },
-            { id: 't12', type: TransitionType.XOR_JOIN, fromFlows: [20], toFlows: [21] },
+        const transitions: Element[] = [
+            { id: 'As', name: 'Application submitted', type: ElementType.START, incomingFlows: [], outgoingFlows: ['0'] },
+            { id: 'Da1', name: 'Decline application', type: ElementType.TASK, incomingFlows: ['1'], outgoingFlows: ['2'] },
+            { id: 'Aa', name: 'Accept application', type: ElementType.TASK, incomingFlows: ['3'], outgoingFlows: ['4'] },
+            { id: 'Fa', name: 'Finalize application', type: ElementType.TASK, incomingFlows: ['5'], outgoingFlows: ['6'] },
+            { id: 'Sso', name: 'Select and send offer', type: ElementType.TASK, incomingFlows: ['9'], outgoingFlows: ['10'] },
+            { id: 'Ro', name: 'Receive offer', type: ElementType.TASK, incomingFlows: ['10'], outgoingFlows: ['11'] },
+            { id: 'Co', name: 'Cancel offer', type: ElementType.TASK, incomingFlows: ['12'], outgoingFlows: ['8'] },
+            { id: 'Ao', name: 'Accept offer', type: ElementType.TASK, incomingFlows: ['15'], outgoingFlows: ['16'] },
+            { id: 'Aaa', name: 'Approve and activate application', type: ElementType.TASK, incomingFlows: ['16'], outgoingFlows: ['17'] },
+            { id: 'Do', name: 'Decline offer', type: ElementType.TASK, incomingFlows: ['18'], outgoingFlows: ['19'] },
+            { id: 'Da2', name: 'Decline application', type: ElementType.TASK, incomingFlows: ['19'], outgoingFlows: ['20'] },
+            { id: 'Af', name: 'Application finished', type: ElementType.END, incomingFlows: ['21'], outgoingFlows: [] },
+            { id: 't0', type: ElementType.XOR_SPLIT, incomingFlows: ['0'], outgoingFlows: ['1'] },
+            { id: 't1', type: ElementType.XOR_JOIN, incomingFlows: ['2'], outgoingFlows: ['21'] },
+            { id: 't2', type: ElementType.XOR_SPLIT, incomingFlows: ['0'], outgoingFlows: ['3'] },
+            { id: 't3', type: ElementType.AND_SPLIT, incomingFlows: ['4'], outgoingFlows: ['5', '7'] },
+            { id: 't4', type: ElementType.XOR_JOIN, incomingFlows: ['7'], outgoingFlows: ['9'] },
+            { id: 't5', type: ElementType.XOR_SPLIT, incomingFlows: ['11'], outgoingFlows: ['13'] },
+            { id: 't6', type: ElementType.XOR_SPLIT, incomingFlows: ['11'], outgoingFlows: ['12'] },
+            { id: 't7', type: ElementType.XOR_JOIN, incomingFlows: ['8'], outgoingFlows: ['9'] },
+            { id: 't8', type: ElementType.AND_JOIN, incomingFlows: ['6', '13'], outgoingFlows: ['14'] },
+            { id: 't9', type: ElementType.XOR_SPLIT, incomingFlows: ['14'], outgoingFlows: ['15'] },
+            { id: 't10', type: ElementType.XOR_JOIN, incomingFlows: ['17'], outgoingFlows: ['21'] },
+            { id: 't11', type: ElementType.XOR_SPLIT, incomingFlows: ['14'], outgoingFlows: ['18'] },
+            { id: 't12', type: ElementType.XOR_JOIN, incomingFlows: ['20'], outgoingFlows: ['21'] },
         ];
         return {
             id: 'model1',
-            flowCount: 22,
-            transitions: new Map(transitions.map(t => [t.id, t])),
+            flows: [...Array(22).keys()].map(i => '' + i),
+            elements: new Map(transitions.map(t => [t.id, t])),
         }
     }
 }

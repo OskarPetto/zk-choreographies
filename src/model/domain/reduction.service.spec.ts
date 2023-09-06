@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { TestdataProvider } from 'test/data/provider';
 import { ReductionService } from './reduction.service';
-import { modelEquals } from './model';
+import { logObject } from 'src/utils/utils';
 
 describe('ReductionService', () => {
     let reductionService: ReductionService;
@@ -20,7 +20,8 @@ describe('ReductionService', () => {
     describe('reduceModel', () => {
         it('should reduce model correctly', () => {
             const result = reductionService.reduceModel(model2);
-            expect(modelEquals(model1, result)).toBeTruthy();
+            const flowMapping = reductionService.findFlowMapping(model1, result);
+            expect(flowMapping).toBeTruthy();
         });
     });
 });

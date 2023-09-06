@@ -1,44 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import { Instance, ExecutionStatus, copyInstance } from './instance';
-import { Transition, TransitionType, } from 'src/model';
+import { Element, ElementType, } from 'src/model';
 
 @Injectable()
 export class ChoreographyService {
-    executeTransitions(instance: Instance, transitions: Transition[]): Instance {
-        let newInstance = copyInstance(instance);
-        for (const transition of transitions) {
-            this.updateInstance(newInstance, transition);
-        }
-        return newInstance;
-    }
-
-    executeTransition(instance: Instance, transition: Transition): Instance {
+    executeElements(instance: Instance, elements: Element[]): Instance {
         const newInstance = copyInstance(instance);
-        this.updateInstance(newInstance, transition);
+        for (const element of elements) {
+            this.executeElement(newInstance, element);
+        }
         return newInstance;
     }
 
-    private updateInstance(instance: Instance, transition: Transition) {
-        if (!this.isTransitionExecutable(instance, transition)) {
-            throw Error(`Transition ${transition.id} cannot fire`);
+    private executeElement(instance: Instance, element: Element) {
+        if (!this.isElementExecutable(instance, element)) {
+            throw Error(`Element ${element.id} is not executable`);
         }
-        for (const fromFlow of transition.fromFlows) {
-            instance.executionStatuses[fromFlow] = ExecutionStatus.NOT_ACTIVE;
+        for (const incomingFlowId of element.incomingFlows) {
+            instance.executionStatuses.set(incomingFlowId, ExecutionStatus.NOT_ACTIVE);
         }
-        for (const toFlow of transition.toFlows) {
-            instance.executionStatuses[toFlow] = ExecutionStatus.ACTIVE;
+        for (const outgoingFlowId of element.outgoingFlows) {
+            instance.executionStatuses.set(outgoingFlowId, ExecutionStatus.ACTIVE);
         }
-        if (transition.type == TransitionType.END) {
+        if (element.type == ElementType.END) {
             instance.finished = true;
         }
     }
 
-    private isTransitionExecutable(instance: Instance, transition: Transition) {
+    private isElementExecutable(instance: Instance, element: Element) {
         if (instance.finished) {
             return false;
         }
-        return [...transition.fromFlows]
-            .map(flowId => instance.executionStatuses[flowId])
+        return [...element.incomingFlows]
+            .map(flowId => instance.executionStatuses.get(flowId))
             .every(executionStatus => executionStatus === ExecutionStatus.ACTIVE);
     }
 }

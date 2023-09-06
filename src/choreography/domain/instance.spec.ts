@@ -8,7 +8,7 @@ describe('Instance', () => {
         it('should instantiate model correctly', () => {
             const instance = instantiateModel(model1);
             expect(instance.model).toEqual(model1.id);
-            expect(instance.executionStatuses).toEqual(Array(model1.flowCount).fill(ExecutionStatus.NOT_ACTIVE));
+            expect([...instance.executionStatuses.values()]).toEqual(Array(model1.flows.length).fill(ExecutionStatus.NOT_ACTIVE));
             expect(instance.finished).toBeFalsy();
         });
     });
