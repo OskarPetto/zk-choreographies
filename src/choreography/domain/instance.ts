@@ -1,4 +1,4 @@
-import { FlowId, Model, ModelId } from "src/model";
+import { FlowId, ModelId } from "src/model";
 import { v4 as uuid } from 'uuid';
 
 export enum ExecutionStatus {
@@ -24,15 +24,7 @@ export function copyInstance(instance: Instance): Instance {
   }
 }
 
-export function instantiateModel(model: Model): Instance {
-  return {
-    id: creadeId(),
-    model: model.id,
-    executionStatuses: new Map(model.flows.map(flowId => [flowId, ExecutionStatus.NOT_ACTIVE])),
-    finished: false
-  };
-}
 
-function creadeId(): InstanceId {
+export function creadeInstanceId(): InstanceId {
   return uuid();
 }

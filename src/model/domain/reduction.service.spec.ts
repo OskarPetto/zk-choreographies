@@ -2,7 +2,6 @@ import { Test } from '@nestjs/testing';
 
 import { TestdataProvider } from 'test/data/provider';
 import { ReductionService } from './reduction.service';
-import { logObject } from 'src/utils/utils';
 
 describe('ReductionService', () => {
     let reductionService: ReductionService;

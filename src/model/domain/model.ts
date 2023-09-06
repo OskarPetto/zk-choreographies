@@ -1,3 +1,5 @@
+import { v4 as uuid } from 'uuid';
+
 export type FlowId = string;
 
 export type ElementId = string;
@@ -42,4 +44,8 @@ export function copyModel(model: Model): Model {
     flows: [...model.flows],
     elements: new Map(elements.map(t => [t.id, t])),
   }
+}
+
+export function createModelId(): ModelId {
+  return uuid();
 }
