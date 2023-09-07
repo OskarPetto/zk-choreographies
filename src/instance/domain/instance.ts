@@ -1,9 +1,9 @@
-import { FlowId, ModelId } from "src/model";
+import { FlowId, ModelId } from 'src/model';
 import { v4 as uuid } from 'uuid';
 
 export enum ExecutionStatus {
   NOT_ACTIVE,
-  ACTIVE
+  ACTIVE,
 }
 
 export type InstanceId = string;
@@ -20,8 +20,8 @@ export function copyInstance(instance: Instance): Instance {
     id: instance.id,
     model: instance.model,
     finished: instance.finished,
-    executionStatuses: new Map(instance.executionStatuses)
-  }
+    executionStatuses: new Map(instance.executionStatuses),
+  };
 }
 
 export function createInstanceId(): InstanceId {

@@ -11,7 +11,7 @@ export enum ElementType {
   XOR_SPLIT,
   XOR_JOIN,
   AND_SPLIT,
-  AND_JOIN
+  AND_JOIN,
 }
 
 export interface Element {
@@ -31,7 +31,7 @@ export interface Model {
 }
 
 export function copyModel(model: Model): Model {
-  const elements: Element[] = [...model.elements.values()].map(element => ({
+  const elements: Element[] = [...model.elements.values()].map((element) => ({
     id: element.id,
     type: element.type,
     name: element.name,
@@ -42,8 +42,8 @@ export function copyModel(model: Model): Model {
   return {
     id: model.id,
     flows: [...model.flows],
-    elements: new Map(elements.map(t => [t.id, t])),
-  }
+    elements: new Map(elements.map((t) => [t.id, t])),
+  };
 }
 
 export function createModelId(): ModelId {
