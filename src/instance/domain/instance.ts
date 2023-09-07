@@ -24,7 +24,6 @@ export function copyInstance(instance: Instance): Instance {
   }
 }
 
-
-export function creadeInstanceId(): InstanceId {
+export function createInstanceId(): InstanceId {
   return uuid();
 }

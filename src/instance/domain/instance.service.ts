@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InstanceId, Instance, creadeInstanceId, ExecutionStatus } from './instance';
+import { InstanceId, Instance, createInstanceId, ExecutionStatus } from './instance';
 import { Model } from 'src/model';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class InstanceService {
 
     instantiateModel(model: Model): Instance {
         return {
-            id: creadeInstanceId(),
+            id: createInstanceId(),
             model: model.id,
             executionStatuses: new Map(model.flows.map(flowId => [flowId, ExecutionStatus.NOT_ACTIVE])),
             finished: false
