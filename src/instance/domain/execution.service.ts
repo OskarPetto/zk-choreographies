@@ -1,40 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { Instance, ExecutionStatus, copyInstance } from 'src/instance';
-import { Element, ElementType } from 'src/model';
+import { Transition, TransitionType } from 'src/model';
 
 @Injectable()
 export class ExecutionService {
-  executeElements(instance: Instance, elements: Element[]): Instance {
+  executeTransitions(instance: Instance, transitions: Transition[]): Instance {
     const newInstance = copyInstance(instance);
-    for (const element of elements) {
-      this.executeElement(newInstance, element);
+    for (const transition of transitions) {
+      this.executeTransition(newInstance, transition);
     }
     return newInstance;
   }
 
-  private executeElement(instance: Instance, element: Element) {
-    if (!this.isElementExecutable(instance, element)) {
-      throw Error(`Element ${element.id} is not executable`);
+  private executeTransition(instance: Instance, transition: Transition) {
+    if (!this.isTransitionExecutable(instance, transition)) {
+      throw Error(`Transition ${transition.id} is not executable`);
     }
-    for (const incomingFlowId of element.incomingFlows) {
+    for (const incomingFlowId of transition.incomingFlows) {
       instance.executionStatuses.set(
         incomingFlowId,
         ExecutionStatus.NOT_ACTIVE,
       );
     }
-    for (const outgoingFlowId of element.outgoingFlows) {
+    for (const outgoingFlowId of transition.outgoingFlows) {
       instance.executionStatuses.set(outgoingFlowId, ExecutionStatus.ACTIVE);
     }
-    if (element.type == ElementType.END) {
+    if (transition.type == TransitionType.END) {
       instance.finished = true;
     }
   }
 
-  private isElementExecutable(instance: Instance, element: Element) {
+  private isTransitionExecutable(instance: Instance, transition: Transition) {
     if (instance.finished) {
       return false;
     }
-    return [...element.incomingFlows]
+    return [...transition.incomingFlows]
       .map((flowId) => instance.executionStatuses.get(flowId))
       .every((executionStatus) => executionStatus === ExecutionStatus.ACTIVE);
   }

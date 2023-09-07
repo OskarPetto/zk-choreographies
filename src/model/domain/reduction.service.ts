@@ -1,75 +1,75 @@
 import { Injectable } from '@nestjs/common';
-import { Model, FlowId, Element, ElementType, copyModel } from './model';
+import { Model, FlowId, Transition, TransitionType, copyModel } from './model';
 
 @Injectable()
 export class ReductionService {
   reduceModel(model: Model): Model {
     const newModel = copyModel(model);
-    for (const element of newModel.elements.values()) {
-      switch (element.type) {
-        case ElementType.START:
-        case ElementType.END:
-        case ElementType.TASK:
+    for (const transition of newModel.transitions.values()) {
+      switch (transition.type) {
+        case TransitionType.START:
+        case TransitionType.END:
+        case TransitionType.TASK:
           break;
-        case ElementType.XOR_SPLIT:
-        case ElementType.AND_JOIN:
-          this.removeElementAndOutgoingFlows(newModel, element);
+        case TransitionType.XOR_SPLIT:
+        case TransitionType.AND_JOIN:
+          this.removeTransitionAndOutgoingFlows(newModel, transition);
           break;
-        case ElementType.XOR_JOIN:
-        case ElementType.AND_SPLIT:
-          this.removeElementAndIncomingFlows(newModel, element);
+        case TransitionType.XOR_JOIN:
+        case TransitionType.AND_SPLIT:
+          this.removeTransitionAndIncomingFlows(newModel, transition);
           break;
       }
     }
     return newModel;
   }
 
-  private removeElementAndOutgoingFlows(
+  private removeTransitionAndOutgoingFlows(
     model: Model,
-    elementToRemove: Element,
+    transitionToRemove: Transition,
   ) {
-    for (const element of model.elements.values()) {
+    for (const transition of model.transitions.values()) {
       const intersect = this.intersect(
-        element.incomingFlows,
-        elementToRemove.outgoingFlows,
+        transition.incomingFlows,
+        transitionToRemove.outgoingFlows,
       );
       if (intersect.length > 0) {
-        element.incomingFlows = this.setMinus(
-          element.incomingFlows,
-          elementToRemove.outgoingFlows,
+        transition.incomingFlows = this.setMinus(
+          transition.incomingFlows,
+          transitionToRemove.outgoingFlows,
         );
-        element.incomingFlows = this.union(
-          element.incomingFlows,
-          elementToRemove.incomingFlows,
+        transition.incomingFlows = this.union(
+          transition.incomingFlows,
+          transitionToRemove.incomingFlows,
         );
       }
     }
-    model.flows = this.setMinus(model.flows, elementToRemove.outgoingFlows);
-    model.elements.delete(elementToRemove.id);
+    model.flows = this.setMinus(model.flows, transitionToRemove.outgoingFlows);
+    model.transitions.delete(transitionToRemove.id);
   }
 
-  private removeElementAndIncomingFlows(
+  private removeTransitionAndIncomingFlows(
     model: Model,
-    elementToRemove: Element,
+    transitionToRemove: Transition,
   ) {
-    for (const element of model.elements.values()) {
+    for (const transition of model.transitions.values()) {
       const intersect = this.intersect(
-        element.outgoingFlows,
-        elementToRemove.incomingFlows,
+        transition.outgoingFlows,
+        transitionToRemove.incomingFlows,
       );
       if (intersect.length > 0) {
-        element.outgoingFlows = this.setMinus(
-          element.outgoingFlows,
-          elementToRemove.incomingFlows,
+        transition.outgoingFlows = this.setMinus(
+          transition.outgoingFlows,
+          transitionToRemove.incomingFlows,
         );
-        element.outgoingFlows = this.union(
-          element.outgoingFlows,
-          elementToRemove.outgoingFlows,
+        transition.outgoingFlows = this.union(
+          transition.outgoingFlows,
+          transitionToRemove.outgoingFlows,
         );
       }
     }
-    model.flows = this.setMinus(model.flows, elementToRemove.incomingFlows);
-    model.elements.delete(elementToRemove.id);
+    model.flows = this.setMinus(model.flows, transitionToRemove.incomingFlows);
+    model.transitions.delete(transitionToRemove.id);
   }
 
   private setMinus(flows1: FlowId[], flows2: FlowId[]): FlowId[] {

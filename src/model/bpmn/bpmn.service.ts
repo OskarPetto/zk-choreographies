@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
-  Element,
-  ElementType,
+  Transition,
+  TransitionType,
   FlowId,
   Model,
   createModelId,
@@ -21,12 +21,12 @@ export class BpmnService {
 
     const process = definitions['bpmn:process'];
     const flows: FlowId[] = this.parseSequenceFlows(process);
-    const startEvent: Element = this.parseStartEvent(process);
-    const endEvents: Element[] = this.parseEndEvents(process);
-    const tasks: Element[] = this.parseTasks(process);
-    const exclusiveGateways: Element[] = this.parseExclusiveGateways(process);
-    const parallelGateways: Element[] = this.parseParallelGateways(process);
-    const elements = [
+    const startEvent: Transition = this.parseStartEvent(process);
+    const endEvents: Transition[] = this.parseEndEvents(process);
+    const tasks: Transition[] = this.parseTasks(process);
+    const exclusiveGateways: Transition[] = this.parseExclusiveGateways(process);
+    const parallelGateways: Transition[] = this.parseParallelGateways(process);
+    const transitions = [
       startEvent,
       ...endEvents,
       ...tasks,
@@ -36,65 +36,65 @@ export class BpmnService {
     return {
       id: createModelId(),
       flows,
-      elements: new Map(elements.map((e) => [e.id, e])),
+      transitions: new Map(transitions.map((e) => [e.id, e])),
     };
   }
 
-  private parseStartEvent(process: any): Element {
+  private parseStartEvent(process: any): Transition {
     const startEvent = process['bpmn:startEvent'];
     return {
       id: startEvent.id,
-      type: ElementType.START,
+      type: TransitionType.START,
       name: startEvent.name,
       incomingFlows: [],
       outgoingFlows: [startEvent['bpmn:outgoing']],
     };
   }
 
-  private parseEndEvents(process: any): Element[] {
+  private parseEndEvents(process: any): Transition[] {
     const endEvents: any[] = [].concat(process['bpmn:endEvent']);
     return endEvents.map((endEvent: any) => ({
       id: endEvent.id,
-      type: ElementType.END,
+      type: TransitionType.END,
       name: endEvent.name,
       incomingFlows: [endEvent['bpmn:incoming']],
       outgoingFlows: [],
     }));
   }
 
-  private parseTasks(process: any): Element[] {
+  private parseTasks(process: any): Transition[] {
     const tasks: any[] = [].concat(process['bpmn:task']);
     return tasks.map((task: any) => ({
       id: task.id,
-      type: ElementType.TASK,
+      type: TransitionType.TASK,
       name: task.name,
       incomingFlows: [task['bpmn:incoming']],
       outgoingFlows: [task['bpmn:outgoing']],
     }));
   }
 
-  private parseExclusiveGateways(process: any): Element[] {
+  private parseExclusiveGateways(process: any): Transition[] {
     const exclusiveGateways = process['bpmn:exclusiveGateway'];
     return exclusiveGateways.flatMap((exclusiveGateway: any) =>
       this.parseExclusiveGateway(exclusiveGateway),
     );
   }
 
-  private parseExclusiveGateway(exclusiveGateway: any): Element[] {
+  private parseExclusiveGateway(exclusiveGateway: any): Transition[] {
     const incomingFlowIds = exclusiveGateway['bpmn:incoming'];
     const outgoingFlowIds = exclusiveGateway['bpmn:outgoing'];
 
     if (Array.isArray(incomingFlowIds)) {
       return incomingFlowIds.map((incomingFlowId) => ({
         id: `${exclusiveGateway.id}_${incomingFlowId}`,
-        type: ElementType.XOR_JOIN,
+        type: TransitionType.XOR_JOIN,
         incomingFlows: [incomingFlowId],
         outgoingFlows: [outgoingFlowIds],
       }));
     } else if (Array.isArray(outgoingFlowIds)) {
       return outgoingFlowIds.map((outgoingFlowId) => ({
         id: `${exclusiveGateway.id}_${outgoingFlowId}`,
-        type: ElementType.XOR_SPLIT,
+        type: TransitionType.XOR_SPLIT,
         incomingFlows: [incomingFlowIds],
         outgoingFlows: [outgoingFlowId],
       }));
@@ -103,7 +103,7 @@ export class BpmnService {
     }
   }
 
-  private parseParallelGateways(process: any): Element[] {
+  private parseParallelGateways(process: any): Transition[] {
     const parallelGateways = process['bpmn:parallelGateway'];
     return parallelGateways.map((parallelGateway: any) => {
       const incomingFlowIds = parallelGateway['bpmn:incoming'];
@@ -111,8 +111,8 @@ export class BpmnService {
       return {
         id: parallelGateway.id,
         type: Array.isArray(incomingFlowIds)
-          ? ElementType.AND_JOIN
-          : ElementType.AND_SPLIT,
+          ? TransitionType.AND_JOIN
+          : TransitionType.AND_SPLIT,
         incomingFlows: [].concat(incomingFlowIds),
         outgoingFlows: [].concat(outgoingFlowIds),
       };

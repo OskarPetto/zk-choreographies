@@ -2,14 +2,14 @@ import { Test } from '@nestjs/testing';
 import { ExecutionService } from './execution.service';
 import { TestdataProvider } from 'test/data/provider';
 import { ExecutionStatus } from './instance';
-import { Model, Element, ElementId } from 'src/model';
+import { Model, Transition, TransitionId } from 'src/model';
 
-function findElement(model: Model, elementId: ElementId): Element {
-  const element = model.elements.get(elementId);
-  if (!element) {
-    throw Error(`Element ${elementId} in model ${model.id} not found`);
+function findTransition(model: Model, transitionId: TransitionId): Transition {
+  const transition = model.transitions.get(transitionId);
+  if (!transition) {
+    throw Error(`Transition ${transitionId} in model ${model.id} not found`);
   }
-  return element;
+  return transition;
 }
 
 describe('ExecutionService', () => {
@@ -27,16 +27,16 @@ describe('ExecutionService', () => {
 
   describe('executeTransition', () => {
     it('should execute start transition', () => {
-      const startTransition = findElement(model1, 'As');
-      const result = executionService.executeElements(instance1, [
+      const startTransition = findTransition(model1, 'As');
+      const result = executionService.executeTransitions(instance1, [
         startTransition,
       ]);
       expect(result.executionStatuses.get('0')).toEqual(ExecutionStatus.ACTIVE);
     });
 
     it('should not alter original instance', () => {
-      const startTransition = findElement(model1, 'As');
-      executionService.executeElements(instance1, [startTransition]);
+      const startTransition = findTransition(model1, 'As');
+      executionService.executeTransitions(instance1, [startTransition]);
       expect(instance1.executionStatuses.get('0')).toEqual(
         ExecutionStatus.NOT_ACTIVE,
       );
@@ -45,18 +45,18 @@ describe('ExecutionService', () => {
     it('should execute full trace 1', () => {
       const trace = ['As', 'Aa', 'Fa', 'Sso', 'Ro', 'Ao', 'Aaa', 'Af'];
       const transitions = trace.map((transitionId) =>
-        findElement(model1, transitionId),
+        findTransition(model1, transitionId),
       );
-      const result = executionService.executeElements(instance1, transitions);
+      const result = executionService.executeTransitions(instance1, transitions);
       expect(result.finished).toBeTruthy();
     });
 
     it('should execute full trace 2', () => {
       const trace = ['As', 'Da1', 'Af'];
       const transitions = trace.map((transitionId) =>
-        findElement(model1, transitionId),
+        findTransition(model1, transitionId),
       );
-      const result = executionService.executeElements(instance1, transitions);
+      const result = executionService.executeTransitions(instance1, transitions);
       expect(result.finished).toBeTruthy();
     });
 
@@ -75,38 +75,38 @@ describe('ExecutionService', () => {
         'Af',
       ];
       const transitions = trace.map((transitionId) =>
-        findElement(model1, transitionId),
+        findTransition(model1, transitionId),
       );
-      const result = executionService.executeElements(instance1, transitions);
+      const result = executionService.executeTransitions(instance1, transitions);
       expect(result.finished).toBeTruthy();
     });
 
     it('should not be finished on incomplete trace', () => {
       const trace = ['As', 'Aa', 'Sso', 'Ro'];
       const transitions = trace.map((transitionId) =>
-        findElement(model1, transitionId),
+        findTransition(model1, transitionId),
       );
-      const result = executionService.executeElements(instance1, transitions);
+      const result = executionService.executeTransitions(instance1, transitions);
       expect(result.finished).toBeFalsy();
     });
 
     it('should throw on invalid trace 1', () => {
       const trace = ['As', 'Da1', 'Da1', 'Af'];
       const transitions = trace.map((transitionId) =>
-        findElement(model1, transitionId),
+        findTransition(model1, transitionId),
       );
       expect(() =>
-        executionService.executeElements(instance1, transitions),
+        executionService.executeTransitions(instance1, transitions),
       ).toThrowError();
     });
 
     it('should throw on invalid trace 2', () => {
       const trace = ['As', 'Aa', 'Fa', 'Sso', 'Ro', 'Ao', 'Da2', 'Af'];
       const transitions = trace.map((transitionId) =>
-        findElement(model1, transitionId),
+        findTransition(model1, transitionId),
       );
       expect(() =>
-        executionService.executeElements(instance1, transitions),
+        executionService.executeTransitions(instance1, transitions),
       ).toThrowError();
     });
   });

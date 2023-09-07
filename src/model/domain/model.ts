@@ -2,9 +2,9 @@ import { v4 as uuid } from 'uuid';
 
 export type FlowId = string;
 
-export type ElementId = string;
+export type TransitionId = string;
 
-export enum ElementType {
+export enum TransitionType {
   START,
   END,
   TASK,
@@ -14,9 +14,9 @@ export enum ElementType {
   AND_JOIN,
 }
 
-export interface Element {
-  id: ElementId;
-  type: ElementType;
+export interface Transition {
+  id: TransitionId;
+  type: TransitionType;
   name?: string;
   incomingFlows: FlowId[];
   outgoingFlows: FlowId[];
@@ -27,22 +27,22 @@ export type ModelId = string;
 export interface Model {
   id: ModelId;
   flows: FlowId[];
-  elements: Map<ElementId, Element>;
+  transitions: Map<TransitionId, Transition>;
 }
 
 export function copyModel(model: Model): Model {
-  const elements: Element[] = [...model.elements.values()].map((element) => ({
-    id: element.id,
-    type: element.type,
-    name: element.name,
-    incomingFlows: [...element.incomingFlows],
-    outgoingFlows: [...element.outgoingFlows],
+  const transitions: Transition[] = [...model.transitions.values()].map((transition) => ({
+    id: transition.id,
+    type: transition.type,
+    name: transition.name,
+    incomingFlows: [...transition.incomingFlows],
+    outgoingFlows: [...transition.outgoingFlows],
   }));
 
   return {
     id: model.id,
     flows: [...model.flows],
-    elements: new Map(elements.map((t) => [t.id, t])),
+    transitions: new Map(transitions.map((t) => [t.id, t])),
   };
 }
 
