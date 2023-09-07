@@ -29,7 +29,7 @@ describe('BpmnService', () => {
     describe('parseBpmn', () => {
         it('should parse model correctly', () => {
             const bpmnString = readTextFile('test/data/conformance_example.bpmn');
-            const result = bpmnService.parseModel(bpmnString);
+            const result = bpmnService.parseProcess(bpmnString);
             const flowMapping = findFlowMapping(model3, result);
             expect(flowMapping).toBeTruthy();
         });

@@ -11,7 +11,7 @@ export class BpmnService {
     };
     private parser = new XMLParser(this.options);
 
-    parseModel(bpmnString: string): Model {
+    parseProcess(bpmnString: string): Model {
         const definitions = this.parser.parse(bpmnString)['bpmn:definitions'];
 
         const process = definitions['bpmn:process'];
