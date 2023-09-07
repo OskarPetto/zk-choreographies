@@ -15,12 +15,12 @@ export class BpmnService {
         const definitions = this.parser.parse(bpmnString)['bpmn:definitions'];
 
         const process = definitions['bpmn:process'];
+        const flows: FlowId[] = this.parseSequenceFlows(process);
         const startEvent: Element = this.parseStartEvent(process);
         const endEvents: Element[] = this.parseEndEvents(process);
         const tasks: Element[] = this.parseTasks(process);
         const exclusiveGateways: Element[] = this.parseExclusiveGateways(process);
         const parallelGateways: Element[] = this.parseParallelGateways(process);
-        const flows: FlowId[] = this.parseSequenceFlows(process);
         const elements = [startEvent, ...endEvents, ...tasks, ...exclusiveGateways, ...parallelGateways];
         return {
             id: createModelId(),
@@ -68,24 +68,22 @@ export class BpmnService {
     }
 
     private parseExclusiveGateway(exclusiveGateway: any): Element[] {
-        const incomingFlows = exclusiveGateway['bpmn:incoming'];
-        const outgoingFlows = exclusiveGateway['bpmn:outgoing'];
+        const incomingFlowIds = exclusiveGateway['bpmn:incoming'];
+        const outgoingFlowIds = exclusiveGateway['bpmn:outgoing'];
 
-        if (Array.isArray(incomingFlows)) {
-            return incomingFlows.map(incomingFlow => ({
-                id: `${exclusiveGateway.id}_${incomingFlow}`,
+        if (Array.isArray(incomingFlowIds)) {
+            return incomingFlowIds.map(incomingFlowId => ({
+                id: `${exclusiveGateway.id}_${incomingFlowId}`,
                 type: ElementType.XOR_JOIN,
-                name: incomingFlow.name,
-                incomingFlows: [incomingFlow],
-                outgoingFlows: [outgoingFlows]
+                incomingFlows: [incomingFlowId],
+                outgoingFlows: [outgoingFlowIds]
             }));
-        } else if (Array.isArray(outgoingFlows)) {
-            return outgoingFlows.map(outgoingFlow => ({
-                id: `${exclusiveGateway.id}_${outgoingFlow}`,
+        } else if (Array.isArray(outgoingFlowIds)) {
+            return outgoingFlowIds.map(outgoingFlowId => ({
+                id: `${exclusiveGateway.id}_${outgoingFlowId}`,
                 type: ElementType.XOR_SPLIT,
-                name: outgoingFlow.name,
-                incomingFlows: [incomingFlows],
-                outgoingFlows: [outgoingFlow]
+                incomingFlows: [incomingFlowIds],
+                outgoingFlows: [outgoingFlowId]
             }));
         } else {
             return [];
@@ -95,13 +93,13 @@ export class BpmnService {
     private parseParallelGateways(process: any): Element[] {
         const parallelGateways = process['bpmn:parallelGateway'];
         return parallelGateways.map((parallelGateway: any) => {
-            const incomingFlows = parallelGateway['bpmn:incoming'];
-            const outgoingFlows = parallelGateway['bpmn:outgoing'];
+            const incomingFlowIds = parallelGateway['bpmn:incoming'];
+            const outgoingFlowIds = parallelGateway['bpmn:outgoing'];
             return {
                 id: parallelGateway.id,
-                type: Array.isArray(incomingFlows) ? ElementType.AND_JOIN : ElementType.AND_SPLIT,
-                incomingFlows: [].concat(incomingFlows),
-                outgoingFlows: [].concat(outgoingFlows)
+                type: Array.isArray(incomingFlowIds) ? ElementType.AND_JOIN : ElementType.AND_SPLIT,
+                incomingFlows: [].concat(incomingFlowIds),
+                outgoingFlows: [].concat(outgoingFlowIds)
             }
         });
     }
