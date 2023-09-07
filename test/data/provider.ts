@@ -1,4 +1,4 @@
-import { ExecutionStatus, Instance } from "src/choreography";
+import { ExecutionStatus, Instance } from "src/instance";
 import { Model, Element, ElementType, FlowId } from "src/model";
 
 export class TestdataProvider {

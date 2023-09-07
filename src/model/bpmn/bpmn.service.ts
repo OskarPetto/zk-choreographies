@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ElementType, Model, createModelId } from "../domain/model";
+import { Model, createModelId } from "../domain/model";
 import { logObject } from "src/utils/utils";
 
 const { XMLParser } = require("fast-xml-parser");

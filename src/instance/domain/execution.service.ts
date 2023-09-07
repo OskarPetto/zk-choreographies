@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Instance, ExecutionStatus, copyInstance } from './instance';
-import { Element, ElementType, } from 'src/model';
+import { Instance, ExecutionStatus, copyInstance, creadeInstanceId } from 'src/instance';
+import { Element, ElementType, Model, } from 'src/model';
 
 @Injectable()
-export class ChoreographyService {
+export class ExecutionService {
     executeElements(instance: Instance, elements: Element[]): Instance {
         const newInstance = copyInstance(instance);
         for (const element of elements) {
