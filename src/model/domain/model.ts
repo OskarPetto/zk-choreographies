@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 
-export type FlowId = string;
+export type PlaceId = string;
 
 export type TransitionId = string;
 
@@ -18,30 +18,30 @@ export interface Transition {
   id: TransitionId;
   type: TransitionType;
   name?: string;
-  incomingFlows: FlowId[];
-  outgoingFlows: FlowId[];
+  incomingPlaces: PlaceId[];
+  outgoingPlaces: PlaceId[];
 }
 
 export type ModelId = string;
 
 export interface Model {
   id: ModelId;
-  flows: FlowId[];
   transitions: Map<TransitionId, Transition>;
 }
 
 export function copyModel(model: Model): Model {
-  const transitions: Transition[] = [...model.transitions.values()].map((transition) => ({
-    id: transition.id,
-    type: transition.type,
-    name: transition.name,
-    incomingFlows: [...transition.incomingFlows],
-    outgoingFlows: [...transition.outgoingFlows],
-  }));
+  const transitions: Transition[] = [...model.transitions.values()].map(
+    (transition) => ({
+      id: transition.id,
+      type: transition.type,
+      name: transition.name,
+      incomingPlaces: [...transition.incomingPlaces],
+      outgoingPlaces: [...transition.outgoingPlaces],
+    }),
+  );
 
   return {
     id: model.id,
-    flows: [...model.flows],
     transitions: new Map(transitions.map((t) => [t.id, t])),
   };
 }

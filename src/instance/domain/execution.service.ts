@@ -16,16 +16,16 @@ export class ExecutionService {
     if (!this.isTransitionExecutable(instance, transition)) {
       throw Error(`Transition ${transition.id} is not executable`);
     }
-    for (const incomingFlowId of transition.incomingFlows) {
+    for (const incomingPlaceId of transition.incomingPlaces) {
       instance.executionStatuses.set(
-        incomingFlowId,
+        incomingPlaceId,
         ExecutionStatus.NOT_ACTIVE,
       );
     }
-    for (const outgoingFlowId of transition.outgoingFlows) {
-      instance.executionStatuses.set(outgoingFlowId, ExecutionStatus.ACTIVE);
+    for (const outgoingPlaceId of transition.outgoingPlaces) {
+      instance.executionStatuses.set(outgoingPlaceId, ExecutionStatus.ACTIVE);
     }
-    if (transition.type == TransitionType.END) {
+    if (transition.type === TransitionType.END) {
       instance.finished = true;
     }
   }
@@ -34,8 +34,8 @@ export class ExecutionService {
     if (instance.finished) {
       return false;
     }
-    return [...transition.incomingFlows]
-      .map((flowId) => instance.executionStatuses.get(flowId))
+    return [...transition.incomingPlaces]
+      .map((placeId) => instance.executionStatuses.get(placeId))
       .every((executionStatus) => executionStatus === ExecutionStatus.ACTIVE);
   }
 }

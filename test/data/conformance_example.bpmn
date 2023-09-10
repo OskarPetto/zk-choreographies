@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1u9mdap" targetNamespace="http://bpmn.io/schema/bpmn" exporter="bpmn-js (https://demo.bpmn.io)" exporterVersion="11.4.1">
-  <bpmn:process id="Process_15nqnsb" isExecutable="false">
-    <bpmn:startEvent id="StartEvent_1t34b5j" name="Application submitted (As)">
+  <bpmn:process id="conformance_example" isExecutable="false">
+    <bpmn:startEvent id="As" name="Application submitted (As)">
       <bpmn:outgoing>Flow_0xqg6as</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:exclusiveGateway id="Gateway_1o9s8fw">
@@ -9,120 +9,120 @@
       <bpmn:outgoing>Flow_07cyta2</bpmn:outgoing>
       <bpmn:outgoing>Flow_1n5x723</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:sequenceFlow id="Flow_0xqg6as" sourceRef="StartEvent_1t34b5j" targetRef="Gateway_1o9s8fw" />
-    <bpmn:task id="Activity_1ujl89c" name="Decline application (Da1)">
+    <bpmn:sequenceFlow id="Flow_0xqg6as" sourceRef="As" targetRef="Gateway_1o9s8fw" />
+    <bpmn:task id="Da1" name="Decline application (Da1)">
       <bpmn:incoming>Flow_07cyta2</bpmn:incoming>
       <bpmn:outgoing>Flow_0ka5y4w</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_07cyta2" name="decline" sourceRef="Gateway_1o9s8fw" targetRef="Activity_1ujl89c" />
-    <bpmn:task id="Activity_1f7vwaw" name="Accept application (Aa)">
+    <bpmn:sequenceFlow id="Flow_07cyta2" name="decline" sourceRef="Gateway_1o9s8fw" targetRef="Da1" />
+    <bpmn:task id="Aa" name="Accept application (Aa)">
       <bpmn:incoming>Flow_1n5x723</bpmn:incoming>
       <bpmn:outgoing>Flow_0w362at</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_1n5x723" name="default" sourceRef="Gateway_1o9s8fw" targetRef="Activity_1f7vwaw" />
+    <bpmn:sequenceFlow id="Flow_1n5x723" name="default" sourceRef="Gateway_1o9s8fw" targetRef="Aa" />
     <bpmn:parallelGateway id="Gateway_1rgq5gy">
       <bpmn:incoming>Flow_0w362at</bpmn:incoming>
       <bpmn:outgoing>Flow_0i668iz</bpmn:outgoing>
       <bpmn:outgoing>Flow_0vs3ms0</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:sequenceFlow id="Flow_0w362at" sourceRef="Activity_1f7vwaw" targetRef="Gateway_1rgq5gy" />
-    <bpmn:task id="Activity_1srex89" name="Finalize application (Fa)">
+    <bpmn:sequenceFlow id="Flow_0w362at" sourceRef="Aa" targetRef="Gateway_1rgq5gy" />
+    <bpmn:task id="Fa" name="Finalize application (Fa)">
       <bpmn:incoming>Flow_0i668iz</bpmn:incoming>
       <bpmn:outgoing>Flow_1yee6jg</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_0i668iz" sourceRef="Gateway_1rgq5gy" targetRef="Activity_1srex89" />
+    <bpmn:sequenceFlow id="Flow_0i668iz" sourceRef="Gateway_1rgq5gy" targetRef="Fa" />
     <bpmn:exclusiveGateway id="Gateway_1fwxfgu">
       <bpmn:incoming>Flow_0vs3ms0</bpmn:incoming>
       <bpmn:incoming>Flow_1dlqvig</bpmn:incoming>
       <bpmn:outgoing>Flow_1g76mn1</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0vs3ms0" sourceRef="Gateway_1rgq5gy" targetRef="Gateway_1fwxfgu" />
-    <bpmn:task id="Activity_1tgknny" name="Select and send offer (Sso)">
+    <bpmn:task id="Sso" name="Select and send offer (Sso)">
       <bpmn:incoming>Flow_1g76mn1</bpmn:incoming>
       <bpmn:outgoing>Flow_19w6dwb</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_1g76mn1" sourceRef="Gateway_1fwxfgu" targetRef="Activity_1tgknny" />
-    <bpmn:task id="Activity_0r9antn" name="Receive offer (Ro)">
+    <bpmn:sequenceFlow id="Flow_1g76mn1" sourceRef="Gateway_1fwxfgu" targetRef="Sso" />
+    <bpmn:task id="Ro" name="Receive offer (Ro)">
       <bpmn:incoming>Flow_19w6dwb</bpmn:incoming>
       <bpmn:outgoing>Flow_0damgea</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_19w6dwb" sourceRef="Activity_1tgknny" targetRef="Activity_0r9antn" />
+    <bpmn:sequenceFlow id="Flow_19w6dwb" sourceRef="Sso" targetRef="Ro" />
     <bpmn:exclusiveGateway id="Gateway_1way65i">
       <bpmn:incoming>Flow_0damgea</bpmn:incoming>
       <bpmn:outgoing>Flow_0q0zlpw</bpmn:outgoing>
       <bpmn:outgoing>Flow_0x7rbwv</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:sequenceFlow id="Flow_0damgea" sourceRef="Activity_0r9antn" targetRef="Gateway_1way65i" />
+    <bpmn:sequenceFlow id="Flow_0damgea" sourceRef="Ro" targetRef="Gateway_1way65i" />
     <bpmn:parallelGateway id="Gateway_1nglicj">
       <bpmn:incoming>Flow_0q0zlpw</bpmn:incoming>
       <bpmn:incoming>Flow_1yee6jg</bpmn:incoming>
       <bpmn:outgoing>Flow_0jf7vbw</bpmn:outgoing>
     </bpmn:parallelGateway>
     <bpmn:sequenceFlow id="Flow_0q0zlpw" name="default" sourceRef="Gateway_1way65i" targetRef="Gateway_1nglicj" />
-    <bpmn:sequenceFlow id="Flow_1yee6jg" sourceRef="Activity_1srex89" targetRef="Gateway_1nglicj" />
-    <bpmn:task id="Activity_1q88w1a" name="Cancel offer (Co)">
+    <bpmn:sequenceFlow id="Flow_1yee6jg" sourceRef="Fa" targetRef="Gateway_1nglicj" />
+    <bpmn:task id="Co" name="Cancel offer (Co)">
       <bpmn:incoming>Flow_0x7rbwv</bpmn:incoming>
       <bpmn:outgoing>Flow_1dlqvig</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_0x7rbwv" name="change requested" sourceRef="Gateway_1way65i" targetRef="Activity_1q88w1a" />
-    <bpmn:sequenceFlow id="Flow_1dlqvig" sourceRef="Activity_1q88w1a" targetRef="Gateway_1fwxfgu" />
+    <bpmn:sequenceFlow id="Flow_0x7rbwv" name="change requested" sourceRef="Gateway_1way65i" targetRef="Co" />
+    <bpmn:sequenceFlow id="Flow_1dlqvig" sourceRef="Co" targetRef="Gateway_1fwxfgu" />
     <bpmn:exclusiveGateway id="Gateway_1vl4hvy">
       <bpmn:incoming>Flow_0jf7vbw</bpmn:incoming>
       <bpmn:outgoing>Flow_0oshibp</bpmn:outgoing>
       <bpmn:outgoing>Flow_1b9hzto</bpmn:outgoing>
     </bpmn:exclusiveGateway>
     <bpmn:sequenceFlow id="Flow_0jf7vbw" sourceRef="Gateway_1nglicj" targetRef="Gateway_1vl4hvy" />
-    <bpmn:task id="Activity_1g33b4i" name="Accept offer (Ao)">
+    <bpmn:task id="Ao" name="Accept offer (Ao)">
       <bpmn:incoming>Flow_0oshibp</bpmn:incoming>
       <bpmn:outgoing>Flow_0u5u7d3</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_0oshibp" name="accept" sourceRef="Gateway_1vl4hvy" targetRef="Activity_1g33b4i" />
-    <bpmn:task id="Activity_05537al" name="Decline offer (Do)">
+    <bpmn:sequenceFlow id="Flow_0oshibp" name="accept" sourceRef="Gateway_1vl4hvy" targetRef="Ao" />
+    <bpmn:task id="Do" name="Decline offer (Do)">
       <bpmn:incoming>Flow_1b9hzto</bpmn:incoming>
       <bpmn:outgoing>Flow_18msx9i</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_1b9hzto" name="decline" sourceRef="Gateway_1vl4hvy" targetRef="Activity_05537al" />
-    <bpmn:task id="Activity_0iyazhn" name="Approve and activate application (Aaa)">
+    <bpmn:sequenceFlow id="Flow_1b9hzto" name="decline" sourceRef="Gateway_1vl4hvy" targetRef="Do" />
+    <bpmn:task id="Aaa" name="Approve and activate application (Aaa)">
       <bpmn:incoming>Flow_0u5u7d3</bpmn:incoming>
       <bpmn:outgoing>Flow_03xp19s</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_0u5u7d3" sourceRef="Activity_1g33b4i" targetRef="Activity_0iyazhn" />
-    <bpmn:task id="Activity_19r4cu3" name="Decline application (Da2)">
+    <bpmn:sequenceFlow id="Flow_0u5u7d3" sourceRef="Ao" targetRef="Aaa" />
+    <bpmn:task id="Da2" name="Decline application (Da2)">
       <bpmn:incoming>Flow_18msx9i</bpmn:incoming>
       <bpmn:outgoing>Flow_12yxkzr</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_18msx9i" sourceRef="Activity_05537al" targetRef="Activity_19r4cu3" />
+    <bpmn:sequenceFlow id="Flow_18msx9i" sourceRef="Do" targetRef="Da2" />
     <bpmn:exclusiveGateway id="Gateway_1vzsa13">
       <bpmn:incoming>Flow_03xp19s</bpmn:incoming>
       <bpmn:incoming>Flow_12yxkzr</bpmn:incoming>
       <bpmn:incoming>Flow_0ka5y4w</bpmn:incoming>
       <bpmn:outgoing>Flow_1qh0ya1</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:sequenceFlow id="Flow_03xp19s" sourceRef="Activity_0iyazhn" targetRef="Gateway_1vzsa13" />
-    <bpmn:sequenceFlow id="Flow_12yxkzr" sourceRef="Activity_19r4cu3" targetRef="Gateway_1vzsa13" />
-    <bpmn:endEvent id="Event_1bsroo5" name="Application finished (Af)">
+    <bpmn:sequenceFlow id="Flow_03xp19s" sourceRef="Aaa" targetRef="Gateway_1vzsa13" />
+    <bpmn:sequenceFlow id="Flow_12yxkzr" sourceRef="Da2" targetRef="Gateway_1vzsa13" />
+    <bpmn:endEvent id="Af" name="Application finished (Af)">
       <bpmn:incoming>Flow_1qh0ya1</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_1qh0ya1" sourceRef="Gateway_1vzsa13" targetRef="Event_1bsroo5" />
-    <bpmn:sequenceFlow id="Flow_0ka5y4w" sourceRef="Activity_1ujl89c" targetRef="Gateway_1vzsa13" />
+    <bpmn:sequenceFlow id="Flow_1qh0ya1" sourceRef="Gateway_1vzsa13" targetRef="Af" />
+    <bpmn:sequenceFlow id="Flow_0ka5y4w" sourceRef="Da1" targetRef="Gateway_1vzsa13" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnTransition="Process_15nqnsb">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnTransition="conformance_example">
       <bpmndi:BPMNShape id="Gateway_1fwxfgu_di" bpmnTransition="Gateway_1fwxfgu" isMarkerVisible="true">
         <dc:Bounds x="465" y="295" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1tgknny_di" bpmnTransition="Activity_1tgknny">
+      <bpmndi:BPMNShape id="Sso_di" bpmnTransition="Sso">
         <dc:Bounds x="540" y="280" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0r9antn_di" bpmnTransition="Activity_0r9antn">
+      <bpmndi:BPMNShape id="Ro_di" bpmnTransition="Ro">
         <dc:Bounds x="670" y="280" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1way65i_di" bpmnTransition="Gateway_1way65i" isMarkerVisible="true">
         <dc:Bounds x="795" y="295" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1q88w1a_di" bpmnTransition="Activity_1q88w1a">
+      <bpmndi:BPMNShape id="Co_di" bpmnTransition="Co">
         <dc:Bounds x="540" y="380" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
@@ -132,18 +132,18 @@
       <bpmndi:BPMNShape id="Gateway_1rgq5gy_di" bpmnTransition="Gateway_1rgq5gy">
         <dc:Bounds x="465" y="215" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1srex89_di" bpmnTransition="Activity_1srex89">
+      <bpmndi:BPMNShape id="Fa_di" bpmnTransition="Fa">
         <dc:Bounds x="540" y="140" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1f7vwaw_di" bpmnTransition="Activity_1f7vwaw">
+      <bpmndi:BPMNShape id="Aa_di" bpmnTransition="Aa">
         <dc:Bounds x="340" y="200" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1o9s8fw_di" bpmnTransition="Gateway_1o9s8fw" isMarkerVisible="true">
         <dc:Bounds x="235" y="215" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnTransition="StartEvent_1t34b5j">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnTransition="As">
         <dc:Bounds x="174" y="222" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="157" y="265" width="71" height="27" />
@@ -152,32 +152,32 @@
       <bpmndi:BPMNShape id="Gateway_1vl4hvy_di" bpmnTransition="Gateway_1vl4hvy" isMarkerVisible="true">
         <dc:Bounds x="865" y="215" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_05537al_di" bpmnTransition="Activity_05537al">
+      <bpmndi:BPMNShape id="Do_di" bpmnTransition="Do">
         <dc:Bounds x="950" y="260" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1g33b4i_di" bpmnTransition="Activity_1g33b4i">
+      <bpmndi:BPMNShape id="Ao_di" bpmnTransition="Ao">
         <dc:Bounds x="950" y="140" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0iyazhn_di" bpmnTransition="Activity_0iyazhn">
+      <bpmndi:BPMNShape id="Aaa_di" bpmnTransition="Aaa">
         <dc:Bounds x="1080" y="140" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_19r4cu3_di" bpmnTransition="Activity_19r4cu3">
+      <bpmndi:BPMNShape id="Da2_di" bpmnTransition="Da2">
         <dc:Bounds x="1080" y="260" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_1vzsa13_di" bpmnTransition="Gateway_1vzsa13" isMarkerVisible="true">
         <dc:Bounds x="1185" y="215" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_1bsroo5_di" bpmnTransition="Event_1bsroo5">
+      <bpmndi:BPMNShape id="Af_di" bpmnTransition="Af">
         <dc:Bounds x="1262" y="222" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1251" y="265" width="59" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1ujl89c_di" bpmnTransition="Activity_1ujl89c">
+      <bpmndi:BPMNShape id="Da1_di" bpmnTransition="Da1">
         <dc:Bounds x="340" y="80" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>

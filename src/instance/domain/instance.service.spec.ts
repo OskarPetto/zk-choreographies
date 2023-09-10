@@ -1,11 +1,11 @@
 import { TestdataProvider } from 'test/data/provider';
-import { ExecutionStatus } from './instance';
 import { InstanceService } from './instance.service';
 import { Test } from '@nestjs/testing';
 
 describe('InstanceService', () => {
   let instanceService: InstanceService;
-  const model1 = TestdataProvider.getModel1();
+  const model2 = TestdataProvider.getModel2();
+  const instance1 = TestdataProvider.getInstance1();
 
   beforeAll(async () => {
     const app = await Test.createTestingModule({
@@ -17,12 +17,9 @@ describe('InstanceService', () => {
 
   describe('instantiateModel', () => {
     it('should instantiate model correctly', () => {
-      const instance = instanceService.instantiateModel(model1);
-      expect(instance.model).toEqual(model1.id);
-      expect([...instance.executionStatuses.values()]).toEqual(
-        Array(model1.flows.length).fill(ExecutionStatus.NOT_ACTIVE),
-      );
-      expect(instance.finished).toBeFalsy();
+      const result = instanceService.instantiateModel(model2);
+      expect(result.model).toEqual(instance1.model);
+      expect(result.executionStatuses).toEqual(instance1.executionStatuses);
     });
   });
 });

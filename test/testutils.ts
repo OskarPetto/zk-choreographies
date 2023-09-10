@@ -1,41 +1,42 @@
-import { FlowId, Model } from 'src/model';
+import { PlaceId, Model } from 'src/model';
 
-export function findFlowMapping(
+export function findPlaceMapping(
   model1: Model,
   model2: Model,
-): Map<FlowId, FlowId> | undefined {
-  if (model1.flows.length !== model2.flows.length) {
-    return undefined;
-  }
+): Map<PlaceId, PlaceId> | undefined {
   if (model1.transitions.size !== model2.transitions.size) {
     return undefined;
   }
-  const flowMapping = new Map<FlowId, FlowId>();
+  const placeMapping = new Map<PlaceId, PlaceId>();
   for (const transition1 of model1.transitions.values()) {
     const transition2 = model2.transitions.get(transition1.id);
     if (!transition2 || transition1.name !== transition2.name) {
       return undefined;
     }
-    if (transition1.incomingFlows.length !== transition2.incomingFlows.length) {
+    if (
+      transition1.incomingPlaces.length !== transition2.incomingPlaces.length
+    ) {
       return undefined;
     }
-    for (const [index, flowId1] of transition1.incomingFlows.entries()) {
-      const flowId2 = flowMapping.get(flowId1);
-      if (flowId2 && !transition2.incomingFlows.includes(flowId2)) {
+    for (const [index, placeId1] of transition1.incomingPlaces.entries()) {
+      const placeId2 = placeMapping.get(placeId1);
+      if (placeId2 && !transition2.incomingPlaces.includes(placeId2)) {
         return undefined;
       }
-      flowMapping.set(flowId1, transition2.incomingFlows[index]);
+      placeMapping.set(placeId1, transition2.incomingPlaces[index]);
     }
-    if (transition1.outgoingFlows.length !== transition2.outgoingFlows.length) {
+    if (
+      transition1.outgoingPlaces.length !== transition2.outgoingPlaces.length
+    ) {
       return undefined;
     }
-    for (const [index, flowId1] of transition1.outgoingFlows.entries()) {
-      const flowId2 = flowMapping.get(flowId1);
-      if (flowId2 && !transition2.outgoingFlows.includes(flowId2)) {
+    for (const [index, placeId1] of transition1.outgoingPlaces.entries()) {
+      const placeId2 = placeMapping.get(placeId1);
+      if (placeId2 && !transition2.outgoingPlaces.includes(placeId2)) {
         return undefined;
       }
-      flowMapping.set(flowId1, transition2.outgoingFlows[index]);
+      placeMapping.set(placeId1, transition2.outgoingPlaces[index]);
     }
   }
-  return flowMapping;
+  return placeMapping;
 }

@@ -1,4 +1,4 @@
-import { FlowId, ModelId } from 'src/model';
+import { PlaceId, ModelId } from 'src/model';
 import { v4 as uuid } from 'uuid';
 
 export enum ExecutionStatus {
@@ -11,7 +11,7 @@ export type InstanceId = string;
 export interface Instance {
   id: InstanceId;
   model: ModelId;
-  executionStatuses: Map<FlowId, ExecutionStatus>;
+  executionStatuses: Map<PlaceId, ExecutionStatus>;
   finished: boolean;
 }
 

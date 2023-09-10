@@ -5,7 +5,7 @@ import {
   createInstanceId,
   ExecutionStatus,
 } from './instance';
-import { Model } from 'src/model';
+import { Model, PlaceId } from 'src/model';
 
 @Injectable()
 export class InstanceService {
@@ -24,13 +24,26 @@ export class InstanceService {
   }
 
   instantiateModel(model: Model): Instance {
+    const places = this.collectPlaces(model);
     return {
       id: createInstanceId(),
       model: model.id,
       executionStatuses: new Map(
-        model.flows.map((flowId) => [flowId, ExecutionStatus.NOT_ACTIVE]),
+        places.map((placeId) => [placeId, ExecutionStatus.NOT_ACTIVE]),
       ),
       finished: false,
     };
+  }
+
+  private collectPlaces(model: Model): PlaceId[] {
+    let places: PlaceId[] = [];
+    for (const transition of model.transitions.values()) {
+      places = [
+        ...places,
+        ...transition.incomingPlaces,
+        ...transition.outgoingPlaces,
+      ];
+    }
+    return [...new Set(places)];
   }
 }
