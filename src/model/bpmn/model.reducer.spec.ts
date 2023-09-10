@@ -2,7 +2,6 @@ import { Test } from '@nestjs/testing';
 
 import { TestdataProvider } from 'test/data/provider';
 import { ModelReducer } from './model.reducer';
-import { findPlaceMapping } from 'test/testutils';
 
 describe('ReductionService', () => {
   let modelReducer: ModelReducer;
@@ -20,8 +19,7 @@ describe('ReductionService', () => {
   describe('reduceModel', () => {
     it('should reduce model correctly', () => {
       const result = modelReducer.reduceModel(model1);
-      const placeMapping = findPlaceMapping(model2, result);
-      expect(placeMapping).toBeTruthy();
+      expect(result).toEqual(model2);
     });
   });
 });
