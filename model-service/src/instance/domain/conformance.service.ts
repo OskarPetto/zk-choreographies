@@ -30,7 +30,11 @@ export class ConformanceService {
     instanceAfter: Instance,
     transition: Transition,
   ): boolean {
-    for (let placeId = 0; placeId < instanceBefore.tokenCounts.length; placeId++) {
+    for (
+      let placeId = 0;
+      placeId < instanceBefore.tokenCounts.length;
+      placeId++
+    ) {
       const tokenCountBefore = instanceBefore.tokenCounts[placeId];
       const tokenCountAfter = instanceAfter.tokenCounts[placeId];
       if (transition.incomingPlaces.includes(placeId)) {

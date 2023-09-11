@@ -19,7 +19,10 @@ describe('ExecutionService', () => {
   describe('executeTransitions', () => {
     it('should execute start transition', () => {
       const startTransition = findTransition(model2, 'As');
-      const result = executionService.executeTransition(instance1, startTransition);
+      const result = executionService.executeTransition(
+        instance1,
+        startTransition,
+      );
       expect(result.tokenCounts[0]).toEqual(1);
     });
 
@@ -84,8 +87,7 @@ describe('ExecutionService', () => {
         for (const transition of transitions) {
           instance = executionService.executeTransition(instance, transition);
         }
-      }
-      ).toThrowError();
+      }).toThrowError();
     });
 
     it('should throw on invalid trace 2', () => {
