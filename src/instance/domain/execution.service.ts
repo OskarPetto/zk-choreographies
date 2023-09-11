@@ -4,15 +4,13 @@ import { Transition } from 'src/model';
 
 @Injectable()
 export class ExecutionService {
-  executeTransitions(instance: Instance, transitions: Transition[]): Instance {
+  executeTransition(instance: Instance, transition: Transition): Instance {
     const newInstance = copyInstance(instance);
-    for (const transition of transitions) {
-      this.executeTransition(newInstance, transition);
-    }
+    this.executeTransitionInline(newInstance, transition);
     return newInstance;
   }
 
-  private executeTransition(instance: Instance, transition: Transition) {
+  private executeTransitionInline(instance: Instance, transition: Transition) {
     if (!this.isTransitionExecutable(instance, transition)) {
       throw Error(`Transition ${transition.id} is not executable`);
     }

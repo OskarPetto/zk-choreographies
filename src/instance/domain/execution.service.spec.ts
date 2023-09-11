@@ -1,15 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { ExecutionService } from './execution.service';
 import { TestdataProvider } from 'test/data/provider';
-import { Model, Transition, TransitionId } from 'src/model';
-
-function findTransition(model: Model, transitionId: TransitionId): Transition {
-  const transition = model.transitions.find((t) => t.id === transitionId);
-  if (!transition) {
-    throw Error(`Transition ${transitionId} in model ${model.id} not found`);
-  }
-  return transition;
-}
+import { findTransition } from 'test/testutils';
 
 describe('ExecutionService', () => {
   let executionService: ExecutionService;
@@ -27,15 +19,13 @@ describe('ExecutionService', () => {
   describe('executeTransitions', () => {
     it('should execute start transition', () => {
       const startTransition = findTransition(model2, 'As');
-      const result = executionService.executeTransitions(instance1, [
-        startTransition,
-      ]);
+      const result = executionService.executeTransition(instance1, startTransition);
       expect(result.tokenCounts[0]).toEqual(1);
     });
 
     it('should not alter original instance', () => {
       const startTransition = findTransition(model2, 'As');
-      executionService.executeTransitions(instance1, [startTransition]);
+      executionService.executeTransition(instance1, startTransition);
       expect(instance1.tokenCounts[0]).toEqual(0);
     });
 
@@ -44,7 +34,10 @@ describe('ExecutionService', () => {
       const transitions = trace.map((transitionId) =>
         findTransition(model2, transitionId),
       );
-      executionService.executeTransitions(instance1, transitions);
+      let instance = instance1;
+      for (const transition of transitions) {
+        instance = executionService.executeTransition(instance, transition);
+      }
     });
 
     it('should execute full trace without error 2', () => {
@@ -52,7 +45,10 @@ describe('ExecutionService', () => {
       const transitions = trace.map((transitionId) =>
         findTransition(model2, transitionId),
       );
-      executionService.executeTransitions(instance1, transitions);
+      let instance = instance1;
+      for (const transition of transitions) {
+        instance = executionService.executeTransition(instance, transition);
+      }
     });
 
     it('should execute full trace without error 3', () => {
@@ -72,7 +68,10 @@ describe('ExecutionService', () => {
       const transitions = trace.map((transitionId) =>
         findTransition(model2, transitionId),
       );
-      executionService.executeTransitions(instance1, transitions);
+      let instance = instance1;
+      for (const transition of transitions) {
+        instance = executionService.executeTransition(instance, transition);
+      }
     });
 
     it('should throw on invalid trace 1', () => {
@@ -80,8 +79,12 @@ describe('ExecutionService', () => {
       const transitions = trace.map((transitionId) =>
         findTransition(model2, transitionId),
       );
-      expect(() =>
-        executionService.executeTransitions(instance1, transitions),
+      expect(() => {
+        let instance = instance1;
+        for (const transition of transitions) {
+          instance = executionService.executeTransition(instance, transition);
+        }
+      }
       ).toThrowError();
     });
 
@@ -90,9 +93,12 @@ describe('ExecutionService', () => {
       const transitions = trace.map((transitionId) =>
         findTransition(model2, transitionId),
       );
-      expect(() =>
-        executionService.executeTransitions(instance1, transitions),
-      ).toThrowError();
+      expect(() => {
+        let instance = instance1;
+        for (const transition of transitions) {
+          instance = executionService.executeTransition(instance, transition);
+        }
+      }).toThrowError();
     });
   });
 });

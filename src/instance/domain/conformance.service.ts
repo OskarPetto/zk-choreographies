@@ -22,19 +22,17 @@ export class ConformanceService {
     if (!this.isTransitionInModel(transition, model)) {
       return false;
     }
-    return this.areTokenCountsValid(instanceBefore, instanceAfter, transition);
+    return this.areTokenChangesValid(instanceBefore, instanceAfter, transition);
   }
 
-  private areTokenCountsValid(
+  private areTokenChangesValid(
     instanceBefore: Instance,
     instanceAfter: Instance,
     transition: Transition,
   ): boolean {
-    for (const [
-      tokenCountAfter,
-      placeId,
-    ] of instanceAfter.tokenCounts.entries()) {
+    for (let placeId = 0; placeId < instanceBefore.tokenCounts.length; placeId++) {
       const tokenCountBefore = instanceBefore.tokenCounts[placeId];
+      const tokenCountAfter = instanceAfter.tokenCounts[placeId];
       if (transition.incomingPlaces.includes(placeId)) {
         if (tokenCountAfter !== tokenCountBefore - 1) {
           return false;
@@ -83,10 +81,7 @@ export class ConformanceService {
     if (!this.isInstanceOfModel(instance, model)) {
       return false;
     }
-    if (instance.tokenCounts.some((tokenCount) => tokenCount < 0)) {
-      return false;
-    }
-    return false;
+    return instance.tokenCounts.every((tokenCount) => tokenCount >= 0);
   }
 
   private isInstanceOfModel(instance: Instance, model: Model): boolean {

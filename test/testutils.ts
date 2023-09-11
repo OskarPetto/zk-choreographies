@@ -1,15 +1,23 @@
-import { PlaceId, Model } from 'src/model';
+import { PlaceId, Model, TransitionId, Transition } from 'src/model';
+
+export function findTransition(model: Model, transitionId: TransitionId): Transition {
+  const transition = model.transitions.find((t) => t.id === transitionId);
+  if (!transition) {
+    throw Error(`Transition ${transitionId} in model ${model.id} not found`);
+  }
+  return transition;
+}
 
 export function findPlaceMapping(
   model1: Model,
   model2: Model,
 ): Map<PlaceId, PlaceId> | undefined {
-  if (model1.transitions.size !== model2.transitions.size) {
+  if (model1.transitions.length !== model2.transitions.length) {
     return undefined;
   }
   const placeMapping = new Map<PlaceId, PlaceId>();
-  for (const transition1 of model1.transitions.values()) {
-    const transition2 = model2.transitions.get(transition1.id);
+  for (const transition1 of model1.transitions) {
+    const transition2 = findTransition(model2, transition1.id);
     if (!transition2 || transition1.name !== transition2.name) {
       return undefined;
     }
