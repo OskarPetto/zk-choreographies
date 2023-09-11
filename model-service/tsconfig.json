@@ -8,7 +8,7 @@
     "allowSyntheticDefaultImports": true,
     "target": "ES2021",
     "sourceMap": true,
-    "outDir": "./dist",
+    "outDir": "model-service/dist",
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,

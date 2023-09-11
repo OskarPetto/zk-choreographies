@@ -2,7 +2,6 @@ import { Test } from '@nestjs/testing';
 import { ExecutionService } from './execution.service';
 import { TestdataProvider } from 'test/data/provider';
 import { ConformanceService } from './conformance.service';
-import { copyInstance } from './instance';
 import { findTransition } from 'test/testutils';
 import { copyModel } from 'src/model';
 
