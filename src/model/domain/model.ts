@@ -27,6 +27,7 @@ export type ModelId = string;
 export interface Model {
   id: ModelId;
   placeCount: number;
+  startPlace: PlaceId;
   transitions: Transition[];
 }
 
@@ -44,6 +45,7 @@ export function copyModel(model: Model): Model {
   return {
     id: model.id,
     placeCount: model.placeCount,
+    startPlace: model.startPlace,
     transitions,
   };
 }

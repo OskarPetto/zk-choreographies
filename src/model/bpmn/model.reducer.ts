@@ -47,6 +47,7 @@ export class ModelReducer {
       );
     }
     model.placeCount = places.length;
+    model.startPlace = places.length - 1;
   }
 
   private collectPlaces(model: Model): PlaceId[] {

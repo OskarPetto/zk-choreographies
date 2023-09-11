@@ -232,7 +232,7 @@ export class TestdataProvider {
         id: 'As',
         name: 'Application submitted (As)',
         type: TransitionType.START,
-        incomingPlaces: [],
+        incomingPlaces: [22],
         outgoingPlaces: [0],
       },
       {
@@ -393,7 +393,8 @@ export class TestdataProvider {
     ];
     return {
       id: 'conformance_example',
-      placeCount: 22,
+      startPlace: 22,
+      placeCount: 23,
       transitions,
     };
   }
@@ -404,7 +405,7 @@ export class TestdataProvider {
         id: 'As',
         name: 'Application submitted (As)',
         type: TransitionType.START,
-        incomingPlaces: [],
+        incomingPlaces: [9],
         outgoingPlaces: [0],
       },
       {
@@ -487,7 +488,8 @@ export class TestdataProvider {
     ];
     return {
       id: 'conformance_example',
-      placeCount: 9,
+      startPlace: 9,
+      placeCount: 10,
       transitions,
     };
   }
@@ -495,9 +497,8 @@ export class TestdataProvider {
   static getInstance1(): Instance {
     return {
       id: 'instance1',
-      model: this.getModel2(),
-      tokenCounts: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-      finished: false,
+      model: 'conformance_example',
+      tokenCounts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     };
   }
 }

@@ -12,13 +12,14 @@ export class BpmnMapper {
       ...process.exclusiveGateways,
       ...process.parallelGateways,
     ];
-    const placeIds = this.createPlaceIdMapping(process.sequenceFlows);
+    const placeIds = this.createSequenceFlowMapping(process.sequenceFlows);
     const transitions = elements.flatMap((element) =>
       this.toTransitions(placeIds, element),
     );
     return {
       id: process.id,
-      placeCount: placeIds.size,
+      startPlace: placeIds.size,
+      placeCount: placeIds.size + 1,
       transitions,
     };
   }
@@ -27,43 +28,79 @@ export class BpmnMapper {
     placeIds: Map<SequenceFlowId, PlaceId>,
     element: Element,
   ): Transition[] {
+    switch (element.type) {
+      case TransitionType.START:
+        return this.startToTransitions(element, placeIds);
+      case TransitionType.END:
+      case TransitionType.TASK:
+      case TransitionType.AND_SPLIT:
+      case TransitionType.AND_JOIN:
+        return this.elementToTransitions(element, placeIds);
+      case TransitionType.XOR_SPLIT:
+        return this.xorSplitToTransitions(element, placeIds);
+      case TransitionType.XOR_JOIN:
+        return this.xorJoinToTransitions(element, placeIds);
+    }
+  }
+
+  private startToTransitions(element: Element, placeIds: Map<SequenceFlowId, PlaceId>): Transition[] {
+    const outgoingPlaces = element.outgoingSequenceFlows.map(
+      (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
+    );
+    return [{
+      id: element.id,
+      type: element.type,
+      name: element.name,
+      incomingPlaces: [placeIds.size],
+      outgoingPlaces,
+    }];
+  }
+
+  private elementToTransitions(element: Element, placeIds: Map<SequenceFlowId, PlaceId>): Transition[] {
     const incomingPlaces = element.incomingSequenceFlows.map(
       (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
     );
     const outgoingPlaces = element.outgoingSequenceFlows.map(
       (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
     );
-
-    if (element.type === TransitionType.XOR_SPLIT) {
-      return element.outgoingSequenceFlows.map((outgoingSequenceFlowId) => ({
-        id: `${element.id}_${outgoingSequenceFlowId}`,
+    return [
+      {
+        id: element.id,
         type: element.type,
         name: element.name,
-        incomingPlaces: incomingPlaces,
-        outgoingPlaces: [placeIds.get(outgoingSequenceFlowId)!],
-      }));
-    } else if (element.type === TransitionType.XOR_JOIN) {
-      return element.incomingSequenceFlows.map((incomingSequenceFlowId) => ({
-        id: `${element.id}_${incomingSequenceFlowId}`,
-        type: element.type,
-        name: element.name,
-        incomingPlaces: [placeIds.get(incomingSequenceFlowId)!],
-        outgoingPlaces: outgoingPlaces,
-      }));
-    } else {
-      return [
-        {
-          id: element.id,
-          type: element.type,
-          name: element.name,
-          incomingPlaces,
-          outgoingPlaces,
-        },
-      ];
-    }
+        incomingPlaces,
+        outgoingPlaces,
+      },
+    ];
   }
 
-  private createPlaceIdMapping(
+  private xorJoinToTransitions(element: Element, placeIds: Map<SequenceFlowId, PlaceId>): Transition[] {
+    const outgoingPlaces = element.outgoingSequenceFlows.map(
+      (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
+    );
+    return element.incomingSequenceFlows.map((incomingSequenceFlowId) => ({
+      id: `${element.id}_${incomingSequenceFlowId}`,
+      type: element.type,
+      name: element.name,
+      incomingPlaces: [placeIds.get(incomingSequenceFlowId)!],
+      outgoingPlaces: outgoingPlaces,
+    }));
+  }
+
+  private xorSplitToTransitions(element: Element, placeIds: Map<SequenceFlowId, PlaceId>): Transition[] {
+    const incomingPlaces = element.incomingSequenceFlows.map(
+      (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
+    );
+    return element.outgoingSequenceFlows.map((outgoingSequenceFlowId) => ({
+      id: `${element.id}_${outgoingSequenceFlowId}`,
+      type: element.type,
+      name: element.name,
+      incomingPlaces: incomingPlaces,
+      outgoingPlaces: [placeIds.get(outgoingSequenceFlowId)!],
+    }));
+  }
+
+  private createSequenceFlowMapping(
     sequenceFlows: SequenceFlow[],
   ): Map<SequenceFlowId, PlaceId> {
     const map: Map<SequenceFlowId, PlaceId> = new Map();
