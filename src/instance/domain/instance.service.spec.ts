@@ -19,7 +19,7 @@ describe('InstanceService', () => {
     it('should instantiate model correctly', () => {
       const result = instanceService.instantiateModel(model2);
       expect(result.model).toEqual(instance1.model);
-      expect(result.executionStatuses).toEqual(instance1.executionStatuses);
+      expect(result.tokenCounts).toEqual(instance1.tokenCounts);
     });
   });
 });

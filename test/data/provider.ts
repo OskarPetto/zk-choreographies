@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ExecutionStatus, Instance } from 'src/instance';
+import { Instance } from 'src/instance';
 import { Model, Transition, TransitionType } from 'src/model';
 import { Process } from 'src/model/bpmn/bpmn';
 
@@ -496,17 +496,7 @@ export class TestdataProvider {
     return {
       id: 'instance1',
       model: this.getModel2(),
-      executionStatuses: [
-        ExecutionStatus.NOT_ACTIVE,
-        ExecutionStatus.NOT_ACTIVE,
-        ExecutionStatus.NOT_ACTIVE,
-        ExecutionStatus.NOT_ACTIVE,
-        ExecutionStatus.NOT_ACTIVE,
-        ExecutionStatus.NOT_ACTIVE,
-        ExecutionStatus.NOT_ACTIVE,
-        ExecutionStatus.NOT_ACTIVE,
-        ExecutionStatus.NOT_ACTIVE,
-      ],
+      tokenCounts: [0, 0, 0, 0, 0, 0, 0, 0, 0],
       finished: false,
     };
   }

@@ -1,10 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  InstanceId,
-  Instance,
-  createInstanceId,
-  ExecutionStatus,
-} from './instance';
+import { InstanceId, Instance, createInstanceId } from './instance';
 import { Model, copyModel } from 'src/model';
 
 @Injectable()
@@ -27,9 +22,7 @@ export class InstanceService {
     return {
       id: createInstanceId(),
       model: copyModel(model),
-      executionStatuses: Array(model.placeCount).fill(
-        ExecutionStatus.NOT_ACTIVE,
-      ),
+      tokenCounts: Array(model.placeCount).fill(0),
       finished: false,
     };
   }

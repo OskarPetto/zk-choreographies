@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { ExecutionService } from './execution.service';
 import { TestdataProvider } from 'test/data/provider';
-import { ExecutionStatus } from './instance';
 
 describe('ExecutionService', () => {
   let executionService: ExecutionService;
@@ -18,14 +17,12 @@ describe('ExecutionService', () => {
   describe('executeTransition', () => {
     it('should execute start transition', () => {
       const result = executionService.executeTransitions(instance1, ['As']);
-      expect(result.executionStatuses[0]).toEqual(ExecutionStatus.ACTIVE);
+      expect(result.tokenCounts[0]).toEqual(1);
     });
 
     it('should not alter original instance', () => {
       executionService.executeTransitions(instance1, ['As']);
-      expect(instance1.executionStatuses[0]).toEqual(
-        ExecutionStatus.NOT_ACTIVE,
-      );
+      expect(instance1.tokenCounts[0]).toEqual(0);
     });
 
     it('should execute full trace 1', () => {

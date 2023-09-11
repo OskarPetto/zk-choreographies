@@ -1,17 +1,12 @@
 import { Model } from 'src/model';
 import { v4 as uuid } from 'uuid';
 
-export enum ExecutionStatus {
-  NOT_ACTIVE,
-  ACTIVE,
-}
-
 export type InstanceId = string;
 
 export interface Instance {
   id: InstanceId;
   model: Model;
-  executionStatuses: ExecutionStatus[];
+  tokenCounts: number[];
   finished: boolean;
 }
 
@@ -20,7 +15,7 @@ export function copyInstance(instance: Instance): Instance {
     id: instance.id,
     model: instance.model,
     finished: instance.finished,
-    executionStatuses: [...instance.executionStatuses],
+    tokenCounts: [...instance.tokenCounts],
   };
 }
 

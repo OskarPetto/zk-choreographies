@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Instance, ExecutionStatus, copyInstance } from 'src/instance';
+import { Instance, copyInstance } from 'src/instance';
 import { Model, Transition, TransitionId, TransitionType } from 'src/model';
 
 @Injectable()
@@ -23,10 +23,10 @@ export class ExecutionService {
       throw Error(`Transition ${transition.id} is not executable`);
     }
     for (const incomingPlaceId of transition.incomingPlaces) {
-      instance.executionStatuses[incomingPlaceId] = ExecutionStatus.NOT_ACTIVE;
+      instance.tokenCounts[incomingPlaceId] -= 1;
     }
     for (const outgoingPlaceId of transition.outgoingPlaces) {
-      instance.executionStatuses[outgoingPlaceId] = ExecutionStatus.ACTIVE;
+      instance.tokenCounts[outgoingPlaceId] += 1;
     }
     if (transition.type === TransitionType.END) {
       instance.finished = true;
@@ -38,8 +38,8 @@ export class ExecutionService {
       return false;
     }
     return [...transition.incomingPlaces]
-      .map((placeId) => instance.executionStatuses[placeId])
-      .every((executionStatus) => executionStatus === ExecutionStatus.ACTIVE);
+      .map((placeId) => instance.tokenCounts[placeId])
+      .every((tokenCount) => tokenCount > 0);
   }
 
   private findTransition(model: Model, transitionId: TransitionId): Transition {
