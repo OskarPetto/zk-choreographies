@@ -24,7 +24,7 @@ describe('ExecutionService', () => {
     executionService = app.get<ExecutionService>(ExecutionService);
   });
 
-  describe('executeTransition', () => {
+  describe('executeTransitions', () => {
     it('should execute start transition', () => {
       const startTransition = findTransition(model2, 'As');
       const result = executionService.executeTransitions(instance1, [

@@ -43,20 +43,28 @@ export class BpmnMapper {
     }
   }
 
-  private startToTransitions(element: Element, placeIds: Map<SequenceFlowId, PlaceId>): Transition[] {
+  private startToTransitions(
+    element: Element,
+    placeIds: Map<SequenceFlowId, PlaceId>,
+  ): Transition[] {
     const outgoingPlaces = element.outgoingSequenceFlows.map(
       (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
     );
-    return [{
-      id: element.id,
-      type: element.type,
-      name: element.name,
-      incomingPlaces: [placeIds.size],
-      outgoingPlaces,
-    }];
+    return [
+      {
+        id: element.id,
+        type: element.type,
+        name: element.name,
+        incomingPlaces: [placeIds.size],
+        outgoingPlaces,
+      },
+    ];
   }
 
-  private elementToTransitions(element: Element, placeIds: Map<SequenceFlowId, PlaceId>): Transition[] {
+  private elementToTransitions(
+    element: Element,
+    placeIds: Map<SequenceFlowId, PlaceId>,
+  ): Transition[] {
     const incomingPlaces = element.incomingSequenceFlows.map(
       (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
     );
@@ -74,7 +82,10 @@ export class BpmnMapper {
     ];
   }
 
-  private xorJoinToTransitions(element: Element, placeIds: Map<SequenceFlowId, PlaceId>): Transition[] {
+  private xorJoinToTransitions(
+    element: Element,
+    placeIds: Map<SequenceFlowId, PlaceId>,
+  ): Transition[] {
     const outgoingPlaces = element.outgoingSequenceFlows.map(
       (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
     );
@@ -87,7 +98,10 @@ export class BpmnMapper {
     }));
   }
 
-  private xorSplitToTransitions(element: Element, placeIds: Map<SequenceFlowId, PlaceId>): Transition[] {
+  private xorSplitToTransitions(
+    element: Element,
+    placeIds: Map<SequenceFlowId, PlaceId>,
+  ): Transition[] {
     const incomingPlaces = element.incomingSequenceFlows.map(
       (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
     );
