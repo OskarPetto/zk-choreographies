@@ -1,6 +1,5 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Instance } from 'src/instance';
 import { Model, Transition, TransitionType } from 'src/model';
 import { Process } from 'src/model/bpmn/bpmn';
 
@@ -491,14 +490,6 @@ export class TestdataProvider {
       startPlace: 9,
       placeCount: 10,
       transitions,
-    };
-  }
-
-  static getInstance1(): Instance {
-    return {
-      id: 'instance1',
-      model: 'conformance_example',
-      tokenCounts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
     };
   }
 }

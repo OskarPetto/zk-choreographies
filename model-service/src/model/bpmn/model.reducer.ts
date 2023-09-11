@@ -11,7 +11,7 @@ import {
 export class ModelReducer {
   reduceModel(model: Model): Model {
     const newModel = copyModel(model);
-    for (const transition of newModel.transitions.values()) {
+    for (const transition of newModel.transitions) {
       switch (transition.type) {
         case TransitionType.START:
         case TransitionType.END:
@@ -47,12 +47,12 @@ export class ModelReducer {
       );
     }
     model.placeCount = places.length;
-    model.startPlace = places.length - 1;
+    model.startPlace = placeMap.get(model.startPlace)!;
   }
 
   private collectPlaces(model: Model): PlaceId[] {
     let places: PlaceId[] = [];
-    for (const transition of model.transitions.values()) {
+    for (const transition of model.transitions) {
       places = [
         ...places,
         ...transition.incomingPlaces,
@@ -66,7 +66,7 @@ export class ModelReducer {
     model: Model,
     transitionToRemove: Transition,
   ) {
-    for (const transition of model.transitions.values()) {
+    for (const transition of model.transitions) {
       const intersect = this.intersect(
         transition.incomingPlaces,
         transitionToRemove.outgoingPlaces,
