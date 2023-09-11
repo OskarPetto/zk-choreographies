@@ -26,7 +26,7 @@ export type ModelId = string;
 
 export interface Model {
   id: ModelId;
-  placeCount: number,
+  placeCount: number;
   transitions: Transition[];
 }
 

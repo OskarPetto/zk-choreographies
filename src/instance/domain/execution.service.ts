@@ -1,10 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Instance, ExecutionStatus, copyInstance } from 'src/instance';
-import { Transition, TransitionType } from 'src/model';
+import { Model, Transition, TransitionId, TransitionType } from 'src/model';
 
 @Injectable()
 export class ExecutionService {
-  executeTransitions(instance: Instance, transitions: Transition[]): Instance {
+  executeTransitions(
+    instance: Instance,
+    transitionIds: TransitionId[],
+  ): Instance {
+    const transitions = transitionIds.map((transitionId) =>
+      this.findTransition(instance.model, transitionId),
+    );
     const newInstance = copyInstance(instance);
     for (const transition of transitions) {
       this.executeTransition(newInstance, transition);
@@ -34,5 +40,13 @@ export class ExecutionService {
     return [...transition.incomingPlaces]
       .map((placeId) => instance.executionStatuses[placeId])
       .every((executionStatus) => executionStatus === ExecutionStatus.ACTIVE);
+  }
+
+  private findTransition(model: Model, transitionId: TransitionId): Transition {
+    const transition = model.transitions.find((t) => t.id === transitionId);
+    if (!transition) {
+      throw Error(`Transition ${transitionId} in model ${model.id} not found`);
+    }
+    return transition;
   }
 }

@@ -23,9 +23,16 @@ export class BpmnMapper {
     };
   }
 
-  private toTransitions(placeIds: Map<SequenceFlowId, PlaceId>, element: Element): Transition[] {
-    const incomingPlaces = element.incomingSequenceFlows.map(sequenceFlowId => placeIds.get(sequenceFlowId)!);
-    const outgoingPlaces = element.outgoingSequenceFlows.map(sequenceFlowId => placeIds.get(sequenceFlowId)!);
+  private toTransitions(
+    placeIds: Map<SequenceFlowId, PlaceId>,
+    element: Element,
+  ): Transition[] {
+    const incomingPlaces = element.incomingSequenceFlows.map(
+      (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
+    );
+    const outgoingPlaces = element.outgoingSequenceFlows.map(
+      (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
+    );
 
     if (element.type === TransitionType.XOR_SPLIT) {
       return element.outgoingSequenceFlows.map((outgoingSequenceFlowId) => ({
@@ -50,13 +57,15 @@ export class BpmnMapper {
           type: element.type,
           name: element.name,
           incomingPlaces,
-          outgoingPlaces
+          outgoingPlaces,
         },
       ];
     }
   }
 
-  private createPlaceIdMapping(sequenceFlows: SequenceFlow[]): Map<SequenceFlowId, PlaceId> {
+  private createPlaceIdMapping(
+    sequenceFlows: SequenceFlow[],
+  ): Map<SequenceFlowId, PlaceId> {
     const map: Map<SequenceFlowId, PlaceId> = new Map();
     let index = 0;
     for (const sequenceFlow of sequenceFlows) {

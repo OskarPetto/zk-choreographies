@@ -39,12 +39,15 @@ export class ModelReducer {
       placeMap.set(place, index++);
     }
     for (const transition of model.transitions) {
-      transition.incomingPlaces = transition.incomingPlaces.map(place => placeMap.get(place)!);
-      transition.outgoingPlaces = transition.outgoingPlaces.map(place => placeMap.get(place)!);
+      transition.incomingPlaces = transition.incomingPlaces.map(
+        (place) => placeMap.get(place)!,
+      );
+      transition.outgoingPlaces = transition.outgoingPlaces.map(
+        (place) => placeMap.get(place)!,
+      );
     }
     model.placeCount = places.length;
   }
-
 
   private collectPlaces(model: Model): PlaceId[] {
     let places: PlaceId[] = [];
@@ -78,7 +81,9 @@ export class ModelReducer {
         );
       }
     }
-    model.transitions = model.transitions.filter(t => t.id !== transitionToRemove.id);
+    model.transitions = model.transitions.filter(
+      (t) => t.id !== transitionToRemove.id,
+    );
   }
 
   private removeTransitionAndIncomingPlaces(
@@ -101,7 +106,9 @@ export class ModelReducer {
         );
       }
     }
-    model.transitions = model.transitions.filter(t => t.id !== transitionToRemove.id);
+    model.transitions = model.transitions.filter(
+      (t) => t.id !== transitionToRemove.id,
+    );
   }
 
   private setMinus(places1: PlaceId[], places2: PlaceId[]): PlaceId[] {

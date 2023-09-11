@@ -157,72 +157,72 @@ export class TestdataProvider {
       ],
       sequenceFlows: [
         {
-          id: 'Flow_0xqg6as'
+          id: 'Flow_0xqg6as',
         },
         {
-          id: 'Flow_07cyta2'
+          id: 'Flow_07cyta2',
         },
         {
-          id: 'Flow_1n5x723'
+          id: 'Flow_1n5x723',
         },
         {
-          id: 'Flow_0w362at'
+          id: 'Flow_0w362at',
         },
         {
-          id: 'Flow_0i668iz'
+          id: 'Flow_0i668iz',
         },
         {
-          id: 'Flow_0vs3ms0'
+          id: 'Flow_0vs3ms0',
         },
         {
-          id: 'Flow_1g76mn1'
+          id: 'Flow_1g76mn1',
         },
         {
-          id: 'Flow_19w6dwb'
+          id: 'Flow_19w6dwb',
         },
         {
-          id: 'Flow_0damgea'
+          id: 'Flow_0damgea',
         },
         {
-          id: 'Flow_0q0zlpw'
+          id: 'Flow_0q0zlpw',
         },
         {
-          id: 'Flow_1yee6jg'
+          id: 'Flow_1yee6jg',
         },
         {
-          id: 'Flow_0x7rbwv'
+          id: 'Flow_0x7rbwv',
         },
         {
-          id: 'Flow_1dlqvig'
+          id: 'Flow_1dlqvig',
         },
         {
-          id: 'Flow_0jf7vbw'
+          id: 'Flow_0jf7vbw',
         },
         {
-          id: 'Flow_0oshibp'
+          id: 'Flow_0oshibp',
         },
         {
-          id: 'Flow_1b9hzto'
+          id: 'Flow_1b9hzto',
         },
         {
-          id: 'Flow_0u5u7d3'
+          id: 'Flow_0u5u7d3',
         },
         {
-          id: 'Flow_18msx9i'
+          id: 'Flow_18msx9i',
         },
         {
-          id: 'Flow_03xp19s'
+          id: 'Flow_03xp19s',
         },
         {
-          id: 'Flow_12yxkzr'
+          id: 'Flow_12yxkzr',
         },
         {
-          id: 'Flow_1qh0ya1'
+          id: 'Flow_1qh0ya1',
         },
         {
-          id: 'Flow_0ka5y4w'
-        }
-      ]
+          id: 'Flow_0ka5y4w',
+        },
+      ],
     };
   }
 

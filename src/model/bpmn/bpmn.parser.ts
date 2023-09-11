@@ -53,7 +53,7 @@ export class BpmnParser {
       tasks,
       exclusiveGateways,
       parallelGateways,
-      sequenceFlows
+      sequenceFlows,
     };
   }
 
@@ -126,7 +126,7 @@ export class BpmnParser {
   parseSequenceFlows(process: any): SequenceFlow[] {
     const sequenceFlows = process[this.sequenceFlowTag];
     return sequenceFlows.map((sequenceFlow: any) => ({
-      id: sequenceFlow.id
-    }))
+      id: sequenceFlow.id,
+    }));
   }
 }

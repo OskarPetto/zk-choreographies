@@ -27,7 +27,9 @@ export class InstanceService {
     return {
       id: createInstanceId(),
       model: copyModel(model),
-      executionStatuses: Array(model.placeCount).fill(ExecutionStatus.NOT_ACTIVE),
+      executionStatuses: Array(model.placeCount).fill(
+        ExecutionStatus.NOT_ACTIVE,
+      ),
       finished: false,
     };
   }
