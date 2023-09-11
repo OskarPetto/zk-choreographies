@@ -21,6 +21,7 @@ export interface Process {
   tasks: Element[];
   exclusiveGateways: Element[];
   parallelGateways: Element[];
+  sequenceFlows: SequenceFlow[];
 }
 
 export interface Definitions {

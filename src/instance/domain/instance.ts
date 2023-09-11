@@ -1,4 +1,4 @@
-import { PlaceId, ModelId } from 'src/model';
+import { Model } from 'src/model';
 import { v4 as uuid } from 'uuid';
 
 export enum ExecutionStatus {
@@ -10,8 +10,8 @@ export type InstanceId = string;
 
 export interface Instance {
   id: InstanceId;
-  model: ModelId;
-  executionStatuses: Map<PlaceId, ExecutionStatus>;
+  model: Model;
+  executionStatuses: ExecutionStatus[];
   finished: boolean;
 }
 
@@ -20,7 +20,7 @@ export function copyInstance(instance: Instance): Instance {
     id: instance.id,
     model: instance.model,
     finished: instance.finished,
-    executionStatuses: new Map(instance.executionStatuses),
+    executionStatuses: [...instance.executionStatuses],
   };
 }
 

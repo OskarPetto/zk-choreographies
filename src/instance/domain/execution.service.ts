@@ -17,13 +17,10 @@ export class ExecutionService {
       throw Error(`Transition ${transition.id} is not executable`);
     }
     for (const incomingPlaceId of transition.incomingPlaces) {
-      instance.executionStatuses.set(
-        incomingPlaceId,
-        ExecutionStatus.NOT_ACTIVE,
-      );
+      instance.executionStatuses[incomingPlaceId] = ExecutionStatus.NOT_ACTIVE;
     }
     for (const outgoingPlaceId of transition.outgoingPlaces) {
-      instance.executionStatuses.set(outgoingPlaceId, ExecutionStatus.ACTIVE);
+      instance.executionStatuses[outgoingPlaceId] = ExecutionStatus.ACTIVE;
     }
     if (transition.type === TransitionType.END) {
       instance.finished = true;
@@ -35,7 +32,7 @@ export class ExecutionService {
       return false;
     }
     return [...transition.incomingPlaces]
-      .map((placeId) => instance.executionStatuses.get(placeId))
+      .map((placeId) => instance.executionStatuses[placeId])
       .every((executionStatus) => executionStatus === ExecutionStatus.ACTIVE);
   }
 }

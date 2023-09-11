@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { XMLParser } from 'fast-xml-parser';
-import { Definitions, Process, Element } from './bpmn';
+import { Definitions, Process, Element, SequenceFlow } from './bpmn';
 import { TransitionType } from '../domain/model';
 
 @Injectable()
@@ -14,6 +14,7 @@ export class BpmnParser {
   private readonly parallelGatewayTag = 'bpmn:parallelGateway';
   private readonly incomingTag = 'bpmn:incoming';
   private readonly outgoingTag = 'bpmn:outgoing';
+  private readonly sequenceFlowTag = 'bpmn:sequenceFlow';
 
   private options = {
     attributeNamePrefix: '',
@@ -44,6 +45,7 @@ export class BpmnParser {
     const tasks = this.parseTasks(process);
     const exclusiveGateways = this.parseExclusiveGateways(process);
     const parallelGateways = this.parseParallelGateways(process);
+    const sequenceFlows = this.parseSequenceFlows(process);
     return {
       id: process.id,
       startEvent,
@@ -51,6 +53,7 @@ export class BpmnParser {
       tasks,
       exclusiveGateways,
       parallelGateways,
+      sequenceFlows
     };
   }
 
@@ -118,5 +121,12 @@ export class BpmnParser {
         outgoingSequenceFlows: outgoingPlaceIds,
       };
     });
+  }
+
+  parseSequenceFlows(process: any): SequenceFlow[] {
+    const sequenceFlows = process[this.sequenceFlowTag];
+    return sequenceFlows.map((sequenceFlow: any) => ({
+      id: sequenceFlow.id
+    }))
   }
 }

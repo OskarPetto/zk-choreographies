@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Element, Process } from './bpmn';
-import { Model, Transition, TransitionType } from '../domain/model';
+import { Element, Process, SequenceFlow, SequenceFlowId } from './bpmn';
+import { Model, PlaceId, Transition, TransitionType } from '../domain/model';
 
 @Injectable()
 export class BpmnMapper {
@@ -12,31 +12,36 @@ export class BpmnMapper {
       ...process.exclusiveGateways,
       ...process.parallelGateways,
     ];
+    const placeIds = this.createPlaceIdMapping(process.sequenceFlows);
     const transitions = elements.flatMap((element) =>
-      this.toTransitions(element),
+      this.toTransitions(placeIds, element),
     );
     return {
       id: process.id,
+      placeCount: placeIds.size,
       transitions,
     };
   }
 
-  private toTransitions(element: Element): Transition[] {
+  private toTransitions(placeIds: Map<SequenceFlowId, PlaceId>, element: Element): Transition[] {
+    const incomingPlaces = element.incomingSequenceFlows.map(sequenceFlowId => placeIds.get(sequenceFlowId)!);
+    const outgoingPlaces = element.outgoingSequenceFlows.map(sequenceFlowId => placeIds.get(sequenceFlowId)!);
+
     if (element.type === TransitionType.XOR_SPLIT) {
       return element.outgoingSequenceFlows.map((outgoingSequenceFlowId) => ({
         id: `${element.id}_${outgoingSequenceFlowId}`,
         type: element.type,
         name: element.name,
-        incomingPlaces: element.incomingSequenceFlows,
-        outgoingPlaces: [outgoingSequenceFlowId],
+        incomingPlaces: incomingPlaces,
+        outgoingPlaces: [placeIds.get(outgoingSequenceFlowId)!],
       }));
     } else if (element.type === TransitionType.XOR_JOIN) {
       return element.incomingSequenceFlows.map((incomingSequenceFlowId) => ({
         id: `${element.id}_${incomingSequenceFlowId}`,
         type: element.type,
         name: element.name,
-        incomingPlaces: [incomingSequenceFlowId],
-        outgoingPlaces: element.outgoingSequenceFlows,
+        incomingPlaces: [placeIds.get(incomingSequenceFlowId)!],
+        outgoingPlaces: outgoingPlaces,
       }));
     } else {
       return [
@@ -44,10 +49,19 @@ export class BpmnMapper {
           id: element.id,
           type: element.type,
           name: element.name,
-          incomingPlaces: element.incomingSequenceFlows,
-          outgoingPlaces: element.outgoingSequenceFlows,
+          incomingPlaces,
+          outgoingPlaces
         },
       ];
     }
+  }
+
+  private createPlaceIdMapping(sequenceFlows: SequenceFlow[]): Map<SequenceFlowId, PlaceId> {
+    const map: Map<SequenceFlowId, PlaceId> = new Map();
+    let index = 0;
+    for (const sequenceFlow of sequenceFlows) {
+      map.set(sequenceFlow.id, index++);
+    }
+    return map;
   }
 }

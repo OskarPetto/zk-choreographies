@@ -155,6 +155,74 @@ export class TestdataProvider {
           outgoingSequenceFlows: ['Flow_0jf7vbw'],
         },
       ],
+      sequenceFlows: [
+        {
+          id: 'Flow_0xqg6as'
+        },
+        {
+          id: 'Flow_07cyta2'
+        },
+        {
+          id: 'Flow_1n5x723'
+        },
+        {
+          id: 'Flow_0w362at'
+        },
+        {
+          id: 'Flow_0i668iz'
+        },
+        {
+          id: 'Flow_0vs3ms0'
+        },
+        {
+          id: 'Flow_1g76mn1'
+        },
+        {
+          id: 'Flow_19w6dwb'
+        },
+        {
+          id: 'Flow_0damgea'
+        },
+        {
+          id: 'Flow_0q0zlpw'
+        },
+        {
+          id: 'Flow_1yee6jg'
+        },
+        {
+          id: 'Flow_0x7rbwv'
+        },
+        {
+          id: 'Flow_1dlqvig'
+        },
+        {
+          id: 'Flow_0jf7vbw'
+        },
+        {
+          id: 'Flow_0oshibp'
+        },
+        {
+          id: 'Flow_1b9hzto'
+        },
+        {
+          id: 'Flow_0u5u7d3'
+        },
+        {
+          id: 'Flow_18msx9i'
+        },
+        {
+          id: 'Flow_03xp19s'
+        },
+        {
+          id: 'Flow_12yxkzr'
+        },
+        {
+          id: 'Flow_1qh0ya1'
+        },
+        {
+          id: 'Flow_0ka5y4w'
+        }
+      ]
     };
   }
 
@@ -165,166 +233,167 @@ export class TestdataProvider {
         name: 'Application submitted (As)',
         type: TransitionType.START,
         incomingPlaces: [],
-        outgoingPlaces: ['Flow_0xqg6as'],
+        outgoingPlaces: [0],
       },
       {
         id: 'Gateway_1o9s8fw_Flow_07cyta2',
         type: TransitionType.XOR_SPLIT,
-        incomingPlaces: ['Flow_0xqg6as'],
-        outgoingPlaces: ['Flow_07cyta2'],
+        incomingPlaces: [0],
+        outgoingPlaces: [1],
       },
       {
         id: 'Gateway_1o9s8fw_Flow_1n5x723',
         type: TransitionType.XOR_SPLIT,
-        incomingPlaces: ['Flow_0xqg6as'],
-        outgoingPlaces: ['Flow_1n5x723'],
+        incomingPlaces: [0],
+        outgoingPlaces: [2],
       },
       {
         id: 'Da1',
         name: 'Decline application (Da1)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_07cyta2'],
-        outgoingPlaces: ['Flow_0ka5y4w'],
+        incomingPlaces: [1],
+        outgoingPlaces: [21],
       },
       {
         id: 'Aa',
         name: 'Accept application (Aa)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_1n5x723'],
-        outgoingPlaces: ['Flow_0w362at'],
+        incomingPlaces: [2],
+        outgoingPlaces: [3],
       },
       {
         id: 'Gateway_1rgq5gy',
         type: TransitionType.AND_SPLIT,
-        incomingPlaces: ['Flow_0w362at'],
-        outgoingPlaces: ['Flow_0i668iz', 'Flow_0vs3ms0'],
+        incomingPlaces: [3],
+        outgoingPlaces: [4, 5],
       },
       {
         id: 'Fa',
         name: 'Finalize application (Fa)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_0i668iz'],
-        outgoingPlaces: ['Flow_1yee6jg'],
+        incomingPlaces: [4],
+        outgoingPlaces: [10],
       },
       {
         id: 'Gateway_1fwxfgu_Flow_0vs3ms0',
         type: TransitionType.XOR_JOIN,
-        incomingPlaces: ['Flow_0vs3ms0'],
-        outgoingPlaces: ['Flow_1g76mn1'],
+        incomingPlaces: [5],
+        outgoingPlaces: [6],
       },
       {
         id: 'Gateway_1fwxfgu_Flow_1dlqvig',
         type: TransitionType.XOR_JOIN,
-        incomingPlaces: ['Flow_1dlqvig'],
-        outgoingPlaces: ['Flow_1g76mn1'],
+        incomingPlaces: [12],
+        outgoingPlaces: [6],
       },
       {
         id: 'Sso',
         name: 'Select and send offer (Sso)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_1g76mn1'],
-        outgoingPlaces: ['Flow_19w6dwb'],
+        incomingPlaces: [6],
+        outgoingPlaces: [7],
       },
       {
         id: 'Ro',
         name: 'Receive offer (Ro)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_19w6dwb'],
-        outgoingPlaces: ['Flow_0damgea'],
+        incomingPlaces: [7],
+        outgoingPlaces: [8],
       },
       {
         id: 'Gateway_1way65i_Flow_0q0zlpw',
         type: TransitionType.XOR_SPLIT,
-        incomingPlaces: ['Flow_0damgea'],
-        outgoingPlaces: ['Flow_0q0zlpw'],
+        incomingPlaces: [8],
+        outgoingPlaces: [9],
       },
       {
         id: 'Gateway_1way65i_Flow_0x7rbwv',
         type: TransitionType.XOR_SPLIT,
-        incomingPlaces: ['Flow_0damgea'],
-        outgoingPlaces: ['Flow_0x7rbwv'],
+        incomingPlaces: [8],
+        outgoingPlaces: [11],
       },
       {
         id: 'Gateway_1nglicj',
         type: TransitionType.AND_JOIN,
-        incomingPlaces: ['Flow_0q0zlpw', 'Flow_1yee6jg'],
-        outgoingPlaces: ['Flow_0jf7vbw'],
+        incomingPlaces: [9, 10],
+        outgoingPlaces: [13],
       },
       {
         id: 'Co',
         name: 'Cancel offer (Co)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_0x7rbwv'],
-        outgoingPlaces: ['Flow_1dlqvig'],
+        incomingPlaces: [11],
+        outgoingPlaces: [12],
       },
       {
         id: 'Gateway_1vl4hvy_Flow_0oshibp',
         type: TransitionType.XOR_SPLIT,
-        incomingPlaces: ['Flow_0jf7vbw'],
-        outgoingPlaces: ['Flow_0oshibp'],
+        incomingPlaces: [13],
+        outgoingPlaces: [14],
       },
       {
         id: 'Gateway_1vl4hvy_Flow_1b9hzto',
         type: TransitionType.XOR_SPLIT,
-        incomingPlaces: ['Flow_0jf7vbw'],
-        outgoingPlaces: ['Flow_1b9hzto'],
+        incomingPlaces: [13],
+        outgoingPlaces: [15],
       },
       {
         id: 'Ao',
         name: 'Accept offer (Ao)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_0oshibp'],
-        outgoingPlaces: ['Flow_0u5u7d3'],
+        incomingPlaces: [14],
+        outgoingPlaces: [16],
       },
       {
         id: 'Do',
         name: 'Decline offer (Do)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_1b9hzto'],
-        outgoingPlaces: ['Flow_18msx9i'],
+        incomingPlaces: [15],
+        outgoingPlaces: [17],
       },
       {
         id: 'Aaa',
         name: 'Approve and activate application (Aaa)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_0u5u7d3'],
-        outgoingPlaces: ['Flow_03xp19s'],
+        incomingPlaces: [16],
+        outgoingPlaces: [18],
       },
       {
         id: 'Da2',
         name: 'Decline application (Da2)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_18msx9i'],
-        outgoingPlaces: ['Flow_12yxkzr'],
+        incomingPlaces: [17],
+        outgoingPlaces: [19],
       },
       {
         id: 'Gateway_1vzsa13_Flow_03xp19s',
         type: TransitionType.XOR_JOIN,
-        incomingPlaces: ['Flow_03xp19s'],
-        outgoingPlaces: ['Flow_1qh0ya1'],
+        incomingPlaces: [18],
+        outgoingPlaces: [20],
       },
       {
         id: 'Gateway_1vzsa13_Flow_12yxkzr',
         type: TransitionType.XOR_JOIN,
-        incomingPlaces: ['Flow_12yxkzr'],
-        outgoingPlaces: ['Flow_1qh0ya1'],
+        incomingPlaces: [19],
+        outgoingPlaces: [20],
       },
       {
         id: 'Gateway_1vzsa13_Flow_0ka5y4w',
         type: TransitionType.XOR_JOIN,
-        incomingPlaces: ['Flow_0ka5y4w'],
-        outgoingPlaces: ['Flow_1qh0ya1'],
+        incomingPlaces: [21],
+        outgoingPlaces: [20],
       },
       {
         id: 'Af',
         name: 'Application finished (Af)',
         type: TransitionType.END,
-        incomingPlaces: ['Flow_1qh0ya1'],
+        incomingPlaces: [20],
         outgoingPlaces: [],
       },
     ];
     return {
       id: 'conformance_example',
+      placeCount: 22,
       transitions,
     };
   }
@@ -336,88 +405,89 @@ export class TestdataProvider {
         name: 'Application submitted (As)',
         type: TransitionType.START,
         incomingPlaces: [],
-        outgoingPlaces: ['Flow_0xqg6as'],
+        outgoingPlaces: [0],
       },
       {
         id: 'Da1',
         name: 'Decline application (Da1)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_0xqg6as'],
-        outgoingPlaces: ['Flow_1qh0ya1'],
+        incomingPlaces: [0],
+        outgoingPlaces: [8],
       },
       {
         id: 'Aa',
         name: 'Accept application (Aa)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_0xqg6as'],
-        outgoingPlaces: ['Flow_0i668iz', 'Flow_1g76mn1'],
+        incomingPlaces: [0],
+        outgoingPlaces: [1, 2],
       },
       {
         id: 'Fa',
         name: 'Finalize application (Fa)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_0i668iz'],
-        outgoingPlaces: ['Flow_1yee6jg'],
+        incomingPlaces: [1],
+        outgoingPlaces: [5],
       },
       {
         id: 'Sso',
         name: 'Select and send offer (Sso)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_1g76mn1'],
-        outgoingPlaces: ['Flow_19w6dwb'],
+        incomingPlaces: [2],
+        outgoingPlaces: [3],
       },
       {
         id: 'Ro',
         name: 'Receive offer (Ro)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_19w6dwb'],
-        outgoingPlaces: ['Flow_0damgea'],
+        incomingPlaces: [3],
+        outgoingPlaces: [4],
       },
       {
         id: 'Co',
         name: 'Cancel offer (Co)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_0damgea'],
-        outgoingPlaces: ['Flow_1g76mn1'],
+        incomingPlaces: [4],
+        outgoingPlaces: [2],
       },
       {
         id: 'Ao',
         name: 'Accept offer (Ao)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_1yee6jg', 'Flow_0damgea'],
-        outgoingPlaces: ['Flow_0u5u7d3'],
+        incomingPlaces: [5, 4],
+        outgoingPlaces: [6],
       },
       {
         id: 'Do',
         name: 'Decline offer (Do)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_1yee6jg', 'Flow_0damgea'],
-        outgoingPlaces: ['Flow_18msx9i'],
+        incomingPlaces: [5, 4],
+        outgoingPlaces: [7],
       },
       {
         id: 'Aaa',
         name: 'Approve and activate application (Aaa)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_0u5u7d3'],
-        outgoingPlaces: ['Flow_1qh0ya1'],
+        incomingPlaces: [6],
+        outgoingPlaces: [8],
       },
       {
         id: 'Da2',
         name: 'Decline application (Da2)',
         type: TransitionType.TASK,
-        incomingPlaces: ['Flow_18msx9i'],
-        outgoingPlaces: ['Flow_1qh0ya1'],
+        incomingPlaces: [7],
+        outgoingPlaces: [8],
       },
       {
         id: 'Af',
         name: 'Application finished (Af)',
         type: TransitionType.END,
-        incomingPlaces: ['Flow_1qh0ya1'],
+        incomingPlaces: [8],
         outgoingPlaces: [],
       },
     ];
     return {
       id: 'conformance_example',
+      placeCount: 9,
       transitions,
     };
   }
@@ -425,18 +495,18 @@ export class TestdataProvider {
   static getInstance1(): Instance {
     return {
       id: 'instance1',
-      model: this.getModel2().id,
-      executionStatuses: new Map([
-        ['Flow_0xqg6as', ExecutionStatus.NOT_ACTIVE],
-        ['Flow_1qh0ya1', ExecutionStatus.NOT_ACTIVE],
-        ['Flow_0i668iz', ExecutionStatus.NOT_ACTIVE],
-        ['Flow_1g76mn1', ExecutionStatus.NOT_ACTIVE],
-        ['Flow_1yee6jg', ExecutionStatus.NOT_ACTIVE],
-        ['Flow_19w6dwb', ExecutionStatus.NOT_ACTIVE],
-        ['Flow_0damgea', ExecutionStatus.NOT_ACTIVE],
-        ['Flow_0u5u7d3', ExecutionStatus.NOT_ACTIVE],
-        ['Flow_18msx9i', ExecutionStatus.NOT_ACTIVE],
-      ]),
+      model: this.getModel2(),
+      executionStatuses: [
+        ExecutionStatus.NOT_ACTIVE,
+        ExecutionStatus.NOT_ACTIVE,
+        ExecutionStatus.NOT_ACTIVE,
+        ExecutionStatus.NOT_ACTIVE,
+        ExecutionStatus.NOT_ACTIVE,
+        ExecutionStatus.NOT_ACTIVE,
+        ExecutionStatus.NOT_ACTIVE,
+        ExecutionStatus.NOT_ACTIVE,
+        ExecutionStatus.NOT_ACTIVE,
+      ],
       finished: false,
     };
   }

@@ -31,7 +31,7 @@ describe('ExecutionService', () => {
       const result = executionService.executeTransitions(instance1, [
         startTransition,
       ]);
-      expect(result.executionStatuses.get('Flow_0xqg6as')).toEqual(
+      expect(result.executionStatuses[0]).toEqual(
         ExecutionStatus.ACTIVE,
       );
     });
@@ -39,7 +39,7 @@ describe('ExecutionService', () => {
     it('should not alter original instance', () => {
       const startTransition = findTransition(model2, 'As');
       executionService.executeTransitions(instance1, [startTransition]);
-      expect(instance1.executionStatuses.get('Flow_0xqg6as')).toEqual(
+      expect(instance1.executionStatuses[0]).toEqual(
         ExecutionStatus.NOT_ACTIVE,
       );
     });

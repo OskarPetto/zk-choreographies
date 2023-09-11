@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 
-export type PlaceId = string;
+export type PlaceId = number;
 
 export type TransitionId = string;
 
@@ -26,6 +26,7 @@ export type ModelId = string;
 
 export interface Model {
   id: ModelId;
+  placeCount: number,
   transitions: Transition[];
 }
 
@@ -42,6 +43,7 @@ export function copyModel(model: Model): Model {
 
   return {
     id: model.id,
+    placeCount: model.placeCount,
     transitions,
   };
 }

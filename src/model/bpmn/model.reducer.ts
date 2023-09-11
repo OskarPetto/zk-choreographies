@@ -27,7 +27,35 @@ export class ModelReducer {
           break;
       }
     }
+    this.repairPlaceIds(newModel);
     return newModel;
+  }
+
+  private repairPlaceIds(model: Model) {
+    const places = this.collectPlaces(model);
+    const placeMap: Map<PlaceId, PlaceId> = new Map();
+    let index = 0;
+    for (const place of places) {
+      placeMap.set(place, index++);
+    }
+    for (const transition of model.transitions) {
+      transition.incomingPlaces = transition.incomingPlaces.map(place => placeMap.get(place)!);
+      transition.outgoingPlaces = transition.outgoingPlaces.map(place => placeMap.get(place)!);
+    }
+    model.placeCount = places.length;
+  }
+
+
+  private collectPlaces(model: Model): PlaceId[] {
+    let places: PlaceId[] = [];
+    for (const transition of model.transitions.values()) {
+      places = [
+        ...places,
+        ...transition.incomingPlaces,
+        ...transition.outgoingPlaces,
+      ];
+    }
+    return [...new Set(places)].sort((a, b) => a - b);
   }
 
   private removeTransitionAndOutgoingPlaces(
