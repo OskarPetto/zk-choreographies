@@ -26,7 +26,7 @@ export type ModelId = string;
 
 export interface Model {
   id: ModelId;
-  transitions: Map<TransitionId, Transition>;
+  transitions: Transition[];
 }
 
 export function copyModel(model: Model): Model {
@@ -42,7 +42,7 @@ export function copyModel(model: Model): Model {
 
   return {
     id: model.id,
-    transitions: new Map(transitions.map((t) => [t.id, t])),
+    transitions,
   };
 }
 

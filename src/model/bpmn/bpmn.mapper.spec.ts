@@ -18,7 +18,9 @@ describe('BpmnMapper', () => {
   describe('toModel', () => {
     it('should map bpmn process correctly', () => {
       const result = bpmnMapper.toModel(process1);
-      expect(result).toEqual(model1);
+      expect(result.id).toEqual(model1.id);
+      model1.transitions.forEach(transition => expect(result.transitions).toContainEqual(transition))
+      result.transitions.forEach(transition => expect(model1.transitions).toContainEqual(transition))
     });
   });
 });

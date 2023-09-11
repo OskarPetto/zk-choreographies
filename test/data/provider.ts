@@ -325,7 +325,7 @@ export class TestdataProvider {
     ];
     return {
       id: 'conformance_example',
-      transitions: new Map(transitions.map((t) => [t.id, t])),
+      transitions,
     };
   }
 
@@ -418,7 +418,7 @@ export class TestdataProvider {
     ];
     return {
       id: 'conformance_example',
-      transitions: new Map(transitions.map((t) => [t.id, t])),
+      transitions,
     };
   }
 

@@ -50,7 +50,7 @@ export class ModelReducer {
         );
       }
     }
-    model.transitions.delete(transitionToRemove.id);
+    model.transitions = model.transitions.filter(t => t.id !== transitionToRemove.id);
   }
 
   private removeTransitionAndIncomingPlaces(
@@ -73,7 +73,7 @@ export class ModelReducer {
         );
       }
     }
-    model.transitions.delete(transitionToRemove.id);
+    model.transitions = model.transitions.filter(t => t.id !== transitionToRemove.id);
   }
 
   private setMinus(places1: PlaceId[], places2: PlaceId[]): PlaceId[] {

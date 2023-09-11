@@ -17,7 +17,7 @@ export class BpmnMapper {
     );
     return {
       id: process.id,
-      transitions: new Map(transitions.map((t) => [t.id, t])),
+      transitions,
     };
   }
 

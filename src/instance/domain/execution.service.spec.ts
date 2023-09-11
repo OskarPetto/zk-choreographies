@@ -5,7 +5,7 @@ import { ExecutionStatus } from './instance';
 import { Model, Transition, TransitionId } from 'src/model';
 
 function findTransition(model: Model, transitionId: TransitionId): Transition {
-  const transition = model.transitions.get(transitionId);
+  const transition = model.transitions.find(t => t.id === transitionId);
   if (!transition) {
     throw Error(`Transition ${transitionId} in model ${model.id} not found`);
   }
