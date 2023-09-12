@@ -9,4 +9,4 @@ import { ModelModule } from 'src/model/model.module';
   controllers: [],
   providers: [BpmnMapper, BpmnParser, BpmnService],
 })
-export class BpmnModule { }
+export class BpmnModule {}

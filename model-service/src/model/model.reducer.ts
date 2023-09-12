@@ -1,16 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import {
-  Model,
-  PlaceId,
-  Transition,
-  TransitionType,
-  copyModel,
-} from '../model/model';
+import { Model, PlaceId, Transition, TransitionType } from '../model/model';
 
 @Injectable()
 export class ModelReducer {
   reduceModel(model: Model): Model {
-    const newModel = copyModel(model);
+    const newModel = this.copyModel(model);
     for (const transition of newModel.transitions) {
       switch (transition.type) {
         case TransitionType.START:
@@ -122,5 +116,24 @@ export class ModelReducer {
 
   private union(places1: PlaceId[], places2: PlaceId[]): PlaceId[] {
     return [...new Set([...places1, ...places2])];
+  }
+
+  private copyModel(model: Model): Model {
+    const transitions: Transition[] = [...model.transitions.values()].map(
+      (transition) => ({
+        id: transition.id,
+        type: transition.type,
+        name: transition.name,
+        incomingPlaces: [...transition.incomingPlaces],
+        outgoingPlaces: [...transition.outgoingPlaces],
+      }),
+    );
+
+    return {
+      id: model.id,
+      placeCount: model.placeCount,
+      startPlace: model.startPlace,
+      transitions,
+    };
   }
 }

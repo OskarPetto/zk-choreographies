@@ -15,7 +15,7 @@ describe('CatsController', () => {
   let modelService: ModelService;
   const bpmnString = TestdataProvider.getConformanceExample();
   const definitions = {
-    process: TestdataProvider.getProcess1()
+    process: TestdataProvider.getProcess1(),
   };
   const model1 = TestdataProvider.getModel1();
   const model2 = TestdataProvider.getModel2();
@@ -23,14 +23,20 @@ describe('CatsController', () => {
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [],
-      providers: [BpmnService, BpmnParser, BpmnMapper, ModelReducer, ModelService],
+      providers: [
+        BpmnService,
+        BpmnParser,
+        BpmnMapper,
+        ModelReducer,
+        ModelService,
+      ],
     }).compile();
 
     bpmnService = await moduleRef.resolve(BpmnService);
-    bpmnParser = await moduleRef.resolve(BpmnParser)
-    bpmnMapper = await moduleRef.resolve(BpmnMapper)
-    modelReducer = await moduleRef.resolve(ModelReducer)
-    modelService = await moduleRef.resolve(ModelService)
+    bpmnParser = await moduleRef.resolve(BpmnParser);
+    bpmnMapper = await moduleRef.resolve(BpmnMapper);
+    modelReducer = await moduleRef.resolve(ModelReducer);
+    modelService = await moduleRef.resolve(ModelService);
   });
 
   describe('importBpmnProcess', () => {

@@ -1,5 +1,3 @@
-import { v4 as uuid } from 'uuid';
-
 export type PlaceId = number;
 
 export type TransitionId = string;
@@ -29,27 +27,4 @@ export interface Model {
   placeCount: number;
   startPlace: PlaceId;
   transitions: Transition[];
-}
-
-export function copyModel(model: Model): Model {
-  const transitions: Transition[] = [...model.transitions.values()].map(
-    (transition) => ({
-      id: transition.id,
-      type: transition.type,
-      name: transition.name,
-      incomingPlaces: [...transition.incomingPlaces],
-      outgoingPlaces: [...transition.outgoingPlaces],
-    }),
-  );
-
-  return {
-    id: model.id,
-    placeCount: model.placeCount,
-    startPlace: model.startPlace,
-    transitions,
-  };
-}
-
-export function createModelId(): ModelId {
-  return uuid();
 }

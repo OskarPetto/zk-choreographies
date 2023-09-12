@@ -11,7 +11,7 @@ export class BpmnService {
     private bpmnMapper: BpmnMapper,
     private modelReducer: ModelReducer,
     private modelService: ModelService,
-  ) { }
+  ) {}
 
   importBpmn(bpmnString: string) {
     const definitions = this.bpmnParser.parseBpmn(bpmnString);
