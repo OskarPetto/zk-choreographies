@@ -4,6 +4,7 @@ import { ModelReducer } from './model.reducer';
 
 @Module({
   imports: [],
+  exports: [ModelReducer, ModelService],
   controllers: [],
   providers: [ModelService, ModelReducer],
 })

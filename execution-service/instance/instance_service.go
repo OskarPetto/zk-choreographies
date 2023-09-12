@@ -1,11 +1,15 @@
 package instance
 
 import (
-	"execution-service/model"
 	"fmt"
 
 	"github.com/google/uuid"
 )
+
+type IInstanceService interface {
+	SaveInstance(Instance) error
+	FindInstance(InstanceId) (Instance, error)
+}
 
 type InstanceService struct {
 	Instances map[InstanceId]Instance
@@ -17,18 +21,10 @@ func NewInstanceService() *InstanceService {
 	}
 }
 
-func (service *InstanceService) InstantiateModel(model model.Model) (Instance, error) {
-	tokenCounts := make([]int8, model.PlaceCount)
-	for i := range tokenCounts {
-		tokenCounts[i] = 0
-	}
-	return Instance{
-		Id:          createInstanceId(),
-		TokenCounts: tokenCounts,
-	}, nil
-}
-
 func (service *InstanceService) SaveInstance(instance Instance) error {
+	if instance.Id == "" {
+		instance.Id = createInstanceId()
+	}
 	service.Instances[instance.Id] = instance
 	return nil
 }

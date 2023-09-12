@@ -10,8 +10,10 @@ type Transition struct {
 	OutgoingPlaces []PlaceId
 }
 
+type ModelId string
+
 type Model struct {
-	Id          string
+	Id          ModelId
 	PlaceCount  uint
 	StartPlace  PlaceId
 	Transitions []Transition
