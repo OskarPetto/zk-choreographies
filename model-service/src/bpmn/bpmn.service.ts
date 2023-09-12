@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BpmnParser } from './bpmn.parser';
 import { BpmnMapper } from './bpmn.mapper';
-import { ModelReducer } from '../model/model.reducer';
+import { ModelReducer } from 'src/model/model.reducer';
 import { ModelService } from 'src/model/model.service';
 
 @Injectable()

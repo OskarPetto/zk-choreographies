@@ -5,7 +5,7 @@ import {
   Transition,
   TransitionType,
   copyModel,
-} from './model';
+} from '../model/model';
 
 @Injectable()
 export class ModelReducer {
