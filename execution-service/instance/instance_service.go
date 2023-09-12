@@ -6,11 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type IInstanceService interface {
-	SaveInstance(Instance) error
-	FindInstance(InstanceId) (Instance, error)
-}
-
 type InstanceService struct {
 	Instances map[InstanceId]Instance
 }

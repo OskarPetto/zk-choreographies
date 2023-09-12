@@ -79,6 +79,6 @@ func GetInstance1() instance.Instance {
 	return instance.Instance{
 		Id:          "conformance_example1",
 		Model:       GetModel1().Id,
-		TokenCounts: []int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		TokenCounts: []int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 	}
 }
