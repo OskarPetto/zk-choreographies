@@ -6,12 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type IInstanceService interface {
-	InstantiateModel(model model.Model) (Instance, error)
-}
-
 type InstanceService struct {
-	IInstanceService
 }
 
 func (service *InstanceService) InstantiateModel(model model.Model) (Instance, error) {
