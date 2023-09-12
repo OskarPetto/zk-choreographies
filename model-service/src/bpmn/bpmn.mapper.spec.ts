@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { TestdataProvider } from 'test/data/testdata.provider';
 import { BpmnMapper } from './bpmn.mapper';
+import { Transition } from 'src/model/model';
 
 describe('BpmnMapper', () => {
   let bpmnMapper: BpmnMapper;
@@ -8,21 +9,17 @@ describe('BpmnMapper', () => {
   const model1 = TestdataProvider.getModel1();
 
   beforeAll(async () => {
-    const app = await Test.createTestingModule({
-      providers: [BpmnMapper],
-    }).compile();
-
-    bpmnMapper = app.get<BpmnMapper>(BpmnMapper);
+    bpmnMapper = new BpmnMapper();
   });
 
   describe('toModel', () => {
     it('should map bpmn process correctly', () => {
       const result = bpmnMapper.toModel(process1);
       expect(result.id).toEqual(model1.id);
-      model1.transitions.forEach((transition) =>
+      model1.transitions.forEach((transition: Transition) =>
         expect(result.transitions).toContainEqual(transition),
       );
-      result.transitions.forEach((transition) =>
+      result.transitions.forEach((transition: Transition) =>
         expect(model1.transitions).toContainEqual(transition),
       );
     });

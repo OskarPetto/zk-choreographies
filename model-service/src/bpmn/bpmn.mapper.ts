@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Element, Process, SequenceFlow, SequenceFlowId } from './bpmn';
-import { Model, PlaceId, Transition, TransitionType } from '../domain/model';
+import { Model, PlaceId, Transition, TransitionType } from '../model/model';
 
 @Injectable()
 export class BpmnMapper {

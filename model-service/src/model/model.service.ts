@@ -3,7 +3,7 @@ import { ModelId, Model } from './model';
 
 @Injectable()
 export class ModelService {
-  models: Map<ModelId, Model>;
+  models: Map<ModelId, Model> = new Map();
 
   saveModel(model: Model) {
     this.models.set(model.id, model);

@@ -1,5 +1,3 @@
-import { Test } from '@nestjs/testing';
-
 import { TestdataProvider } from 'test/data/testdata.provider';
 import { ModelReducer } from './model.reducer';
 
@@ -9,11 +7,7 @@ describe('ReductionService', () => {
   const model2 = TestdataProvider.getModel2();
 
   beforeAll(async () => {
-    const app = await Test.createTestingModule({
-      providers: [ModelReducer],
-    }).compile();
-
-    modelReducer = app.get<ModelReducer>(ModelReducer);
+    modelReducer = new ModelReducer();
   });
 
   describe('reduceModel', () => {

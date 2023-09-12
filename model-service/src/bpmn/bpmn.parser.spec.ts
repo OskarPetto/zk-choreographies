@@ -8,11 +8,7 @@ describe('BpmnParser', () => {
   const bpmnString = TestdataProvider.getConformanceExample();
 
   beforeAll(async () => {
-    const app = await Test.createTestingModule({
-      providers: [BpmnParser],
-    }).compile();
-
-    bpmnParser = app.get<BpmnParser>(BpmnParser);
+    bpmnParser = new BpmnParser();
   });
 
   describe('parseBpmn', () => {

@@ -1,4 +1,4 @@
-import { TransitionType } from '../domain/model';
+import { TransitionType } from '../model/model';
 
 export type SequenceFlowId = string;
 

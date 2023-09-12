@@ -1,5 +1,9 @@
 import { PlaceId, Model, TransitionId, Transition } from 'src/model';
 
+export function logObject(object: any) {
+  console.dir(object, { depth: null });
+}
+
 export function findTransition(
   model: Model,
   transitionId: TransitionId,

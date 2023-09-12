@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { XMLParser } from 'fast-xml-parser';
 import { Definitions, Process, Element, SequenceFlow } from './bpmn';
-import { TransitionType } from '../domain/model';
+import { TransitionType } from '../model/model';
 
 @Injectable()
 export class BpmnParser {

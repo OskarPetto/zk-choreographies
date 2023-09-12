@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { BpmnParser } from './bpmn.parser';
 import { BpmnMapper } from './bpmn.mapper';
-import { Model } from '../domain/model';
-import { ModelReducer } from './model.reducer';
+import { ModelReducer } from '../model/model.reducer';
+import { ModelService } from 'src/model/model.service';
 
 @Injectable()
 export class BpmnService {
@@ -10,11 +10,13 @@ export class BpmnService {
     private bpmnParser: BpmnParser,
     private bpmnMapper: BpmnMapper,
     private modelReducer: ModelReducer,
-  ) {}
+    private modelService: ModelService,
+  ) { }
 
-  parseModel(bpmnString: string): Model {
+  importBpmn(bpmnString: string) {
     const definitions = this.bpmnParser.parseBpmn(bpmnString);
     const model = this.bpmnMapper.toModel(definitions.process);
-    return this.modelReducer.reduceModel(model);
+    const reducedModel = this.modelReducer.reduceModel(model);
+    this.modelService.saveModel(reducedModel);
   }
 }

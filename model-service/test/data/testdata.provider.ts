@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Model, Transition, TransitionType } from 'src/model';
-import { Process } from 'src/model/bpmn/bpmn';
+import { Model, Transition, TransitionType } from 'src/model/model';
+import { Process } from 'src/bpmn/bpmn';
 
 function readTextFile(filename: string) {
   const filePath = path.join(process.cwd(), filename);
