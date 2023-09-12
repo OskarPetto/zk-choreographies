@@ -6,12 +6,16 @@ import (
 	"github.com/google/uuid"
 )
 
-type InstanceService interface {
+type IInstanceService interface {
 	InstantiateModel(model model.Model) (Instance, error)
 }
 
-func InstantiateModel(model model.Model) (Instance, error) {
-	var tokenCounts []int8 = make([]int8, model.PlaceCount)
+type InstanceService struct {
+	IInstanceService
+}
+
+func (service *InstanceService) InstantiateModel(model model.Model) (Instance, error) {
+	tokenCounts := make([]int8, model.PlaceCount)
 	for i := range tokenCounts {
 		tokenCounts[i] = 0
 	}
