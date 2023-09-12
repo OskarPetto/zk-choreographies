@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { TestdataProvider } from 'test/data/provider';
+import { TestdataProvider } from 'test/data/testdata.provider';
 import { BpmnMapper } from './bpmn.mapper';
 
 describe('BpmnMapper', () => {
