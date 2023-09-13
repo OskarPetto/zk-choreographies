@@ -32,11 +32,19 @@ func findTransitions(model mdl.Model, transitionIds []mdl.TransitionId) []mdl.Tr
 
 var model1 = testdata.GetModel1()
 var instance1 = testdata.GetInstance1()
+var executionService = execution.ExecutionService{}
 
 func TestInstantiateModel(t *testing.T) {
-	result := execution.InstantiateModel(model1)
+	result := executionService.InstantiateModel(model1)
 	assert.Equal(t, instance1.Model, result.Model)
 	assert.Equal(t, instance1.TokenCounts, result.TokenCounts)
+}
+
+func TestImmutabilityOfInstances(t *testing.T) {
+	trace := []model.TransitionId{"As"}
+	transitions := findTransitions(model1, trace)
+	executionService.ExecuteTransition(instance1, transitions[0])
+	assert.Equal(t, []int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 1}, instance1.TokenCounts)
 }
 
 func TestExecuteTransition(t *testing.T) {
@@ -44,7 +52,7 @@ func TestExecuteTransition(t *testing.T) {
 	transitions := findTransitions(model1, trace)
 	instance := instance1
 	for _, transition := range transitions {
-		instance, _ = execution.ExecuteTransition(instance, transition)
+		instance, _ = executionService.ExecuteTransition(instance, transition)
 	}
-	assert.Equal(t, instance.TokenCounts, []int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+	assert.Equal(t, []int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, instance.TokenCounts)
 }

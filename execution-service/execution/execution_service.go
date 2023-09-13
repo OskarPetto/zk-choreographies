@@ -6,7 +6,10 @@ import (
 	"fmt"
 )
 
-func InstantiateModel(model model.Model) inst.Instance {
+type ExecutionService struct {
+}
+
+func (service *ExecutionService) InstantiateModel(model model.Model) inst.Instance {
 	tokenCounts := make([]int8, model.PlaceCount)
 	for i := range tokenCounts {
 		tokenCounts[i] = 0
@@ -18,7 +21,7 @@ func InstantiateModel(model model.Model) inst.Instance {
 	}
 }
 
-func ExecuteTransition(instance inst.Instance, transition model.Transition) (inst.Instance, error) {
+func (service *ExecutionService) ExecuteTransition(instance inst.Instance, transition model.Transition) (inst.Instance, error) {
 	if !isTransitionExecutable(instance, transition) {
 		return inst.Instance{}, fmt.Errorf("transition %+v is not executable in instance %+v", transition, instance)
 	}
