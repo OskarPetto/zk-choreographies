@@ -1,82 +1,81 @@
 package testdata
 
 import (
-	"execution-service/instance"
-	"execution-service/petriNet"
+	"proof-service/workflow"
 )
 
-func GetPetriNet1() petriNet.PetriNet {
-	return petriNet.PetriNet{
+func GetPetriNet1() workflow.PetriNet {
+	return workflow.PetriNet{
 		Id:         "conformance_example",
 		StartPlace: 9,
 		PlaceCount: 10,
-		Transitions: []petriNet.Transition{
-			petriNet.Transition{
+		Transitions: []workflow.Transition{
+			workflow.Transition{
 				Id:             "As",
-				IncomingPlaces: []petriNet.PlaceId{9},
-				OutgoingPlaces: []petriNet.PlaceId{0},
+				IncomingPlaces: []workflow.PlaceId{9},
+				OutgoingPlaces: []workflow.PlaceId{0},
 			},
-			petriNet.Transition{
+			workflow.Transition{
 				Id:             "Da1",
-				IncomingPlaces: []petriNet.PlaceId{0},
-				OutgoingPlaces: []petriNet.PlaceId{8},
+				IncomingPlaces: []workflow.PlaceId{0},
+				OutgoingPlaces: []workflow.PlaceId{8},
 			},
-			petriNet.Transition{
+			workflow.Transition{
 				Id:             "Aa",
-				IncomingPlaces: []petriNet.PlaceId{0},
-				OutgoingPlaces: []petriNet.PlaceId{1, 2},
+				IncomingPlaces: []workflow.PlaceId{0},
+				OutgoingPlaces: []workflow.PlaceId{1, 2},
 			},
-			petriNet.Transition{
+			workflow.Transition{
 				Id:             "Fa",
-				IncomingPlaces: []petriNet.PlaceId{1},
-				OutgoingPlaces: []petriNet.PlaceId{5},
+				IncomingPlaces: []workflow.PlaceId{1},
+				OutgoingPlaces: []workflow.PlaceId{5},
 			},
-			petriNet.Transition{
+			workflow.Transition{
 				Id:             "Sso",
-				IncomingPlaces: []petriNet.PlaceId{2},
-				OutgoingPlaces: []petriNet.PlaceId{3},
+				IncomingPlaces: []workflow.PlaceId{2},
+				OutgoingPlaces: []workflow.PlaceId{3},
 			},
-			petriNet.Transition{
+			workflow.Transition{
 				Id:             "Ro",
-				IncomingPlaces: []petriNet.PlaceId{3},
-				OutgoingPlaces: []petriNet.PlaceId{4},
+				IncomingPlaces: []workflow.PlaceId{3},
+				OutgoingPlaces: []workflow.PlaceId{4},
 			},
-			petriNet.Transition{
+			workflow.Transition{
 				Id:             "Co",
-				IncomingPlaces: []petriNet.PlaceId{4},
-				OutgoingPlaces: []petriNet.PlaceId{2},
+				IncomingPlaces: []workflow.PlaceId{4},
+				OutgoingPlaces: []workflow.PlaceId{2},
 			},
-			petriNet.Transition{
+			workflow.Transition{
 				Id:             "Ao",
-				IncomingPlaces: []petriNet.PlaceId{5, 4},
-				OutgoingPlaces: []petriNet.PlaceId{6},
+				IncomingPlaces: []workflow.PlaceId{5, 4},
+				OutgoingPlaces: []workflow.PlaceId{6},
 			},
-			petriNet.Transition{
+			workflow.Transition{
 				Id:             "Do",
-				IncomingPlaces: []petriNet.PlaceId{5, 4},
-				OutgoingPlaces: []petriNet.PlaceId{7},
+				IncomingPlaces: []workflow.PlaceId{5, 4},
+				OutgoingPlaces: []workflow.PlaceId{7},
 			},
-			petriNet.Transition{
+			workflow.Transition{
 				Id:             "Aaa",
-				IncomingPlaces: []petriNet.PlaceId{6},
-				OutgoingPlaces: []petriNet.PlaceId{8},
+				IncomingPlaces: []workflow.PlaceId{6},
+				OutgoingPlaces: []workflow.PlaceId{8},
 			},
-			petriNet.Transition{
+			workflow.Transition{
 				Id:             "Da2",
-				IncomingPlaces: []petriNet.PlaceId{7},
-				OutgoingPlaces: []petriNet.PlaceId{8},
+				IncomingPlaces: []workflow.PlaceId{7},
+				OutgoingPlaces: []workflow.PlaceId{8},
 			},
-			petriNet.Transition{
+			workflow.Transition{
 				Id:             "Af",
-				IncomingPlaces: []petriNet.PlaceId{8},
-				OutgoingPlaces: []petriNet.PlaceId{},
+				IncomingPlaces: []workflow.PlaceId{8},
+				OutgoingPlaces: []workflow.PlaceId{},
 			},
 		},
 	}
 }
 
-func GetInstance1() instance.Instance {
-	return instance.Instance{
+func GetInstance1() workflow.Instance {
+	return workflow.Instance{
 		Id:          "conformance_example1",
 		PetriNet:    GetPetriNet1().Id,
 		TokenCounts: []int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
