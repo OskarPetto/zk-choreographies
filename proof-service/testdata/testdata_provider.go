@@ -86,7 +86,7 @@ func GetInstance1() workflow.Instance {
 func GetCommitment1() commitment.Commitment {
 	return commitment.Commitment{
 		Id:         "commitment1",
-		Value:      []byte{0, 0, 0, 0, 0, 0, 0, 0, 0},
+		Value:      [32]byte{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31},
 		Randomness: []byte{1, 1, 1, 1, 1, 1, 1, 1, 1},
 	}
 }

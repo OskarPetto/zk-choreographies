@@ -1,11 +1,11 @@
 package commitment
 
-const randomnessSize = 32
+const RandomnessSize = 32
 
 type CommitmentId = string
 
 type Commitment struct {
 	Id         CommitmentId
-	Value      []byte
+	Value      [32]byte
 	Randomness []byte
 }
