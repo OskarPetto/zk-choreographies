@@ -2,7 +2,8 @@ package proof
 
 import (
 	"github.com/consensys/gnark/frontend"
-	"github.com/consensys/gnark/std/hash/mimc"
+	"github.com/consensys/gnark/std/hash/sha2"
+	"github.com/consensys/gnark/std/math/uints"
 )
 
 type InstantiationCircuit struct {
@@ -15,9 +16,16 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 	for placeId := 0; placeId < MaxPlaceCount; placeId++ {
 		isStartPlace := api.IsZero(api.Sub(circuit.PetriNet.StartPlace, placeId))
 		expectedTokenCount := api.Select(isStartPlace, 1, 0)
-		api.AssertIsEqual(circuit.Instance.TokenCounts[placeId], expectedTokenCount)
+		tokenCount := circuit.Instance.TokenCounts[placeId]
+		api.AssertIsEqual(tokenCount, expectedTokenCount)
 	}
-	hasher, _ := mimc.NewMiMC(api)
-	hasher.Write(circuit.Instance.TokenCountsLength, circuit.Instance.TokenCounts, circuit.Instance.Randomness)
+	hasher, _ := sha2.New(api)
+	var hashInput []uints.U8
+	hashInput = append(hashInput, circuit.Instance.TokenCountsLength)
+	hashInput = append(hashInput, circuit.Instance.TokenCounts[:]...)
+	hashInput = append(hashInput, circuit.Instance.Commitment.Randomness[:]...)
+	hasher.Write(hashInput)
+	hashResult := hasher.Sum()
+	api.AssertIsEqual(hashResult, circuit.Instance.Commitment.Value)
 	return nil
 }
