@@ -1,6 +1,7 @@
 package testdata
 
 import (
+	"proof-service/commitment"
 	"proof-service/workflow"
 )
 
@@ -79,5 +80,13 @@ func GetInstance1() workflow.Instance {
 		Id:          "conformance_example1",
 		PetriNet:    GetPetriNet1().Id,
 		TokenCounts: []int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+	}
+}
+
+func GetCommitment1() commitment.Commitment {
+	return commitment.Commitment{
+		Id:         "commitment1",
+		Value:      []byte{0, 0, 0, 0, 0, 0, 0, 0, 0},
+		Randomness: []byte{1, 1, 1, 1, 1, 1, 1, 1, 1},
 	}
 }
