@@ -3,7 +3,7 @@ import { ExecutionService } from './execution.service';
 import { TestdataProvider } from 'test/data/testdata.provider';
 import { findTransitions } from 'test/testutils';
 import { Transition } from 'src/model/petri-net/petri-net';
-import { Instance } from '../instance';
+import { Instance } from './instance/instance';
 
 function executeTransitions(
   executionService: ExecutionService,

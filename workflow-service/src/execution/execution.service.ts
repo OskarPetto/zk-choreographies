@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Instance } from 'src/instance/instance';
+import { Instance } from 'src/execution/instance/instance';
 import { PetriNet, Transition } from 'src/model/petri-net/petri-net';
 
 @Injectable()

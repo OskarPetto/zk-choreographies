@@ -6,7 +6,7 @@ import {
   TransitionType,
 } from 'src/model/petri-net/petri-net';
 import { Process } from 'src/model/bpmn/bpmn';
-import { Instance } from 'src/instance/instance';
+import { Instance } from 'src/execution/instance/instance';
 
 function readTextFile(filename: string) {
   const filePath = path.join(process.cwd(), filename);
