@@ -1,7 +1,8 @@
-package proof
+package circuit
 
 import (
-	"proof-service/proof/inputs"
+	"proof-service/circuit/input"
+	"proof-service/petri_net"
 
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/hash/sha2"
@@ -9,14 +10,14 @@ import (
 )
 
 type InstantiationCircuit struct {
-	Instance   inputs.Instance
-	Commitment inputs.Commitment
-	PetriNet   inputs.PetriNet
+	Instance   input.Instance
+	Commitment input.Commitment
+	PetriNet   input.PetriNet
 }
 
 func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 	api.AssertIsEqual(circuit.Instance.PlaceCount, circuit.PetriNet.PlaceCount)
-	for placeId := 0; placeId < inputs.MaxPlaceCount; placeId++ {
+	for placeId := 0; placeId < petri_net.MaxPlaceCount; placeId++ {
 		isStartPlace := api.IsZero(api.Sub(circuit.PetriNet.StartPlace, placeId))
 		expectedTokenCount := api.Select(isStartPlace, 1, 0)
 		tokenCount := circuit.Instance.TokenCounts[placeId]

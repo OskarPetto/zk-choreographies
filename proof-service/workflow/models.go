@@ -1,12 +1,6 @@
 package workflow
 
-type PlaceId = uint8
-
-type Instance struct {
-	Id          string
-	PetriNet    string
-	TokenCounts []int8
-}
+type PlaceId = uint
 
 type Transition struct {
 	Id             string
@@ -16,7 +10,13 @@ type Transition struct {
 
 type PetriNet struct {
 	Id          string
-	PlaceCount  uint8
+	PlaceCount  uint
 	StartPlace  PlaceId
 	Transitions []Transition
+}
+
+type Instance struct {
+	Id          string
+	PetriNet    string
+	TokenCounts []int
 }

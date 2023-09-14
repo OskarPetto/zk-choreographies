@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var instance = testdata.GetWorkflowInstance1()
 var commitment1 = testdata.GetCommitment1()
 
 func TestFindCommitment(t *testing.T) {
