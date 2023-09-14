@@ -31,17 +31,17 @@ func FromWorkflowPetriNet(petriNet workflow.PetriNet) (PetriNet, error) {
 	placeCount := petriNet.PlaceCount
 	transitionCount := len(petriNet.Transitions)
 	if placeCount > MaxPlaceCount || transitionCount > MaxTransitionCount {
-		return PetriNet{}, fmt.Errorf("petriNet %s is too large", petriNet.Id)
+		return PetriNet{}, fmt.Errorf("petriNet '%s' is too large", petriNet.Id)
 	}
 	if petriNet.StartPlace >= MaxPlaceCount {
-		return PetriNet{}, fmt.Errorf("petriNet %s has invalid startPlace", petriNet.Id)
+		return PetriNet{}, fmt.Errorf("petriNet '%s' has invalid startPlace", petriNet.Id)
 	}
 	var transitions [MaxTransitionCount]Transition
 	var err error
 	for i := 0; i < transitionCount; i++ {
 		transitions[i], err = fromWorkflowTransition(petriNet.Transitions[i])
 		if err != nil {
-			return PetriNet{}, fmt.Errorf("petriNet %s cannot be mapped because transition at index %d is invalid: %w", petriNet.Id, i, err)
+			return PetriNet{}, fmt.Errorf("petriNet '%s' cannot be mapped because transition at index %d is invalid: %w", petriNet.Id, i, err)
 		}
 	}
 	return PetriNet{
@@ -56,19 +56,19 @@ func fromWorkflowTransition(transition workflow.Transition) (Transition, error) 
 	incomingPlaceCount := len(transition.IncomingPlaces)
 	outgoingPlaceCount := len(transition.OutgoingPlaces)
 	if incomingPlaceCount > MaxBranchingFactor || outgoingPlaceCount > MaxBranchingFactor {
-		return Transition{}, fmt.Errorf("transition %s branches too much", transition.Id)
+		return Transition{}, fmt.Errorf("transition '%s' branches too much", transition.Id)
 	}
 	var incomingPlaces [MaxBranchingFactor]uint8
 	var outgoingPlaces [MaxBranchingFactor]uint8
 	for i := 0; i < incomingPlaceCount; i++ {
-		if transition.IncomingPlaces[i] >= MaxBranchingFactor {
-			return Transition{}, fmt.Errorf("incomingPlace at index %d of transition %s is invalid", i, transition.Id)
+		if transition.IncomingPlaces[i] >= MaxPlaceCount {
+			return Transition{}, fmt.Errorf("incomingPlace at index %d of transition '%s' is invalid", i, transition.Id)
 		}
 		incomingPlaces[i] = uint8(transition.IncomingPlaces[i])
 	}
 	for i := 0; i < outgoingPlaceCount; i++ {
-		if transition.OutgoingPlaces[i] >= MaxBranchingFactor {
-			return Transition{}, fmt.Errorf("outgoingPlace at index %d of transition %s is invalid", i, transition.Id)
+		if transition.OutgoingPlaces[i] >= MaxPlaceCount {
+			return Transition{}, fmt.Errorf("outgoingPlace at index %d of transition '%s' is invalid", i, transition.Id)
 		}
 		outgoingPlaces[i] = uint8(transition.OutgoingPlaces[i])
 	}

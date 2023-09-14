@@ -17,13 +17,13 @@ type Instance struct {
 func FromWorkflowInstance(instance workflow.Instance) (Instance, error) {
 	placeCount := len(instance.TokenCounts)
 	if placeCount > petri_net.MaxPlaceCount {
-		return Instance{}, fmt.Errorf("instance %s is too large", instance.Id)
+		return Instance{}, fmt.Errorf("instance '%s' is too large", instance.Id)
 	}
 	var tokenCounts [petri_net.MaxPlaceCount]int8
 	for i := 0; i < placeCount; i++ {
 		tokenCount := instance.TokenCounts[i]
 		if !slices.Contains(AllowedTokenCounts, tokenCount) {
-			return Instance{}, fmt.Errorf("tokenCount of instance %s at index %d is not allowed", instance.Id, i)
+			return Instance{}, fmt.Errorf("tokenCount of instance '%s' at index %d is not allowed", instance.Id, i)
 		}
 		tokenCounts[i] = int8(instance.TokenCounts[i])
 	}
