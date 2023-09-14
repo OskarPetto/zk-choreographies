@@ -7,17 +7,17 @@ import (
 )
 
 type CommitmentService struct {
-	Commitments map[CommitmentId]Commitment
+	commitments map[CommitmentId]Commitment
 }
 
 func NewCommitmentService() CommitmentService {
 	return CommitmentService{
-		Commitments: make(map[CommitmentId]Commitment),
+		commitments: make(map[CommitmentId]Commitment),
 	}
 }
 
 func (service *CommitmentService) FindCommitment(commitmentId CommitmentId) (Commitment, error) {
-	commitment, exists := service.Commitments[commitmentId]
+	commitment, exists := service.commitments[commitmentId]
 	if !exists {
 		return Commitment{}, fmt.Errorf("randomness for %s not found", commitmentId)
 	}
@@ -25,7 +25,7 @@ func (service *CommitmentService) FindCommitment(commitmentId CommitmentId) (Com
 }
 
 func (service *CommitmentService) SaveCommitment(commitment Commitment) error {
-	service.Commitments[commitment.Id] = commitment
+	service.commitments[commitment.Id] = commitment
 	return nil
 }
 

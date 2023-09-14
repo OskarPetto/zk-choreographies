@@ -3,7 +3,6 @@ package testdata
 import (
 	"proof-service/circuit/input"
 	"proof-service/commitment"
-	"proof-service/petri_net"
 
 	"github.com/consensys/gnark/std/math/uints"
 )
@@ -13,78 +12,78 @@ func GetCircuitPetriNet1() input.PetriNet {
 		StartPlace:      uints.NewU8(9),
 		PlaceCount:      uints.NewU8(10),
 		TransitionCount: uints.NewU8(12),
-		Transitions: [petri_net.MaxTransitionCount]input.Transition{
+		Transitions: []input.Transition{
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(1),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(9)},
+				IncomingPlaces:     uints.NewU8Array([]byte{9}),
 				OutgoingPlaceCount: uints.NewU8(1),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(0)},
+				OutgoingPlaces:     uints.NewU8Array([]byte{0}),
 			},
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(1),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(0)},
+				IncomingPlaces:     uints.NewU8Array([]byte{0}),
 				OutgoingPlaceCount: uints.NewU8(1),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(8)},
+				OutgoingPlaces:     uints.NewU8Array([]byte{8}),
 			},
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(1),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(0)},
+				IncomingPlaces:     uints.NewU8Array([]byte{0}),
 				OutgoingPlaceCount: uints.NewU8(2),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(1), uints.NewU8(2)},
+				OutgoingPlaces:     uints.NewU8Array([]byte{1, 2}),
 			},
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(1),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(1)},
+				IncomingPlaces:     uints.NewU8Array([]byte{1}),
 				OutgoingPlaceCount: uints.NewU8(1),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(5)},
+				OutgoingPlaces:     uints.NewU8Array([]byte{5}),
 			},
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(1),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(2)},
+				IncomingPlaces:     uints.NewU8Array([]byte{2}),
 				OutgoingPlaceCount: uints.NewU8(1),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(3)},
+				OutgoingPlaces:     uints.NewU8Array([]byte{3}),
 			},
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(1),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(3)},
+				IncomingPlaces:     uints.NewU8Array([]byte{3}),
 				OutgoingPlaceCount: uints.NewU8(1),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(4)},
+				OutgoingPlaces:     uints.NewU8Array([]byte{4}),
 			},
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(1),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(4)},
+				IncomingPlaces:     uints.NewU8Array([]byte{4}),
 				OutgoingPlaceCount: uints.NewU8(1),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(2)},
+				OutgoingPlaces:     uints.NewU8Array([]byte{2}),
 			},
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(2),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(5), uints.NewU8(4)},
+				IncomingPlaces:     uints.NewU8Array([]byte{5, 4}),
 				OutgoingPlaceCount: uints.NewU8(1),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(6)},
+				OutgoingPlaces:     uints.NewU8Array([]byte{6}),
 			},
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(2),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(5), uints.NewU8(4)},
+				IncomingPlaces:     uints.NewU8Array([]byte{5, 4}),
 				OutgoingPlaceCount: uints.NewU8(1),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(7)},
+				OutgoingPlaces:     uints.NewU8Array([]byte{7}),
 			},
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(1),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(6)},
+				IncomingPlaces:     uints.NewU8Array([]byte{6}),
 				OutgoingPlaceCount: uints.NewU8(1),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(8)},
+				OutgoingPlaces:     uints.NewU8Array([]byte{8}),
 			},
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(1),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(7)},
+				IncomingPlaces:     uints.NewU8Array([]byte{7}),
 				OutgoingPlaceCount: uints.NewU8(1),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(8)},
+				OutgoingPlaces:     uints.NewU8Array([]byte{8}),
 			},
 			input.Transition{
 				IncomingPlaceCount: uints.NewU8(1),
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{uints.NewU8(8)},
+				IncomingPlaces:     uints.NewU8Array([]byte{8}),
 				OutgoingPlaceCount: uints.NewU8(0),
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uints.U8{},
+				OutgoingPlaces:     []uints.U8{},
 			},
 		},
 	}
@@ -93,13 +92,13 @@ func GetCircuitPetriNet1() input.PetriNet {
 func GetCircuitInstance1() input.Instance {
 	return input.Instance{
 		PlaceCount:  uints.NewU8(10),
-		TokenCounts: [petri_net.MaxPlaceCount]uints.U8{uints.NewU8(0), uints.NewU8(0), uints.NewU8(0), uints.NewU8(0), uints.NewU8(0), uints.NewU8(0), uints.NewU8(0), uints.NewU8(0), uints.NewU8(0), uints.NewU8(1)},
+		TokenCounts: uints.NewU8Array([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 1}),
 	}
 }
 
 func GetCircuitCommitment1() input.Commitment {
 	return input.Commitment{
-		Value:      [commitment.CommitmentSize]uints.U8{uints.NewU8(173), uints.NewU8(250), uints.NewU8(76), uints.NewU8(199), uints.NewU8(33), uints.NewU8(125), uints.NewU8(245), uints.NewU8(112), uints.NewU8(193), uints.NewU8(231), uints.NewU8(245), uints.NewU8(111), uints.NewU8(241), uints.NewU8(47), uints.NewU8(83), uints.NewU8(227), uints.NewU8(59), uints.NewU8(97), uints.NewU8(235), uints.NewU8(27), uints.NewU8(41), uints.NewU8(252), uints.NewU8(154), uints.NewU8(174), uints.NewU8(203), uints.NewU8(125), uints.NewU8(46), uints.NewU8(134), uints.NewU8(192), uints.NewU8(60), uints.NewU8(21), uints.NewU8(61)},
-		Randomness: [...]uints.U8{uints.NewU8(235), uints.NewU8(234), uints.NewU8(56), uints.NewU8(167), uints.NewU8(9), uints.NewU8(35), uints.NewU8(69), uints.NewU8(86), uints.NewU8(84), uints.NewU8(189), uints.NewU8(131), uints.NewU8(113), uints.NewU8(74), uints.NewU8(36), uints.NewU8(83), uints.NewU8(0), uints.NewU8(32), uints.NewU8(84), uints.NewU8(137), uints.NewU8(78), uints.NewU8(186), uints.NewU8(94), uints.NewU8(40), uints.NewU8(36), uints.NewU8(195), uints.NewU8(52), uints.NewU8(216), uints.NewU8(89), uints.NewU8(95), uints.NewU8(175), uints.NewU8(115), uints.NewU8(196)},
+		Value:      ([commitment.CommitmentSize]uints.U8)(uints.NewU8Array([]byte{10, 185, 75, 252, 255, 103, 193, 241, 172, 81, 178, 68, 215, 163, 95, 199, 96, 148, 114, 179, 121, 178, 158, 198, 141, 100, 109, 163, 143, 89, 143, 50})),
+		Randomness: uints.NewU8Array([]byte{53, 180, 160, 126, 121, 134, 90, 83, 158, 204, 156, 68, 2, 224, 240, 22, 108, 27, 62, 53, 219, 131, 20, 230, 182, 12, 193, 43, 90, 34, 217, 167}),
 	}
 }

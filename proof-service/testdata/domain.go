@@ -11,78 +11,78 @@ func GetPetriNet() petri_net.PetriNet {
 		StartPlace:      9,
 		PlaceCount:      10,
 		TransitionCount: 12,
-		Transitions: [petri_net.MaxTransitionCount]petri_net.Transition{
+		Transitions: []petri_net.Transition{
 			petri_net.Transition{
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{9},
+				IncomingPlaces:     []uint8{9},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{0},
+				OutgoingPlaces:     []uint8{0},
 			},
 			petri_net.Transition{
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{0},
+				IncomingPlaces:     []uint8{0},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{8},
+				OutgoingPlaces:     []uint8{8},
 			},
 			petri_net.Transition{
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{0},
+				IncomingPlaces:     []uint8{0},
 				OutgoingPlaceCount: 2,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{1, 2},
+				OutgoingPlaces:     []uint8{1, 2},
 			},
 			petri_net.Transition{
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{1},
+				IncomingPlaces:     []uint8{1},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{5},
+				OutgoingPlaces:     []uint8{5},
 			},
 			petri_net.Transition{
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{2},
+				IncomingPlaces:     []uint8{2},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{3},
+				OutgoingPlaces:     []uint8{3},
 			},
 			petri_net.Transition{
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{3},
+				IncomingPlaces:     []uint8{3},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{4},
+				OutgoingPlaces:     []uint8{4},
 			},
 			petri_net.Transition{
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{4},
+				IncomingPlaces:     []uint8{4},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{2},
+				OutgoingPlaces:     []uint8{2},
 			},
 			petri_net.Transition{
 				IncomingPlaceCount: 2,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{5, 4},
+				IncomingPlaces:     []uint8{5, 4},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{6},
+				OutgoingPlaces:     []uint8{6},
 			},
 			petri_net.Transition{
 				IncomingPlaceCount: 2,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{5, 4},
+				IncomingPlaces:     []uint8{5, 4},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{7},
+				OutgoingPlaces:     []uint8{7},
 			},
 			petri_net.Transition{
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{6},
+				IncomingPlaces:     []uint8{6},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{8},
+				OutgoingPlaces:     []uint8{8},
 			},
 			petri_net.Transition{
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{7},
+				IncomingPlaces:     []uint8{7},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{8},
+				OutgoingPlaces:     []uint8{8},
 			},
 			petri_net.Transition{
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{8},
+				IncomingPlaces:     []uint8{8},
 				OutgoingPlaceCount: 0,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{},
+				OutgoingPlaces:     []uint8{},
 			},
 		},
 	}
@@ -91,7 +91,7 @@ func GetPetriNet() petri_net.PetriNet {
 func GetInstance1() instance.Instance {
 	return instance.Instance{
 		PlaceCount:  10,
-		TokenCounts: [petri_net.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		TokenCounts: []int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 	}
 }
 
@@ -102,7 +102,7 @@ func GetSerializedInstance1() []byte {
 func GetCommitment1() commitment.Commitment {
 	return commitment.Commitment{
 		Id:         "conformance_example1",
-		Value:      [commitment.CommitmentSize]byte{173, 250, 76, 199, 33, 125, 245, 112, 193, 231, 245, 111, 241, 47, 83, 227, 59, 97, 235, 27, 41, 252, 154, 174, 203, 125, 46, 134, 192, 60, 21, 61},
-		Randomness: []byte{235, 234, 56, 167, 9, 35, 69, 86, 84, 189, 131, 113, 74, 36, 83, 0, 32, 84, 137, 78, 186, 94, 40, 36, 195, 52, 216, 89, 95, 175, 115, 196},
+		Value:      [commitment.CommitmentSize]byte{10, 185, 75, 252, 255, 103, 193, 241, 172, 81, 178, 68, 215, 163, 95, 199, 96, 148, 114, 179, 121, 178, 158, 198, 141, 100, 109, 163, 143, 89, 143, 50},
+		Randomness: []byte{53, 180, 160, 126, 121, 134, 90, 83, 158, 204, 156, 68, 2, 224, 240, 22, 108, 27, 62, 53, 219, 131, 20, 230, 182, 12, 193, 43, 90, 34, 217, 167},
 	}
 }

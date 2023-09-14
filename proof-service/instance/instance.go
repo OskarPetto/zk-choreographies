@@ -11,7 +11,7 @@ var AllowedTokenCounts = []int{0, 1}
 
 type Instance struct {
 	PlaceCount  uint8
-	TokenCounts [petri_net.MaxPlaceCount]int8
+	TokenCounts []int8
 }
 
 func FromWorkflowInstance(instance workflow.Instance) (Instance, error) {
@@ -19,7 +19,7 @@ func FromWorkflowInstance(instance workflow.Instance) (Instance, error) {
 	if placeCount > petri_net.MaxPlaceCount {
 		return Instance{}, fmt.Errorf("instance '%s' is too large", instance.Id)
 	}
-	var tokenCounts [petri_net.MaxPlaceCount]int8
+	tokenCounts := make([]int8, placeCount)
 	for i := 0; i < placeCount; i++ {
 		tokenCount := instance.TokenCounts[i]
 		if !slices.Contains(AllowedTokenCounts, tokenCount) {

@@ -14,9 +14,9 @@ type PlaceId = uint8
 type Transition struct {
 	Id                 string
 	IncomingPlaceCount uint8
-	IncomingPlaces     [MaxBranchingFactor]PlaceId
+	IncomingPlaces     []PlaceId
 	OutgoingPlaceCount uint8
-	OutgoingPlaces     [MaxBranchingFactor]PlaceId
+	OutgoingPlaces     []PlaceId
 }
 
 type PetriNet struct {
@@ -24,7 +24,7 @@ type PetriNet struct {
 	PlaceCount      uint8
 	StartPlace      PlaceId
 	TransitionCount uint8
-	Transitions     [MaxTransitionCount]Transition
+	Transitions     []Transition
 }
 
 func FromWorkflowPetriNet(petriNet workflow.PetriNet) (PetriNet, error) {
@@ -36,7 +36,7 @@ func FromWorkflowPetriNet(petriNet workflow.PetriNet) (PetriNet, error) {
 	if petriNet.StartPlace >= MaxPlaceCount {
 		return PetriNet{}, fmt.Errorf("petriNet '%s' has invalid startPlace", petriNet.Id)
 	}
-	var transitions [MaxTransitionCount]Transition
+	transitions := make([]Transition, transitionCount)
 	var err error
 	for i := 0; i < transitionCount; i++ {
 		transitions[i], err = fromWorkflowTransition(petriNet.Transitions[i])
@@ -58,8 +58,8 @@ func fromWorkflowTransition(transition workflow.Transition) (Transition, error) 
 	if incomingPlaceCount > MaxBranchingFactor || outgoingPlaceCount > MaxBranchingFactor {
 		return Transition{}, fmt.Errorf("transition '%s' branches too much", transition.Id)
 	}
-	var incomingPlaces [MaxBranchingFactor]uint8
-	var outgoingPlaces [MaxBranchingFactor]uint8
+	incomingPlaces := make([]uint8, incomingPlaceCount)
+	outgoingPlaces := make([]uint8, outgoingPlaceCount)
 	for i := 0; i < incomingPlaceCount; i++ {
 		if transition.IncomingPlaces[i] >= MaxPlaceCount {
 			return Transition{}, fmt.Errorf("incomingPlace at index %d of transition '%s' is invalid", i, transition.Id)
