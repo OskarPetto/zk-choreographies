@@ -15,20 +15,22 @@ type InstantiationCircuit struct {
 }
 
 func (circuit *InstantiationCircuit) Define(api frontend.API) error {
-	// api.AssertIsEqual(circuit.Instance.PlaceCount, circuit.PetriNet.PlaceCount)
-	// for placeId := 0; placeId < petri_net.MaxPlaceCount; placeId++ {
-	// 	isStartPlace := api.IsZero(api.Sub(circuit.PetriNet.StartPlace, placeId))
-	// 	expectedTokenCount := api.Select(isStartPlace, 1, 0)
-	// 	tokenCount := circuit.Instance.TokenCounts[placeId]
-	// 	api.AssertIsEqual(tokenCount, expectedTokenCount)
-	// }
+	api.AssertIsEqual(len(circuit.Instance.TokenCounts), circuit.PetriNet.PlaceCount.Val)
+	for i := range circuit.Instance.TokenCounts {
+		isStartPlace := api.IsZero(api.Sub(circuit.PetriNet.StartPlace.Val, i))
+		expectedTokenCount := api.Select(isStartPlace, 1, 0)
+		api.AssertIsEqual(circuit.Instance.TokenCounts[i].Val, expectedTokenCount)
+	}
+	uapi, err := uints.New[uints.U32](api)
+	if err != nil {
+		return err
+	}
 	hasher, _ := sha2.New(api)
-	var hashInput []uints.U8
-	hashInput = append(hashInput, circuit.Instance.PlaceCount)
-	hashInput = append(hashInput, circuit.Instance.TokenCounts...)
-	hashInput = append(hashInput, circuit.Commitment.Randomness...)
-	hasher.Write(hashInput)
+	hasher.Write(circuit.Instance.TokenCounts)
+	hasher.Write(circuit.Commitment.Randomness)
 	hashResult := hasher.Sum()
-	api.AssertIsEqual(hashResult, circuit.Commitment.Value)
+	for i := range circuit.Commitment.Value {
+		uapi.ByteAssertEq(circuit.Commitment.Value[i], hashResult[i])
+	}
 	return nil
 }

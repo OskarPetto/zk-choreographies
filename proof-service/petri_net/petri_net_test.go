@@ -8,10 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFromWorkflowPetriNet(t *testing.T) {
-	workflowPetriNet := testdata.GetWorkflowPetriNet1()
-	expected := testdata.GetPetriNet()
-	result, err := petri_net.FromWorkflowPetriNet(workflowPetriNet)
+func TestValidatePetriNet(t *testing.T) {
+	petriNet := testdata.GetPetriNet()
+	err := petri_net.ValidatePetriNet(petriNet)
 	assert.Nil(t, err)
-	assert.Equal(t, expected, result)
 }

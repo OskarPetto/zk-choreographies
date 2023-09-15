@@ -14,22 +14,18 @@ type Commitment struct {
 }
 
 type Instance struct {
-	PlaceCount  uints.U8
 	TokenCounts []uints.U8
 }
 
 type Transition struct {
-	IncomingPlaceCount uints.U8   `gnark:",public"`
-	IncomingPlaces     []uints.U8 `gnark:",public"`
-	OutgoingPlaceCount uints.U8   `gnark:",public"`
-	OutgoingPlaces     []uints.U8 `gnark:",public"`
+	IncomingPlaces []uints.U8 `gnark:",public"`
+	OutgoingPlaces []uints.U8 `gnark:",public"`
 }
 
 type PetriNet struct {
-	PlaceCount      uints.U8 `gnark:",public"`
-	StartPlace      uints.U8 `gnark:",public"`
-	TransitionCount uints.U8 `gnark:",public"`
-	Transitions     []Transition
+	PlaceCount  uints.U8 `gnark:",public"`
+	StartPlace  uints.U8 `gnark:",public"`
+	Transitions []Transition
 }
 
 func FromCommitment(c commitment.Commitment) Commitment {
@@ -40,42 +36,30 @@ func FromCommitment(c commitment.Commitment) Commitment {
 }
 
 func FromInstance(inst instance.Instance) Instance {
-	tokenCounts := make([]uints.U8, inst.PlaceCount)
-	for i := 0; i < int(inst.PlaceCount); i++ {
+	tokenCounts := make([]uints.U8, len(inst.TokenCounts))
+	for i := 0; i < len(inst.TokenCounts); i++ {
 		tokenCounts[i] = uints.NewU8(byte(inst.TokenCounts[i]))
 	}
 	return Instance{
-		PlaceCount:  uints.NewU8(inst.PlaceCount),
 		TokenCounts: tokenCounts,
 	}
 }
 
 func FromPetriNet(petriNet petri_net.PetriNet) PetriNet {
-	transitions := make([]Transition, petriNet.TransitionCount)
-	for i := 0; i < int(petriNet.TransitionCount); i++ {
+	transitions := make([]Transition, len(petriNet.Transitions))
+	for i := 0; i < int(len(petriNet.Transitions)); i++ {
 		transitions[i] = fromTransition(petriNet.Transitions[i])
 	}
 	return PetriNet{
-		PlaceCount:      uints.NewU8(petriNet.PlaceCount),
-		StartPlace:      uints.NewU8(petriNet.StartPlace),
-		TransitionCount: uints.NewU8(petriNet.TransitionCount),
-		Transitions:     transitions,
+		PlaceCount:  uints.NewU8(petriNet.PlaceCount),
+		StartPlace:  uints.NewU8(petriNet.StartPlace),
+		Transitions: transitions,
 	}
 }
 
 func fromTransition(transition petri_net.Transition) Transition {
-	incomingPlaces := uints.NewU8Array(transition.IncomingPlaces[:])
-	outgoingPlaces := uints.NewU8Array(transition.OutgoingPlaces[:])
-	for i := 0; i < int(transition.IncomingPlaceCount); i++ {
-		incomingPlaces[i] = uints.NewU8(transition.IncomingPlaces[i])
-	}
-	for i := 0; i < int(transition.OutgoingPlaceCount); i++ {
-		outgoingPlaces[i] = uints.NewU8(transition.OutgoingPlaces[i])
-	}
 	return Transition{
-		IncomingPlaceCount: uints.NewU8(transition.IncomingPlaceCount),
-		IncomingPlaces:     incomingPlaces,
-		OutgoingPlaceCount: uints.NewU8(transition.OutgoingPlaceCount),
-		OutgoingPlaces:     outgoingPlaces,
+		IncomingPlaces: uints.NewU8Array(transition.IncomingPlaces[:]),
+		OutgoingPlaces: uints.NewU8Array(transition.OutgoingPlaces[:]),
 	}
 }
