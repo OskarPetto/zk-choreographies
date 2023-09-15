@@ -37,6 +37,6 @@ func (service *CommitmentService) CreateCommitment(commitmentId CommitmentId, da
 	return Commitment{
 		Id:         commitmentId,
 		Value:      hash,
-		Randomness: randomness,
+		Randomness: ([RandomnessSize]byte)(randomness),
 	}, nil
 }

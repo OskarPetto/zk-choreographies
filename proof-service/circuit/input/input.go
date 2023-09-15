@@ -35,7 +35,7 @@ type PetriNet struct {
 func FromCommitment(c commitment.Commitment) Commitment {
 	return Commitment{
 		Value:      ([commitment.CommitmentSize]uints.U8)(uints.NewU8Array(c.Value[:])),
-		Randomness: ([commitment.RandomnessSize]uints.U8)(uints.NewU8Array(c.Randomness)),
+		Randomness: ([commitment.RandomnessSize]uints.U8)(uints.NewU8Array(c.Randomness[:])),
 	}
 }
 

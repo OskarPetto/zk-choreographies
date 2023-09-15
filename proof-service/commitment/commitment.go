@@ -8,5 +8,5 @@ type CommitmentId = string
 type Commitment struct {
 	Id         CommitmentId
 	Value      [CommitmentSize]byte
-	Randomness []byte
+	Randomness [RandomnessSize]byte
 }
