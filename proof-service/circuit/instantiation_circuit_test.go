@@ -11,13 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// the test.IsSolved function requires that enough memory to fit the witness is allocated
-// the actual values dont matter
-var instantiationCircuit = circuit.InstantiationCircuit{
-	Commitment: testdata.GetCircuitCommitment1(),
-	Instance:   testdata.GetCircuitInstance1(),
-	PetriNet:   testdata.GetCircuitPetriNet1(),
-}
+var instantiationCircuit circuit.InstantiationCircuit
 
 func TestWithValidWitness(t *testing.T) {
 	witness := circuit.InstantiationCircuit{
