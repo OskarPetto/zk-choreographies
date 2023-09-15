@@ -10,56 +10,72 @@ import (
 
 type Commitment struct {
 	Value      [commitment.CommitmentSize]uints.U8 `gnark:",public"`
-	Randomness []uints.U8
+	Randomness [commitment.RandomnessSize]uints.U8
 }
 
 type Instance struct {
-	TokenCounts []uints.U8
+	PlaceCount  uints.U8 `gnark:",public"`
+	TokenCounts [petri_net.MaxPlaceCount]uints.U8
 }
 
 type Transition struct {
-	IncomingPlaces []uints.U8 `gnark:",public"`
-	OutgoingPlaces []uints.U8 `gnark:",public"`
+	IncomingPlaceCount uints.U8                               `gnark:",public"`
+	IncomingPlaces     [petri_net.MaxBranchingFactor]uints.U8 `gnark:",public"`
+	OutgoingPlaceCount uints.U8                               `gnark:",public"`
+	OutgoingPlaces     [petri_net.MaxBranchingFactor]uints.U8 `gnark:",public"`
 }
 
 type PetriNet struct {
-	PlaceCount  uints.U8 `gnark:",public"`
-	StartPlace  uints.U8 `gnark:",public"`
-	Transitions []Transition
+	PlaceCount      uints.U8 `gnark:",public"`
+	StartPlace      uints.U8 `gnark:",public"`
+	TransitionCount uints.U8 `gnark:",public"`
+	Transitions     [petri_net.MaxTransitionCount]Transition
 }
 
 func FromCommitment(c commitment.Commitment) Commitment {
 	return Commitment{
 		Value:      ([commitment.CommitmentSize]uints.U8)(uints.NewU8Array(c.Value[:])),
-		Randomness: uints.NewU8Array(c.Randomness),
+		Randomness: ([commitment.RandomnessSize]uints.U8)(uints.NewU8Array(c.Randomness)),
 	}
 }
 
 func FromInstance(inst instance.Instance) Instance {
-	tokenCounts := make([]uints.U8, len(inst.TokenCounts))
-	for i := 0; i < len(inst.TokenCounts); i++ {
+	var tokenCounts [petri_net.MaxPlaceCount]uints.U8
+	for i := 0; i < int(inst.PlaceCount); i++ {
 		tokenCounts[i] = uints.NewU8(byte(inst.TokenCounts[i]))
 	}
 	return Instance{
+		PlaceCount:  uints.NewU8(inst.PlaceCount),
 		TokenCounts: tokenCounts,
 	}
 }
 
 func FromPetriNet(petriNet petri_net.PetriNet) PetriNet {
-	transitions := make([]Transition, len(petriNet.Transitions))
-	for i := 0; i < int(len(petriNet.Transitions)); i++ {
+	var transitions [petri_net.MaxTransitionCount]Transition
+	for i := 0; i < int(petriNet.TransitionCount); i++ {
 		transitions[i] = fromTransition(petriNet.Transitions[i])
 	}
 	return PetriNet{
-		PlaceCount:  uints.NewU8(petriNet.PlaceCount),
-		StartPlace:  uints.NewU8(petriNet.StartPlace),
-		Transitions: transitions,
+		PlaceCount:      uints.NewU8(petriNet.PlaceCount),
+		StartPlace:      uints.NewU8(petriNet.StartPlace),
+		TransitionCount: uints.NewU8(petriNet.TransitionCount),
+		Transitions:     transitions,
 	}
 }
 
 func fromTransition(transition petri_net.Transition) Transition {
+	var incomingPlaces [petri_net.MaxBranchingFactor]uints.U8
+	var outgoingPlaces [petri_net.MaxBranchingFactor]uints.U8
+	for i := 0; i < int(transition.IncomingPlaceCount); i++ {
+		incomingPlaces[i] = uints.NewU8(transition.IncomingPlaces[i])
+	}
+	for i := 0; i < int(transition.OutgoingPlaceCount); i++ {
+		outgoingPlaces[i] = uints.NewU8(transition.OutgoingPlaces[i])
+	}
 	return Transition{
-		IncomingPlaces: uints.NewU8Array(transition.IncomingPlaces[:]),
-		OutgoingPlaces: uints.NewU8Array(transition.OutgoingPlaces[:]),
+		IncomingPlaceCount: uints.NewU8(transition.IncomingPlaceCount),
+		IncomingPlaces:     incomingPlaces,
+		OutgoingPlaceCount: uints.NewU8(transition.OutgoingPlaceCount),
+		OutgoingPlaces:     outgoingPlaces,
 	}
 }
