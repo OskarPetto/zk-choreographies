@@ -53,8 +53,8 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 		api.AssertIsBoolean(nextTokenCount)
 	}
 
-	api.AssertIsLessOrEqual(incomingPlaceCount, api.Sub(domain.MaxBranchingFactor, 1))
-	api.AssertIsLessOrEqual(outgoingPlaceCount, api.Sub(domain.MaxBranchingFactor, 1))
+	api.AssertIsLessOrEqual(incomingPlaceCount, domain.MaxBranchingFactor)
+	api.AssertIsLessOrEqual(outgoingPlaceCount, domain.MaxBranchingFactor)
 
 	var transitionFound frontend.Variable
 	transitionFound = 0
