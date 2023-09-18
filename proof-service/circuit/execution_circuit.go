@@ -53,6 +53,10 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 		api.AssertIsBoolean(nextTokenCount)
 	}
 
+	// insert 1 at domain.MaxPlaceCount
+	tokenCountDecreasesByPlaceId.Insert(1)
+	tokenCountIncreasesByPlaceId.Insert(1)
+
 	api.AssertIsLessOrEqual(incomingPlaceCount, domain.MaxBranchingFactor)
 	api.AssertIsLessOrEqual(outgoingPlaceCount, domain.MaxBranchingFactor)
 
@@ -63,15 +67,14 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 		transition := circuit.PetriNet.Transitions[i]
 		matchesIncomingPlaces := equals(api, transition.IncomingPlaceCount, incomingPlaceCount)
 		matchesOutgoingPlaces := equals(api, transition.OutgoingPlaceCount, outgoingPlaceCount)
+		// returns 1 for default placeId (domain.MaxPlaceCount)
 		incomingTokenCountsDecrease := tokenCountDecreasesByPlaceId.Lookup(transition.IncomingPlaces[:]...)
 		outgoingTokenCountsIncrease := tokenCountIncreasesByPlaceId.Lookup(transition.OutgoingPlaces[:]...)
 		for j := 0; j < domain.MaxBranchingFactor; j++ {
-			isIncomingPlaceIdInvalid := greaterThanOrEqual(api, j, transition.IncomingPlaceCount)
-			isOutgoingPlaceIdInvalid := greaterThanOrEqual(api, j, transition.OutgoingPlaceCount)
-			incomingTokenCounDecreases := incomingTokenCountsDecrease[j]
+			incomingTokenCountDecreases := incomingTokenCountsDecrease[j]
 			outgoingTokenCountIncreases := outgoingTokenCountsIncrease[j]
-			matchesIncomingPlaces = api.And(matchesIncomingPlaces, api.Or(isIncomingPlaceIdInvalid, incomingTokenCounDecreases))
-			matchesOutgoingPlaces = api.And(matchesOutgoingPlaces, api.Or(isOutgoingPlaceIdInvalid, outgoingTokenCountIncreases))
+			matchesIncomingPlaces = api.And(matchesIncomingPlaces, incomingTokenCountDecreases)
+			matchesOutgoingPlaces = api.And(matchesOutgoingPlaces, outgoingTokenCountIncreases)
 		}
 		transitionFound = api.Or(transitionFound, api.And(matchesIncomingPlaces, matchesOutgoingPlaces))
 	}

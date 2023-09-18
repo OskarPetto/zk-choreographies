@@ -73,13 +73,13 @@ func fromTransition(transition domain.Transition) Transition {
 		incomingPlaces[i] = transition.IncomingPlaces[i]
 	}
 	for i := int(transition.IncomingPlaceCount); i < domain.MaxBranchingFactor; i++ {
-		incomingPlaces[i] = 0
+		incomingPlaces[i] = domain.MaxPlaceCount
 	}
 	for i := 0; i < int(transition.OutgoingPlaceCount); i++ {
 		outgoingPlaces[i] = transition.OutgoingPlaces[i]
 	}
 	for i := int(transition.OutgoingPlaceCount); i < domain.MaxBranchingFactor; i++ {
-		outgoingPlaces[i] = 0
+		outgoingPlaces[i] = domain.MaxPlaceCount
 	}
 	return Transition{
 		IncomingPlaceCount: transition.IncomingPlaceCount,
@@ -93,10 +93,10 @@ func emptyTransition() Transition {
 	var incomingPlaces [domain.MaxBranchingFactor]frontend.Variable
 	var outgoingPlaces [domain.MaxBranchingFactor]frontend.Variable
 	for i := 0; i < domain.MaxBranchingFactor; i++ {
-		incomingPlaces[i] = 0
+		incomingPlaces[i] = domain.MaxPlaceCount
 	}
 	for i := 0; i < domain.MaxBranchingFactor; i++ {
-		outgoingPlaces[i] = 0
+		outgoingPlaces[i] = domain.MaxPlaceCount
 	}
 	return Transition{
 		IncomingPlaceCount: 0,
