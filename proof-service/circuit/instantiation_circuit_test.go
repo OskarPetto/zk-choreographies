@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/consensys/gnark-crypto/ecc"
-	"github.com/consensys/gnark/std/math/uints"
 	"github.com/consensys/gnark/test"
 	"github.com/stretchr/testify/assert"
 )
@@ -26,7 +25,7 @@ func TestInstantiation(t *testing.T) {
 	}
 }
 
-func TestInvalidCommitment(t *testing.T) {
+func TestInstantiation_InvalidCommitment(t *testing.T) {
 	witness := circuit.InstantiationCircuit{
 		Instance:   circuit.FromInstance(testdata.GetPetriNet1Instance1()),
 		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance2Commitment()),
@@ -37,14 +36,23 @@ func TestInvalidCommitment(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestInvalidTokenCounts(t *testing.T) {
+func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
 	witness := circuit.InstantiationCircuit{
-		Instance:   circuit.FromInstance(testdata.GetPetriNet1Instance1()),
-		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance1Commitment()),
+		Instance:   circuit.FromInstance(testdata.GetPetriNet1Instance2()),
+		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance2Commitment()),
 		PetriNet:   circuit.FromPetriNet(testdata.GetPetriNet1()),
 	}
 
-	witness.Instance.TokenCounts[0] = uints.NewU8(1)
+	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
+	witness := circuit.InstantiationCircuit{
+		Instance:   circuit.FromInstance(testdata.GetPetriNet1Instance3()),
+		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance3Commitment()),
+		PetriNet:   circuit.FromPetriNet(testdata.GetPetriNet1()),
+	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
 	assert.NotNil(t, err)

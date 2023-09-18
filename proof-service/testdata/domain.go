@@ -120,7 +120,7 @@ func GetPetriNet1Instance3() domain.Instance {
 	return domain.Instance{
 		Id:          "conformance_example3",
 		PlaceCount:  10,
-		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 1, 1, 0, 0, 0, 0},
+		TokenCounts: [domain.MaxPlaceCount]int8{1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	}
 }
 
@@ -128,7 +128,7 @@ func GetPetriNet1Instance4() domain.Instance {
 	return domain.Instance{
 		Id:          "conformance_example4",
 		PlaceCount:  10,
-		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
+		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	}
 }
 
@@ -143,12 +143,12 @@ func GetPetriNet1Instance2Serialized() []byte {
 }
 
 func GetPetriNet1Instance3Serialized() []byte {
-	bytes := [domain.MaxPlaceCount + 1]byte{10, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0}
+	bytes := [domain.MaxPlaceCount + 1]byte{10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 	return bytes[:]
 }
 
 func GetPetriNet1Instance4Serialized() []byte {
-	bytes := [domain.MaxPlaceCount + 1]byte{10, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0}
+	bytes := [domain.MaxPlaceCount + 1]byte{10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	return bytes[:]
 }
 
@@ -171,15 +171,15 @@ func GetPetriNet1Instance2Commitment() commitment.Commitment {
 func GetPetriNet1Instance3Commitment() commitment.Commitment {
 	return commitment.Commitment{
 		Id:         "conformance_example3",
-		Value:      [commitment.CommitmentSize]byte{137, 32, 200, 146, 163, 67, 93, 114, 36, 1, 139, 191, 112, 105, 88, 224, 253, 193, 207, 59, 167, 184, 245, 199, 106, 126, 162, 83, 163, 246, 116, 242},
-		Randomness: [commitment.RandomnessSize]byte{131, 143, 136, 102, 120, 73, 122, 153, 125, 208, 6, 6, 208, 23, 4, 26, 91, 42, 63, 137, 106, 212, 15, 43, 252, 114, 168, 6, 2, 222, 218, 244},
+		Value:      [commitment.CommitmentSize]byte{107, 28, 98, 148, 123, 116, 134, 237, 158, 57, 207, 101, 26, 90, 216, 2, 68, 21, 139, 233, 249, 194, 91, 87, 25, 36, 116, 194, 35, 160, 156, 195},
+		Randomness: [commitment.RandomnessSize]byte{8, 153, 6, 247, 21, 48, 228, 49, 164, 188, 199, 154, 13, 209, 38, 77, 81, 178, 246, 77, 87, 55, 172, 228, 90, 198, 184, 57, 227, 41, 90, 205},
 	}
 }
 
 func GetPetriNet1Instance4Commitment() commitment.Commitment {
 	return commitment.Commitment{
 		Id:         "conformance_example4",
-		Value:      [commitment.CommitmentSize]byte{227, 215, 143, 232, 5, 168, 116, 206, 196, 140, 135, 47, 231, 194, 99, 34, 234, 162, 111, 233, 53, 96, 167, 252, 128, 218, 89, 242, 20, 86, 74, 116},
-		Randomness: [commitment.RandomnessSize]byte{83, 247, 198, 223, 212, 151, 241, 171, 214, 252, 166, 173, 39, 96, 9, 69, 51, 42, 138, 88, 230, 202, 148, 54, 95, 239, 77, 29, 134, 108, 195, 135},
+		Value:      [commitment.CommitmentSize]byte{170, 43, 154, 34, 208, 145, 177, 193, 86, 247, 225, 4, 155, 243, 57, 154, 89, 91, 225, 228, 233, 182, 192, 115, 185, 17, 217, 37, 149, 120, 169, 229},
+		Randomness: [commitment.RandomnessSize]byte{79, 219, 230, 161, 234, 110, 28, 102, 220, 99, 110, 32, 79, 49, 43, 17, 130, 224, 66, 213, 30, 251, 46, 0, 153, 41, 82, 34, 201, 198, 42, 52},
 	}
 }

@@ -1,6 +1,7 @@
 package commitment_test
 
 import (
+	"fmt"
 	"proof-service/commitment"
 	"proof-service/testdata"
 	"testing"
@@ -24,5 +25,5 @@ func TestCreateCommitment(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, commitment1.Id, result.Id)
 	assert.Equal(t, commitment.RandomnessSize, len(result.Randomness))
-	//fmt.Printf("%+v\n", result)
+	fmt.Printf("%+v\n", result)
 }

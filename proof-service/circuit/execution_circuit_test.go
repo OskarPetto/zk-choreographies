@@ -12,7 +12,7 @@ import (
 
 var executionCircuit circuit.ExecutionCircuit
 
-func TestNoTokenChange(t *testing.T) {
+func TestExecution_NoTokenChange(t *testing.T) {
 	witness := circuit.ExecutionCircuit{
 		CurrentInstance:   circuit.FromInstance(testdata.GetPetriNet1Instance1()),
 		CurrentCommitment: circuit.FromCommitment(testdata.GetPetriNet1Instance1Commitment()),
@@ -27,7 +27,7 @@ func TestNoTokenChange(t *testing.T) {
 	}
 }
 
-func TestTransition0(t *testing.T) {
+func TestExecution_Transition0(t *testing.T) {
 	witness := circuit.ExecutionCircuit{
 		CurrentInstance:   circuit.FromInstance(testdata.GetPetriNet1Instance1()),
 		CurrentCommitment: circuit.FromCommitment(testdata.GetPetriNet1Instance1Commitment()),
@@ -42,22 +42,7 @@ func TestTransition0(t *testing.T) {
 	}
 }
 
-func TestTransition7(t *testing.T) {
-	witness := circuit.ExecutionCircuit{
-		CurrentInstance:   circuit.FromInstance(testdata.GetPetriNet1Instance3()),
-		CurrentCommitment: circuit.FromCommitment(testdata.GetPetriNet1Instance3Commitment()),
-		NextInstance:      circuit.FromInstance(testdata.GetPetriNet1Instance4()),
-		NextCommitment:    circuit.FromCommitment(testdata.GetPetriNet1Instance4Commitment()),
-		PetriNet:          circuit.FromPetriNet(testdata.GetPetriNet1()),
-	}
-
-	err := test.IsSolved(&executionCircuit, &witness, ecc.BN254.ScalarField())
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestInvalidCommitments(t *testing.T) {
+func TestExecution_InvalidCommitments(t *testing.T) {
 	witness := circuit.ExecutionCircuit{
 		CurrentInstance:   circuit.FromInstance(testdata.GetPetriNet1Instance1()),
 		CurrentCommitment: circuit.FromCommitment(testdata.GetPetriNet1Instance2Commitment()),
@@ -70,12 +55,38 @@ func TestInvalidCommitments(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestInvalidTransition(t *testing.T) {
+func TestExecution_InvalidTokenCounts1(t *testing.T) {
 	witness := circuit.ExecutionCircuit{
 		CurrentInstance:   circuit.FromInstance(testdata.GetPetriNet1Instance2()),
 		CurrentCommitment: circuit.FromCommitment(testdata.GetPetriNet1Instance2Commitment()),
 		NextInstance:      circuit.FromInstance(testdata.GetPetriNet1Instance1()),
 		NextCommitment:    circuit.FromCommitment(testdata.GetPetriNet1Instance1Commitment()),
+		PetriNet:          circuit.FromPetriNet(testdata.GetPetriNet1()),
+	}
+
+	err := test.IsSolved(&executionCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestExecution_InvalidTokenCounts2(t *testing.T) {
+	witness := circuit.ExecutionCircuit{
+		CurrentInstance:   circuit.FromInstance(testdata.GetPetriNet1Instance1()),
+		CurrentCommitment: circuit.FromCommitment(testdata.GetPetriNet1Instance1Commitment()),
+		NextInstance:      circuit.FromInstance(testdata.GetPetriNet1Instance3()),
+		NextCommitment:    circuit.FromCommitment(testdata.GetPetriNet1Instance3Commitment()),
+		PetriNet:          circuit.FromPetriNet(testdata.GetPetriNet1()),
+	}
+
+	err := test.IsSolved(&executionCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestExecution_InvalidTokenCounts3(t *testing.T) {
+	witness := circuit.ExecutionCircuit{
+		CurrentInstance:   circuit.FromInstance(testdata.GetPetriNet1Instance2()),
+		CurrentCommitment: circuit.FromCommitment(testdata.GetPetriNet1Instance2Commitment()),
+		NextInstance:      circuit.FromInstance(testdata.GetPetriNet1Instance4()),
+		NextCommitment:    circuit.FromCommitment(testdata.GetPetriNet1Instance4Commitment()),
 		PetriNet:          circuit.FromPetriNet(testdata.GetPetriNet1()),
 	}
 
