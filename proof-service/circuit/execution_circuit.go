@@ -35,7 +35,7 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 	var outgoingPlaceCount frontend.Variable
 	incomingPlaceCount = 0
 	outgoingPlaceCount = 0
-	for placeId := range circuit.CurrentInstance.TokenCounts {
+	for placeId := 0; placeId < domain.MaxPlaceCount; placeId++ {
 		currentTokenCount := circuit.CurrentInstance.TokenCounts[placeId].Val
 		nextTokenCount := circuit.NextInstance.TokenCounts[placeId].Val
 
@@ -63,7 +63,7 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 	var transitionFound frontend.Variable
 	transitionFound = 0
 
-	for i := range circuit.PetriNet.Transitions {
+	for i := 0; i < domain.MaxTransitionCount; i++ {
 		transition := circuit.PetriNet.Transitions[i]
 		matchesIncomingPlaces := equals(api, transition.IncomingPlaceCount, incomingPlaceCount)
 		matchesOutgoingPlaces := equals(api, transition.OutgoingPlaceCount, outgoingPlaceCount)
