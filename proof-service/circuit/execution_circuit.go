@@ -85,5 +85,6 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 }
 
 func greaterThanOrEqual(api frontend.API, a, b frontend.Variable) frontend.Variable {
-	return api.Cmp(-1, api.Cmp(a, b))
+	cmpResult := api.Cmp(a, b)
+	return api.Or(equals(api, cmpResult, 1), api.IsZero(cmpResult))
 }
