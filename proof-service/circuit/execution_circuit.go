@@ -61,21 +61,17 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 
 	for i := range circuit.PetriNet.Transitions {
 		transition := circuit.PetriNet.Transitions[i]
-		var matchesIncomingPlaces frontend.Variable
-		matchesIncomingPlaces = equals(api, transition.IncomingPlaceCount, incomingPlaceCount)
-		tokenCountDecreasesOfTransition := tokenCountDecreasesByPlaceId.Lookup(transition.IncomingPlaces[:]...)
-		for j := range tokenCountDecreasesOfTransition {
-			isPlaceIdInvalid := greaterThanOrEqual(api, j, transition.IncomingPlaceCount)
-			tokenCountDecreases := tokenCountDecreasesOfTransition[j]
-			matchesIncomingPlaces = api.And(matchesIncomingPlaces, api.Or(isPlaceIdInvalid, tokenCountDecreases))
-		}
-		var matchesOutgoingPlaces frontend.Variable
-		matchesOutgoingPlaces = equals(api, transition.OutgoingPlaceCount, outgoingPlaceCount)
-		tokenCountIncreasesOfTransition := tokenCountIncreasesByPlaceId.Lookup(transition.OutgoingPlaces[:]...)
-		for j := range tokenCountIncreasesOfTransition {
-			isPlaceIdInvalid := greaterThanOrEqual(api, j, transition.OutgoingPlaceCount)
-			tokenCountIncreases := tokenCountIncreasesOfTransition[j]
-			matchesOutgoingPlaces = api.And(matchesOutgoingPlaces, api.Or(isPlaceIdInvalid, tokenCountIncreases))
+		matchesIncomingPlaces := equals(api, transition.IncomingPlaceCount, incomingPlaceCount)
+		matchesOutgoingPlaces := equals(api, transition.OutgoingPlaceCount, outgoingPlaceCount)
+		incomingTokenCountsDecrease := tokenCountDecreasesByPlaceId.Lookup(transition.IncomingPlaces[:]...)
+		outgoingTokenCountsIncrease := tokenCountIncreasesByPlaceId.Lookup(transition.OutgoingPlaces[:]...)
+		for j := 0; j < domain.MaxBranchingFactor; j++ {
+			isIncomingPlaceIdInvalid := greaterThanOrEqual(api, j, transition.IncomingPlaceCount)
+			isOutgoingPlaceIdInvalid := greaterThanOrEqual(api, j, transition.OutgoingPlaceCount)
+			incomingTokenCounDecreases := incomingTokenCountsDecrease[j]
+			outgoingTokenCountIncreases := outgoingTokenCountsIncrease[j]
+			matchesIncomingPlaces = api.And(matchesIncomingPlaces, api.Or(isIncomingPlaceIdInvalid, incomingTokenCounDecreases))
+			matchesOutgoingPlaces = api.And(matchesOutgoingPlaces, api.Or(isOutgoingPlaceIdInvalid, outgoingTokenCountIncreases))
 		}
 		transitionFound = api.Or(transitionFound, api.And(matchesIncomingPlaces, matchesOutgoingPlaces))
 	}
