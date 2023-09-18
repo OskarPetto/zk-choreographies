@@ -11,7 +11,7 @@ import (
 func TestSerializeInstance(t *testing.T) {
 	inst := testdata.GetPetriNet1Instance1()
 	expected := testdata.GetPetriNet1Instance1Serialized()
-	result := workflow.SerializeInstance(inst)
-	assert.Equal(t, len(expected), len(result))
-	//assert.Equal(t, expected, result)
+	result, err := workflow.SerializeInstance(inst)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, result)
 }
