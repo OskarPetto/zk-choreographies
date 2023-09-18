@@ -82,8 +82,3 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 	tokenCountsDoNotChange := api.And(api.IsZero(incomingPlaceCount), api.IsZero(outgoingPlaceCount))
 	api.AssertIsEqual(1, api.Or(transitionFound, tokenCountsDoNotChange))
 }
-
-func greaterThanOrEqual(api frontend.API, a, b frontend.Variable) frontend.Variable {
-	cmpResult := api.Cmp(a, b)
-	return api.Or(equals(api, cmpResult, 1), api.IsZero(cmpResult))
-}
