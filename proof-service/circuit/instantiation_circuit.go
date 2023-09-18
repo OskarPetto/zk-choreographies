@@ -17,7 +17,7 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 		return err
 	}
 	checkCommitment(api, uapi, circuit.Instance, circuit.Commitment)
-	uapi.ByteAssertEq(circuit.Instance.PlaceCount, circuit.PetriNet.PlaceCount)
+	api.AssertIsEqual(circuit.Instance.PlaceCount.Val, circuit.PetriNet.PlaceCount)
 	circuit.checkTokenCounts(api)
 	return nil
 }
@@ -25,7 +25,7 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 func (circuit *InstantiationCircuit) checkTokenCounts(api frontend.API) {
 	for placeId := range circuit.Instance.TokenCounts {
 		tokenCount := circuit.Instance.TokenCounts[placeId].Val
-		isStartPlace := equals(api, placeId, circuit.PetriNet.StartPlace.Val)
+		isStartPlace := equals(api, placeId, circuit.PetriNet.StartPlace)
 		api.AssertIsEqual(tokenCount, isStartPlace)
 	}
 }

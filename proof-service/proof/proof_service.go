@@ -1,6 +1,10 @@
 package proof
 
 import (
+	"bufio"
+	"fmt"
+	"io"
+	"os"
 	"proof-service/circuit"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -10,54 +14,105 @@ import (
 	"github.com/consensys/gnark/frontend/cs/r1cs"
 )
 
-type verifyingKey groth16.VerifyingKey
+const instantiationPkFilename = "instantiation.proving_key"
+const instantiationCsFilename = "instantiation.constraint_system"
+const executionPkFilename = "execution.proving_key"
+const executionCsFilename = "execution.constraint_system"
 
 type ProofService struct {
-	instantiationCs constraint.ConstraintSystem
-	instantiationPk groth16.ProvingKey
-	executionCs     constraint.ConstraintSystem
-	executionPk     groth16.ProvingKey
+	instantiationCs *constraint.ConstraintSystem
+	instantiationPk *groth16.ProvingKey
+	executionCs     *constraint.ConstraintSystem
+	executionPk     *groth16.ProvingKey
 }
 
 var instantiationCircuit circuit.InstantiationCircuit
 var executionCircuit circuit.ExecutionCircuit
 
 func NewProofService() ProofService {
-	instantiationCs, err := frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, &instantiationCircuit)
-	if err != nil {
-		panic(err)
-	}
-	executionCs, err := frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, &executionCircuit)
-	if err != nil {
-		panic(err)
-	}
-
+	instantiationCsPath := getFolderPath() + "/" + instantiationCsFilename
+	instantiationCs := importConstraintSystem(&instantiationCircuit, instantiationCsPath)
+	instantiationPkPath := getFolderPath() + "/" + instantiationPkFilename
+	instantiationPk := importProvingKey(instantiationPkPath, instantiationCs)
+	executionCsPath := getFolderPath() + "/" + executionCsFilename
+	executionCs := importConstraintSystem(&executionCircuit, executionCsPath)
+	executionPkPath := getFolderPath() + "/" + executionPkFilename
+	executionPk := importProvingKey(executionPkPath, executionCs)
 	return ProofService{
 		instantiationCs: instantiationCs,
-		instantiationPk: nil,
+		instantiationPk: instantiationPk,
 		executionCs:     executionCs,
-		executionPk:     nil,
+		executionPk:     executionPk,
 	}
 }
 
-func (service *ProofService) importKeys() error {
-	return nil
+func importConstraintSystem(circuit frontend.Circuit, path string) *constraint.ConstraintSystem {
+	cs, err := readConstraintSystem(path)
+	if err != nil {
+		cs = compileCircuit(circuit, path)
+	}
+	return cs
 }
 
-// func (service *ProofService) ExportKeys() {
-// 	pk, _, err := groth16.Setup(service.circuitService.InstantiationCircuitCs)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	file, err := os.Create("./proving_key")
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	writer := bufio.NewWriter(file)
-// 	bytesWritten, err := pk.WriteTo(writer)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	fmt.Printf("Bytes Written: %d\n", bytesWritten)
-// 	writer.Flush()
-// }
+func importProvingKey(path string, cs *constraint.ConstraintSystem) *groth16.ProvingKey {
+	pk, err := readProvingKey(path)
+	if err != nil {
+		pk = generateProvingKey(cs, path)
+	}
+	return pk
+}
+
+func readConstraintSystem(path string) (*constraint.ConstraintSystem, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	var cs constraint.ConstraintSystem
+	cs.ReadFrom(file)
+	return &cs, nil
+}
+
+func readProvingKey(path string) (*groth16.ProvingKey, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	var pk groth16.ProvingKey
+	pk.ReadFrom(file)
+	return &pk, nil
+}
+
+func compileCircuit(circuit frontend.Circuit, path string) *constraint.ConstraintSystem {
+	cs, err := frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, circuit)
+	check(err)
+	writeFile(cs, path)
+	return &cs
+}
+
+func generateProvingKey(cs *constraint.ConstraintSystem, path string) *groth16.ProvingKey {
+	pk, _, err := groth16.Setup(*cs)
+	check(err)
+	writeFile(pk, path)
+	return &pk
+}
+
+func writeFile(writeable io.WriterTo, path string) {
+	file, err := os.Create(path)
+	check(err)
+	defer file.Close()
+	writer := bufio.NewWriter(file)
+	bytesWritten, err := writeable.WriteTo(writer)
+	check(err)
+	fmt.Printf("Generated file of size %d in %s\n", bytesWritten, path)
+	writer.Flush()
+}
+
+func getFolderPath() string {
+	return "/home/opetto/uni/zk-choreographies/files"
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
+	}
+}

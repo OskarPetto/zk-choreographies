@@ -4,6 +4,7 @@ import (
 	"proof-service/commitment"
 	"proof-service/domain"
 
+	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/math/uints"
 )
 
@@ -18,16 +19,16 @@ type Instance struct {
 }
 
 type Transition struct {
-	IncomingPlaceCount uints.U8                            `gnark:",public"`
-	IncomingPlaces     [domain.MaxBranchingFactor]uints.U8 `gnark:",public"`
-	OutgoingPlaceCount uints.U8                            `gnark:",public"`
-	OutgoingPlaces     [domain.MaxBranchingFactor]uints.U8 `gnark:",public"`
+	IncomingPlaceCount frontend.Variable                            `gnark:",public"`
+	IncomingPlaces     [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
+	OutgoingPlaceCount frontend.Variable                            `gnark:",public"`
+	OutgoingPlaces     [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
 }
 
 type PetriNet struct {
-	PlaceCount      uints.U8 `gnark:",public"`
-	StartPlace      uints.U8 `gnark:",public"`
-	TransitionCount uints.U8 `gnark:",public"`
+	PlaceCount      frontend.Variable `gnark:",public"`
+	StartPlace      frontend.Variable `gnark:",public"`
+	TransitionCount frontend.Variable `gnark:",public"`
 	Transitions     [domain.MaxTransitionCount]Transition
 }
 
@@ -54,27 +55,53 @@ func FromPetriNet(petriNet domain.PetriNet) PetriNet {
 	for i := 0; i < int(petriNet.TransitionCount); i++ {
 		transitions[i] = fromTransition(petriNet.Transitions[i])
 	}
+	for i := int(petriNet.TransitionCount); i < domain.MaxTransitionCount; i++ {
+		transitions[i] = emptyTransition()
+	}
 	return PetriNet{
-		PlaceCount:      uints.NewU8(petriNet.PlaceCount),
-		StartPlace:      uints.NewU8(petriNet.StartPlace),
-		TransitionCount: uints.NewU8(petriNet.TransitionCount),
+		PlaceCount:      petriNet.PlaceCount,
+		StartPlace:      petriNet.StartPlace,
+		TransitionCount: petriNet.TransitionCount,
 		Transitions:     transitions,
 	}
 }
 
 func fromTransition(transition domain.Transition) Transition {
-	var incomingPlaces [domain.MaxBranchingFactor]uints.U8
-	var outgoingPlaces [domain.MaxBranchingFactor]uints.U8
+	var incomingPlaces [domain.MaxBranchingFactor]frontend.Variable
+	var outgoingPlaces [domain.MaxBranchingFactor]frontend.Variable
 	for i := 0; i < int(transition.IncomingPlaceCount); i++ {
-		incomingPlaces[i] = uints.NewU8(transition.IncomingPlaces[i])
+		incomingPlaces[i] = transition.IncomingPlaces[i]
+	}
+	for i := int(transition.IncomingPlaceCount); i < domain.MaxBranchingFactor; i++ {
+		incomingPlaces[i] = 0
 	}
 	for i := 0; i < int(transition.OutgoingPlaceCount); i++ {
-		outgoingPlaces[i] = uints.NewU8(transition.OutgoingPlaces[i])
+		outgoingPlaces[i] = transition.OutgoingPlaces[i]
+	}
+	for i := int(transition.OutgoingPlaceCount); i < domain.MaxBranchingFactor; i++ {
+		outgoingPlaces[i] = 0
 	}
 	return Transition{
-		IncomingPlaceCount: uints.NewU8(transition.IncomingPlaceCount),
+		IncomingPlaceCount: transition.IncomingPlaceCount,
 		IncomingPlaces:     incomingPlaces,
-		OutgoingPlaceCount: uints.NewU8(transition.OutgoingPlaceCount),
+		OutgoingPlaceCount: transition.OutgoingPlaceCount,
+		OutgoingPlaces:     outgoingPlaces,
+	}
+}
+
+func emptyTransition() Transition {
+	var incomingPlaces [domain.MaxBranchingFactor]frontend.Variable
+	var outgoingPlaces [domain.MaxBranchingFactor]frontend.Variable
+	for i := 0; i < domain.MaxBranchingFactor; i++ {
+		incomingPlaces[i] = 0
+	}
+	for i := 0; i < domain.MaxBranchingFactor; i++ {
+		outgoingPlaces[i] = 0
+	}
+	return Transition{
+		IncomingPlaceCount: 0,
+		IncomingPlaces:     incomingPlaces,
+		OutgoingPlaceCount: 0,
 		OutgoingPlaces:     outgoingPlaces,
 	}
 }
