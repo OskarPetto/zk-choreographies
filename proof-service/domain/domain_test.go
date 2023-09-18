@@ -1,7 +1,7 @@
-package instance_test
+package domain_test
 
 import (
-	"proof-service/instance"
+	"proof-service/domain"
 	"proof-service/testdata"
 	"testing"
 
@@ -11,7 +11,7 @@ import (
 func TestFromWorkflowInstance(t *testing.T) {
 	workflowInstance := testdata.GetWorkflowInstance1()
 	expected := testdata.GetPetriNet1Instance1()
-	result, err := instance.FromWorkflowInstance(workflowInstance)
+	result, err := domain.FromWorkflowInstance(workflowInstance)
 	assert.Nil(t, err)
 	assert.Equal(t, expected, result)
 }
@@ -19,7 +19,15 @@ func TestFromWorkflowInstance(t *testing.T) {
 func TestSerializeInstance(t *testing.T) {
 	inst := testdata.GetPetriNet1Instance1()
 	expected := testdata.GetPetriNet1Instance1Serialized()
-	result := instance.SerializeInstance(inst)
+	result := domain.SerializeInstance(inst)
 	assert.Equal(t, len(expected), len(result))
 	//assert.Equal(t, expected, result)
+}
+
+func TestFromWorkflowPetriNet(t *testing.T) {
+	workflowPetriNet := testdata.GetWorkflowPetriNet1()
+	expected := testdata.GetPetriNet1()
+	result, err := domain.FromWorkflowPetriNet(workflowPetriNet)
+	assert.Nil(t, err)
+	assert.Equal(t, expected, result)
 }

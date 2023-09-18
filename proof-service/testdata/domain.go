@@ -2,154 +2,153 @@ package testdata
 
 import (
 	"proof-service/commitment"
-	"proof-service/instance"
-	"proof-service/petri_net"
+	"proof-service/domain"
 )
 
-func GetPetriNet1() petri_net.PetriNet {
-	return petri_net.PetriNet{
+func GetPetriNet1() domain.PetriNet {
+	return domain.PetriNet{
 		Id:              "conformance_example",
 		StartPlace:      9,
 		PlaceCount:      10,
 		TransitionCount: 12,
-		Transitions: [petri_net.MaxTransitionCount]petri_net.Transition{
-			petri_net.Transition{
+		Transitions: [domain.MaxTransitionCount]domain.Transition{
+			domain.Transition{
 				Id:                 "As",
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{9},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{9},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{0},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{0},
 			},
-			petri_net.Transition{
+			domain.Transition{
 				Id:                 "Da1",
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{0},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{0},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{8},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{8},
 			},
-			petri_net.Transition{
+			domain.Transition{
 				Id:                 "Aa",
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{0},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{0},
 				OutgoingPlaceCount: 2,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{1, 2},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{1, 2},
 			},
-			petri_net.Transition{
+			domain.Transition{
 				Id:                 "Fa",
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{1},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{1},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{5},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{5},
 			},
-			petri_net.Transition{
+			domain.Transition{
 				Id:                 "Sso",
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{2},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{2},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{3},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{3},
 			},
-			petri_net.Transition{
+			domain.Transition{
 				Id:                 "Ro",
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{3},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{3},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{4},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{4},
 			},
-			petri_net.Transition{
+			domain.Transition{
 				Id:                 "Co",
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{4},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{4},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{2},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{2},
 			},
-			petri_net.Transition{
+			domain.Transition{
 				Id:                 "Ao",
 				IncomingPlaceCount: 2,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{5, 4},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{5, 4},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{6},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{6},
 			},
-			petri_net.Transition{
+			domain.Transition{
 				Id:                 "Do",
 				IncomingPlaceCount: 2,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{5, 4},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{5, 4},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{7},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{7},
 			},
-			petri_net.Transition{
+			domain.Transition{
 				Id:                 "Aaa",
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{6},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{6},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{8},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{8},
 			},
-			petri_net.Transition{
+			domain.Transition{
 				Id:                 "Da2",
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{7},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{7},
 				OutgoingPlaceCount: 1,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{8},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{8},
 			},
-			petri_net.Transition{
+			domain.Transition{
 				Id:                 "Af",
 				IncomingPlaceCount: 1,
-				IncomingPlaces:     [petri_net.MaxBranchingFactor]uint8{8},
+				IncomingPlaces:     [domain.MaxBranchingFactor]uint8{8},
 				OutgoingPlaceCount: 0,
-				OutgoingPlaces:     [petri_net.MaxBranchingFactor]uint8{},
+				OutgoingPlaces:     [domain.MaxBranchingFactor]uint8{},
 			},
 		},
 	}
 }
 
-func GetPetriNet1Instance1() instance.Instance {
-	return instance.Instance{
+func GetPetriNet1Instance1() domain.Instance {
+	return domain.Instance{
 		Id:          "conformance_example1",
 		PlaceCount:  10,
-		TokenCounts: [petri_net.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 	}
 }
 
-func GetPetriNet1Instance2() instance.Instance {
-	return instance.Instance{
+func GetPetriNet1Instance2() domain.Instance {
+	return domain.Instance{
 		Id:          "conformance_example2",
 		PlaceCount:  10,
-		TokenCounts: [petri_net.MaxPlaceCount]int8{1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		TokenCounts: [domain.MaxPlaceCount]int8{1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 	}
 }
 
-func GetPetriNet1Instance3() instance.Instance {
-	return instance.Instance{
+func GetPetriNet1Instance3() domain.Instance {
+	return domain.Instance{
 		Id:          "conformance_example3",
 		PlaceCount:  10,
-		TokenCounts: [petri_net.MaxPlaceCount]int8{0, 0, 0, 0, 1, 1, 0, 0, 0, 0},
+		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 1, 1, 0, 0, 0, 0},
 	}
 }
 
-func GetPetriNet1Instance4() instance.Instance {
-	return instance.Instance{
+func GetPetriNet1Instance4() domain.Instance {
+	return domain.Instance{
 		Id:          "conformance_example4",
 		PlaceCount:  10,
-		TokenCounts: [petri_net.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
+		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
 	}
 }
 
 func GetPetriNet1Instance1Serialized() []byte {
-	bytes := [petri_net.MaxPlaceCount + 1]byte{10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+	bytes := [domain.MaxPlaceCount + 1]byte{10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
 	return bytes[:]
 }
 
 func GetPetriNet1Instance2Serialized() []byte {
-	bytes := [petri_net.MaxPlaceCount + 1]byte{10, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	bytes := [domain.MaxPlaceCount + 1]byte{10, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 	return bytes[:]
 }
 
 func GetPetriNet1Instance3Serialized() []byte {
-	bytes := [petri_net.MaxPlaceCount + 1]byte{10, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0}
+	bytes := [domain.MaxPlaceCount + 1]byte{10, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0}
 	return bytes[:]
 }
 
 func GetPetriNet1Instance4Serialized() []byte {
-	bytes := [petri_net.MaxPlaceCount + 1]byte{10, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0}
+	bytes := [domain.MaxPlaceCount + 1]byte{10, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0}
 	return bytes[:]
 }
 

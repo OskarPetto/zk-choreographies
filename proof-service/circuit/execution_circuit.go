@@ -1,7 +1,7 @@
 package circuit
 
 import (
-	"proof-service/petri_net"
+	"proof-service/domain"
 
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/math/uints"
@@ -29,8 +29,8 @@ func (circuit *ExecutionCircuit) Define(api frontend.API) error {
 }
 
 func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
-	var tokenCountDecreases [petri_net.MaxPlaceCount]frontend.Variable
-	var tokenCountIncreases [petri_net.MaxPlaceCount]frontend.Variable
+	var tokenCountDecreases [domain.MaxPlaceCount]frontend.Variable
+	var tokenCountIncreases [domain.MaxPlaceCount]frontend.Variable
 	var incomingPlaceCount frontend.Variable
 	var outgoingPlaceCount frontend.Variable
 	incomingPlaceCount = 0
@@ -49,10 +49,12 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 
 		tokenCountDecreases[placeId] = doesTokenCountDecrease
 		tokenCountIncreases[placeId] = doesTokenCountIncrease
+
+		api.AssertIsBoolean(nextTokenCount)
 	}
 
-	api.AssertIsLessOrEqual(incomingPlaceCount, api.Sub(petri_net.MaxBranchingFactor, 1))
-	api.AssertIsLessOrEqual(outgoingPlaceCount, api.Sub(petri_net.MaxBranchingFactor, 1))
+	api.AssertIsLessOrEqual(incomingPlaceCount, api.Sub(domain.MaxBranchingFactor, 1))
+	api.AssertIsLessOrEqual(outgoingPlaceCount, api.Sub(domain.MaxBranchingFactor, 1))
 
 	var transitionFound frontend.Variable
 	transitionFound = 0

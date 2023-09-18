@@ -2,8 +2,7 @@ package circuit
 
 import (
 	"proof-service/commitment"
-	"proof-service/instance"
-	"proof-service/petri_net"
+	"proof-service/domain"
 
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/hash/sha2"
@@ -17,21 +16,21 @@ type Commitment struct {
 
 type Instance struct {
 	PlaceCount  uints.U8 `gnark:",public"`
-	TokenCounts [petri_net.MaxPlaceCount]uints.U8
+	TokenCounts [domain.MaxPlaceCount]uints.U8
 }
 
 type Transition struct {
-	IncomingPlaceCount uints.U8                               `gnark:",public"`
-	IncomingPlaces     [petri_net.MaxBranchingFactor]uints.U8 `gnark:",public"`
-	OutgoingPlaceCount uints.U8                               `gnark:",public"`
-	OutgoingPlaces     [petri_net.MaxBranchingFactor]uints.U8 `gnark:",public"`
+	IncomingPlaceCount uints.U8                            `gnark:",public"`
+	IncomingPlaces     [domain.MaxBranchingFactor]uints.U8 `gnark:",public"`
+	OutgoingPlaceCount uints.U8                            `gnark:",public"`
+	OutgoingPlaces     [domain.MaxBranchingFactor]uints.U8 `gnark:",public"`
 }
 
 type PetriNet struct {
 	PlaceCount      uints.U8 `gnark:",public"`
 	StartPlace      uints.U8 `gnark:",public"`
 	TransitionCount uints.U8 `gnark:",public"`
-	Transitions     [petri_net.MaxTransitionCount]Transition
+	Transitions     [domain.MaxTransitionCount]Transition
 }
 
 func FromCommitment(c commitment.Commitment) Commitment {
@@ -41,8 +40,8 @@ func FromCommitment(c commitment.Commitment) Commitment {
 	}
 }
 
-func FromInstance(inst instance.Instance) Instance {
-	var tokenCounts [petri_net.MaxPlaceCount]uints.U8
+func FromInstance(inst domain.Instance) Instance {
+	var tokenCounts [domain.MaxPlaceCount]uints.U8
 	for i := 0; i < int(inst.PlaceCount); i++ {
 		tokenCounts[i] = uints.NewU8(byte(inst.TokenCounts[i]))
 	}
@@ -52,8 +51,8 @@ func FromInstance(inst instance.Instance) Instance {
 	}
 }
 
-func FromPetriNet(petriNet petri_net.PetriNet) PetriNet {
-	var transitions [petri_net.MaxTransitionCount]Transition
+func FromPetriNet(petriNet domain.PetriNet) PetriNet {
+	var transitions [domain.MaxTransitionCount]Transition
 	for i := 0; i < int(petriNet.TransitionCount); i++ {
 		transitions[i] = fromTransition(petriNet.Transitions[i])
 	}
@@ -65,9 +64,9 @@ func FromPetriNet(petriNet petri_net.PetriNet) PetriNet {
 	}
 }
 
-func fromTransition(transition petri_net.Transition) Transition {
-	var incomingPlaces [petri_net.MaxBranchingFactor]uints.U8
-	var outgoingPlaces [petri_net.MaxBranchingFactor]uints.U8
+func fromTransition(transition domain.Transition) Transition {
+	var incomingPlaces [domain.MaxBranchingFactor]uints.U8
+	var outgoingPlaces [domain.MaxBranchingFactor]uints.U8
 	for i := 0; i < int(transition.IncomingPlaceCount); i++ {
 		incomingPlaces[i] = uints.NewU8(transition.IncomingPlaces[i])
 	}
