@@ -10,6 +10,7 @@ import (
 var AllowedTokenCounts = []int{0, 1}
 
 type Instance struct {
+	Id          string
 	PlaceCount  uint8
 	TokenCounts [petri_net.MaxPlaceCount]int8
 }
@@ -28,6 +29,7 @@ func FromWorkflowInstance(instance workflow.Instance) (Instance, error) {
 		tokenCounts[i] = int8(instance.TokenCounts[i])
 	}
 	return Instance{
+		Id:          instance.Id,
 		PlaceCount:  uint8(placeCount),
 		TokenCounts: tokenCounts,
 	}, nil

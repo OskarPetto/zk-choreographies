@@ -45,6 +45,7 @@ func FromWorkflowPetriNet(petriNet workflow.PetriNet) (PetriNet, error) {
 		}
 	}
 	return PetriNet{
+		Id:              petriNet.Id,
 		PlaceCount:      uint8(placeCount),
 		StartPlace:      uint8(petriNet.StartPlace),
 		TransitionCount: uint8(transitionCount),
@@ -73,6 +74,7 @@ func fromWorkflowTransition(transition workflow.Transition) (Transition, error) 
 		outgoingPlaces[i] = uint8(transition.OutgoingPlaces[i])
 	}
 	return Transition{
+		Id:                 transition.Id,
 		IncomingPlaceCount: uint8(incomingPlaceCount),
 		IncomingPlaces:     incomingPlaces,
 		OutgoingPlaceCount: uint8(outgoingPlaceCount),

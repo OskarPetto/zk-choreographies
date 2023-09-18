@@ -10,7 +10,7 @@ import (
 
 func TestFromWorkflowPetriNet(t *testing.T) {
 	workflowPetriNet := testdata.GetWorkflowPetriNet1()
-	expected := testdata.GetPetriNet()
+	expected := testdata.GetPetriNet1()
 	result, err := petri_net.FromWorkflowPetriNet(workflowPetriNet)
 	assert.Nil(t, err)
 	assert.Equal(t, expected, result)

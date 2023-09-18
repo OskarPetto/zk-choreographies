@@ -1,7 +1,6 @@
 package commitment_test
 
 import (
-	"fmt"
 	"proof-service/commitment"
 	"proof-service/testdata"
 	"testing"
@@ -9,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var commitment1 = testdata.GetCommitment1()
+var commitment1 = testdata.GetPetriNet1Instance1Commitment()
 
 func TestFindCommitment(t *testing.T) {
 	commitmentService := commitment.NewCommitmentService()
@@ -21,9 +20,9 @@ func TestFindCommitment(t *testing.T) {
 
 func TestCreateCommitment(t *testing.T) {
 	commitmentService := commitment.NewCommitmentService()
-	result, err := commitmentService.CreateCommitment(commitment1.Id, testdata.GetSerializedInstance1())
+	result, err := commitmentService.CreateCommitment(commitment1.Id, testdata.GetPetriNet1Instance4Serialized())
 	assert.Nil(t, err)
 	assert.Equal(t, commitment1.Id, result.Id)
 	assert.Equal(t, commitment.RandomnessSize, len(result.Randomness))
-	fmt.Printf("%+v\n", result)
+	//fmt.Printf("%+v\n", result)
 }
