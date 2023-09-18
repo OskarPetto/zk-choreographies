@@ -1,7 +1,7 @@
 package circuit
 
 import (
-	"proof-service/domain"
+	"proof-service/workflow"
 
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/lookup/logderivlookup"
@@ -35,7 +35,7 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 	var outgoingPlaceCount frontend.Variable
 	incomingPlaceCount = 0
 	outgoingPlaceCount = 0
-	for placeId := 0; placeId < domain.MaxPlaceCount; placeId++ {
+	for placeId := range circuit.CurrentInstance.TokenCounts {
 		currentTokenCount := circuit.CurrentInstance.TokenCounts[placeId].Val
 		nextTokenCount := circuit.NextInstance.TokenCounts[placeId].Val
 
@@ -53,24 +53,24 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 		api.AssertIsBoolean(nextTokenCount)
 	}
 
-	// insert 1 at domain.MaxPlaceCount
+	// insert 1 at workflow.MaxPlaceCount
 	tokenCountDecreasesByPlaceId.Insert(1)
 	tokenCountIncreasesByPlaceId.Insert(1)
 
-	api.AssertIsLessOrEqual(incomingPlaceCount, domain.MaxBranchingFactor)
-	api.AssertIsLessOrEqual(outgoingPlaceCount, domain.MaxBranchingFactor)
+	api.AssertIsLessOrEqual(incomingPlaceCount, workflow.MaxBranchingFactor)
+	api.AssertIsLessOrEqual(outgoingPlaceCount, workflow.MaxBranchingFactor)
 
 	var transitionFound frontend.Variable
 	transitionFound = 0
 
-	for i := 0; i < domain.MaxTransitionCount; i++ {
+	for i := range circuit.PetriNet.Transitions {
 		transition := circuit.PetriNet.Transitions[i]
 		matchesIncomingPlaces := equals(api, transition.IncomingPlaceCount, incomingPlaceCount)
 		matchesOutgoingPlaces := equals(api, transition.OutgoingPlaceCount, outgoingPlaceCount)
-		// returns 1 for default placeId (domain.MaxPlaceCount)
+		// returns 1 for default placeId (workflow.MaxPlaceCount)
 		incomingTokenCountsDecrease := tokenCountDecreasesByPlaceId.Lookup(transition.IncomingPlaces[:]...)
 		outgoingTokenCountsIncrease := tokenCountIncreasesByPlaceId.Lookup(transition.OutgoingPlaces[:]...)
-		for j := 0; j < domain.MaxBranchingFactor; j++ {
+		for j := range transition.IncomingPlaces {
 			incomingTokenCountDecreases := incomingTokenCountsDecrease[j]
 			outgoingTokenCountIncreases := outgoingTokenCountsIncrease[j]
 			matchesIncomingPlaces = api.And(matchesIncomingPlaces, incomingTokenCountDecreases)

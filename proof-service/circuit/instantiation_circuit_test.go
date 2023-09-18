@@ -13,10 +13,12 @@ import (
 var instantiationCircuit circuit.InstantiationCircuit
 
 func TestInstantiation(t *testing.T) {
+	instance, _ := circuit.FromInstance(testdata.GetPetriNet1Instance1())
+	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
-		Instance:   circuit.FromInstance(testdata.GetPetriNet1Instance1()),
+		Instance:   instance,
 		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance1Commitment()),
-		PetriNet:   circuit.FromPetriNet(testdata.GetPetriNet1()),
+		PetriNet:   petriNet,
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -26,10 +28,12 @@ func TestInstantiation(t *testing.T) {
 }
 
 func TestInstantiation_InvalidCommitment(t *testing.T) {
+	instance, _ := circuit.FromInstance(testdata.GetPetriNet1Instance1())
+	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
-		Instance:   circuit.FromInstance(testdata.GetPetriNet1Instance1()),
+		Instance:   instance,
 		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance2Commitment()),
-		PetriNet:   circuit.FromPetriNet(testdata.GetPetriNet1()),
+		PetriNet:   petriNet,
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -37,10 +41,12 @@ func TestInstantiation_InvalidCommitment(t *testing.T) {
 }
 
 func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
+	instance, _ := circuit.FromInstance(testdata.GetPetriNet1Instance2())
+	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
-		Instance:   circuit.FromInstance(testdata.GetPetriNet1Instance2()),
+		Instance:   instance,
 		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance2Commitment()),
-		PetriNet:   circuit.FromPetriNet(testdata.GetPetriNet1()),
+		PetriNet:   petriNet,
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -48,10 +54,12 @@ func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
 }
 
 func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
+	instance, _ := circuit.FromInstance(testdata.GetPetriNet1Instance3())
+	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
-		Instance:   circuit.FromInstance(testdata.GetPetriNet1Instance3()),
+		Instance:   instance,
 		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance3Commitment()),
-		PetriNet:   circuit.FromPetriNet(testdata.GetPetriNet1()),
+		PetriNet:   petriNet,
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())

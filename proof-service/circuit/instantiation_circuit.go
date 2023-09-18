@@ -1,8 +1,6 @@
 package circuit
 
 import (
-	"proof-service/domain"
-
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/math/uints"
 )
@@ -25,7 +23,7 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 }
 
 func (circuit *InstantiationCircuit) checkTokenCounts(api frontend.API) {
-	for placeId := 0; placeId < domain.MaxPlaceCount; placeId++ {
+	for placeId := range circuit.Instance.TokenCounts {
 		tokenCount := circuit.Instance.TokenCounts[placeId].Val
 		isStartPlace := equals(api, placeId, circuit.PetriNet.StartPlace)
 		api.AssertIsEqual(tokenCount, isStartPlace)
