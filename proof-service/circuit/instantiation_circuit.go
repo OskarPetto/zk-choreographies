@@ -17,12 +17,12 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 		return err
 	}
 	checkCommitment(api, uapi, circuit.Instance, circuit.Commitment)
-	api.AssertIsEqual(circuit.Instance.PlaceCount.Val, circuit.PetriNet.PlaceCount)
 	circuit.checkTokenCounts(api)
 	return nil
 }
 
 func (circuit *InstantiationCircuit) checkTokenCounts(api frontend.API) {
+	api.AssertIsEqual(circuit.Instance.PlaceCount.Val, circuit.PetriNet.PlaceCount)
 	for placeId := range circuit.Instance.TokenCounts {
 		tokenCount := circuit.Instance.TokenCounts[placeId].Val
 		isStartPlace := equals(api, placeId, circuit.PetriNet.StartPlace)

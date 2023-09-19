@@ -8,7 +8,7 @@ import (
 	"github.com/consensys/gnark/std/math/uints"
 )
 
-type ExecutionCircuit struct {
+type TransitionCircuit struct {
 	CurrentInstance   Instance
 	CurrentCommitment Commitment
 	NextInstance      Instance
@@ -16,25 +16,25 @@ type ExecutionCircuit struct {
 	PetriNet          PetriNet
 }
 
-func (circuit *ExecutionCircuit) Define(api frontend.API) error {
+func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	uapi, err := uints.New[uints.U32](api)
 	if err != nil {
 		return err
 	}
 	checkCommitment(api, uapi, circuit.CurrentInstance, circuit.CurrentCommitment)
 	checkCommitment(api, uapi, circuit.NextInstance, circuit.NextCommitment)
-	api.AssertIsEqual(circuit.NextInstance.PlaceCount.Val, circuit.PetriNet.PlaceCount)
 	circuit.checkTokenCounts(api)
 	return nil
 }
 
-func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
+func (circuit *TransitionCircuit) checkTokenCounts(api frontend.API) {
+	api.AssertIsEqual(circuit.NextInstance.PlaceCount.Val, circuit.PetriNet.PlaceCount)
+
 	tokenCountDecreasesByPlaceId := logderivlookup.New(api)
 	tokenCountIncreasesByPlaceId := logderivlookup.New(api)
-	var incomingPlaceCount frontend.Variable
-	var outgoingPlaceCount frontend.Variable
-	incomingPlaceCount = 0
-	outgoingPlaceCount = 0
+	var incomingPlaceCount frontend.Variable = 0
+	var outgoingPlaceCount frontend.Variable = 0
+
 	for placeId := range circuit.CurrentInstance.TokenCounts {
 		currentTokenCount := circuit.CurrentInstance.TokenCounts[placeId].Val
 		nextTokenCount := circuit.NextInstance.TokenCounts[placeId].Val
@@ -60,8 +60,7 @@ func (circuit *ExecutionCircuit) checkTokenCounts(api frontend.API) {
 	api.AssertIsLessOrEqual(incomingPlaceCount, workflow.MaxBranchingFactor)
 	api.AssertIsLessOrEqual(outgoingPlaceCount, workflow.MaxBranchingFactor)
 
-	var transitionFound frontend.Variable
-	transitionFound = 0
+	var transitionFound frontend.Variable = 0
 
 	for i := range circuit.PetriNet.Transitions {
 		transition := circuit.PetriNet.Transitions[i]

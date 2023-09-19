@@ -27,7 +27,7 @@ type ProofService struct {
 }
 
 var instantiationCircuit circuit.InstantiationCircuit
-var executionCircuit circuit.ExecutionCircuit
+var transitionCircuit circuit.TransitionCircuit
 
 func NewProofService() ProofService {
 	instantiationCsPath := getFolderPath() + "/" + instantiationCsFilename
@@ -35,7 +35,7 @@ func NewProofService() ProofService {
 	instantiationPkPath := getFolderPath() + "/" + instantiationPkFilename
 	instantiationPk := importProvingKey(instantiationPkPath, instantiationCs)
 	executionCsPath := getFolderPath() + "/" + executionCsFilename
-	executionCs := importConstraintSystem(&executionCircuit, executionCsPath)
+	executionCs := importConstraintSystem(&transitionCircuit, executionCsPath)
 	executionPkPath := getFolderPath() + "/" + executionPkFilename
 	executionPk := importProvingKey(executionPkPath, executionCs)
 	return ProofService{
