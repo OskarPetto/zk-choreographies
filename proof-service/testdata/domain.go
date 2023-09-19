@@ -104,7 +104,7 @@ func GetPetriNet1InstanceEmpty() workflow.Instance {
 	}
 }
 
-func GetPetriNet1Instance1Commitment() commitment.Commitment {
+func GetCommitment1() commitment.Commitment {
 	return commitment.Commitment{
 		Id:         "conformance_example1",
 		Value:      []byte{15, 119, 210, 82, 4, 149, 235, 173, 255, 201, 90, 205, 146, 233, 251, 58, 54, 88, 10, 179, 75, 101, 147, 46, 127, 239, 221, 252, 28, 71, 138, 66},

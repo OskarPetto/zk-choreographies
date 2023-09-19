@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var commitment1 = testdata.GetPetriNet1Instance1Commitment()
+var commitment1 = testdata.GetCommitment1()
 
 func TestFindCommitment(t *testing.T) {
 	commitmentService := commitment.NewCommitmentService()
