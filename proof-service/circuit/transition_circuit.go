@@ -5,7 +5,6 @@ import (
 
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/lookup/logderivlookup"
-	"github.com/consensys/gnark/std/math/uints"
 )
 
 type TransitionCircuit struct {
@@ -17,18 +16,14 @@ type TransitionCircuit struct {
 }
 
 func (circuit *TransitionCircuit) Define(api frontend.API) error {
-	uapi, err := uints.New[uints.U32](api)
-	if err != nil {
-		return err
-	}
-	checkCommitment(api, uapi, circuit.CurrentInstance, circuit.CurrentCommitment)
-	checkCommitment(api, uapi, circuit.NextInstance, circuit.NextCommitment)
+	checkCommitment(api, circuit.CurrentInstance, circuit.CurrentCommitment)
+	checkCommitment(api, circuit.NextInstance, circuit.NextCommitment)
 	circuit.checkTokenCounts(api)
 	return nil
 }
 
 func (circuit *TransitionCircuit) checkTokenCounts(api frontend.API) {
-	api.AssertIsEqual(circuit.NextInstance.PlaceCount.Val, circuit.PetriNet.PlaceCount)
+	api.AssertIsEqual(circuit.NextInstance.PlaceCount, circuit.PetriNet.PlaceCount)
 
 	tokenCountDecreasesByPlaceId := logderivlookup.New(api)
 	tokenCountIncreasesByPlaceId := logderivlookup.New(api)
@@ -36,8 +31,8 @@ func (circuit *TransitionCircuit) checkTokenCounts(api frontend.API) {
 	var outgoingPlaceCount frontend.Variable = 0
 
 	for placeId := range circuit.CurrentInstance.TokenCounts {
-		currentTokenCount := circuit.CurrentInstance.TokenCounts[placeId].Val
-		nextTokenCount := circuit.NextInstance.TokenCounts[placeId].Val
+		currentTokenCount := circuit.CurrentInstance.TokenCounts[placeId]
+		nextTokenCount := circuit.NextInstance.TokenCounts[placeId]
 
 		tokenCountStaysTheSame := equals(api, nextTokenCount, currentTokenCount)
 		tokenCountDecreases := equals(api, nextTokenCount, api.Sub(currentTokenCount, 1))

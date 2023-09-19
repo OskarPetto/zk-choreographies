@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { PetriNetReducer } from './peri-net.reducer';
+import { PetriNetReducer } from './perti-net.reducer';
 import { PetriNetService } from './petri-net.service';
 
 @Module({
@@ -8,4 +8,4 @@ import { PetriNetService } from './petri-net.service';
   controllers: [],
   providers: [PetriNetService, PetriNetReducer],
 })
-export class PetriNetModule {}
+export class PetriNetModule { }

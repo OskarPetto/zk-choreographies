@@ -1,5 +1,5 @@
 import { TestdataProvider } from 'test/data/testdata.provider';
-import { PetriNetReducer } from './peri-net.reducer';
+import { PetriNetReducer } from './perti-net.reducer';
 
 describe('ReductionService', () => {
   let petriNetReducer: PetriNetReducer;

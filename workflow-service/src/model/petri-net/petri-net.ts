@@ -26,5 +26,6 @@ export interface PetriNet {
   id: PetriNetId;
   placeCount: number;
   startPlace: PlaceId;
+  endPlace: PlaceId;
   transitions: Transition[];
 }

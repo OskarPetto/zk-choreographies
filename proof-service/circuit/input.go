@@ -5,18 +5,18 @@ import (
 	"proof-service/commitment"
 	"proof-service/workflow"
 
+	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/consensys/gnark/frontend"
-	"github.com/consensys/gnark/std/math/uints"
 )
 
 type Commitment struct {
-	Value      [commitment.CommitmentSize]uints.U8 `gnark:",public"`
-	Randomness [commitment.RandomnessSize]uints.U8
+	Value      frontend.Variable `gnark:",public"`
+	Randomness frontend.Variable
 }
 
 type Instance struct {
-	PlaceCount  uints.U8 `gnark:",public"`
-	TokenCounts [workflow.MaxPlaceCount]uints.U8
+	PlaceCount  frontend.Variable `gnark:",public"`
+	TokenCounts [workflow.MaxPlaceCount]frontend.Variable
 }
 
 type Transition struct {
@@ -29,14 +29,19 @@ type Transition struct {
 type PetriNet struct {
 	PlaceCount      frontend.Variable `gnark:",public"`
 	StartPlace      frontend.Variable `gnark:",public"`
+	EndPlace        frontend.Variable `gnark:",public"`
 	TransitionCount frontend.Variable `gnark:",public"`
 	Transitions     [workflow.MaxTransitionCount]Transition
 }
 
 func FromCommitment(c commitment.Commitment) Commitment {
+	element, err := fr.BigEndian.Element(&c.Randomness)
+	if err != nil {
+		panic(err)
+	}
 	return Commitment{
-		Value:      ([commitment.CommitmentSize]uints.U8)(uints.NewU8Array(c.Value[:])),
-		Randomness: ([commitment.RandomnessSize]uints.U8)(uints.NewU8Array(c.Randomness[:])),
+		Value:      c.Value,
+		Randomness: element,
 	}
 }
 
@@ -45,12 +50,15 @@ func FromInstance(instance workflow.Instance) (Instance, error) {
 	if placeCount > workflow.MaxPlaceCount {
 		return Instance{}, fmt.Errorf("instance '%s' is too large", instance.Id)
 	}
-	var tokenCounts [workflow.MaxPlaceCount]uints.U8
+	var tokenCounts [workflow.MaxPlaceCount]frontend.Variable
 	for i := 0; i < placeCount; i++ {
-		tokenCounts[i] = uints.NewU8(byte(instance.TokenCounts[i]))
+		tokenCounts[i] = instance.TokenCounts[i]
+	}
+	for i := placeCount; i < workflow.MaxPlaceCount; i++ {
+		tokenCounts[i] = 0
 	}
 	return Instance{
-		PlaceCount:  uints.NewU8(uint8(placeCount)),
+		PlaceCount:  placeCount,
 		TokenCounts: tokenCounts,
 	}, nil
 }
@@ -78,6 +86,7 @@ func FromPetriNet(petriNet workflow.PetriNet) (PetriNet, error) {
 	return PetriNet{
 		PlaceCount:      petriNet.PlaceCount,
 		StartPlace:      petriNet.StartPlace,
+		EndPlace:        petriNet.EndPlace,
 		TransitionCount: transitionCount,
 		Transitions:     transitions,
 	}, nil

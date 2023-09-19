@@ -2,8 +2,10 @@ package commitment
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
 	"fmt"
+
+	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
+	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
 )
 
 type CommitmentService struct {
@@ -30,13 +32,26 @@ func (service *CommitmentService) SaveCommitment(commitment Commitment) error {
 }
 
 func (service *CommitmentService) CreateCommitment(commitmentId CommitmentId, data []byte) (Commitment, error) {
-	randomness := make([]byte, RandomnessSize)
-	rand.Read(randomness)
-	input := append(data, randomness...)
-	hash := sha256.Sum256(input)
+
+	hasher := mimc.NewMiMC()
+	for i := range data {
+		bytes := make([]byte, hasher.BlockSize())
+		bytes[hasher.BlockSize()-1] = data[i] // big endian
+		hasher.Write(bytes)
+	}
+
+	randomBytes := make([]byte, RandomnessSize)
+	rand.Read(randomBytes)
+	fieldElements, err := fr.Hash(randomBytes, []byte("CreateCommitment"), 1)
+	if err != nil {
+		panic(err)
+	}
+	randomness := fieldElements[0].Bytes()
+	hasher.Write(randomness[:])
+	hash := hasher.Sum([]byte{})
 	return Commitment{
 		Id:         commitmentId,
 		Value:      hash,
-		Randomness: ([RandomnessSize]byte)(randomness),
+		Randomness: randomness,
 	}, nil
 }

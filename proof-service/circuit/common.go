@@ -1,25 +1,20 @@
 package circuit
 
 import (
-	"proof-service/commitment"
-
 	"github.com/consensys/gnark/frontend"
-	"github.com/consensys/gnark/std/hash/sha2"
-	"github.com/consensys/gnark/std/math/uints"
+	"github.com/consensys/gnark/std/hash/mimc"
 )
 
-func checkCommitment(api frontend.API, uapi *uints.BinaryField[uints.U32], instance Instance, comm Commitment) error {
-	hasher, err := sha2.New(api)
+func checkCommitment(api frontend.API, instance Instance, comm Commitment) error {
+	hasher, err := mimc.NewMiMC(api)
 	if err != nil {
 		return err
 	}
-	hasher.Write([]uints.U8{instance.PlaceCount})
-	hasher.Write(instance.TokenCounts[:])
-	hasher.Write(comm.Randomness[:])
+	hasher.Write(instance.PlaceCount)
+	hasher.Write(instance.TokenCounts[:]...)
+	hasher.Write(comm.Randomness)
 	hash := hasher.Sum()
-	for i := 0; i < commitment.CommitmentSize; i++ {
-		uapi.ByteAssertEq(comm.Value[i], hash[i])
-	}
+	api.AssertIsEqual(hash, comm.Value)
 	return nil
 }
 

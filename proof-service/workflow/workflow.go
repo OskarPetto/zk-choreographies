@@ -17,6 +17,7 @@ type Transition struct {
 type PetriNet struct {
 	Id          string
 	StartPlace  PlaceId
+	EndPlace    PlaceId
 	PlaceCount  uint
 	Transitions []Transition
 }

@@ -42,6 +42,7 @@ export class PetriNetReducer {
     }
     petriNet.placeCount = places.length;
     petriNet.startPlace = placeMap.get(petriNet.startPlace)!;
+    petriNet.endPlace = placeMap.get(petriNet.endPlace)!;
   }
 
   private collectPlaces(petriNet: PetriNet): PlaceId[] {
@@ -133,6 +134,7 @@ export class PetriNetReducer {
       id: petriNet.id,
       placeCount: petriNet.placeCount,
       startPlace: petriNet.startPlace,
+      endPlace: petriNet.endPlace,
       transitions,
     };
   }

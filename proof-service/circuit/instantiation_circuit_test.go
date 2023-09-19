@@ -2,6 +2,7 @@ package circuit_test
 
 import (
 	"proof-service/circuit"
+	"proof-service/commitment"
 	"proof-service/testdata"
 	"testing"
 
@@ -13,11 +14,13 @@ import (
 var instantiationCircuit circuit.InstantiationCircuit
 
 func TestInstantiation(t *testing.T) {
+	commitmentService := commitment.NewCommitmentService()
 	instance, _ := circuit.FromInstance(testdata.GetPetriNet1Instance1())
+	commitment, _ := commitmentService.CreateCommitment("any", testdata.GetPetriNet1Instance1Serialized())
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
 		Instance:   instance,
-		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance1Commitment()),
+		Commitment: circuit.FromCommitment(commitment),
 		PetriNet:   petriNet,
 	}
 
@@ -28,11 +31,13 @@ func TestInstantiation(t *testing.T) {
 }
 
 func TestInstantiation_InvalidCommitment(t *testing.T) {
+	commitmentService := commitment.NewCommitmentService()
 	instance, _ := circuit.FromInstance(testdata.GetPetriNet1Instance1())
+	commitment, _ := commitmentService.CreateCommitment("any", testdata.GetPetriNet1Instance2Serialized())
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
 		Instance:   instance,
-		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance2Commitment()),
+		Commitment: circuit.FromCommitment(commitment),
 		PetriNet:   petriNet,
 	}
 
@@ -41,11 +46,13 @@ func TestInstantiation_InvalidCommitment(t *testing.T) {
 }
 
 func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
+	commitmentService := commitment.NewCommitmentService()
 	instance, _ := circuit.FromInstance(testdata.GetPetriNet1Instance2())
+	commitment, _ := commitmentService.CreateCommitment("any", testdata.GetPetriNet1Instance2Serialized())
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
 		Instance:   instance,
-		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance2Commitment()),
+		Commitment: circuit.FromCommitment(commitment),
 		PetriNet:   petriNet,
 	}
 
@@ -54,11 +61,13 @@ func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
 }
 
 func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
+	commitmentService := commitment.NewCommitmentService()
 	instance, _ := circuit.FromInstance(testdata.GetPetriNet1Instance3())
+	commitment, _ := commitmentService.CreateCommitment("any", testdata.GetPetriNet1Instance3Serialized())
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
 		Instance:   instance,
-		Commitment: circuit.FromCommitment(testdata.GetPetriNet1Instance3Commitment()),
+		Commitment: circuit.FromCommitment(commitment),
 		PetriNet:   petriNet,
 	}
 

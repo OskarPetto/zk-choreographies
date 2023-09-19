@@ -392,13 +392,14 @@ export class TestdataProvider {
         name: 'Application finished (Af)',
         type: TransitionType.END,
         incomingPlaces: [20],
-        outgoingPlaces: [],
+        outgoingPlaces: [23],
       },
     ];
     return {
       id: 'conformance_example',
       startPlace: 22,
-      placeCount: 23,
+      endPlace: 23,
+      placeCount: 24,
       transitions,
     };
   }
@@ -487,13 +488,14 @@ export class TestdataProvider {
         name: 'Application finished (Af)',
         type: TransitionType.END,
         incomingPlaces: [8],
-        outgoingPlaces: [],
+        outgoingPlaces: [10],
       },
     ];
     return {
       id: 'conformance_example',
       startPlace: 9,
-      placeCount: 10,
+      endPlace: 10,
+      placeCount: 11,
       transitions,
     };
   }
@@ -502,7 +504,7 @@ export class TestdataProvider {
     return {
       id: 'instance1',
       petriNet: 'conformance_example',
-      tokenCounts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+      tokenCounts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     };
   }
 }

@@ -108,7 +108,7 @@ func writeFile(writeable io.WriterTo, path string) {
 }
 
 func getFolderPath() string {
-	return "/home/opetto/uni/zk-choreographies/files"
+	return "./files"
 }
 
 func check(err error) {

@@ -4,7 +4,7 @@ import { BpmnService } from './bpmn.service';
 import { BpmnParser } from './bpmn.parser';
 import { BpmnMapper } from './bpmn.mapper';
 import { TestdataProvider } from 'test/data/testdata.provider';
-import { PetriNetReducer } from '../petri-net/peri-net.reducer';
+import { PetriNetReducer } from '../petri-net/perti-net.reducer';
 import { PetriNetService } from '../petri-net/petri-net.service';
 
 describe('CatsController', () => {

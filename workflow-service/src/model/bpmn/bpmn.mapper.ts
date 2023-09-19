@@ -17,61 +17,82 @@ export class BpmnMapper {
       ...process.exclusiveGateways,
       ...process.parallelGateways,
     ];
-    const placeIds = this.createSequenceFlowMapping(process.sequenceFlows);
+    const sequenceFlowPlaceIds = this.createSequenceFlowMapping(process.sequenceFlows);
     const transitions = elements.flatMap((element) =>
-      this.toTransitions(placeIds, element),
+      this.toTransitions(sequenceFlowPlaceIds, element),
     );
     return {
       id: process.id,
-      startPlace: placeIds.size,
-      placeCount: placeIds.size + 1,
+      startPlace: sequenceFlowPlaceIds.size,
+      endPlace: sequenceFlowPlaceIds.size + 1,
+      placeCount: sequenceFlowPlaceIds.size + 2,
       transitions,
     };
   }
 
   private toTransitions(
-    placeIds: Map<SequenceFlowId, PlaceId>,
+    sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
     element: Element,
   ): Transition[] {
     switch (element.type) {
       case TransitionType.START:
-        return this.startToTransitions(element, placeIds);
+        return this.startToTransitions(element, sequenceFlowPlaceIds);
+      case TransitionType.END:
+        return this.endToTransitions(element, sequenceFlowPlaceIds);
       case TransitionType.XOR_SPLIT:
-        return this.xorSplitToTransitions(element, placeIds);
+        return this.xorSplitToTransitions(element, sequenceFlowPlaceIds);
       case TransitionType.XOR_JOIN:
-        return this.xorJoinToTransitions(element, placeIds);
+        return this.xorJoinToTransitions(element, sequenceFlowPlaceIds);
       default:
-        return this.elementToTransitions(element, placeIds);
+        return this.elementToTransitions(element, sequenceFlowPlaceIds);
     }
   }
 
   private startToTransitions(
     element: Element,
-    placeIds: Map<SequenceFlowId, PlaceId>,
+    sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
   ): Transition[] {
     const outgoingPlaces = element.outgoingSequenceFlows.map(
-      (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
+      (sequenceFlowId) => sequenceFlowPlaceIds.get(sequenceFlowId)!,
     );
     return [
       {
         id: element.id,
         type: element.type,
         name: element.name,
-        incomingPlaces: [placeIds.size],
+        incomingPlaces: [sequenceFlowPlaceIds.size],
         outgoingPlaces,
+      },
+    ];
+  }
+
+  private endToTransitions(
+    element: Element,
+    sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
+  ): Transition[] {
+    const incomingPlaces = element.incomingSequenceFlows.map(
+      (sequenceFlowId) => sequenceFlowPlaceIds.get(sequenceFlowId)!,
+    );
+    return [
+      {
+        id: element.id,
+        type: element.type,
+        name: element.name,
+        incomingPlaces,
+        outgoingPlaces: [sequenceFlowPlaceIds.size + 1],
       },
     ];
   }
 
   private elementToTransitions(
     element: Element,
-    placeIds: Map<SequenceFlowId, PlaceId>,
+    sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
   ): Transition[] {
     const incomingPlaces = element.incomingSequenceFlows.map(
-      (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
+      (sequenceFlowId) => sequenceFlowPlaceIds.get(sequenceFlowId)!,
     );
     const outgoingPlaces = element.outgoingSequenceFlows.map(
-      (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
+      (sequenceFlowId) => sequenceFlowPlaceIds.get(sequenceFlowId)!,
     );
     return [
       {
@@ -86,33 +107,33 @@ export class BpmnMapper {
 
   private xorJoinToTransitions(
     element: Element,
-    placeIds: Map<SequenceFlowId, PlaceId>,
+    sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
   ): Transition[] {
     const outgoingPlaces = element.outgoingSequenceFlows.map(
-      (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
+      (sequenceFlowId) => sequenceFlowPlaceIds.get(sequenceFlowId)!,
     );
     return element.incomingSequenceFlows.map((incomingSequenceFlowId) => ({
       id: `${element.id}_${incomingSequenceFlowId}`,
       type: element.type,
       name: element.name,
-      incomingPlaces: [placeIds.get(incomingSequenceFlowId)!],
+      incomingPlaces: [sequenceFlowPlaceIds.get(incomingSequenceFlowId)!],
       outgoingPlaces: outgoingPlaces,
     }));
   }
 
   private xorSplitToTransitions(
     element: Element,
-    placeIds: Map<SequenceFlowId, PlaceId>,
+    sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
   ): Transition[] {
     const incomingPlaces = element.incomingSequenceFlows.map(
-      (sequenceFlowId) => placeIds.get(sequenceFlowId)!,
+      (sequenceFlowId) => sequenceFlowPlaceIds.get(sequenceFlowId)!,
     );
     return element.outgoingSequenceFlows.map((outgoingSequenceFlowId) => ({
       id: `${element.id}_${outgoingSequenceFlowId}`,
       type: element.type,
       name: element.name,
       incomingPlaces: incomingPlaces,
-      outgoingPlaces: [placeIds.get(outgoingSequenceFlowId)!],
+      outgoingPlaces: [sequenceFlowPlaceIds.get(outgoingSequenceFlowId)!],
     }));
   }
 
