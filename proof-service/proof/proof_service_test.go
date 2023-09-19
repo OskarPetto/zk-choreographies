@@ -1,6 +1,11 @@
 package proof_test
 
-// func TestNewProofService(t *testing.T) {
-// 	proof.NewProofService()
-// 	//proofService.ExportKeys()
-// }
+import (
+	"proof-service/proof"
+	"testing"
+)
+
+func TestNewProofService(t *testing.T) {
+	proof.NewProofService()
+	//proofService.ExportKeys()
+}

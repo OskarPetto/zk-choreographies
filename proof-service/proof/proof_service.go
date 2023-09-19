@@ -1,7 +1,6 @@
 package proof
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -16,14 +15,14 @@ import (
 
 const instantiationPkFilename = "instantiation.proving_key"
 const instantiationCsFilename = "instantiation.constraint_system"
-const executionPkFilename = "execution.proving_key"
-const executionCsFilename = "execution.constraint_system"
+const transitionPkFilename = "transition.proving_key"
+const transitionCsFilename = "transition.constraint_system"
 
 type ProofService struct {
-	instantiationCs *constraint.ConstraintSystem
-	instantiationPk *groth16.ProvingKey
-	executionCs     *constraint.ConstraintSystem
-	executionPk     *groth16.ProvingKey
+	instantiationCs constraint.ConstraintSystem
+	instantiationPk groth16.ProvingKey
+	transitionCs    constraint.ConstraintSystem
+	transitionPk    groth16.ProvingKey
 }
 
 var instantiationCircuit circuit.InstantiationCircuit
@@ -31,22 +30,22 @@ var transitionCircuit circuit.TransitionCircuit
 
 func NewProofService() ProofService {
 	instantiationCsPath := getFolderPath() + "/" + instantiationCsFilename
-	instantiationCs := importConstraintSystem(&instantiationCircuit, instantiationCsPath)
 	instantiationPkPath := getFolderPath() + "/" + instantiationPkFilename
+	transitionCsPath := getFolderPath() + "/" + transitionCsFilename
+	transitionPkPath := getFolderPath() + "/" + transitionPkFilename
+	instantiationCs := importConstraintSystem(&instantiationCircuit, instantiationCsPath)
+	transitionCs := importConstraintSystem(&transitionCircuit, transitionCsPath)
 	instantiationPk := importProvingKey(instantiationPkPath, instantiationCs)
-	executionCsPath := getFolderPath() + "/" + executionCsFilename
-	executionCs := importConstraintSystem(&transitionCircuit, executionCsPath)
-	executionPkPath := getFolderPath() + "/" + executionPkFilename
-	executionPk := importProvingKey(executionPkPath, executionCs)
+	transitionPk := importProvingKey(transitionPkPath, transitionCs)
 	return ProofService{
 		instantiationCs: instantiationCs,
 		instantiationPk: instantiationPk,
-		executionCs:     executionCs,
-		executionPk:     executionPk,
+		transitionCs:    transitionCs,
+		transitionPk:    transitionPk,
 	}
 }
 
-func importConstraintSystem(circuit frontend.Circuit, path string) *constraint.ConstraintSystem {
+func importConstraintSystem(circuit frontend.Circuit, path string) constraint.ConstraintSystem {
 	cs, err := readConstraintSystem(path)
 	if err != nil {
 		cs = compileCircuit(circuit, path)
@@ -54,7 +53,20 @@ func importConstraintSystem(circuit frontend.Circuit, path string) *constraint.C
 	return cs
 }
 
-func importProvingKey(path string, cs *constraint.ConstraintSystem) *groth16.ProvingKey {
+func readConstraintSystem(path string) (constraint.ConstraintSystem, error) {
+	var cs constraint.ConstraintSystem
+	err := readFile(cs, path)
+	return cs, err
+}
+
+func compileCircuit(circuit frontend.Circuit, path string) constraint.ConstraintSystem {
+	cs, err := frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, circuit)
+	check(err)
+	writeFile(cs, path)
+	return cs
+}
+
+func importProvingKey(path string, cs constraint.ConstraintSystem) groth16.ProvingKey {
 	pk, err := readProvingKey(path)
 	if err != nil {
 		pk = generateProvingKey(cs, path)
@@ -62,49 +74,37 @@ func importProvingKey(path string, cs *constraint.ConstraintSystem) *groth16.Pro
 	return pk
 }
 
-func readConstraintSystem(path string) (*constraint.ConstraintSystem, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	var cs constraint.ConstraintSystem
-	cs.ReadFrom(file)
-	return &cs, nil
-}
-
-func readProvingKey(path string) (*groth16.ProvingKey, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
+func readProvingKey(path string) (groth16.ProvingKey, error) {
 	var pk groth16.ProvingKey
-	pk.ReadFrom(file)
-	return &pk, nil
+	err := readFile(pk, path)
+	return pk, err
 }
 
-func compileCircuit(circuit frontend.Circuit, path string) *constraint.ConstraintSystem {
-	cs, err := frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, circuit)
-	check(err)
-	writeFile(cs, path)
-	return &cs
-}
-
-func generateProvingKey(cs *constraint.ConstraintSystem, path string) *groth16.ProvingKey {
-	pk, _, err := groth16.Setup(*cs)
+func generateProvingKey(cs constraint.ConstraintSystem, path string) groth16.ProvingKey {
+	pk, _, err := groth16.Setup(cs)
 	check(err)
 	writeFile(pk, path)
-	return &pk
+	return pk
 }
 
 func writeFile(writeable io.WriterTo, path string) {
 	file, err := os.Create(path)
 	check(err)
 	defer file.Close()
-	writer := bufio.NewWriter(file)
-	bytesWritten, err := writeable.WriteTo(writer)
+	bytesWritten, err := writeable.WriteTo(file)
 	check(err)
-	fmt.Printf("Generated file of size %d in %s\n", bytesWritten, path)
-	writer.Flush()
+	fmt.Printf("Wrote file of size %d in %s\n", bytesWritten, path)
+}
+
+func readFile(readable io.ReaderFrom, path string) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	bytesRead, err := readable.ReadFrom(file)
+	fmt.Printf("Read file of size %d in %s\n", bytesRead, path)
+	return err
 }
 
 func getFolderPath() string {
