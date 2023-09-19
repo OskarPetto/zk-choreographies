@@ -42,13 +42,7 @@ func (service *CommitmentService) CreateCommitment(instance workflow.Instance) (
 		hasher.Write(bytes)
 	}
 
-	randomBytes := make([]byte, RandomnessSize)
-	rand.Read(randomBytes)
-	fieldElements, err := fr.Hash(randomBytes, []byte("CreateCommitment"), 1)
-	if err != nil {
-		panic(err)
-	}
-	randomness := fieldElements[0].Bytes()
+	randomness := randomFieldElement()
 	hasher.Write(randomness[:])
 	hash := hasher.Sum([]byte{})
 	return Commitment{
@@ -66,4 +60,15 @@ func serializeInstance(instance workflow.Instance) []byte {
 		bytes[i+1] = byte(instance.TokenCounts[i])
 	}
 	return bytes
+}
+
+func randomFieldElement() [mimc.BlockSize]byte {
+	randomBytes := make([]byte, mimc.BlockSize)
+	rand.Read(randomBytes)
+	fieldElements, err := fr.Hash(randomBytes, []byte("randomFieldElement"), 1)
+	if err != nil {
+		panic(err)
+	}
+	fieldElementBytes := fieldElements[0].Bytes()
+	return fieldElementBytes
 }
