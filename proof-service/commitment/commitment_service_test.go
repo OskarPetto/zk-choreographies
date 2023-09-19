@@ -21,7 +21,7 @@ func TestFindCommitment(t *testing.T) {
 
 func TestCreateCommitment(t *testing.T) {
 	commitmentService := commitment.NewCommitmentService()
-	result, err := commitmentService.CreateCommitment(commitment1.Id, testdata.GetPetriNet1Instance1Serialized())
+	result, err := commitmentService.CreateCommitment(testdata.GetPetriNet1Instance1())
 	assert.Nil(t, err)
 	assert.Equal(t, commitment1.Id, result.Id)
 	fmt.Printf("%+v\n", result)

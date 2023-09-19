@@ -104,26 +104,6 @@ func GetPetriNet1InstanceEmpty() workflow.Instance {
 	}
 }
 
-func GetPetriNet1Instance1Serialized() []byte {
-	bytes := [workflow.MaxPlaceCount + 1]byte{11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0}
-	return bytes[:]
-}
-
-func GetPetriNet1Instance2Serialized() []byte {
-	bytes := [workflow.MaxPlaceCount + 1]byte{11, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	return bytes[:]
-}
-
-func GetPetriNet1Instance3Serialized() []byte {
-	bytes := [workflow.MaxPlaceCount + 1]byte{11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
-	return bytes[:]
-}
-
-func GetPetriNet1InstanceEmptySerialized() []byte {
-	bytes := [workflow.MaxPlaceCount + 1]byte{0}
-	return bytes[:]
-}
-
 func GetPetriNet1Instance1Commitment() commitment.Commitment {
 	return commitment.Commitment{
 		Id:         "conformance_example1",

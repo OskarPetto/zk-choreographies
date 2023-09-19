@@ -3,6 +3,7 @@ package commitment
 import (
 	"crypto/rand"
 	"fmt"
+	"proof-service/workflow"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
@@ -31,12 +32,13 @@ func (service *CommitmentService) SaveCommitment(commitment Commitment) error {
 	return nil
 }
 
-func (service *CommitmentService) CreateCommitment(commitmentId CommitmentId, data []byte) (Commitment, error) {
+func (service *CommitmentService) CreateCommitment(instance workflow.Instance) (Commitment, error) {
 
+	serializedInstance := serializeInstance(instance)
 	hasher := mimc.NewMiMC()
-	for i := range data {
+	for i := range serializedInstance {
 		bytes := make([]byte, hasher.BlockSize())
-		bytes[hasher.BlockSize()-1] = data[i] // big endian
+		bytes[hasher.BlockSize()-1] = serializedInstance[i] // big endian
 		hasher.Write(bytes)
 	}
 
@@ -50,8 +52,18 @@ func (service *CommitmentService) CreateCommitment(commitmentId CommitmentId, da
 	hasher.Write(randomness[:])
 	hash := hasher.Sum([]byte{})
 	return Commitment{
-		Id:         commitmentId,
+		Id:         instance.Id,
 		Value:      hash,
 		Randomness: randomness,
 	}, nil
+}
+
+func serializeInstance(instance workflow.Instance) []byte {
+	placeCount := len(instance.TokenCounts)
+	var bytes = make([]byte, workflow.MaxPlaceCount+1)
+	bytes[0] = byte(placeCount)
+	for i := 0; i < placeCount; i++ {
+		bytes[i+1] = byte(instance.TokenCounts[i])
+	}
+	return bytes
 }
