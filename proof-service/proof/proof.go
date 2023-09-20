@@ -29,7 +29,7 @@ func ProveInstantiation(instance workflow.Instance, pertiNet workflow.PetriNet) 
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(parameters.csInstantiation, parameters.pkInstantiation, witness)
+	proof, err := groth16.Prove(LoadProofParameters().csInstantiation, LoadProofParameters().pkInstantiation, witness)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -62,7 +62,7 @@ func ProveTransition(currentInstance workflow.Instance, nextInstance workflow.In
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(parameters.csTransition, parameters.pkTransition, witness)
+	proof, err := groth16.Prove(LoadProofParameters().csTransition, LoadProofParameters().pkTransition, witness)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -89,7 +89,7 @@ func ProveTermination(instance workflow.Instance, pertiNet workflow.PetriNet) ([
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(parameters.csTermination, parameters.pkTermination, witness)
+	proof, err := groth16.Prove(LoadProofParameters().csTermination, LoadProofParameters().pkTermination, witness)
 	if err != nil {
 		return []byte{}, err
 	}

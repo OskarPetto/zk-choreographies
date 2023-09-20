@@ -11,22 +11,22 @@ import (
 
 const signaturePrivateKeyFilename = "signature.private_key"
 
-type Parameters struct {
+type SignatureParameters struct {
 	isLoaded            bool
 	signaturePrivateKey *eddsa.PrivateKey
 }
 
-var parameters Parameters
+var signatureParameters SignatureParameters
 
-func LoadParameters() Parameters {
-	if !parameters.isLoaded {
+func LoadSignatureParameters() SignatureParameters {
+	if !signatureParameters.isLoaded {
 		signaturePrivateKey := importSignaturePrivateKey(signaturePrivateKeyFilename)
-		parameters = Parameters{
+		signatureParameters = SignatureParameters{
 			true,
 			signaturePrivateKey,
 		}
 	}
-	return parameters
+	return signatureParameters
 }
 
 func importSignaturePrivateKey(filename string) *eddsa.PrivateKey {

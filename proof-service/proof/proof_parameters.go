@@ -18,7 +18,7 @@ const instantiationPkFilename = "instantiation.proving_key"
 const transitionPkFilename = "transition.proving_key"
 const terminationPkFilename = "termination.proving_key"
 
-type Parameters struct {
+type ProofParameters struct {
 	isLoaded        bool
 	csInstantiation constraint.ConstraintSystem
 	csTransition    constraint.ConstraintSystem
@@ -28,17 +28,17 @@ type Parameters struct {
 	pkTermination   groth16.ProvingKey
 }
 
-var parameters Parameters
+var proofParameters ProofParameters
 
-func LoadParameters() Parameters {
-	if !parameters.isLoaded {
+func LoadProofParameters() ProofParameters {
+	if !proofParameters.isLoaded {
 		csInstantiation := importConstraintSystem(&circuit.InstantiationCircuit{}, instantiationCsFilename)
 		csTransition := importConstraintSystem(&circuit.TransitionCircuit{}, transitionCsFilename)
 		csTermination := importConstraintSystem(&circuit.TerminationCircuit{}, terminationCsFilename)
 		pkInstantiation := importProvingKey(csInstantiation, instantiationPkFilename)
 		pkTransition := importProvingKey(csTransition, transitionPkFilename)
 		pkTermination := importProvingKey(csTermination, terminationPkFilename)
-		parameters = Parameters{
+		proofParameters = ProofParameters{
 			true,
 			csInstantiation,
 			csTransition,
@@ -48,7 +48,7 @@ func LoadParameters() Parameters {
 			pkTermination,
 		}
 	}
-	return parameters
+	return proofParameters
 }
 
 func importConstraintSystem(circuit frontend.Circuit, filename string) constraint.ConstraintSystem {

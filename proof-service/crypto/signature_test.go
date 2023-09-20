@@ -7,7 +7,6 @@ import (
 )
 
 func TestSign(t *testing.T) {
-	crypto.LoadParameters()
 	commitment := testdata.GetCommitment1()
 	crypto.Sign(commitment)
 }

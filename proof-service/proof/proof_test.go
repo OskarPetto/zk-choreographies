@@ -9,7 +9,6 @@ import (
 )
 
 func TestProveInstantiation(t *testing.T) {
-	proof.LoadParameters()
 	instance := testdata.GetPetriNet1Instance1()
 	petriNet := testdata.GetPetriNet1()
 
@@ -19,7 +18,6 @@ func TestProveInstantiation(t *testing.T) {
 }
 
 func TestProveTransition(t *testing.T) {
-	proof.LoadParameters()
 	currentInstance := testdata.GetPetriNet1Instance1()
 	nextInstance := testdata.GetPetriNet1Instance2()
 	petriNet := testdata.GetPetriNet1()
@@ -30,7 +28,6 @@ func TestProveTransition(t *testing.T) {
 }
 
 func TestProveTermination(t *testing.T) {
-	proof.LoadParameters()
 	instance := testdata.GetPetriNet1Instance3()
 	petriNet := testdata.GetPetriNet1()
 
