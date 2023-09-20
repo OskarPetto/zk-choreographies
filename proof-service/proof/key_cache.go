@@ -13,28 +13,36 @@ import (
 	"github.com/consensys/gnark/frontend/cs/r1cs"
 )
 
-const pkPathInstantiation = "./files/instantiation.proving_key"
 const csPathInstantiation = "./files/instantiation.constraint_system"
-const pkPathTransition = "./files/transition.proving_key"
 const csPathTransition = "./files/transition.constraint_system"
+const csPathTermination = "./files/termination.constraint_system"
+const pkPathInstantiation = "./files/instantiation.proving_key"
+const pkPathTransition = "./files/transition.proving_key"
+const pkPathTermination = "./files/termination.proving_key"
 
 type KeyCache struct {
 	csInstantiation constraint.ConstraintSystem
 	csTransition    constraint.ConstraintSystem
+	csTermination   constraint.ConstraintSystem
 	pkInstantiation groth16.ProvingKey
 	pkTransition    groth16.ProvingKey
+	pkTermination   groth16.ProvingKey
 }
 
 func NewKeyCache() KeyCache {
 	csInstantiation := importConstraintSystem(&circuit.InstantiationCircuit{}, csPathInstantiation)
 	csTransition := importConstraintSystem(&circuit.TransitionCircuit{}, csPathTransition)
+	csTermination := importConstraintSystem(&circuit.TerminationCircuit{}, csPathTermination)
 	pkInstantiation := importProvingKey(csInstantiation, pkPathInstantiation)
 	pkTransition := importProvingKey(csTransition, pkPathTransition)
+	pkTermination := importProvingKey(csTermination, pkPathTermination)
 	return KeyCache{
 		csInstantiation,
 		csTransition,
+		csTermination,
 		pkInstantiation,
 		pkTransition,
+		pkTermination,
 	}
 }
 

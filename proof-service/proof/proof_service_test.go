@@ -38,3 +38,14 @@ func TestProveTransition(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 128, len(proof))
 }
+
+func TestProveTermination(t *testing.T) {
+	commitmentService := commitment.NewCommitmentService()
+	instance := testdata.GetPetriNet1Instance3()
+	commitment := commitmentService.CreateCommitment(instance)
+	petriNet := testdata.GetPetriNet1()
+
+	proof, err := proofService.ProveTermination(instance, commitment, petriNet)
+	assert.Nil(t, err)
+	assert.Equal(t, 128, len(proof))
+}
