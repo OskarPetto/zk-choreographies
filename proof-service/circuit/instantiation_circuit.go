@@ -11,13 +11,13 @@ type InstantiationCircuit struct {
 }
 
 func (circuit *InstantiationCircuit) Define(api frontend.API) error {
+	api.AssertIsEqual(circuit.Instance.PlaceCount, circuit.PetriNet.PlaceCount)
 	checkCommitment(api, circuit.Instance, circuit.Commitment)
 	circuit.checkTokenCounts(api)
 	return nil
 }
 
 func (circuit *InstantiationCircuit) checkTokenCounts(api frontend.API) {
-	api.AssertIsEqual(circuit.Instance.PlaceCount, circuit.PetriNet.PlaceCount)
 	for placeId := range circuit.Instance.TokenCounts {
 		tokenCount := circuit.Instance.TokenCounts[placeId]
 		isStartPlace := equals(api, placeId, circuit.PetriNet.StartPlace)
