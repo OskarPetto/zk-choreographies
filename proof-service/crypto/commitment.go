@@ -1,33 +1,24 @@
-package commitment
+package crypto
 
 import (
 	"crypto/rand"
-	"fmt"
 	"proof-service/workflow"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
 )
 
-type CommitmentService struct {
-	commitments map[CommitmentId]Commitment
+const RandomnessSize = 32
+
+type CommitmentId = string
+
+type Commitment struct {
+	Id         CommitmentId
+	Value      []byte
+	Randomness [RandomnessSize]byte
 }
 
-func NewCommitmentService() CommitmentService {
-	return CommitmentService{
-		commitments: make(map[CommitmentId]Commitment),
-	}
-}
-
-func (service *CommitmentService) FindCommitment(commitmentId CommitmentId) (Commitment, error) {
-	commitment, exists := service.commitments[commitmentId]
-	if !exists {
-		return Commitment{}, fmt.Errorf("randomness for %s not found", commitmentId)
-	}
-	return commitment, nil
-}
-
-func (service *CommitmentService) CreateCommitment(instance workflow.Instance) Commitment {
+func NewCommitment(instance workflow.Instance) Commitment {
 
 	serializedInstance := serializeInstance(instance)
 	randomness := randomFieldElement()
@@ -39,10 +30,6 @@ func (service *CommitmentService) CreateCommitment(instance workflow.Instance) C
 		Randomness: randomness,
 	}
 	return commitment
-}
-
-func (service *CommitmentService) SaveCommitment(commitment Commitment) {
-	service.commitments[commitment.Id] = commitment
 }
 
 func commitBytes(input []byte, randomness [mimc.BlockSize]byte) []byte {

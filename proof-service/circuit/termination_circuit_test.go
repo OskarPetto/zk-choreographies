@@ -2,7 +2,7 @@ package circuit_test
 
 import (
 	"proof-service/circuit"
-	"proof-service/commitment"
+	"proof-service/crypto"
 	"proof-service/testdata"
 	"testing"
 
@@ -14,10 +14,9 @@ import (
 var terminationCircuit circuit.TerminationCircuit
 
 func TestTermination(t *testing.T) {
-	commitmentService := commitment.NewCommitmentService()
 	instance := testdata.GetPetriNet1Instance3()
 	circuitInstance, _ := circuit.FromInstance(instance)
-	commitment := commitmentService.CreateCommitment(instance)
+	commitment := crypto.NewCommitment(instance)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.TerminationCircuit{
 		Instance:   circuitInstance,
@@ -32,10 +31,9 @@ func TestTermination(t *testing.T) {
 }
 
 func TestTermination_InvalidCommitment(t *testing.T) {
-	commitmentService := commitment.NewCommitmentService()
 	instance := testdata.GetPetriNet1Instance3()
 	circuitInstance, _ := circuit.FromInstance(instance)
-	commitment := commitmentService.CreateCommitment(testdata.GetPetriNet1Instance2())
+	commitment := crypto.NewCommitment(testdata.GetPetriNet1Instance2())
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.TerminationCircuit{
 		Instance:   circuitInstance,
@@ -48,10 +46,9 @@ func TestTermination_InvalidCommitment(t *testing.T) {
 }
 
 func TestTermination_InvalidTokenCounts1(t *testing.T) {
-	commitmentService := commitment.NewCommitmentService()
 	instance := testdata.GetPetriNet1Instance1()
 	circuitInstance, _ := circuit.FromInstance(instance)
-	commitment := commitmentService.CreateCommitment(instance)
+	commitment := crypto.NewCommitment(instance)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.TerminationCircuit{
 		Instance:   circuitInstance,

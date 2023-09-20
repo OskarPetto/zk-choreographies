@@ -3,7 +3,7 @@ package proof
 import (
 	"bytes"
 	"proof-service/circuit"
-	"proof-service/commitment"
+	"proof-service/crypto"
 	"proof-service/workflow"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -21,7 +21,7 @@ func NewProofService() ProofService {
 	}
 }
 
-func (service *ProofService) ProveInstantiation(instance workflow.Instance, comm commitment.Commitment, pertiNet workflow.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveInstantiation(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err
@@ -32,7 +32,7 @@ func (service *ProofService) ProveInstantiation(instance workflow.Instance, comm
 	}
 	assignment := &circuit.InstantiationCircuit{
 		Instance:   circuitInstance,
-		Commitment: circuit.FromCommitment(comm),
+		Commitment: circuit.FromCommitment(crypto.NewCommitment(instance)),
 		PetriNet:   circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
@@ -48,7 +48,7 @@ func (service *ProofService) ProveInstantiation(instance workflow.Instance, comm
 	return byteBuffer.Bytes(), nil
 }
 
-func (service *ProofService) ProveTransition(currentInstance workflow.Instance, currentCommitment commitment.Commitment, nextInstance workflow.Instance, nextCommitment commitment.Commitment, pertiNet workflow.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveTransition(currentInstance workflow.Instance, nextInstance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
 	currentCircuitInstance, err := circuit.FromInstance(currentInstance)
 	if err != nil {
 		return []byte{}, err
@@ -63,9 +63,9 @@ func (service *ProofService) ProveTransition(currentInstance workflow.Instance, 
 	}
 	assignment := &circuit.TransitionCircuit{
 		CurrentInstance:   currentCircuitInstance,
-		CurrentCommitment: circuit.FromCommitment(currentCommitment),
+		CurrentCommitment: circuit.FromCommitment(crypto.NewCommitment(currentInstance)),
 		NextInstance:      nextCircuitInstance,
-		NextCommitment:    circuit.FromCommitment(nextCommitment),
+		NextCommitment:    circuit.FromCommitment(crypto.NewCommitment(nextInstance)),
 		PetriNet:          circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
@@ -81,7 +81,7 @@ func (service *ProofService) ProveTransition(currentInstance workflow.Instance, 
 	return byteBuffer.Bytes(), nil
 }
 
-func (service *ProofService) ProveTermination(instance workflow.Instance, comm commitment.Commitment, pertiNet workflow.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveTermination(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err
@@ -92,7 +92,7 @@ func (service *ProofService) ProveTermination(instance workflow.Instance, comm c
 	}
 	assignment := &circuit.TerminationCircuit{
 		Instance:   circuitInstance,
-		Commitment: circuit.FromCommitment(comm),
+		Commitment: circuit.FromCommitment(crypto.NewCommitment(instance)),
 		PetriNet:   circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())

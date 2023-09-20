@@ -2,7 +2,7 @@ package circuit
 
 import (
 	"fmt"
-	"proof-service/commitment"
+	"proof-service/crypto"
 	"proof-service/workflow"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
@@ -34,13 +34,13 @@ type PetriNet struct {
 	Transitions     [workflow.MaxTransitionCount]Transition
 }
 
-func FromCommitment(c commitment.Commitment) Commitment {
-	element, err := fr.BigEndian.Element(&c.Randomness)
+func FromCommitment(commitment crypto.Commitment) Commitment {
+	element, err := fr.BigEndian.Element(&commitment.Randomness)
 	if err != nil {
 		panic(err)
 	}
 	return Commitment{
-		Value:      c.Value,
+		Value:      commitment.Value,
 		Randomness: element,
 	}
 }

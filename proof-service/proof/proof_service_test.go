@@ -1,7 +1,6 @@
 package proof_test
 
 import (
-	"proof-service/commitment"
 	"proof-service/proof"
 	"proof-service/testdata"
 	"testing"
@@ -16,36 +15,29 @@ func TestNewProofService(t *testing.T) {
 }
 
 func TestProveInstantiation(t *testing.T) {
-	commitmentService := commitment.NewCommitmentService()
 	instance := testdata.GetPetriNet1Instance1()
-	commitment := commitmentService.CreateCommitment(instance)
 	petriNet := testdata.GetPetriNet1()
 
-	proof, err := proofService.ProveInstantiation(instance, commitment, petriNet)
+	proof, err := proofService.ProveInstantiation(instance, petriNet)
 	assert.Nil(t, err)
 	assert.Equal(t, 128, len(proof))
 }
 
 func TestProveTransition(t *testing.T) {
-	commitmentService := commitment.NewCommitmentService()
 	currentInstance := testdata.GetPetriNet1Instance1()
-	currentCommitment := commitmentService.CreateCommitment(currentInstance)
 	nextInstance := testdata.GetPetriNet1Instance2()
-	nextCommitment := commitmentService.CreateCommitment(nextInstance)
 	petriNet := testdata.GetPetriNet1()
 
-	proof, err := proofService.ProveTransition(currentInstance, currentCommitment, nextInstance, nextCommitment, petriNet)
+	proof, err := proofService.ProveTransition(currentInstance, nextInstance, petriNet)
 	assert.Nil(t, err)
 	assert.Equal(t, 128, len(proof))
 }
 
 func TestProveTermination(t *testing.T) {
-	commitmentService := commitment.NewCommitmentService()
 	instance := testdata.GetPetriNet1Instance3()
-	commitment := commitmentService.CreateCommitment(instance)
 	petriNet := testdata.GetPetriNet1()
 
-	proof, err := proofService.ProveTermination(instance, commitment, petriNet)
+	proof, err := proofService.ProveTermination(instance, petriNet)
 	assert.Nil(t, err)
 	assert.Equal(t, 128, len(proof))
 }
