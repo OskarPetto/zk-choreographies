@@ -26,3 +26,7 @@ type Instance struct {
 	Id          string
 	TokenCounts []int
 }
+
+type RoleBinding struct {
+	PublicKeys []string
+}

@@ -16,7 +16,7 @@ var transitionCircuit circuit.TransitionCircuit
 func TestExecution_NoTokenChange(t *testing.T) {
 	currentInstance := testdata.GetPetriNet1Instance1()
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	currentCommitment := crypto.NewCommitment(currentInstance)
+	currentCommitment := crypto.Commit(currentInstance)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.TransitionCircuit{
 		CurrentInstance:   currentCircuitInstance,
@@ -37,8 +37,8 @@ func TestExecution_Transition0(t *testing.T) {
 	nextInstance := testdata.GetPetriNet1Instance2()
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	currentCommitment := crypto.NewCommitment(currentInstance)
-	nextCommitment := crypto.NewCommitment(nextInstance)
+	currentCommitment := crypto.Commit(currentInstance)
+	nextCommitment := crypto.Commit(nextInstance)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.TransitionCircuit{
 		CurrentInstance:   currentCircuitInstance,
@@ -59,8 +59,8 @@ func TestExecution_InvalidCommitments(t *testing.T) {
 	nextInstance := testdata.GetPetriNet1Instance2()
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	currentCommitment := crypto.NewCommitment(nextInstance)
-	nextCommitment := crypto.NewCommitment(currentInstance)
+	currentCommitment := crypto.Commit(nextInstance)
+	nextCommitment := crypto.Commit(currentInstance)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.TransitionCircuit{
 		CurrentInstance:   currentCircuitInstance,
@@ -79,8 +79,8 @@ func TestExecution_InvalidTokenCounts1(t *testing.T) {
 	nextInstance := testdata.GetPetriNet1Instance3()
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	currentCommitment := crypto.NewCommitment(currentInstance)
-	nextCommitment := crypto.NewCommitment(nextInstance)
+	currentCommitment := crypto.Commit(currentInstance)
+	nextCommitment := crypto.Commit(nextInstance)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.TransitionCircuit{
 		CurrentInstance:   currentCircuitInstance,

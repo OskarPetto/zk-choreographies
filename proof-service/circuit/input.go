@@ -5,7 +5,6 @@ import (
 	"proof-service/crypto"
 	"proof-service/workflow"
 
-	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/consensys/gnark/frontend"
 )
 
@@ -35,13 +34,9 @@ type PetriNet struct {
 }
 
 func FromCommitment(commitment crypto.Commitment) Commitment {
-	element, err := fr.BigEndian.Element(&commitment.Randomness)
-	if err != nil {
-		panic(err)
-	}
 	return Commitment{
 		Value:      commitment.Value,
-		Randomness: element,
+		Randomness: commitment.Randomness,
 	}
 }
 

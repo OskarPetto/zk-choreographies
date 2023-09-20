@@ -11,17 +11,7 @@ import (
 	"github.com/consensys/gnark/frontend"
 )
 
-type ProofService struct {
-	fileCache FileCache
-}
-
-func NewProofService() ProofService {
-	return ProofService{
-		fileCache: NewFileCache(),
-	}
-}
-
-func (service *ProofService) ProveInstantiation(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
+func ProveInstantiation(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err
@@ -32,14 +22,14 @@ func (service *ProofService) ProveInstantiation(instance workflow.Instance, pert
 	}
 	assignment := &circuit.InstantiationCircuit{
 		Instance:   circuitInstance,
-		Commitment: circuit.FromCommitment(crypto.NewCommitment(instance)),
+		Commitment: circuit.FromCommitment(crypto.Commit(instance)),
 		PetriNet:   circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(service.fileCache.csInstantiation, service.fileCache.pkInstantiation, witness)
+	proof, err := groth16.Prove(parameters.csInstantiation, parameters.pkInstantiation, witness)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -48,7 +38,7 @@ func (service *ProofService) ProveInstantiation(instance workflow.Instance, pert
 	return byteBuffer.Bytes(), nil
 }
 
-func (service *ProofService) ProveTransition(currentInstance workflow.Instance, nextInstance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
+func ProveTransition(currentInstance workflow.Instance, nextInstance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
 	currentCircuitInstance, err := circuit.FromInstance(currentInstance)
 	if err != nil {
 		return []byte{}, err
@@ -63,16 +53,16 @@ func (service *ProofService) ProveTransition(currentInstance workflow.Instance, 
 	}
 	assignment := &circuit.TransitionCircuit{
 		CurrentInstance:   currentCircuitInstance,
-		CurrentCommitment: circuit.FromCommitment(crypto.NewCommitment(currentInstance)),
+		CurrentCommitment: circuit.FromCommitment(crypto.Commit(currentInstance)),
 		NextInstance:      nextCircuitInstance,
-		NextCommitment:    circuit.FromCommitment(crypto.NewCommitment(nextInstance)),
+		NextCommitment:    circuit.FromCommitment(crypto.Commit(nextInstance)),
 		PetriNet:          circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(service.fileCache.csTransition, service.fileCache.pkTransition, witness)
+	proof, err := groth16.Prove(parameters.csTransition, parameters.pkTransition, witness)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -81,7 +71,7 @@ func (service *ProofService) ProveTransition(currentInstance workflow.Instance, 
 	return byteBuffer.Bytes(), nil
 }
 
-func (service *ProofService) ProveTermination(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
+func ProveTermination(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err
@@ -92,14 +82,14 @@ func (service *ProofService) ProveTermination(instance workflow.Instance, pertiN
 	}
 	assignment := &circuit.TerminationCircuit{
 		Instance:   circuitInstance,
-		Commitment: circuit.FromCommitment(crypto.NewCommitment(instance)),
+		Commitment: circuit.FromCommitment(crypto.Commit(instance)),
 		PetriNet:   circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(service.fileCache.csTermination, service.fileCache.pkTermination, witness)
+	proof, err := groth16.Prove(parameters.csTermination, parameters.pkTermination, witness)
 	if err != nil {
 		return []byte{}, err
 	}

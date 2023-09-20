@@ -1,65 +1,45 @@
 package crypto
 
 import (
-	"crypto/rand"
+	"proof-service/utils"
 	"proof-service/workflow"
 
-	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
 )
-
-const RandomnessSize = 32
 
 type CommitmentId = string
 
 type Commitment struct {
-	Id         CommitmentId
 	Value      []byte
-	Randomness [RandomnessSize]byte
+	Randomness []byte
 }
 
-func NewCommitment(instance workflow.Instance) Commitment {
-
+func Commit(instance workflow.Instance) Commitment {
 	serializedInstance := serializeInstance(instance)
+	fieldElements := bytesToFieldElements(serializedInstance)
 	randomness := randomFieldElement()
-	value := commitBytes(serializedInstance, randomness)
+	input := append(fieldElements, randomness...)
+	value := hashFieldElements(input)
 
 	commitment := Commitment{
-		Id:         instance.Id,
 		Value:      value,
 		Randomness: randomness,
 	}
 	return commitment
 }
 
-func commitBytes(input []byte, randomness [mimc.BlockSize]byte) []byte {
-	hasher := mimc.NewMiMC()
-	for i := range input {
-		bytes := make([]byte, hasher.BlockSize())
-		bytes[hasher.BlockSize()-1] = input[i] // big endian
-		hasher.Write(bytes)
-	}
-	hasher.Write(randomness[:])
-	return hasher.Sum([]byte{})
+func hashFieldElements(input []byte) []byte {
+	res, err := mimc.Sum(input)
+	utils.PanicOnError(err)
+	return res
 }
 
 func serializeInstance(instance workflow.Instance) []byte {
-	placeCount := len(instance.TokenCounts)
 	var bytes = make([]byte, workflow.MaxPlaceCount+1)
+	placeCount := len(instance.TokenCounts)
 	bytes[0] = byte(placeCount)
 	for i := 0; i < placeCount; i++ {
 		bytes[i+1] = byte(instance.TokenCounts[i])
 	}
 	return bytes
-}
-
-func randomFieldElement() [mimc.BlockSize]byte {
-	randomBytes := make([]byte, mimc.BlockSize)
-	rand.Read(randomBytes)
-	fieldElements, err := fr.Hash(randomBytes, []byte("randomFieldElement"), 1)
-	if err != nil {
-		panic(err)
-	}
-	fieldElementBytes := fieldElements[0].Bytes()
-	return fieldElementBytes
 }

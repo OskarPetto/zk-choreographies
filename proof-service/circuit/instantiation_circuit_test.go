@@ -16,7 +16,7 @@ var instantiationCircuit circuit.InstantiationCircuit
 func TestInstantiation(t *testing.T) {
 	instance := testdata.GetPetriNet1Instance1()
 	circuitInstance, _ := circuit.FromInstance(instance)
-	commitment := crypto.NewCommitment(instance)
+	commitment := crypto.Commit(instance)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
 		Instance:   circuitInstance,
@@ -33,7 +33,7 @@ func TestInstantiation(t *testing.T) {
 func TestInstantiation_InvalidCommitment(t *testing.T) {
 	instance := testdata.GetPetriNet1Instance1()
 	circuitInstance, _ := circuit.FromInstance(instance)
-	commitment := crypto.NewCommitment(testdata.GetPetriNet1Instance2())
+	commitment := crypto.Commit(testdata.GetPetriNet1Instance2())
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
 		Instance:   circuitInstance,
@@ -48,7 +48,7 @@ func TestInstantiation_InvalidCommitment(t *testing.T) {
 func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
 	instance := testdata.GetPetriNet1Instance3()
 	circuitInstance, _ := circuit.FromInstance(instance)
-	commitment := crypto.NewCommitment(instance)
+	commitment := crypto.Commit(instance)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
 		Instance:   circuitInstance,
