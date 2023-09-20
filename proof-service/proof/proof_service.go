@@ -47,3 +47,36 @@ func (service *ProofService) ProveInstantiation(instance workflow.Instance, comm
 	proof.WriteTo(byteBuffer)
 	return byteBuffer.Bytes(), nil
 }
+
+func (service *ProofService) ProveTransition(currentInstance workflow.Instance, currentCommitment commitment.Commitment, nextInstance workflow.Instance, nextCommitment commitment.Commitment, pertiNet workflow.PetriNet) ([]byte, error) {
+	currentCircuitInstance, err := circuit.FromInstance(currentInstance)
+	if err != nil {
+		return []byte{}, err
+	}
+	nextCircuitInstance, err := circuit.FromInstance(nextInstance)
+	if err != nil {
+		return []byte{}, err
+	}
+	circuitPetriNet, err := circuit.FromPetriNet(pertiNet)
+	if err != nil {
+		return []byte{}, err
+	}
+	assignment := &circuit.TransitionCircuit{
+		CurrentInstance:   currentCircuitInstance,
+		CurrentCommitment: circuit.FromCommitment(currentCommitment),
+		NextInstance:      nextCircuitInstance,
+		NextCommitment:    circuit.FromCommitment(nextCommitment),
+		PetriNet:          circuitPetriNet,
+	}
+	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
+	if err != nil {
+		return []byte{}, err
+	}
+	proof, err := groth16.Prove(service.keyCache.csTransition, service.keyCache.pkTransition, witness)
+	if err != nil {
+		return []byte{}, err
+	}
+	byteBuffer := new(bytes.Buffer)
+	proof.WriteTo(byteBuffer)
+	return byteBuffer.Bytes(), nil
+}

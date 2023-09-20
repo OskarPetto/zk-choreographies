@@ -25,3 +25,16 @@ func TestProveInstantiation(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 128, len(proof))
 }
+
+func TestProveTransition(t *testing.T) {
+	commitmentService := commitment.NewCommitmentService()
+	currentInstance := testdata.GetPetriNet1Instance1()
+	currentCommitment := commitmentService.CreateCommitment(currentInstance)
+	nextInstance := testdata.GetPetriNet1Instance2()
+	nextCommitment := commitmentService.CreateCommitment(nextInstance)
+	petriNet := testdata.GetPetriNet1()
+
+	proof, err := proofService.ProveTransition(currentInstance, currentCommitment, nextInstance, nextCommitment, petriNet)
+	assert.Nil(t, err)
+	assert.Equal(t, 128, len(proof))
+}
