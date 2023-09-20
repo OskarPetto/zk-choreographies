@@ -13,50 +13,50 @@ import (
 	"github.com/consensys/gnark/frontend/cs/r1cs"
 )
 
-const instantiationPkFilename = "instantiation.proving_key"
-const instantiationCsFilename = "instantiation.constraint_system"
-const transitionPkFilename = "transition.proving_key"
-const transitionCsFilename = "transition.constraint_system"
+const pkPathInstantiation = "./files/instantiation.proving_key"
+const csPathInstantiation = "./files/instantiation.constraint_system"
+const pkPathTransition = "./files/transition.proving_key"
+const csPathTransition = "./files/transition.constraint_system"
 
 type ProofService struct {
-	instantiationCs constraint.ConstraintSystem
-	instantiationPk groth16.ProvingKey
-	transitionCs    constraint.ConstraintSystem
-	transitionPk    groth16.ProvingKey
+	csInstantiation constraint.ConstraintSystem
+	csTransition    constraint.ConstraintSystem
+	pkInstantiation groth16.ProvingKey
+	pkTransition    groth16.ProvingKey
 }
 
 var instantiationCircuit circuit.InstantiationCircuit
 var transitionCircuit circuit.TransitionCircuit
 
 func NewProofService() ProofService {
-	instantiationCsPath := getFolderPath() + "/" + instantiationCsFilename
-	instantiationPkPath := getFolderPath() + "/" + instantiationPkFilename
-	transitionCsPath := getFolderPath() + "/" + transitionCsFilename
-	transitionPkPath := getFolderPath() + "/" + transitionPkFilename
-	instantiationCs := importConstraintSystem(&instantiationCircuit, instantiationCsPath)
-	transitionCs := importConstraintSystem(&transitionCircuit, transitionCsPath)
-	instantiationPk := importProvingKey(instantiationPkPath, instantiationCs)
-	transitionPk := importProvingKey(transitionPkPath, transitionCs)
+	csInstantiation := importConstraintSystem(&instantiationCircuit, csPathInstantiation)
+	csTransition := importConstraintSystem(&transitionCircuit, csPathTransition)
+	pkInstantiation := importProvingKey(csInstantiation, pkPathInstantiation)
+	pkTransition := importProvingKey(csTransition, pkPathTransition)
 	return ProofService{
-		instantiationCs: instantiationCs,
-		instantiationPk: instantiationPk,
-		transitionCs:    transitionCs,
-		transitionPk:    transitionPk,
+		csInstantiation,
+		csTransition,
+		pkInstantiation,
+		pkTransition,
 	}
 }
 
 func importConstraintSystem(circuit frontend.Circuit, path string) constraint.ConstraintSystem {
-	cs, err := readConstraintSystem(path)
+	cs := groth16.NewCS(ecc.BN254)
+	err := readFile(cs, path)
 	if err != nil {
 		cs = compileCircuit(circuit, path)
 	}
 	return cs
 }
 
-func readConstraintSystem(path string) (constraint.ConstraintSystem, error) {
-	var cs constraint.ConstraintSystem
-	err := readFile(cs, path)
-	return cs, err
+func importProvingKey(cs constraint.ConstraintSystem, path string) groth16.ProvingKey {
+	pk := groth16.NewProvingKey(ecc.BN254)
+	err := readFile(pk, path)
+	if err != nil {
+		pk = generateProvingKey(cs, path)
+	}
+	return pk
 }
 
 func compileCircuit(circuit frontend.Circuit, path string) constraint.ConstraintSystem {
@@ -64,20 +64,6 @@ func compileCircuit(circuit frontend.Circuit, path string) constraint.Constraint
 	check(err)
 	writeFile(cs, path)
 	return cs
-}
-
-func importProvingKey(path string, cs constraint.ConstraintSystem) groth16.ProvingKey {
-	pk, err := readProvingKey(path)
-	if err != nil {
-		pk = generateProvingKey(cs, path)
-	}
-	return pk
-}
-
-func readProvingKey(path string) (groth16.ProvingKey, error) {
-	var pk groth16.ProvingKey
-	err := readFile(pk, path)
-	return pk, err
 }
 
 func generateProvingKey(cs constraint.ConstraintSystem, path string) groth16.ProvingKey {
@@ -105,10 +91,6 @@ func readFile(readable io.ReaderFrom, path string) error {
 	bytesRead, err := readable.ReadFrom(file)
 	fmt.Printf("Read file of size %d in %s\n", bytesRead, path)
 	return err
-}
-
-func getFolderPath() string {
-	return "./files"
 }
 
 func check(err error) {
