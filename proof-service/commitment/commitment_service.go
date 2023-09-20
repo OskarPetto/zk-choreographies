@@ -27,29 +27,33 @@ func (service *CommitmentService) FindCommitment(commitmentId CommitmentId) (Com
 	return commitment, nil
 }
 
-func (service *CommitmentService) SaveCommitment(commitment Commitment) error {
-	service.commitments[commitment.Id] = commitment
-	return nil
-}
-
-func (service *CommitmentService) CreateCommitment(instance workflow.Instance) (Commitment, error) {
+func (service *CommitmentService) CreateCommitment(instance workflow.Instance) Commitment {
 
 	serializedInstance := serializeInstance(instance)
+	randomness := randomFieldElement()
+	value := commitBytes(serializedInstance, randomness)
+
+	commitment := Commitment{
+		Id:         instance.Id,
+		Value:      value,
+		Randomness: randomness,
+	}
+	return commitment
+}
+
+func (service *CommitmentService) SaveCommitment(commitment Commitment) {
+	service.commitments[commitment.Id] = commitment
+}
+
+func commitBytes(input []byte, randomness [mimc.BlockSize]byte) []byte {
 	hasher := mimc.NewMiMC()
-	for i := range serializedInstance {
+	for i := range input {
 		bytes := make([]byte, hasher.BlockSize())
-		bytes[hasher.BlockSize()-1] = serializedInstance[i] // big endian
+		bytes[hasher.BlockSize()-1] = input[i] // big endian
 		hasher.Write(bytes)
 	}
-
-	randomness := randomFieldElement()
 	hasher.Write(randomness[:])
-	hash := hasher.Sum([]byte{})
-	return Commitment{
-		Id:         instance.Id,
-		Value:      hash,
-		Randomness: randomness,
-	}, nil
+	return hasher.Sum([]byte{})
 }
 
 func serializeInstance(instance workflow.Instance) []byte {

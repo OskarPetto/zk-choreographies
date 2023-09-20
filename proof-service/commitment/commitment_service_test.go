@@ -9,10 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var commitment1 = testdata.GetCommitment1()
-
 func TestFindCommitment(t *testing.T) {
 	commitmentService := commitment.NewCommitmentService()
+	commitment1 := testdata.GetCommitment1()
 	commitmentService.SaveCommitment(commitment1)
 	commitment2, err := commitmentService.FindCommitment(commitment1.Id)
 	assert.Nil(t, err)
@@ -21,8 +20,8 @@ func TestFindCommitment(t *testing.T) {
 
 func TestCreateCommitment(t *testing.T) {
 	commitmentService := commitment.NewCommitmentService()
-	result, err := commitmentService.CreateCommitment(testdata.GetPetriNet1Instance1())
-	assert.Nil(t, err)
-	assert.Equal(t, commitment1.Id, result.Id)
+	instance := testdata.GetPetriNet1Instance1()
+	result := commitmentService.CreateCommitment(instance)
+	assert.Equal(t, instance.Id, result.Id)
 	fmt.Printf("%+v\n", result)
 }
