@@ -5,9 +5,11 @@ const MaxTransitionCount = 100
 const MaxBranchingFactor = 3
 
 type PlaceId = uint
+type RoleId = uint
 
 type Transition struct {
 	Id             string
+	Role           RoleId
 	IncomingPlaces []PlaceId
 	OutgoingPlaces []PlaceId
 }
