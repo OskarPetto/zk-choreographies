@@ -12,12 +12,12 @@ import (
 )
 
 type ProofService struct {
-	keyCache KeyCache
+	fileCache FileCache
 }
 
 func NewProofService() ProofService {
 	return ProofService{
-		keyCache: NewKeyCache(),
+		fileCache: NewFileCache(),
 	}
 }
 
@@ -39,7 +39,7 @@ func (service *ProofService) ProveInstantiation(instance workflow.Instance, pert
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(service.keyCache.csInstantiation, service.keyCache.pkInstantiation, witness)
+	proof, err := groth16.Prove(service.fileCache.csInstantiation, service.fileCache.pkInstantiation, witness)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -72,7 +72,7 @@ func (service *ProofService) ProveTransition(currentInstance workflow.Instance, 
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(service.keyCache.csTransition, service.keyCache.pkTransition, witness)
+	proof, err := groth16.Prove(service.fileCache.csTransition, service.fileCache.pkTransition, witness)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -99,7 +99,7 @@ func (service *ProofService) ProveTermination(instance workflow.Instance, pertiN
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(service.keyCache.csTermination, service.keyCache.pkTermination, witness)
+	proof, err := groth16.Prove(service.fileCache.csTermination, service.fileCache.pkTermination, witness)
 	if err != nil {
 		return []byte{}, err
 	}

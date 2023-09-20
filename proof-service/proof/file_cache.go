@@ -20,7 +20,7 @@ const pkPathInstantiation = "./files/instantiation.proving_key"
 const pkPathTransition = "./files/transition.proving_key"
 const pkPathTermination = "./files/termination.proving_key"
 
-type KeyCache struct {
+type FileCache struct {
 	csInstantiation constraint.ConstraintSystem
 	csTransition    constraint.ConstraintSystem
 	csTermination   constraint.ConstraintSystem
@@ -29,14 +29,14 @@ type KeyCache struct {
 	pkTermination   groth16.ProvingKey
 }
 
-func NewKeyCache() KeyCache {
+func NewFileCache() FileCache {
 	csInstantiation := importConstraintSystem(&circuit.InstantiationCircuit{}, csPathInstantiation)
 	csTransition := importConstraintSystem(&circuit.TransitionCircuit{}, csPathTransition)
 	csTermination := importConstraintSystem(&circuit.TerminationCircuit{}, csPathTermination)
 	pkInstantiation := importProvingKey(csInstantiation, pkPathInstantiation)
 	pkTransition := importProvingKey(csTransition, pkPathTransition)
 	pkTermination := importProvingKey(csTermination, pkPathTermination)
-	return KeyCache{
+	return FileCache{
 		csInstantiation,
 		csTransition,
 		csTermination,
