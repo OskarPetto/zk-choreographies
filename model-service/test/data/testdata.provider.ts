@@ -4,9 +4,8 @@ import {
   PetriNet,
   Transition,
   TransitionType,
-} from 'src/model/petri-net/petri-net';
-import { Process } from 'src/model/bpmn/bpmn';
-import { Instance } from 'src/execution/instance/instance';
+} from 'src/petri-net/petri-net';
+import { Process } from 'src/bpmn/bpmn';
 
 function readTextFile(filename: string) {
   const filePath = path.join(process.cwd(), filename);
@@ -497,14 +496,6 @@ export class TestdataProvider {
       endPlace: 10,
       placeCount: 11,
       transitions,
-    };
-  }
-
-  static getInstance1(): Instance {
-    return {
-      id: 'instance1',
-      petriNet: 'conformance_example',
-      tokenCounts: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
     };
   }
 }

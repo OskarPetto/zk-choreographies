@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"proof-service/circuit"
 	"proof-service/crypto"
+	"proof-service/execution"
+	"proof-service/model"
 	"proof-service/proof/parameters"
-	"proof-service/workflow"
 
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/groth16"
@@ -24,7 +25,7 @@ func NewProofService() ProofService {
 	}
 }
 
-func (service *ProofService) ProveInstantiation(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveInstantiation(instance execution.Instance, pertiNet model.PetriNet) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err
@@ -53,7 +54,7 @@ func (service *ProofService) ProveInstantiation(instance workflow.Instance, pert
 	return byteBuffer.Bytes(), nil
 }
 
-func (service *ProofService) ProveTransition(currentInstance workflow.Instance, nextInstance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveTransition(currentInstance execution.Instance, nextInstance execution.Instance, pertiNet model.PetriNet) ([]byte, error) {
 	currentCircuitInstance, err := circuit.FromInstance(currentInstance)
 	if err != nil {
 		return []byte{}, err
@@ -90,7 +91,7 @@ func (service *ProofService) ProveTransition(currentInstance workflow.Instance, 
 	return byteBuffer.Bytes(), nil
 }
 
-func (service *ProofService) ProveTermination(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveTermination(instance execution.Instance, pertiNet model.PetriNet) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err

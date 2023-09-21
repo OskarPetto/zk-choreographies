@@ -1,7 +1,7 @@
 package circuit
 
 import (
-	"proof-service/workflow"
+	"proof-service/model"
 
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/lookup/logderivlookup"
@@ -83,8 +83,8 @@ func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCoun
 	tokenCountDecreasesPerPlaceId.Insert(1)
 	tokenCountIncreasesPerPlaceId.Insert(1)
 
-	api.AssertIsLessOrEqual(tokenCountDecreasesCount, workflow.MaxBranchingFactor)
-	api.AssertIsLessOrEqual(tokenCountIncreasesCount, workflow.MaxBranchingFactor)
+	api.AssertIsLessOrEqual(tokenCountDecreasesCount, model.MaxBranchingFactor)
+	api.AssertIsLessOrEqual(tokenCountIncreasesCount, model.MaxBranchingFactor)
 
 	noChanges := api.And(api.IsZero(tokenCountDecreasesCount), api.IsZero(tokenCountIncreasesCount))
 

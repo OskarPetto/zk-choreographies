@@ -3,7 +3,8 @@ package circuit
 import (
 	"fmt"
 	"proof-service/crypto"
-	"proof-service/workflow"
+	"proof-service/execution"
+	"proof-service/model"
 
 	"github.com/consensys/gnark-crypto/ecc/twistededwards"
 	"github.com/consensys/gnark/frontend"
@@ -21,24 +22,24 @@ type Signature struct {
 }
 
 type Instance struct {
-	TokenCounts [workflow.MaxPlaceCount]frontend.Variable
-	PublicKeys  [workflow.MaxParticipantCount]eddsa.PublicKey
+	TokenCounts [model.MaxPlaceCount]frontend.Variable
+	PublicKeys  [model.MaxParticipantCount]eddsa.PublicKey
 }
 
 type Transition struct {
-	IsExecutableByAnyParticipant frontend.Variable                              `gnark:",public"`
-	Participant                  frontend.Variable                              `gnark:",public"`
-	IncomingPlaceCount           frontend.Variable                              `gnark:",public"`
-	IncomingPlaces               [workflow.MaxBranchingFactor]frontend.Variable `gnark:",public"`
-	OutgoingPlaceCount           frontend.Variable                              `gnark:",public"`
-	OutgoingPlaces               [workflow.MaxBranchingFactor]frontend.Variable `gnark:",public"`
+	IsExecutableByAnyParticipant frontend.Variable                           `gnark:",public"`
+	Participant                  frontend.Variable                           `gnark:",public"`
+	IncomingPlaceCount           frontend.Variable                           `gnark:",public"`
+	IncomingPlaces               [model.MaxBranchingFactor]frontend.Variable `gnark:",public"`
+	OutgoingPlaceCount           frontend.Variable                           `gnark:",public"`
+	OutgoingPlaces               [model.MaxBranchingFactor]frontend.Variable `gnark:",public"`
 }
 
 type PetriNet struct {
 	PlaceCount       frontend.Variable `gnark:",public"`
 	StartPlace       frontend.Variable `gnark:",public"`
 	EndPlace         frontend.Variable `gnark:",public"`
-	Transitions      [workflow.MaxTransitionCount]Transition
+	Transitions      [model.MaxTransitionCount]Transition
 	ParticipantCount frontend.Variable `gnark:",public"`
 }
 
@@ -60,28 +61,28 @@ func FromSignature(signature crypto.Signature) Signature {
 	}
 }
 
-func FromInstance(instance workflow.Instance) (Instance, error) {
+func FromInstance(instance execution.Instance) (Instance, error) {
 	placeCount := len(instance.TokenCounts)
-	if placeCount > workflow.MaxPlaceCount {
+	if placeCount > model.MaxPlaceCount {
 		return Instance{}, fmt.Errorf("instance '%s' has too many places", instance.Id)
 	}
-	var tokenCounts [workflow.MaxPlaceCount]frontend.Variable
+	var tokenCounts [model.MaxPlaceCount]frontend.Variable
 	for i := 0; i < placeCount; i++ {
 		tokenCounts[i] = instance.TokenCounts[i]
 	}
-	for i := placeCount; i < workflow.MaxPlaceCount; i++ {
+	for i := placeCount; i < model.MaxPlaceCount; i++ {
 		tokenCounts[i] = 0
 	}
 
 	publicKeyCount := len(instance.PublicKeys)
-	if publicKeyCount > workflow.MaxParticipantCount {
+	if publicKeyCount > model.MaxParticipantCount {
 		return Instance{}, fmt.Errorf("instance '%s' has too many publicKeys", instance.Id)
 	}
-	var publicKeys [workflow.MaxParticipantCount]eddsa.PublicKey
+	var publicKeys [model.MaxParticipantCount]eddsa.PublicKey
 	for i := 0; i < publicKeyCount; i++ {
 		publicKeys[i] = fromPublicKey(instance.PublicKeys[i])
 	}
-	for i := publicKeyCount; i < workflow.MaxParticipantCount; i++ {
+	for i := publicKeyCount; i < model.MaxParticipantCount; i++ {
 		publicKeys[i] = emptyPublicKey()
 	}
 
@@ -105,22 +106,22 @@ func emptyPublicKey() eddsa.PublicKey {
 	return publicKey
 }
 
-func FromPetriNet(petriNet workflow.PetriNet) (PetriNet, error) {
+func FromPetriNet(petriNet model.PetriNet) (PetriNet, error) {
 	placeCount := petriNet.PlaceCount
-	if placeCount > workflow.MaxPlaceCount {
+	if placeCount > model.MaxPlaceCount {
 		return PetriNet{}, fmt.Errorf("petriNet '%s' has too many places", petriNet.Id)
 	}
-	if petriNet.ParticipantCount > workflow.MaxParticipantCount {
+	if petriNet.ParticipantCount > model.MaxParticipantCount {
 		return PetriNet{}, fmt.Errorf("petriNet '%s' has too many participants", petriNet.Id)
 	}
 	transitions, err := fromTransitions(petriNet.Id, petriNet.Transitions)
 	if err != nil {
 		return PetriNet{}, err
 	}
-	if petriNet.StartPlace >= workflow.MaxPlaceCount {
+	if petriNet.StartPlace >= model.MaxPlaceCount {
 		return PetriNet{}, fmt.Errorf("petriNet '%s' has invalid startPlace", petriNet.Id)
 	}
-	if petriNet.EndPlace >= workflow.MaxPlaceCount {
+	if petriNet.EndPlace >= model.MaxPlaceCount {
 		return PetriNet{}, fmt.Errorf("petriNet '%s' has invalid endPlace", petriNet.Id)
 	}
 	return PetriNet{
@@ -132,44 +133,44 @@ func FromPetriNet(petriNet workflow.PetriNet) (PetriNet, error) {
 	}, nil
 }
 
-func fromTransitions(petriNetId string, workflowTransitions []workflow.Transition) ([workflow.MaxTransitionCount]Transition, error) {
+func fromTransitions(petriNetId string, workflowTransitions []model.Transition) ([model.MaxTransitionCount]Transition, error) {
 	transitionCount := len(workflowTransitions)
-	if transitionCount > workflow.MaxTransitionCount {
-		return [workflow.MaxTransitionCount]Transition{}, fmt.Errorf("petriNet '%s' has too many transitions", petriNetId)
+	if transitionCount > model.MaxTransitionCount {
+		return [model.MaxTransitionCount]Transition{}, fmt.Errorf("petriNet '%s' has too many transitions", petriNetId)
 	}
-	var transitions [workflow.MaxTransitionCount]Transition
+	var transitions [model.MaxTransitionCount]Transition
 	var err error
 	for i := 0; i < transitionCount; i++ {
 		transitions[i], err = fromTransition(workflowTransitions[i])
 		if err != nil {
-			return [workflow.MaxTransitionCount]Transition{}, fmt.Errorf("petriNet '%s' cannot be mapped because transition at index %d is invalid: %w", petriNetId, i, err)
+			return [model.MaxTransitionCount]Transition{}, fmt.Errorf("petriNet '%s' cannot be mapped because transition at index %d is invalid: %w", petriNetId, i, err)
 		}
 	}
-	for i := transitionCount; i < workflow.MaxTransitionCount; i++ {
+	for i := transitionCount; i < model.MaxTransitionCount; i++ {
 		transitions[i] = emptyTransition()
 	}
 	return transitions, nil
 }
 
-func fromTransition(transition workflow.Transition) (Transition, error) {
+func fromTransition(transition model.Transition) (Transition, error) {
 	incomingPlaceCount := len(transition.IncomingPlaces)
 	outgoingPlaceCount := len(transition.OutgoingPlaces)
-	if incomingPlaceCount > workflow.MaxBranchingFactor || outgoingPlaceCount > workflow.MaxBranchingFactor {
+	if incomingPlaceCount > model.MaxBranchingFactor || outgoingPlaceCount > model.MaxBranchingFactor {
 		return Transition{}, fmt.Errorf("transition '%s' branches too much", transition.Id)
 	}
-	var incomingPlaces [workflow.MaxBranchingFactor]frontend.Variable
-	var outgoingPlaces [workflow.MaxBranchingFactor]frontend.Variable
+	var incomingPlaces [model.MaxBranchingFactor]frontend.Variable
+	var outgoingPlaces [model.MaxBranchingFactor]frontend.Variable
 	for i := 0; i < incomingPlaceCount; i++ {
 		incomingPlaces[i] = transition.IncomingPlaces[i]
 	}
-	for i := incomingPlaceCount; i < workflow.MaxBranchingFactor; i++ {
-		incomingPlaces[i] = workflow.MaxPlaceCount
+	for i := incomingPlaceCount; i < model.MaxBranchingFactor; i++ {
+		incomingPlaces[i] = model.MaxPlaceCount
 	}
 	for i := 0; i < outgoingPlaceCount; i++ {
 		outgoingPlaces[i] = transition.OutgoingPlaces[i]
 	}
-	for i := outgoingPlaceCount; i < workflow.MaxBranchingFactor; i++ {
-		outgoingPlaces[i] = workflow.MaxPlaceCount
+	for i := outgoingPlaceCount; i < model.MaxBranchingFactor; i++ {
+		outgoingPlaces[i] = model.MaxPlaceCount
 	}
 	isExecutableByAnyParticipant := 0
 	if transition.IsExecutableByAnyParticipant {
@@ -186,13 +187,13 @@ func fromTransition(transition workflow.Transition) (Transition, error) {
 }
 
 func emptyTransition() Transition {
-	var incomingPlaces [workflow.MaxBranchingFactor]frontend.Variable
-	var outgoingPlaces [workflow.MaxBranchingFactor]frontend.Variable
-	for i := 0; i < workflow.MaxBranchingFactor; i++ {
-		incomingPlaces[i] = workflow.MaxPlaceCount
+	var incomingPlaces [model.MaxBranchingFactor]frontend.Variable
+	var outgoingPlaces [model.MaxBranchingFactor]frontend.Variable
+	for i := 0; i < model.MaxBranchingFactor; i++ {
+		incomingPlaces[i] = model.MaxPlaceCount
 	}
-	for i := 0; i < workflow.MaxBranchingFactor; i++ {
-		outgoingPlaces[i] = workflow.MaxPlaceCount
+	for i := 0; i < model.MaxBranchingFactor; i++ {
+		outgoingPlaces[i] = model.MaxPlaceCount
 	}
 	return Transition{
 		IncomingPlaceCount:           0,

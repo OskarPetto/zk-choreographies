@@ -1,4 +1,4 @@
-package workflow
+package model
 
 const MaxPlaceCount = 100
 const MaxTransitionCount = 100
@@ -23,10 +23,4 @@ type PetriNet struct {
 	PlaceCount       uint
 	ParticipantCount uint
 	Transitions      []Transition
-}
-
-type Instance struct {
-	Id          string
-	TokenCounts []int
-	PublicKeys  [][]byte
 }

@@ -3,7 +3,7 @@ import {
   PetriNet,
   TransitionId,
   Transition,
-} from 'src/model/petri-net/petri-net';
+} from 'src/petri-net/petri-net';
 
 export function logObject(object: any) {
   console.dir(object, { depth: null });
