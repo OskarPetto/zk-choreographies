@@ -7,6 +7,7 @@ import (
 )
 
 func TestSign(t *testing.T) {
+	signatureService := crypto.NewSignatureService()
 	commitment := testdata.GetCommitment1()
-	crypto.Sign(commitment)
+	signatureService.Sign(commitment)
 }

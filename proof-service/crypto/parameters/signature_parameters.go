@@ -1,4 +1,4 @@
-package crypto
+package parameters
 
 import (
 	"bytes"
@@ -13,12 +13,12 @@ const signaturePrivateKeyFilename = "signature.private_key"
 
 type SignatureParameters struct {
 	isLoaded            bool
-	signaturePrivateKey *eddsa.PrivateKey
+	SignaturePrivateKey *eddsa.PrivateKey
 }
 
 var signatureParameters SignatureParameters
 
-func LoadSignatureParameters() SignatureParameters {
+func NewSignatureParameters() SignatureParameters {
 	if !signatureParameters.isLoaded {
 		signaturePrivateKey := importSignaturePrivateKey(signaturePrivateKeyFilename)
 		signatureParameters = SignatureParameters{

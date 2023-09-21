@@ -20,21 +20,24 @@ type Signature struct {
 	PublicKey eddsa.PublicKey
 }
 
+type Participant struct {
+	PublicKey eddsa.PublicKey
+}
+
 type Instance struct {
-	PlaceCount  frontend.Variable `gnark:",public"`
-	TokenCounts [workflow.MaxPlaceCount]frontend.Variable
+	PlaceCount       frontend.Variable `gnark:",public"`
+	TokenCounts      [workflow.MaxPlaceCount]frontend.Variable
+	ParticipantCount frontend.Variable `gnark:",public"`
+	Participants     [workflow.MaxParticipantCount]Participant
 }
 
 type Transition struct {
-	Participant        frontend.Variable                              `gnark:",public"`
-	IncomingPlaceCount frontend.Variable                              `gnark:",public"`
-	IncomingPlaces     [workflow.MaxBranchingFactor]frontend.Variable `gnark:",public"`
-	OutgoingPlaceCount frontend.Variable                              `gnark:",public"`
-	OutgoingPlaces     [workflow.MaxBranchingFactor]frontend.Variable `gnark:",public"`
-}
-
-type Participant struct {
-	PublicKey eddsa.PublicKey `gnark:",public"`
+	RequiresParticipant frontend.Variable                              `gnark:",public"`
+	Participant         frontend.Variable                              `gnark:",public"`
+	IncomingPlaceCount  frontend.Variable                              `gnark:",public"`
+	IncomingPlaces      [workflow.MaxBranchingFactor]frontend.Variable `gnark:",public"`
+	OutgoingPlaceCount  frontend.Variable                              `gnark:",public"`
+	OutgoingPlaces      [workflow.MaxBranchingFactor]frontend.Variable `gnark:",public"`
 }
 
 type PetriNet struct {
@@ -44,7 +47,6 @@ type PetriNet struct {
 	TransitionCount  frontend.Variable `gnark:",public"`
 	Transitions      [workflow.MaxTransitionCount]Transition
 	ParticipantCount frontend.Variable `gnark:",public"`
-	Participants     [workflow.MaxParticipantCount]Participant
 }
 
 func FromCommitment(commitment crypto.Commitment) Commitment {
@@ -68,7 +70,7 @@ func FromSignature(signature crypto.Signature) Signature {
 func FromInstance(instance workflow.Instance) (Instance, error) {
 	placeCount := len(instance.TokenCounts)
 	if placeCount > workflow.MaxPlaceCount {
-		return Instance{}, fmt.Errorf("instance '%s' is too large", instance.Id)
+		return Instance{}, fmt.Errorf("instance '%s' has too many places", instance.Id)
 	}
 	var tokenCounts [workflow.MaxPlaceCount]frontend.Variable
 	for i := 0; i < placeCount; i++ {
@@ -77,10 +79,40 @@ func FromInstance(instance workflow.Instance) (Instance, error) {
 	for i := placeCount; i < workflow.MaxPlaceCount; i++ {
 		tokenCounts[i] = 0
 	}
+	participantCount := len(instance.Participants)
+	if participantCount > workflow.MaxParticipantCount {
+		return Instance{}, fmt.Errorf("instance '%s' has too many participants", instance.Id)
+	}
+	var participants [workflow.MaxParticipantCount]Participant
+	for i := 0; i < participantCount; i++ {
+		participants[i] = fromParticipant(instance.Participants[i])
+	}
+	for i := participantCount; i < workflow.MaxParticipantCount; i++ {
+		participants[i] = emptyParticipant()
+	}
 	return Instance{
-		PlaceCount:  placeCount,
-		TokenCounts: tokenCounts,
+		PlaceCount:       placeCount,
+		TokenCounts:      tokenCounts,
+		ParticipantCount: participantCount,
+		Participants:     participants,
 	}, nil
+}
+
+func fromParticipant(participant workflow.Participant) Participant {
+	var publicKey eddsa.PublicKey
+	publicKey.Assign(twistededwards.BN254, participant.PublicKey)
+	return Participant{
+		PublicKey: publicKey,
+	}
+}
+
+func emptyParticipant() Participant {
+	var publicKey eddsa.PublicKey
+	zeros := make([]byte, 32)
+	publicKey.Assign(twistededwards.BN254, zeros)
+	return Participant{
+		PublicKey: publicKey,
+	}
 }
 
 func FromPetriNet(petriNet workflow.PetriNet) (PetriNet, error) {
@@ -92,12 +124,6 @@ func FromPetriNet(petriNet workflow.PetriNet) (PetriNet, error) {
 	if err != nil {
 		return PetriNet{}, err
 	}
-
-	participants, err := fromParticipants(petriNet.Id, petriNet.Participants)
-	if err != nil {
-		return PetriNet{}, err
-	}
-
 	if petriNet.StartPlace >= workflow.MaxPlaceCount {
 		return PetriNet{}, fmt.Errorf("petriNet '%s' has invalid startPlace", petriNet.Id)
 	}
@@ -110,8 +136,7 @@ func FromPetriNet(petriNet workflow.PetriNet) (PetriNet, error) {
 		EndPlace:         petriNet.EndPlace,
 		TransitionCount:  len(petriNet.Transitions),
 		Transitions:      transitions,
-		ParticipantCount: len(petriNet.Participants),
-		Participants:     participants,
+		ParticipantCount: petriNet.ParticipantCount,
 	}, nil
 }
 
@@ -154,11 +179,17 @@ func fromTransition(transition workflow.Transition) (Transition, error) {
 	for i := outgoingPlaceCount; i < workflow.MaxBranchingFactor; i++ {
 		outgoingPlaces[i] = workflow.MaxPlaceCount
 	}
+	requiresParticipant := 0
+	if transition.RequiresParticipant {
+		requiresParticipant = 1
+	}
 	return Transition{
-		IncomingPlaceCount: incomingPlaceCount,
-		IncomingPlaces:     incomingPlaces,
-		OutgoingPlaceCount: outgoingPlaceCount,
-		OutgoingPlaces:     outgoingPlaces,
+		IncomingPlaceCount:  incomingPlaceCount,
+		IncomingPlaces:      incomingPlaces,
+		OutgoingPlaceCount:  outgoingPlaceCount,
+		OutgoingPlaces:      outgoingPlaces,
+		RequiresParticipant: requiresParticipant,
+		Participant:         transition.Participant,
 	}, nil
 }
 
@@ -172,38 +203,11 @@ func emptyTransition() Transition {
 		outgoingPlaces[i] = workflow.MaxPlaceCount
 	}
 	return Transition{
-		IncomingPlaceCount: 0,
-		IncomingPlaces:     incomingPlaces,
-		OutgoingPlaceCount: 0,
-		OutgoingPlaces:     outgoingPlaces,
-	}
-}
-
-func fromParticipants(petriNetId string, workflowParticipants []workflow.Participant) ([workflow.MaxParticipantCount]Participant, error) {
-	participantCount := len(workflowParticipants)
-	if participantCount > workflow.MaxParticipantCount {
-		return [workflow.MaxParticipantCount]Participant{}, fmt.Errorf("petriNet '%s' has too many participants", petriNetId)
-	}
-	var participants [workflow.MaxParticipantCount]Participant
-	for i := 0; i < participantCount; i++ {
-		participants[i] = fromParticipant(workflowParticipants[i])
-	}
-	for i := participantCount; i < workflow.MaxParticipantCount; i++ {
-		participants[i] = emptyParticipant()
-	}
-	return participants, nil
-}
-
-func fromParticipant(participant workflow.Participant) Participant {
-	var publicKey eddsa.PublicKey
-	publicKey.Assign(twistededwards.BN254, participant.PublicKey)
-	return Participant{
-		PublicKey: publicKey,
-	}
-}
-
-func emptyParticipant() Participant {
-	return Participant{
-		PublicKey: eddsa.PublicKey{},
+		IncomingPlaceCount:  0,
+		IncomingPlaces:      incomingPlaces,
+		OutgoingPlaceCount:  0,
+		OutgoingPlaces:      outgoingPlaces,
+		RequiresParticipant: 0,
+		Participant:         0,
 	}
 }

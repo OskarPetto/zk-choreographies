@@ -1,4 +1,4 @@
-package proof
+package parameters
 
 import (
 	"proof-service/circuit"
@@ -20,17 +20,17 @@ const terminationPkFilename = "termination.proving_key"
 
 type ProofParameters struct {
 	isLoaded        bool
-	csInstantiation constraint.ConstraintSystem
-	csTransition    constraint.ConstraintSystem
-	csTermination   constraint.ConstraintSystem
-	pkInstantiation groth16.ProvingKey
-	pkTransition    groth16.ProvingKey
-	pkTermination   groth16.ProvingKey
+	CsInstantiation constraint.ConstraintSystem
+	CsTransition    constraint.ConstraintSystem
+	CsTermination   constraint.ConstraintSystem
+	PkInstantiation groth16.ProvingKey
+	PkTransition    groth16.ProvingKey
+	PkTermination   groth16.ProvingKey
 }
 
 var proofParameters ProofParameters
 
-func LoadProofParameters() ProofParameters {
+func NewProofParameters() ProofParameters {
 	if !proofParameters.isLoaded {
 		csInstantiation := importConstraintSystem(&circuit.InstantiationCircuit{}, instantiationCsFilename)
 		csTransition := importConstraintSystem(&circuit.TransitionCircuit{}, transitionCsFilename)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"proof-service/circuit"
 	"proof-service/crypto"
+	"proof-service/proof/parameters"
 	"proof-service/workflow"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -11,7 +12,17 @@ import (
 	"github.com/consensys/gnark/frontend"
 )
 
-func ProveInstantiation(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
+type ProofService struct {
+	proofParameters parameters.ProofParameters
+}
+
+func NewProofService() ProofService {
+	return ProofService{
+		proofParameters: parameters.NewProofParameters(),
+	}
+}
+
+func (service *ProofService) ProveInstantiation(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err
@@ -29,7 +40,7 @@ func ProveInstantiation(instance workflow.Instance, pertiNet workflow.PetriNet) 
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(LoadProofParameters().csInstantiation, LoadProofParameters().pkInstantiation, witness)
+	proof, err := groth16.Prove(service.proofParameters.CsInstantiation, service.proofParameters.PkInstantiation, witness)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -38,7 +49,7 @@ func ProveInstantiation(instance workflow.Instance, pertiNet workflow.PetriNet) 
 	return byteBuffer.Bytes(), nil
 }
 
-func ProveTransition(currentInstance workflow.Instance, nextInstance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveTransition(currentInstance workflow.Instance, nextInstance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
 	currentCircuitInstance, err := circuit.FromInstance(currentInstance)
 	if err != nil {
 		return []byte{}, err
@@ -62,7 +73,7 @@ func ProveTransition(currentInstance workflow.Instance, nextInstance workflow.In
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(LoadProofParameters().csTransition, LoadProofParameters().pkTransition, witness)
+	proof, err := groth16.Prove(service.proofParameters.CsTransition, service.proofParameters.PkTransition, witness)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -71,7 +82,7 @@ func ProveTransition(currentInstance workflow.Instance, nextInstance workflow.In
 	return byteBuffer.Bytes(), nil
 }
 
-func ProveTermination(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveTermination(instance workflow.Instance, pertiNet workflow.PetriNet) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err
@@ -89,7 +100,7 @@ func ProveTermination(instance workflow.Instance, pertiNet workflow.PetriNet) ([
 	if err != nil {
 		return []byte{}, err
 	}
-	proof, err := groth16.Prove(LoadProofParameters().csTermination, LoadProofParameters().pkTermination, witness)
+	proof, err := groth16.Prove(service.proofParameters.CsTermination, service.proofParameters.PkTermination, witness)
 	if err != nil {
 		return []byte{}, err
 	}

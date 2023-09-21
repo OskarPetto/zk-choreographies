@@ -80,6 +80,11 @@ func GetPetriNet1Instance1() workflow.Instance {
 	return workflow.Instance{
 		Id:          "conformance_example1",
 		TokenCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+		Participants: []workflow.Participant{
+			workflow.Participant{
+				PublicKey: []byte{80, 161, 11, 137, 34, 246, 23, 100, 88, 97, 186, 209, 14, 130, 236, 53, 127, 46, 167, 194, 202, 27, 39, 232, 247, 113, 85, 68, 189, 34, 250, 11},
+			},
+		},
 	}
 }
 
@@ -87,6 +92,11 @@ func GetPetriNet1Instance2() workflow.Instance {
 	return workflow.Instance{
 		Id:          "conformance_example2",
 		TokenCounts: []int{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		Participants: []workflow.Participant{
+			workflow.Participant{
+				PublicKey: []byte{80, 161, 11, 137, 34, 246, 23, 100, 88, 97, 186, 209, 14, 130, 236, 53, 127, 46, 167, 194, 202, 27, 39, 232, 247, 113, 85, 68, 189, 34, 250, 11},
+			},
+		},
 	}
 }
 
@@ -94,6 +104,11 @@ func GetPetriNet1Instance3() workflow.Instance {
 	return workflow.Instance{
 		Id:          "conformance_example4",
 		TokenCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		Participants: []workflow.Participant{
+			workflow.Participant{
+				PublicKey: []byte{80, 161, 11, 137, 34, 246, 23, 100, 88, 97, 186, 209, 14, 130, 236, 53, 127, 46, 167, 194, 202, 27, 39, 232, 247, 113, 85, 68, 189, 34, 250, 11},
+			},
+		},
 	}
 }
 
@@ -101,6 +116,11 @@ func GetPetriNet1InstanceEmpty() workflow.Instance {
 	return workflow.Instance{
 		Id:          "conformance_example_empty",
 		TokenCounts: []int{},
+		Participants: []workflow.Participant{
+			workflow.Participant{
+				PublicKey: []byte{80, 161, 11, 137, 34, 246, 23, 100, 88, 97, 186, 209, 14, 130, 236, 53, 127, 46, 167, 194, 202, 27, 39, 232, 247, 113, 85, 68, 189, 34, 250, 11},
+			},
+		},
 	}
 }
 
