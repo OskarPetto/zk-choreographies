@@ -2,8 +2,7 @@ package crypto
 
 import (
 	"crypto/rand"
-	"proof-service/execution"
-	"proof-service/model"
+	"proof-service/domain"
 	"proof-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
@@ -18,7 +17,7 @@ type SaltedHash struct {
 	Salt  []byte
 }
 
-func HashInstance(instance execution.Instance) SaltedHash {
+func HashInstance(instance domain.Instance) SaltedHash {
 	salt := randomFieldElement()
 	return SaltedHash{
 		Value: hashInstance(instance, salt),
@@ -26,14 +25,14 @@ func HashInstance(instance execution.Instance) SaltedHash {
 	}
 }
 
-func hashInstance(instance execution.Instance, salt []byte) []byte {
+func hashInstance(instance domain.Instance, salt []byte) []byte {
 	mimc := mimc.NewMiMC()
 	for _, tokenCount := range instance.TokenCounts {
 		var bytes [fr.Bytes]byte
 		bytes[fr.Bytes-1] = byte(tokenCount) // big endian
 		mimc.Write(bytes[:])
 	}
-	for i := len(instance.TokenCounts); i < model.MaxPlaceCount; i++ {
+	for i := len(instance.TokenCounts); i < domain.MaxPlaceCount; i++ {
 		var bytes [fr.Bytes]byte
 		mimc.Write(bytes[:])
 	}
@@ -45,7 +44,7 @@ func hashInstance(instance execution.Instance, salt []byte) []byte {
 		mimc.Write(xBytes[:])
 		mimc.Write(yBytes[:])
 	}
-	for i := len(instance.PublicKeys); i < model.MaxParticipantCount; i++ {
+	for i := len(instance.PublicKeys); i < domain.MaxParticipantCount; i++ {
 		var zeros [fr.Bytes]byte
 		mimc.Write(zeros[:])
 		mimc.Write(zeros[:])

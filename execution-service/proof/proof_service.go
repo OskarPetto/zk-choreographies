@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"proof-service/circuit"
 	"proof-service/crypto"
-	"proof-service/execution"
-	"proof-service/model"
+	"proof-service/domain"
 	"proof-service/proof/parameters"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -25,7 +24,7 @@ func NewProofService() ProofService {
 	}
 }
 
-func (service *ProofService) ProveInstantiation(instance execution.Instance, pertiNet model.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveInstantiation(instance domain.Instance, pertiNet domain.PetriNet) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err
@@ -54,7 +53,7 @@ func (service *ProofService) ProveInstantiation(instance execution.Instance, per
 	return byteBuffer.Bytes(), nil
 }
 
-func (service *ProofService) ProveTransition(currentInstance execution.Instance, nextInstance execution.Instance, pertiNet model.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveTransition(currentInstance domain.Instance, nextInstance domain.Instance, pertiNet domain.PetriNet) ([]byte, error) {
 	currentCircuitInstance, err := circuit.FromInstance(currentInstance)
 	if err != nil {
 		return []byte{}, err
@@ -91,7 +90,7 @@ func (service *ProofService) ProveTransition(currentInstance execution.Instance,
 	return byteBuffer.Bytes(), nil
 }
 
-func (service *ProofService) ProveTermination(instance execution.Instance, pertiNet model.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveTermination(instance domain.Instance, pertiNet domain.PetriNet) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err

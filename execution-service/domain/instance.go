@@ -1,4 +1,4 @@
-package execution
+package domain
 
 type Instance struct {
 	Id          string

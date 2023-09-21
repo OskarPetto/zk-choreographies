@@ -2,11 +2,11 @@ package testdata
 
 import (
 	"proof-service/crypto"
-	"proof-service/execution"
+	"proof-service/domain"
 )
 
-func GetPetriNet1Instance1(publicKey []byte) execution.Instance {
-	return execution.Instance{
+func GetPetriNet1Instance1(publicKey []byte) domain.Instance {
+	return domain.Instance{
 		Id:          "conformance_example1",
 		TokenCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
 		PublicKeys: [][]byte{
@@ -15,8 +15,8 @@ func GetPetriNet1Instance1(publicKey []byte) execution.Instance {
 	}
 }
 
-func GetPetriNet1Instance2(publicKey []byte) execution.Instance {
-	return execution.Instance{
+func GetPetriNet1Instance2(publicKey []byte) domain.Instance {
+	return domain.Instance{
 		Id:          "conformance_example2",
 		TokenCounts: []int{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		PublicKeys: [][]byte{
@@ -25,8 +25,8 @@ func GetPetriNet1Instance2(publicKey []byte) execution.Instance {
 	}
 }
 
-func GetPetriNet1Instance3(publicKey []byte) execution.Instance {
-	return execution.Instance{
+func GetPetriNet1Instance3(publicKey []byte) domain.Instance {
+	return domain.Instance{
 		Id:          "conformance_example4",
 		TokenCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 		PublicKeys: [][]byte{

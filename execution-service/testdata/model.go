@@ -1,84 +1,84 @@
 package testdata
 
 import (
-	"proof-service/model"
+	"proof-service/domain"
 )
 
-func GetPetriNet1() model.PetriNet {
-	return model.PetriNet{
+func GetPetriNet1() domain.PetriNet {
+	return domain.PetriNet{
 		Id:               "conformance_example",
 		StartPlace:       9,
 		EndPlace:         10,
 		PlaceCount:       11,
 		ParticipantCount: 1,
-		Transitions: []model.Transition{
-			model.Transition{
+		Transitions: []domain.Transition{
+			domain.Transition{
 				Id:                           "As",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{9},
 				OutgoingPlaces:               []uint{0},
 			},
-			model.Transition{
+			domain.Transition{
 				Id:                           "Da1",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{0},
 				OutgoingPlaces:               []uint{8},
 			},
-			model.Transition{
+			domain.Transition{
 				Id:                           "Aa",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{0},
 				OutgoingPlaces:               []uint{1, 2},
 			},
-			model.Transition{
+			domain.Transition{
 				Id:                           "Fa",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{1},
 				OutgoingPlaces:               []uint{5},
 			},
-			model.Transition{
+			domain.Transition{
 				Id:                           "Sso",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{2},
 				OutgoingPlaces:               []uint{3},
 			},
-			model.Transition{
+			domain.Transition{
 				Id:                           "Ro",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{3},
 				OutgoingPlaces:               []uint{4},
 			},
-			model.Transition{
+			domain.Transition{
 				Id:                           "Co",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{4},
 				OutgoingPlaces:               []uint{2},
 			},
-			model.Transition{
+			domain.Transition{
 				Id:                           "Ao",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{5, 4},
 				OutgoingPlaces:               []uint{6},
 			},
-			model.Transition{
+			domain.Transition{
 				Id:                           "Do",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{5, 4},
 				OutgoingPlaces:               []uint{7},
 			},
-			model.Transition{
+			domain.Transition{
 				Id:                           "Aaa",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{6},
 				OutgoingPlaces:               []uint{8},
 			},
-			model.Transition{
+			domain.Transition{
 				Id:                           "Da2",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{7},
 				OutgoingPlaces:               []uint{8},
 			},
-			model.Transition{
+			domain.Transition{
 				Id:                           "Af",
 				IsExecutableByAnyParticipant: true,
 				IncomingPlaces:               []uint{8},

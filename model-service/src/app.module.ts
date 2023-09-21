@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ModelModule } from './model/model.module';
-import { ExecutionModule } from './execution/execution.module';
+import { BpmnModule } from './bpmn/bpmn.module';
+import { PetriNetModule } from './petri-net/petri-net.module';
 
 @Module({
-  imports: [ModelModule, ExecutionModule],
+  imports: [BpmnModule, PetriNetModule],
+  exports: [],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }
