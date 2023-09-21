@@ -7,33 +7,54 @@ import (
 	"github.com/consensys/gnark/std/lookup/logderivlookup"
 )
 
-type TokenChanges struct {
+type TokenCountChanges struct {
 	tokenCountDecreasesPerPlaceId *logderivlookup.Table
 	tokenCountDecreasesCount      frontend.Variable
 	tokenCountIncreasesPerPlaceId *logderivlookup.Table
 	tokenCountIncreasesCount      frontend.Variable
+	noChanges                     frontend.Variable
 }
 
 type TransitionCircuit struct {
-	CurrentInstance   Instance
-	CurrentCommitment Commitment
-	NextInstance      Instance
-	NextCommitment    Commitment
-	PetriNet          PetriNet
+	CurrentInstance           Instance
+	CurrentInstanceSaltedHash SaltedHash
+	NextInstance              Instance
+	NextInstanceSaltedHash    SaltedHash
+	NextInstanceSignature     Signature
+	PetriNet                  PetriNet
 }
 
 func (circuit *TransitionCircuit) Define(api frontend.API) error {
-	api.AssertIsEqual(circuit.NextInstance.PlaceCount, circuit.PetriNet.PlaceCount)
-	checkCommitment(api, circuit.CurrentInstance, circuit.CurrentCommitment)
-	checkCommitment(api, circuit.NextInstance, circuit.NextCommitment)
-	tokenChanges := circuit.computeTokenChanges(api)
-	transitionFound := circuit.FindTransition(api, tokenChanges)
-	tokenCountsDoNotChange := api.And(api.IsZero(tokenChanges.tokenCountDecreasesCount), api.IsZero(tokenChanges.tokenCountIncreasesCount))
-	api.AssertIsEqual(1, api.Or(transitionFound, tokenCountsDoNotChange))
+	err := checkInstanceSaltedHash(api, circuit.CurrentInstance, circuit.CurrentInstanceSaltedHash)
+	if err != nil {
+		return err
+	}
+	err = checkInstanceSaltedHash(api, circuit.NextInstance, circuit.NextInstanceSaltedHash)
+	if err != nil {
+		return err
+	}
+	err = checkSignature(api, circuit.NextInstanceSignature, circuit.NextInstanceSaltedHash)
+	if err != nil {
+		return err
+	}
+	circuit.comparePublicKeys(api)
+
+	participantId := findParticipantId(api, circuit.NextInstanceSignature, circuit.NextInstance)
+
+	tokenCountChanges := circuit.compareTokenCounts(api)
+	circuit.checkTransition(api, tokenCountChanges, participantId)
 	return nil
 }
 
-func (circuit *TransitionCircuit) computeTokenChanges(api frontend.API) TokenChanges {
+func (circuit *TransitionCircuit) comparePublicKeys(api frontend.API) {
+	for i := range circuit.CurrentInstance.PublicKeys {
+		currentPublicKey := circuit.CurrentInstance.PublicKeys[i]
+		nextPublicKey := circuit.NextInstance.PublicKeys[i]
+		api.AssertIsEqual(1, publicKeyEquals(api, currentPublicKey, nextPublicKey))
+	}
+}
+
+func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCountChanges {
 	tokenCountDecreasesPerPlaceId := logderivlookup.New(api)
 	tokenCountIncreasesPerPlaceId := logderivlookup.New(api)
 	var tokenCountDecreasesCount frontend.Variable = 0
@@ -43,9 +64,10 @@ func (circuit *TransitionCircuit) computeTokenChanges(api frontend.API) TokenCha
 		currentTokenCount := circuit.CurrentInstance.TokenCounts[placeId]
 		nextTokenCount := circuit.NextInstance.TokenCounts[placeId]
 
-		tokenCountStaysTheSame := equals(api, nextTokenCount, currentTokenCount)
-		tokenCountDecreases := equals(api, nextTokenCount, api.Sub(currentTokenCount, 1))
-		tokenCountIncreases := equals(api, nextTokenCount, api.Add(currentTokenCount, 1))
+		tokenChange := api.Sub(nextTokenCount, currentTokenCount)
+		tokenCountStaysTheSame := api.IsZero(tokenChange)
+		tokenCountDecreases := equals(api, tokenChange, -1)
+		tokenCountIncreases := equals(api, tokenChange, 1)
 		api.AssertIsEqual(1, api.Or(api.Or(tokenCountStaysTheSame, tokenCountDecreases), tokenCountIncreases))
 
 		tokenCountDecreasesCount = api.Add(tokenCountDecreasesCount, tokenCountDecreases)
@@ -64,30 +86,33 @@ func (circuit *TransitionCircuit) computeTokenChanges(api frontend.API) TokenCha
 	api.AssertIsLessOrEqual(tokenCountDecreasesCount, workflow.MaxBranchingFactor)
 	api.AssertIsLessOrEqual(tokenCountIncreasesCount, workflow.MaxBranchingFactor)
 
-	return TokenChanges{
-		tokenCountDecreasesPerPlaceId, tokenCountDecreasesCount, tokenCountIncreasesPerPlaceId, tokenCountIncreasesCount,
+	noChanges := api.And(api.IsZero(tokenCountDecreasesCount), api.IsZero(tokenCountIncreasesCount))
+
+	return TokenCountChanges{
+		tokenCountDecreasesPerPlaceId, tokenCountDecreasesCount, tokenCountIncreasesPerPlaceId, tokenCountIncreasesCount, noChanges,
 	}
 }
 
-func (circuit *TransitionCircuit) FindTransition(api frontend.API, tokenChanges TokenChanges) frontend.Variable {
+func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountChanges TokenCountChanges, participantId frontend.Variable) {
 
 	var transitionFound frontend.Variable = 0
 
-	for i := range circuit.PetriNet.Transitions {
-		transition := circuit.PetriNet.Transitions[i]
-		matchesIncomingPlaces := equals(api, transition.IncomingPlaceCount, tokenChanges.tokenCountDecreasesCount)
-		matchesOutgoingPlaces := equals(api, transition.OutgoingPlaceCount, tokenChanges.tokenCountIncreasesCount)
+	for _, transition := range circuit.PetriNet.Transitions {
+		participantIdMatches := api.Or(transition.IsExecutableByAnyParticipant, equals(api, transition.Participant, participantId))
+		incomingPlacesMatch := equals(api, transition.IncomingPlaceCount, tokenCountChanges.tokenCountDecreasesCount)
+		outgoingPlacesMatch := equals(api, transition.OutgoingPlaceCount, tokenCountChanges.tokenCountIncreasesCount)
 		// returns 1 for default placeId (workflow.MaxPlaceCount)
-		incomingTokenCountsDecrease := tokenChanges.tokenCountDecreasesPerPlaceId.Lookup(transition.IncomingPlaces[:]...)
-		outgoingTokenCountsIncrease := tokenChanges.tokenCountIncreasesPerPlaceId.Lookup(transition.OutgoingPlaces[:]...)
+		incomingTokenCountsDecrease := tokenCountChanges.tokenCountDecreasesPerPlaceId.Lookup(transition.IncomingPlaces[:]...)
+		outgoingTokenCountsIncrease := tokenCountChanges.tokenCountIncreasesPerPlaceId.Lookup(transition.OutgoingPlaces[:]...)
 		for j := range transition.IncomingPlaces {
 			incomingTokenCountDecreases := incomingTokenCountsDecrease[j]
 			outgoingTokenCountIncreases := outgoingTokenCountsIncrease[j]
-			matchesIncomingPlaces = api.And(matchesIncomingPlaces, incomingTokenCountDecreases)
-			matchesOutgoingPlaces = api.And(matchesOutgoingPlaces, outgoingTokenCountIncreases)
+			incomingPlacesMatch = api.And(incomingPlacesMatch, incomingTokenCountDecreases)
+			outgoingPlacesMatch = api.And(outgoingPlacesMatch, outgoingTokenCountIncreases)
 		}
-		transitionFound = api.Or(transitionFound, api.And(matchesIncomingPlaces, matchesOutgoingPlaces))
+		transitionMatches := api.And(participantIdMatches, api.And(incomingPlacesMatch, outgoingPlacesMatch))
+		transitionFound = api.Or(transitionFound, transitionMatches)
 	}
 
-	return transitionFound
+	api.AssertIsEqual(1, api.Or(transitionFound, tokenCountChanges.noChanges))
 }

@@ -22,13 +22,18 @@ func NewSignatureService() SignatureService {
 	}
 }
 
-func (service *SignatureService) Sign(commitment Commitment) Signature {
+func (service *SignatureService) Sign(saltedHash SaltedHash) Signature {
 	privateKey := service.signatureParameters.SignaturePrivateKey
-	signature, err := privateKey.Sign(commitment.Value, hash.MIMC_BN254.New())
+	signature, err := privateKey.Sign(saltedHash.Value, hash.MIMC_BN254.New())
 	utils.PanicOnError(err)
 
 	return Signature{
 		Value:     signature,
-		PublicKey: privateKey.PublicKey.Bytes(),
+		PublicKey: service.GetPublicKey(),
 	}
+}
+
+func (service *SignatureService) GetPublicKey() []byte {
+	privateKey := service.signatureParameters.SignaturePrivateKey
+	return privateKey.PublicKey.Bytes()
 }

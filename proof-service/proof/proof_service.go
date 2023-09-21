@@ -13,12 +13,14 @@ import (
 )
 
 type ProofService struct {
-	proofParameters parameters.ProofParameters
+	proofParameters  parameters.ProofParameters
+	signatureService crypto.SignatureService
 }
 
 func NewProofService() ProofService {
 	return ProofService{
-		proofParameters: parameters.NewProofParameters(),
+		proofParameters:  parameters.NewProofParameters(),
+		signatureService: crypto.NewSignatureService(),
 	}
 }
 
@@ -31,9 +33,11 @@ func (service *ProofService) ProveInstantiation(instance workflow.Instance, pert
 	if err != nil {
 		return []byte{}, err
 	}
+	saltedHash := crypto.HashInstance(instance)
 	assignment := &circuit.InstantiationCircuit{
 		Instance:   circuitInstance,
-		Commitment: circuit.FromCommitment(crypto.Commit(instance)),
+		SaltedHash: circuit.FromSaltedHash(saltedHash),
+		Signature:  circuit.FromSignature(service.signatureService.Sign(saltedHash)),
 		PetriNet:   circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
@@ -62,12 +66,16 @@ func (service *ProofService) ProveTransition(currentInstance workflow.Instance, 
 	if err != nil {
 		return []byte{}, err
 	}
+	currentSaltedHash := crypto.HashInstance(currentInstance)
+	nextSaltedHash := crypto.HashInstance(nextInstance)
+
 	assignment := &circuit.TransitionCircuit{
-		CurrentInstance:   currentCircuitInstance,
-		CurrentCommitment: circuit.FromCommitment(crypto.Commit(currentInstance)),
-		NextInstance:      nextCircuitInstance,
-		NextCommitment:    circuit.FromCommitment(crypto.Commit(nextInstance)),
-		PetriNet:          circuitPetriNet,
+		CurrentInstance:           currentCircuitInstance,
+		CurrentInstanceSaltedHash: circuit.FromSaltedHash(currentSaltedHash),
+		NextInstance:              nextCircuitInstance,
+		NextInstanceSaltedHash:    circuit.FromSaltedHash(nextSaltedHash),
+		NextInstanceSignature:     circuit.FromSignature(service.signatureService.Sign(nextSaltedHash)),
+		PetriNet:                  circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -91,9 +99,11 @@ func (service *ProofService) ProveTermination(instance workflow.Instance, pertiN
 	if err != nil {
 		return []byte{}, err
 	}
+	saltedHash := crypto.HashInstance(instance)
 	assignment := &circuit.TerminationCircuit{
 		Instance:   circuitInstance,
-		Commitment: circuit.FromCommitment(crypto.Commit(instance)),
+		SaltedHash: circuit.FromSaltedHash(saltedHash),
+		Signature:  circuit.FromSignature(service.signatureService.Sign(saltedHash)),
 		PetriNet:   circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())

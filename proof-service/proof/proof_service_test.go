@@ -1,6 +1,7 @@
 package proof_test
 
 import (
+	"proof-service/crypto"
 	"proof-service/proof"
 	"proof-service/testdata"
 	"testing"
@@ -8,8 +9,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNewProofService(t *testing.T) {
+	proof.NewProofService()
+}
+
 func TestProveInstantiation(t *testing.T) {
-	instance := testdata.GetPetriNet1Instance1()
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	instance := testdata.GetPetriNet1Instance1(publicKey)
 	petriNet := testdata.GetPetriNet1()
 	proofService := proof.NewProofService()
 
@@ -19,8 +26,10 @@ func TestProveInstantiation(t *testing.T) {
 }
 
 func TestProveTransition(t *testing.T) {
-	currentInstance := testdata.GetPetriNet1Instance1()
-	nextInstance := testdata.GetPetriNet1Instance2()
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	currentInstance := testdata.GetPetriNet1Instance1(publicKey)
+	nextInstance := testdata.GetPetriNet1Instance2(publicKey)
 	petriNet := testdata.GetPetriNet1()
 	proofService := proof.NewProofService()
 
@@ -30,7 +39,9 @@ func TestProveTransition(t *testing.T) {
 }
 
 func TestProveTermination(t *testing.T) {
-	instance := testdata.GetPetriNet1Instance3()
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	instance := testdata.GetPetriNet1Instance3(publicKey)
 	petriNet := testdata.GetPetriNet1()
 	proofService := proof.NewProofService()
 

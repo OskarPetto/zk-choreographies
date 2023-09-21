@@ -6,13 +6,21 @@ import (
 
 type InstantiationCircuit struct {
 	Instance   Instance
-	Commitment Commitment
+	SaltedHash SaltedHash
+	Signature  Signature
 	PetriNet   PetriNet
 }
 
 func (circuit *InstantiationCircuit) Define(api frontend.API) error {
-	api.AssertIsEqual(circuit.Instance.PlaceCount, circuit.PetriNet.PlaceCount)
-	checkCommitment(api, circuit.Instance, circuit.Commitment)
+	err := checkInstanceSaltedHash(api, circuit.Instance, circuit.SaltedHash)
+	if err != nil {
+		return err
+	}
+	err = checkSignature(api, circuit.Signature, circuit.SaltedHash)
+	if err != nil {
+		return err
+	}
+	findParticipantId(api, circuit.Signature, circuit.Instance)
 	circuit.checkTokenCounts(api)
 	return nil
 }

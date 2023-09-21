@@ -9,11 +9,11 @@ type PlaceId = uint
 type ParticipantId = uint
 
 type Transition struct {
-	Id                  string
-	RequiresParticipant bool
-	Participant         ParticipantId
-	IncomingPlaces      []PlaceId
-	OutgoingPlaces      []PlaceId
+	Id                           string
+	IsExecutableByAnyParticipant bool
+	Participant                  ParticipantId
+	IncomingPlaces               []PlaceId
+	OutgoingPlaces               []PlaceId
 }
 
 type PetriNet struct {
@@ -25,12 +25,8 @@ type PetriNet struct {
 	Transitions      []Transition
 }
 
-type Participant struct {
-	PublicKey []byte
-}
-
 type Instance struct {
-	Id           string
-	TokenCounts  []int
-	Participants []Participant
+	Id          string
+	TokenCounts []int
+	PublicKeys  [][]byte
 }

@@ -8,24 +8,23 @@ import (
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
-func checkCommitment(api frontend.API, instance Instance, commitment Commitment) error {
+func checkInstanceSaltedHash(api frontend.API, instance Instance, saltedHash SaltedHash) error {
 	mimc, err := mimc.NewMiMC(api)
 	if err != nil {
 		return err
 	}
-	mimc.Write(instance.PlaceCount)
 	mimc.Write(instance.TokenCounts[:]...)
-	mimc.Write(commitment.Randomness)
+	for _, publicKey := range instance.PublicKeys {
+		mimc.Write(publicKey.A.X)
+		mimc.Write(publicKey.A.Y)
+	}
+	mimc.Write(saltedHash.Salt)
 	hash := mimc.Sum()
-	api.AssertIsEqual(hash, commitment.Value)
+	api.AssertIsEqual(hash, saltedHash.Value)
 	return nil
 }
 
-func equals(api frontend.API, a, b frontend.Variable) frontend.Variable {
-	return api.IsZero(api.Sub(a, b))
-}
-
-func checkSignature(api frontend.API, signature Signature, commitment Commitment) error {
+func checkSignature(api frontend.API, signature Signature, saltedHash SaltedHash) error {
 	mimc, err := mimc.NewMiMC(api)
 	if err != nil {
 		return err
@@ -35,5 +34,22 @@ func checkSignature(api frontend.API, signature Signature, commitment Commitment
 		return err
 	}
 
-	return eddsa.Verify(curve, signature.Value, commitment.Value, signature.PublicKey, &mimc)
+	return eddsa.Verify(curve, signature.Value, saltedHash.Value, signature.PublicKey, &mimc)
+}
+
+func findParticipantId(api frontend.API, signature Signature, instance Instance) frontend.Variable {
+	var participantId frontend.Variable = -1
+	for i, publicKey := range instance.PublicKeys {
+		participantId = api.Select(publicKeyEquals(api, publicKey, signature.PublicKey), i, participantId)
+	}
+	api.AssertIsDifferent(participantId, -1)
+	return participantId
+}
+
+func publicKeyEquals(api frontend.API, a, b eddsa.PublicKey) frontend.Variable {
+	return api.And(equals(api, a.A.X, b.A.X), equals(api, a.A.Y, b.A.Y))
+}
+
+func equals(api frontend.API, a, b frontend.Variable) frontend.Variable {
+	return api.IsZero(api.Sub(a, b))
 }

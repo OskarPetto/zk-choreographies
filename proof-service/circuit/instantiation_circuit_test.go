@@ -14,13 +14,18 @@ import (
 var instantiationCircuit circuit.InstantiationCircuit
 
 func TestInstantiation(t *testing.T) {
-	instance := testdata.GetPetriNet1Instance1()
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	instance := testdata.GetPetriNet1Instance1(publicKey)
+	instanceSaltedHash := crypto.HashInstance(instance)
+	signature := signatureService.Sign(instanceSaltedHash)
 	circuitInstance, _ := circuit.FromInstance(instance)
-	commitment := crypto.Commit(instance)
+
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
 		Instance:   circuitInstance,
-		Commitment: circuit.FromCommitment(commitment),
+		SaltedHash: circuit.FromSaltedHash(instanceSaltedHash),
+		Signature:  circuit.FromSignature(signature),
 		PetriNet:   petriNet,
 	}
 
@@ -30,14 +35,19 @@ func TestInstantiation(t *testing.T) {
 	}
 }
 
-func TestInstantiation_InvalidCommitment(t *testing.T) {
-	instance := testdata.GetPetriNet1Instance1()
+func TestInstantiation_InvalidSaltedHash(t *testing.T) {
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	instance := testdata.GetPetriNet1Instance1(publicKey)
+	instanceSaltedHash := crypto.HashInstance(testdata.GetPetriNet1Instance2(publicKey))
+	signature := signatureService.Sign(instanceSaltedHash)
 	circuitInstance, _ := circuit.FromInstance(instance)
-	commitment := crypto.Commit(testdata.GetPetriNet1Instance2())
+
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
 		Instance:   circuitInstance,
-		Commitment: circuit.FromCommitment(commitment),
+		SaltedHash: circuit.FromSaltedHash(instanceSaltedHash),
+		Signature:  circuit.FromSignature(signature),
 		PetriNet:   petriNet,
 	}
 
@@ -45,14 +55,59 @@ func TestInstantiation_InvalidCommitment(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
-	instance := testdata.GetPetriNet1Instance3()
+func TestInstantiation_InvalidTokenCounts(t *testing.T) {
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	instance := testdata.GetPetriNet1Instance2(publicKey)
+	instanceSaltedHash := crypto.HashInstance(instance)
+	signature := signatureService.Sign(instanceSaltedHash)
 	circuitInstance, _ := circuit.FromInstance(instance)
-	commitment := crypto.Commit(instance)
+
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
 		Instance:   circuitInstance,
-		Commitment: circuit.FromCommitment(commitment),
+		SaltedHash: circuit.FromSaltedHash(instanceSaltedHash),
+		Signature:  circuit.FromSignature(signature),
+		PetriNet:   petriNet,
+	}
+
+	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestInstantiation_InvalidSignature(t *testing.T) {
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	instance := testdata.GetPetriNet1Instance1(publicKey)
+	instanceSaltedHash := crypto.HashInstance(instance)
+	signature := signatureService.Sign(crypto.HashInstance(instance))
+	circuitInstance, _ := circuit.FromInstance(instance)
+
+	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
+	witness := circuit.InstantiationCircuit{
+		Instance:   circuitInstance,
+		SaltedHash: circuit.FromSaltedHash(instanceSaltedHash),
+		Signature:  circuit.FromSignature(signature),
+		PetriNet:   petriNet,
+	}
+
+	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestInstantiation_InvalidAuthorization(t *testing.T) {
+	signatureService := crypto.NewSignatureService()
+	publicKey := testdata.GetPublicKey1()
+	instance := testdata.GetPetriNet1Instance1(publicKey)
+	instanceSaltedHash := crypto.HashInstance(instance)
+	signature := signatureService.Sign(instanceSaltedHash)
+	circuitInstance, _ := circuit.FromInstance(instance)
+
+	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
+	witness := circuit.InstantiationCircuit{
+		Instance:   circuitInstance,
+		SaltedHash: circuit.FromSaltedHash(instanceSaltedHash),
+		Signature:  circuit.FromSignature(signature),
 		PetriNet:   petriNet,
 	}
 

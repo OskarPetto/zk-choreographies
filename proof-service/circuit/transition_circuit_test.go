@@ -14,16 +14,20 @@ import (
 var transitionCircuit circuit.TransitionCircuit
 
 func TestExecution_NoTokenChange(t *testing.T) {
-	currentInstance := testdata.GetPetriNet1Instance1()
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	currentInstance := testdata.GetPetriNet1Instance1(publicKey)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	currentCommitment := crypto.Commit(currentInstance)
+	currentSaltedHash := crypto.HashInstance(currentInstance)
+	signature := signatureService.Sign(currentSaltedHash)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:   currentCircuitInstance,
-		CurrentCommitment: circuit.FromCommitment(currentCommitment),
-		NextInstance:      currentCircuitInstance,
-		NextCommitment:    circuit.FromCommitment(currentCommitment),
-		PetriNet:          petriNet,
+		CurrentInstance:           currentCircuitInstance,
+		CurrentInstanceSaltedHash: circuit.FromSaltedHash(currentSaltedHash),
+		NextInstance:              currentCircuitInstance,
+		NextInstanceSaltedHash:    circuit.FromSaltedHash(currentSaltedHash),
+		NextInstanceSignature:     circuit.FromSignature(signature),
+		PetriNet:                  petriNet,
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -33,19 +37,23 @@ func TestExecution_NoTokenChange(t *testing.T) {
 }
 
 func TestExecution_Transition0(t *testing.T) {
-	currentInstance := testdata.GetPetriNet1Instance1()
-	nextInstance := testdata.GetPetriNet1Instance2()
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	currentInstance := testdata.GetPetriNet1Instance1(publicKey)
+	nextInstance := testdata.GetPetriNet1Instance2(publicKey)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	currentCommitment := crypto.Commit(currentInstance)
-	nextCommitment := crypto.Commit(nextInstance)
+	currentSaltedHash := crypto.HashInstance(currentInstance)
+	nextSaltedHash := crypto.HashInstance(nextInstance)
+	nextSignature := signatureService.Sign(nextSaltedHash)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:   currentCircuitInstance,
-		CurrentCommitment: circuit.FromCommitment(currentCommitment),
-		NextInstance:      nextCircuitInstance,
-		NextCommitment:    circuit.FromCommitment(nextCommitment),
-		PetriNet:          petriNet,
+		CurrentInstance:           currentCircuitInstance,
+		CurrentInstanceSaltedHash: circuit.FromSaltedHash(currentSaltedHash),
+		NextInstance:              nextCircuitInstance,
+		NextInstanceSaltedHash:    circuit.FromSaltedHash(nextSaltedHash),
+		NextInstanceSignature:     circuit.FromSignature(nextSignature),
+		PetriNet:                  petriNet,
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -54,40 +62,120 @@ func TestExecution_Transition0(t *testing.T) {
 	}
 }
 
-func TestExecution_InvalidCommitments(t *testing.T) {
-	currentInstance := testdata.GetPetriNet1Instance1()
-	nextInstance := testdata.GetPetriNet1Instance2()
+func TestExecution_InvalidSaltedHash(t *testing.T) {
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	currentInstance := testdata.GetPetriNet1Instance1(publicKey)
+	nextInstance := testdata.GetPetriNet1Instance2(publicKey)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	currentCommitment := crypto.Commit(nextInstance)
-	nextCommitment := crypto.Commit(currentInstance)
+	currentSaltedHash := crypto.HashInstance(nextInstance)
+	nextSaltedHash := crypto.HashInstance(currentInstance)
+	nextSignature := signatureService.Sign(nextSaltedHash)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:   currentCircuitInstance,
-		CurrentCommitment: circuit.FromCommitment(currentCommitment),
-		NextInstance:      nextCircuitInstance,
-		NextCommitment:    circuit.FromCommitment(nextCommitment),
-		PetriNet:          petriNet,
+		CurrentInstance:           currentCircuitInstance,
+		CurrentInstanceSaltedHash: circuit.FromSaltedHash(currentSaltedHash),
+		NextInstance:              nextCircuitInstance,
+		NextInstanceSaltedHash:    circuit.FromSaltedHash(nextSaltedHash),
+		NextInstanceSignature:     circuit.FromSignature(nextSignature),
+		PetriNet:                  petriNet,
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
 	assert.NotNil(t, err)
 }
 
-func TestExecution_InvalidTokenCounts1(t *testing.T) {
-	currentInstance := testdata.GetPetriNet1Instance1()
-	nextInstance := testdata.GetPetriNet1Instance3()
+func TestExecution_InvalidTokenCounts(t *testing.T) {
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	currentInstance := testdata.GetPetriNet1Instance1(publicKey)
+	nextInstance := testdata.GetPetriNet1Instance3(publicKey)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	currentCommitment := crypto.Commit(currentInstance)
-	nextCommitment := crypto.Commit(nextInstance)
+	currentSaltedHash := crypto.HashInstance(currentInstance)
+	nextSaltedHash := crypto.HashInstance(nextInstance)
+	nextSignature := signatureService.Sign(nextSaltedHash)
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:   currentCircuitInstance,
-		CurrentCommitment: circuit.FromCommitment(currentCommitment),
-		NextInstance:      nextCircuitInstance,
-		NextCommitment:    circuit.FromCommitment(nextCommitment),
-		PetriNet:          petriNet,
+		CurrentInstance:           currentCircuitInstance,
+		CurrentInstanceSaltedHash: circuit.FromSaltedHash(currentSaltedHash),
+		NextInstance:              nextCircuitInstance,
+		NextInstanceSaltedHash:    circuit.FromSaltedHash(nextSaltedHash),
+		NextInstanceSignature:     circuit.FromSignature(nextSignature),
+		PetriNet:                  petriNet,
+	}
+
+	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestExecution_InvalidSignature(t *testing.T) {
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	currentInstance := testdata.GetPetriNet1Instance1(publicKey)
+	nextInstance := testdata.GetPetriNet1Instance2(publicKey)
+	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
+	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
+	currentSaltedHash := crypto.HashInstance(currentInstance)
+	nextSaltedHash := crypto.HashInstance(nextInstance)
+	nextSignature := signatureService.Sign(crypto.HashInstance(nextInstance))
+	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
+	witness := circuit.TransitionCircuit{
+		CurrentInstance:           currentCircuitInstance,
+		CurrentInstanceSaltedHash: circuit.FromSaltedHash(currentSaltedHash),
+		NextInstance:              nextCircuitInstance,
+		NextInstanceSaltedHash:    circuit.FromSaltedHash(nextSaltedHash),
+		NextInstanceSignature:     circuit.FromSignature(nextSignature),
+		PetriNet:                  petriNet,
+	}
+
+	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestExecution_InvalidAuthorization(t *testing.T) {
+	signatureService := crypto.NewSignatureService()
+	publicKey := testdata.GetPublicKey1()
+	currentInstance := testdata.GetPetriNet1Instance1(publicKey)
+	nextInstance := testdata.GetPetriNet1Instance2(publicKey)
+	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
+	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
+	currentSaltedHash := crypto.HashInstance(currentInstance)
+	nextSaltedHash := crypto.HashInstance(nextInstance)
+	nextSignature := signatureService.Sign(nextSaltedHash)
+	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
+	witness := circuit.TransitionCircuit{
+		CurrentInstance:           currentCircuitInstance,
+		CurrentInstanceSaltedHash: circuit.FromSaltedHash(currentSaltedHash),
+		NextInstance:              nextCircuitInstance,
+		NextInstanceSaltedHash:    circuit.FromSaltedHash(nextSaltedHash),
+		NextInstanceSignature:     circuit.FromSignature(nextSignature),
+		PetriNet:                  petriNet,
+	}
+
+	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestExecution_AlteredPublicKeys(t *testing.T) {
+	signatureService := crypto.NewSignatureService()
+	publicKey := signatureService.GetPublicKey()
+	currentInstance := testdata.GetPetriNet1Instance1(testdata.GetPublicKey1())
+	nextInstance := testdata.GetPetriNet1Instance2(publicKey)
+	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
+	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
+	currentSaltedHash := crypto.HashInstance(currentInstance)
+	nextSaltedHash := crypto.HashInstance(nextInstance)
+	nextSignature := signatureService.Sign(nextSaltedHash)
+	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
+	witness := circuit.TransitionCircuit{
+		CurrentInstance:           currentCircuitInstance,
+		CurrentInstanceSaltedHash: circuit.FromSaltedHash(currentSaltedHash),
+		NextInstance:              nextCircuitInstance,
+		NextInstanceSaltedHash:    circuit.FromSaltedHash(nextSaltedHash),
+		NextInstanceSignature:     circuit.FromSignature(nextSignature),
+		PetriNet:                  petriNet,
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
