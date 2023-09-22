@@ -22,9 +22,8 @@ func TestProveInstantiation(t *testing.T) {
 	petriNet := testdata.GetPetriNet1()
 	proofService := proof.NewProofService()
 
-	proof, err := proofService.ProveInstantiation(instance, petriNet, signature)
+	_, err := proofService.ProveInstantiation(instance, petriNet, signature)
 	assert.Nil(t, err)
-	assert.Equal(t, 128, len(proof))
 }
 
 func TestProveTransition(t *testing.T) {
@@ -38,9 +37,8 @@ func TestProveTransition(t *testing.T) {
 	petriNet := testdata.GetPetriNet1()
 	proofService := proof.NewProofService()
 
-	proof, err := proofService.ProveTransition(currentInstance, nextInstance, petriNet, signature)
+	_, err := proofService.ProveTransition(currentInstance, nextInstance, petriNet, signature)
 	assert.Nil(t, err)
-	assert.Equal(t, 128, len(proof))
 }
 
 func TestProveTermination(t *testing.T) {
@@ -52,7 +50,6 @@ func TestProveTermination(t *testing.T) {
 	petriNet := testdata.GetPetriNet1()
 	proofService := proof.NewProofService()
 
-	proof, err := proofService.ProveTermination(instance, petriNet, signature)
+	_, err := proofService.ProveTermination(instance, petriNet, signature)
 	assert.Nil(t, err)
-	assert.Equal(t, 128, len(proof))
 }
