@@ -13,15 +13,22 @@ import (
 )
 
 type ProofService struct {
+	isLoaded         bool
 	proofParameters  parameters.ProofParameters
 	signatureService crypto.SignatureService
 }
 
+var proofService ProofService
+
 func NewProofService() ProofService {
-	return ProofService{
-		proofParameters:  parameters.NewProofParameters(),
-		signatureService: crypto.NewSignatureService(),
+	if !proofService.isLoaded {
+		proofService = ProofService{
+			isLoaded:         true,
+			proofParameters:  parameters.LoadProofParameters(),
+			signatureService: crypto.NewSignatureService(),
+		}
 	}
+	return proofService
 }
 
 func (service *ProofService) ProveInstantiation(instance domain.Instance, pertiNet domain.PetriNet) ([]byte, error) {

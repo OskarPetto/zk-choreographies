@@ -12,21 +12,14 @@ import (
 const signaturePrivateKeyFilename = "signature.private_key"
 
 type SignatureParameters struct {
-	isLoaded            bool
 	SignaturePrivateKey *eddsa.PrivateKey
 }
 
-var signatureParameters SignatureParameters
-
-func NewSignatureParameters() SignatureParameters {
-	if !signatureParameters.isLoaded {
-		signaturePrivateKey := importSignaturePrivateKey(signaturePrivateKeyFilename)
-		signatureParameters = SignatureParameters{
-			true,
-			signaturePrivateKey,
-		}
+func LoadSignatureParameters() SignatureParameters {
+	signaturePrivateKey := importSignaturePrivateKey(signaturePrivateKeyFilename)
+	return SignatureParameters{
+		signaturePrivateKey,
 	}
-	return signatureParameters
 }
 
 func importSignaturePrivateKey(filename string) *eddsa.PrivateKey {

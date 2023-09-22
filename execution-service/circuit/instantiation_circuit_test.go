@@ -97,7 +97,7 @@ func TestInstantiation_InvalidSignature(t *testing.T) {
 
 func TestInstantiation_InvalidAuthorization(t *testing.T) {
 	signatureService := crypto.NewSignatureService()
-	publicKey := testdata.GetPublicKey1()
+	publicKey := testdata.GetPublicKeys(2)[1]
 	instance := testdata.GetPetriNet1Instance1(publicKey)
 	instanceSaltedHash := crypto.HashInstance(instance)
 	signature := signatureService.Sign(instanceSaltedHash)

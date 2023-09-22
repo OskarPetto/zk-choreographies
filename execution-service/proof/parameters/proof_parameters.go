@@ -19,7 +19,6 @@ const transitionPkFilename = "transition.proving_key"
 const terminationPkFilename = "termination.proving_key"
 
 type ProofParameters struct {
-	isLoaded        bool
 	CsInstantiation constraint.ConstraintSystem
 	CsTransition    constraint.ConstraintSystem
 	CsTermination   constraint.ConstraintSystem
@@ -28,27 +27,21 @@ type ProofParameters struct {
 	PkTermination   groth16.ProvingKey
 }
 
-var proofParameters ProofParameters
-
-func NewProofParameters() ProofParameters {
-	if !proofParameters.isLoaded {
-		csInstantiation := importConstraintSystem(&circuit.InstantiationCircuit{}, instantiationCsFilename)
-		csTransition := importConstraintSystem(&circuit.TransitionCircuit{}, transitionCsFilename)
-		csTermination := importConstraintSystem(&circuit.TerminationCircuit{}, terminationCsFilename)
-		pkInstantiation := importProvingKey(csInstantiation, instantiationPkFilename)
-		pkTransition := importProvingKey(csTransition, transitionPkFilename)
-		pkTermination := importProvingKey(csTermination, terminationPkFilename)
-		proofParameters = ProofParameters{
-			true,
-			csInstantiation,
-			csTransition,
-			csTermination,
-			pkInstantiation,
-			pkTransition,
-			pkTermination,
-		}
+func LoadProofParameters() ProofParameters {
+	csInstantiation := importConstraintSystem(&circuit.InstantiationCircuit{}, instantiationCsFilename)
+	csTransition := importConstraintSystem(&circuit.TransitionCircuit{}, transitionCsFilename)
+	csTermination := importConstraintSystem(&circuit.TerminationCircuit{}, terminationCsFilename)
+	pkInstantiation := importProvingKey(csInstantiation, instantiationPkFilename)
+	pkTransition := importProvingKey(csTransition, transitionPkFilename)
+	pkTermination := importProvingKey(csTermination, terminationPkFilename)
+	return ProofParameters{
+		csInstantiation,
+		csTransition,
+		csTermination,
+		pkInstantiation,
+		pkTransition,
+		pkTermination,
 	}
-	return proofParameters
 }
 
 func importConstraintSystem(circuit frontend.Circuit, filename string) constraint.ConstraintSystem {

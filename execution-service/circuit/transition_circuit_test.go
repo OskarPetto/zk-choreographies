@@ -136,7 +136,7 @@ func TestExecution_InvalidSignature(t *testing.T) {
 
 func TestExecution_InvalidAuthorization(t *testing.T) {
 	signatureService := crypto.NewSignatureService()
-	publicKey := testdata.GetPublicKey1()
+	publicKey := testdata.GetPublicKeys(2)[1]
 	currentInstance := testdata.GetPetriNet1Instance1(publicKey)
 	nextInstance := testdata.GetPetriNet1Instance2(publicKey)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
@@ -161,7 +161,7 @@ func TestExecution_InvalidAuthorization(t *testing.T) {
 func TestExecution_AlteredPublicKeys(t *testing.T) {
 	signatureService := crypto.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetPetriNet1Instance1(testdata.GetPublicKey1())
+	currentInstance := testdata.GetPetriNet1Instance1(testdata.GetPublicKeys(2)[1])
 	nextInstance := testdata.GetPetriNet1Instance2(publicKey)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)

@@ -13,13 +13,20 @@ type Signature struct {
 }
 
 type SignatureService struct {
+	isLoaded            bool
 	signatureParameters parameters.SignatureParameters
 }
 
+var signatureService SignatureService
+
 func NewSignatureService() SignatureService {
-	return SignatureService{
-		signatureParameters: parameters.NewSignatureParameters(),
+	if !signatureService.isLoaded {
+		signatureService = SignatureService{
+			isLoaded:            true,
+			signatureParameters: parameters.LoadSignatureParameters(),
+		}
 	}
+	return signatureService
 }
 
 func (service *SignatureService) Sign(saltedHash SaltedHash) Signature {

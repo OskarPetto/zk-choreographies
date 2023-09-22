@@ -97,7 +97,7 @@ func TestTermination_InvalidSignature(t *testing.T) {
 
 func TestTermination_InvalidAuthorization(t *testing.T) {
 	signatureService := crypto.NewSignatureService()
-	publicKey := testdata.GetPublicKey1()
+	publicKey := testdata.GetPublicKeys(2)[1]
 	instance := testdata.GetPetriNet1Instance3(publicKey)
 	instanceSaltedHash := crypto.HashInstance(instance)
 	signature := signatureService.Sign(instanceSaltedHash)
