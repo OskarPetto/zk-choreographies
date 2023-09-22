@@ -54,3 +54,12 @@ func (service *ExecutionService) ExecuteTransition(inst instance.Instance, petri
 	service.instanceService.SaveInstance(instanceResult)
 	return instanceResult, proofResult, nil
 }
+
+func (service *ExecutionService) TerminateInstance(inst instance.Instance, petriNet model.PetriNet) (proof.Proof, error) {
+	signature := service.signatureService.Sign(inst)
+	proofResult, err := service.proofService.ProveTermination(inst, petriNet, signature)
+	if err != nil {
+		return proof.Proof{}, err
+	}
+	return proofResult, nil
+}

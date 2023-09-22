@@ -14,5 +14,5 @@ func TestFindInstance(t *testing.T) {
 	instance := testdata.GetPetriNet1Instance1(publicKey)
 	service.SaveInstance(instance)
 	_, err := service.FindInstanceByHash(instance.Hash)
-	assert.NotNil(t, err)
+	assert.Nil(t, err)
 }
