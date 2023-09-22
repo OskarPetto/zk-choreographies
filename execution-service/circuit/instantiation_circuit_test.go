@@ -1,8 +1,8 @@
 package circuit_test
 
 import (
+	"proof-service/authentication"
 	"proof-service/circuit"
-	"proof-service/crypto"
 	"proof-service/testdata"
 	"testing"
 
@@ -14,19 +14,18 @@ import (
 var instantiationCircuit circuit.InstantiationCircuit
 
 func TestInstantiation(t *testing.T) {
-	signatureService := crypto.NewSignatureService()
+	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
 	instance := testdata.GetPetriNet1Instance1(publicKey)
-	instanceSaltedHash := crypto.HashInstance(instance)
-	signature := signatureService.Sign(instanceSaltedHash)
+	instance.ComputeHash()
+	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
-		Instance:   circuitInstance,
-		SaltedHash: circuit.FromSaltedHash(instanceSaltedHash),
-		Signature:  circuit.FromSignature(signature),
-		PetriNet:   petriNet,
+		Instance:  circuitInstance,
+		Signature: circuit.FromSignature(signature),
+		PetriNet:  petriNet,
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -35,20 +34,18 @@ func TestInstantiation(t *testing.T) {
 	}
 }
 
-func TestInstantiation_InvalidSaltedHash(t *testing.T) {
-	signatureService := crypto.NewSignatureService()
+func TestInstantiation_InvalidHash(t *testing.T) {
+	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
 	instance := testdata.GetPetriNet1Instance1(publicKey)
-	instanceSaltedHash := crypto.HashInstance(testdata.GetPetriNet1Instance2(publicKey))
-	signature := signatureService.Sign(instanceSaltedHash)
+	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
-		Instance:   circuitInstance,
-		SaltedHash: circuit.FromSaltedHash(instanceSaltedHash),
-		Signature:  circuit.FromSignature(signature),
-		PetriNet:   petriNet,
+		Instance:  circuitInstance,
+		Signature: circuit.FromSignature(signature),
+		PetriNet:  petriNet,
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -56,19 +53,18 @@ func TestInstantiation_InvalidSaltedHash(t *testing.T) {
 }
 
 func TestInstantiation_InvalidTokenCounts(t *testing.T) {
-	signatureService := crypto.NewSignatureService()
+	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
 	instance := testdata.GetPetriNet1Instance2(publicKey)
-	instanceSaltedHash := crypto.HashInstance(instance)
-	signature := signatureService.Sign(instanceSaltedHash)
+	instance.ComputeHash()
+	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
-		Instance:   circuitInstance,
-		SaltedHash: circuit.FromSaltedHash(instanceSaltedHash),
-		Signature:  circuit.FromSignature(signature),
-		PetriNet:   petriNet,
+		Instance:  circuitInstance,
+		Signature: circuit.FromSignature(signature),
+		PetriNet:  petriNet,
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -76,19 +72,20 @@ func TestInstantiation_InvalidTokenCounts(t *testing.T) {
 }
 
 func TestInstantiation_InvalidSignature(t *testing.T) {
-	signatureService := crypto.NewSignatureService()
+	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
 	instance := testdata.GetPetriNet1Instance1(publicKey)
-	instanceSaltedHash := crypto.HashInstance(instance)
-	signature := signatureService.Sign(crypto.HashInstance(instance))
+	instance.ComputeHash()
+	instance2 := testdata.GetPetriNet1Instance2(publicKey)
+	instance2.ComputeHash()
+	signature := signatureService.Sign(instance2)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
-		Instance:   circuitInstance,
-		SaltedHash: circuit.FromSaltedHash(instanceSaltedHash),
-		Signature:  circuit.FromSignature(signature),
-		PetriNet:   petriNet,
+		Instance:  circuitInstance,
+		Signature: circuit.FromSignature(signature),
+		PetriNet:  petriNet,
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -96,19 +93,18 @@ func TestInstantiation_InvalidSignature(t *testing.T) {
 }
 
 func TestInstantiation_InvalidAuthorization(t *testing.T) {
-	signatureService := crypto.NewSignatureService()
+	signatureService := authentication.NewSignatureService()
 	publicKey := testdata.GetPublicKeys(2)[1]
 	instance := testdata.GetPetriNet1Instance1(publicKey)
-	instanceSaltedHash := crypto.HashInstance(instance)
-	signature := signatureService.Sign(instanceSaltedHash)
+	instance.ComputeHash()
+	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
 	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
 	witness := circuit.InstantiationCircuit{
-		Instance:   circuitInstance,
-		SaltedHash: circuit.FromSaltedHash(instanceSaltedHash),
-		Signature:  circuit.FromSignature(signature),
-		PetriNet:   petriNet,
+		Instance:  circuitInstance,
+		Signature: circuit.FromSignature(signature),
+		PetriNet:  petriNet,
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())

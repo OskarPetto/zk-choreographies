@@ -1,7 +1,7 @@
 package circuit
 
 import (
-	"proof-service/domain"
+	"proof-service/model"
 
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/lookup/logderivlookup"
@@ -16,24 +16,22 @@ type TokenCountChanges struct {
 }
 
 type TransitionCircuit struct {
-	CurrentInstance           Instance
-	CurrentInstanceSaltedHash SaltedHash
-	NextInstance              Instance
-	NextInstanceSaltedHash    SaltedHash
-	NextInstanceSignature     Signature
-	PetriNet                  PetriNet
+	CurrentInstance       Instance
+	NextInstance          Instance
+	NextInstanceSignature Signature
+	PetriNet              PetriNet
 }
 
 func (circuit *TransitionCircuit) Define(api frontend.API) error {
-	err := checkInstanceSaltedHash(api, circuit.CurrentInstance, circuit.CurrentInstanceSaltedHash)
+	err := checkInstanceHash(api, circuit.CurrentInstance)
 	if err != nil {
 		return err
 	}
-	err = checkInstanceSaltedHash(api, circuit.NextInstance, circuit.NextInstanceSaltedHash)
+	err = checkInstanceHash(api, circuit.NextInstance)
 	if err != nil {
 		return err
 	}
-	err = checkSignature(api, circuit.NextInstanceSignature, circuit.NextInstanceSaltedHash)
+	err = checkSignature(api, circuit.NextInstanceSignature, circuit.NextInstance)
 	if err != nil {
 		return err
 	}
@@ -83,8 +81,8 @@ func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCoun
 	tokenCountDecreasesPerPlaceId.Insert(1)
 	tokenCountIncreasesPerPlaceId.Insert(1)
 
-	api.AssertIsLessOrEqual(tokenCountDecreasesCount, domain.MaxBranchingFactor)
-	api.AssertIsLessOrEqual(tokenCountIncreasesCount, domain.MaxBranchingFactor)
+	api.AssertIsLessOrEqual(tokenCountDecreasesCount, model.MaxBranchingFactor)
+	api.AssertIsLessOrEqual(tokenCountIncreasesCount, model.MaxBranchingFactor)
 
 	noChanges := api.And(api.IsZero(tokenCountDecreasesCount), api.IsZero(tokenCountIncreasesCount))
 

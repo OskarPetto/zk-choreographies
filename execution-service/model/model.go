@@ -1,4 +1,4 @@
-package domain
+package model
 
 const MaxPlaceCount = 100
 const MaxTransitionCount = 100

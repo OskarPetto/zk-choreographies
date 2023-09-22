@@ -5,18 +5,17 @@ import (
 )
 
 type TerminationCircuit struct {
-	Instance   Instance
-	SaltedHash SaltedHash
-	Signature  Signature
-	PetriNet   PetriNet
+	Instance  Instance
+	Signature Signature
+	PetriNet  PetriNet
 }
 
 func (circuit *TerminationCircuit) Define(api frontend.API) error {
-	err := checkInstanceSaltedHash(api, circuit.Instance, circuit.SaltedHash)
+	err := checkInstanceHash(api, circuit.Instance)
 	if err != nil {
 		return err
 	}
-	err = checkSignature(api, circuit.Signature, circuit.SaltedHash)
+	err = checkSignature(api, circuit.Signature, circuit.Instance)
 	if err != nil {
 		return err
 	}

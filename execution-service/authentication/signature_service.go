@@ -1,7 +1,8 @@
-package crypto
+package authentication
 
 import (
-	"proof-service/crypto/parameters"
+	"proof-service/authentication/parameters"
+	"proof-service/instance"
 	"proof-service/utils"
 
 	"github.com/consensys/gnark-crypto/hash"
@@ -29,9 +30,9 @@ func NewSignatureService() SignatureService {
 	return signatureService
 }
 
-func (service *SignatureService) Sign(saltedHash SaltedHash) Signature {
+func (service *SignatureService) Sign(instance instance.Instance) Signature {
 	privateKey := service.signatureParameters.SignaturePrivateKey
-	signature, err := privateKey.Sign(saltedHash.Value, hash.MIMC_BN254.New())
+	signature, err := privateKey.Sign(instance.Hash, hash.MIMC_BN254.New())
 	utils.PanicOnError(err)
 
 	return Signature{

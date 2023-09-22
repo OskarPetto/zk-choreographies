@@ -1,8 +1,8 @@
-package crypto
+package instance
 
 import (
 	"crypto/rand"
-	"proof-service/domain"
+	"proof-service/model"
 	"proof-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
@@ -10,31 +10,17 @@ import (
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )
 
-type SaltedHashId = string
-
-type SaltedHash struct {
-	Value []byte
-	Salt  []byte
-}
-
-func HashInstance(instance domain.Instance) SaltedHash {
-	salt := randomFieldElement()
-	return SaltedHash{
-		Value: hashInstance(instance, salt),
-		Salt:  salt,
-	}
-}
-
-func hashInstance(instance domain.Instance, salt []byte) []byte {
+func (instance *Instance) ComputeHash() {
+	instance.Salt = randomFieldElement()
 	mimc := mimc.NewMiMC()
 	for _, tokenCount := range instance.TokenCounts {
 		var bytes [fr.Bytes]byte
 		bytes[fr.Bytes-1] = byte(tokenCount) // big endian
 		mimc.Write(bytes[:])
 	}
-	for i := len(instance.TokenCounts); i < domain.MaxPlaceCount; i++ {
-		var bytes [fr.Bytes]byte
-		mimc.Write(bytes[:])
+	for i := len(instance.TokenCounts); i < model.MaxPlaceCount; i++ {
+		var zeros [fr.Bytes]byte
+		mimc.Write(zeros[:])
 	}
 	for _, publicKeyBytes := range instance.PublicKeys {
 		var publicKey eddsa.PublicKey
@@ -44,13 +30,13 @@ func hashInstance(instance domain.Instance, salt []byte) []byte {
 		mimc.Write(xBytes[:])
 		mimc.Write(yBytes[:])
 	}
-	for i := len(instance.PublicKeys); i < domain.MaxParticipantCount; i++ {
+	for i := len(instance.PublicKeys); i < model.MaxParticipantCount; i++ {
 		var zeros [fr.Bytes]byte
 		mimc.Write(zeros[:])
 		mimc.Write(zeros[:])
 	}
-	mimc.Write(salt)
-	return mimc.Sum([]byte{})
+	mimc.Write(instance.Salt)
+	instance.Hash = mimc.Sum([]byte{})
 }
 
 func randomFieldElement() []byte {

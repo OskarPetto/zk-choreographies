@@ -8,7 +8,7 @@ import (
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
-func checkInstanceSaltedHash(api frontend.API, instance Instance, saltedHash SaltedHash) error {
+func checkInstanceHash(api frontend.API, instance Instance) error {
 	mimc, err := mimc.NewMiMC(api)
 	if err != nil {
 		return err
@@ -18,13 +18,13 @@ func checkInstanceSaltedHash(api frontend.API, instance Instance, saltedHash Sal
 		mimc.Write(publicKey.A.X)
 		mimc.Write(publicKey.A.Y)
 	}
-	mimc.Write(saltedHash.Salt)
+	mimc.Write(instance.Salt)
 	hash := mimc.Sum()
-	api.AssertIsEqual(hash, saltedHash.Value)
+	api.AssertIsEqual(hash, instance.Hash)
 	return nil
 }
 
-func checkSignature(api frontend.API, signature Signature, saltedHash SaltedHash) error {
+func checkSignature(api frontend.API, signature Signature, instance Instance) error {
 	mimc, err := mimc.NewMiMC(api)
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func checkSignature(api frontend.API, signature Signature, saltedHash SaltedHash
 		return err
 	}
 
-	return eddsa.Verify(curve, signature.Value, saltedHash.Value, signature.PublicKey, &mimc)
+	return eddsa.Verify(curve, signature.Value, instance.Hash, signature.PublicKey, &mimc)
 }
 
 func findParticipantId(api frontend.API, signature Signature, instance Instance) frontend.Variable {

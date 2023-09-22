@@ -2,9 +2,10 @@ package proof
 
 import (
 	"bytes"
+	"proof-service/authentication"
 	"proof-service/circuit"
-	"proof-service/crypto"
-	"proof-service/domain"
+	"proof-service/instance"
+	"proof-service/model"
 	"proof-service/proof/parameters"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -13,9 +14,8 @@ import (
 )
 
 type ProofService struct {
-	isLoaded         bool
-	proofParameters  parameters.ProofParameters
-	signatureService crypto.SignatureService
+	isLoaded        bool
+	proofParameters parameters.ProofParameters
 }
 
 var proofService ProofService
@@ -23,15 +23,14 @@ var proofService ProofService
 func NewProofService() ProofService {
 	if !proofService.isLoaded {
 		proofService = ProofService{
-			isLoaded:         true,
-			proofParameters:  parameters.LoadProofParameters(),
-			signatureService: crypto.NewSignatureService(),
+			isLoaded:        true,
+			proofParameters: parameters.LoadProofParameters(),
 		}
 	}
 	return proofService
 }
 
-func (service *ProofService) ProveInstantiation(instance domain.Instance, pertiNet domain.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveInstantiation(instance instance.Instance, pertiNet model.PetriNet, signature authentication.Signature) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err
@@ -40,12 +39,10 @@ func (service *ProofService) ProveInstantiation(instance domain.Instance, pertiN
 	if err != nil {
 		return []byte{}, err
 	}
-	saltedHash := crypto.HashInstance(instance)
 	assignment := &circuit.InstantiationCircuit{
-		Instance:   circuitInstance,
-		SaltedHash: circuit.FromSaltedHash(saltedHash),
-		Signature:  circuit.FromSignature(service.signatureService.Sign(saltedHash)),
-		PetriNet:   circuitPetriNet,
+		Instance:  circuitInstance,
+		Signature: circuit.FromSignature(signature),
+		PetriNet:  circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -60,7 +57,7 @@ func (service *ProofService) ProveInstantiation(instance domain.Instance, pertiN
 	return byteBuffer.Bytes(), nil
 }
 
-func (service *ProofService) ProveTransition(currentInstance domain.Instance, nextInstance domain.Instance, pertiNet domain.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveTransition(currentInstance instance.Instance, nextInstance instance.Instance, pertiNet model.PetriNet, nextSignature authentication.Signature) ([]byte, error) {
 	currentCircuitInstance, err := circuit.FromInstance(currentInstance)
 	if err != nil {
 		return []byte{}, err
@@ -73,16 +70,12 @@ func (service *ProofService) ProveTransition(currentInstance domain.Instance, ne
 	if err != nil {
 		return []byte{}, err
 	}
-	currentSaltedHash := crypto.HashInstance(currentInstance)
-	nextSaltedHash := crypto.HashInstance(nextInstance)
 
 	assignment := &circuit.TransitionCircuit{
-		CurrentInstance:           currentCircuitInstance,
-		CurrentInstanceSaltedHash: circuit.FromSaltedHash(currentSaltedHash),
-		NextInstance:              nextCircuitInstance,
-		NextInstanceSaltedHash:    circuit.FromSaltedHash(nextSaltedHash),
-		NextInstanceSignature:     circuit.FromSignature(service.signatureService.Sign(nextSaltedHash)),
-		PetriNet:                  circuitPetriNet,
+		CurrentInstance:       currentCircuitInstance,
+		NextInstance:          nextCircuitInstance,
+		NextInstanceSignature: circuit.FromSignature(nextSignature),
+		PetriNet:              circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -97,7 +90,7 @@ func (service *ProofService) ProveTransition(currentInstance domain.Instance, ne
 	return byteBuffer.Bytes(), nil
 }
 
-func (service *ProofService) ProveTermination(instance domain.Instance, pertiNet domain.PetriNet) ([]byte, error) {
+func (service *ProofService) ProveTermination(instance instance.Instance, pertiNet model.PetriNet, signature authentication.Signature) ([]byte, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return []byte{}, err
@@ -106,12 +99,10 @@ func (service *ProofService) ProveTermination(instance domain.Instance, pertiNet
 	if err != nil {
 		return []byte{}, err
 	}
-	saltedHash := crypto.HashInstance(instance)
 	assignment := &circuit.TerminationCircuit{
-		Instance:   circuitInstance,
-		SaltedHash: circuit.FromSaltedHash(saltedHash),
-		Signature:  circuit.FromSignature(service.signatureService.Sign(saltedHash)),
-		PetriNet:   circuitPetriNet,
+		Instance:  circuitInstance,
+		Signature: circuit.FromSignature(signature),
+		PetriNet:  circuitPetriNet,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
