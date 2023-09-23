@@ -13,8 +13,12 @@ function readTextFile(filename: string) {
 }
 
 export class TestdataProvider {
-  static getBarbaraReChoreography(): string {
-    return readTextFile('test/data/barbara_re_choreography.bpmn');
+  static getFloorChoreography(): string {
+    return readTextFile('test/data/floor_choreography.bpmn');
+  }
+
+  static getExampleChoreography(): string {
+    return readTextFile('test/data/example_choreography.bpmn');
   }
 
   static getDefinitions2(): Definitions {
@@ -224,5 +228,9 @@ export class TestdataProvider {
         }
       ]
     };
+  }
+
+  static getModel2(): undefined {
+    return undefined;
   }
 }

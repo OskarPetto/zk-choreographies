@@ -35,6 +35,7 @@ export class BpmnParser {
         this.parallelGatewayTag,
         this.incomingTag,
         this.outgoingTag,
+        this.messageFlowRefTag,
         this.sequenceFlowTag,
         this.messageFlowTag
       ].includes(tagName),
@@ -71,10 +72,13 @@ export class BpmnParser {
     const parallelGateways = this.parseParallelGateways(choreography);
     const choreographyTasks = this.parseChoreographyTasks(choreography);
     const relevantMessages = messages.filter((message: Message) => choreographyTasks.find((choreographyTask: ChoreographyTask) => choreographyTask.initialMessage === message.id || choreographyTask.responseMessage === message.id));
+    const relevantParticipants = participants.filter((participant: Participant) =>
+      choreographyTasks.some((choreographyTask: ChoreographyTask) => choreographyTask.initiatingParticipant === participant.id || choreographyTask.respondingParticipant === participant.id)
+    );
     return {
       id: choreography.id,
       sequenceFlows,
-      participants,
+      participants: relevantParticipants,
       startEvent,
       endEvents,
       exclusiveGateways,
@@ -93,11 +97,14 @@ export class BpmnParser {
   }
 
   private parseParticipants(choreography: any): Participant[] {
-    return choreography[this.participantTag].map((participant: any) => ({
-      id: participant.id,
-      name: participant.name,
-      maxMultiplicity: participant[this.participantMultiplicityTag].maximum
-    }));
+    return choreography[this.participantTag].map((participant: any) => {
+      const maxMultiplicity = participant[this.participantMultiplicityTag]?.maximum;
+      return {
+        id: participant.id,
+        name: participant.name,
+        maxMultiplicity: maxMultiplicity ? Number(maxMultiplicity) : undefined,
+      }
+    });
   }
 
   private parseStartEvent(choreography: any): StartEvent {
@@ -114,7 +121,7 @@ export class BpmnParser {
     return endEvents.map((endEvent: any) => ({
       id: endEvent.id,
       name: endEvent.name,
-      incomingSequenceFlows: endEvent[this.incomingTag][0],
+      incoming: endEvent[this.incomingTag][0],
     }));
   }
 
@@ -163,14 +170,14 @@ export class BpmnParser {
         choreographyTask.initiatingParticipantRef)!;
       const messageFlows = choreographyTask[this.messageFlowRefTag]
         .map((messageFlowRef: any) => allMessageFlows.get(messageFlowRef)!);
-      const initialMessageRef = messageFlows.find((messageFlow: any) => messageFlow.sourceRef === initiatingParticipantRef).messageRef;
-      const responseMessageRef = messageFlows.find((messageFlow: any) => messageFlow.sourceRef === respondingParticipantRef).messageRef;
+      const initialMessageRef = messageFlows.find((messageFlow: any) => messageFlow.sourceRef === initiatingParticipantRef)?.messageRef;
+      const responseMessageRef = messageFlows.find((messageFlow: any) => messageFlow.sourceRef === respondingParticipantRef)?.messageRef;
 
       return {
         id: choreographyTask.id,
         name: choreographyTask.name,
-        incoming: choreographyTask[this.incomingTag],
-        outgoing: choreographyTask[this.outgoingTag],
+        incoming: choreographyTask[this.incomingTag][0],
+        outgoing: choreographyTask[this.outgoingTag][0],
         initiatingParticipant: initiatingParticipantRef,
         respondingParticipant: respondingParticipantRef,
         initialMessage: initialMessageRef,

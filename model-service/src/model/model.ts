@@ -1,6 +1,8 @@
 export type PlaceId = number;
 export type ParticipantId = number;
+export type MessageId = number;
 export type TransitionId = string;
+export type ModelId = string;
 
 export enum TransitionType {
   START,
@@ -12,26 +14,22 @@ export enum TransitionType {
   AND_JOIN,
 }
 
-export interface Message {
-
-}
-
 export interface Transition {
   id: TransitionId;
   type: TransitionType;
   name?: string;
-  participant?: ParticipantId;
   incomingPlaces: PlaceId[];
   outgoingPlaces: PlaceId[];
+  participant?: ParticipantId;
+  message?: MessageId;
 }
-
-export type ModelId = string;
 
 export interface Model {
   id: ModelId;
   placeCount: number;
-  startPlace: PlaceId;
-  endPlace: PlaceId;
   participantCount: number;
+  messageCount: number;
+  startPlace: PlaceId;
+  endPlaces: PlaceId[];
   transitions: Transition[];
 }

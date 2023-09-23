@@ -9,7 +9,7 @@
   <bpmn2:message id="Message_09bxpjt" />
   <bpmn2:message id="Message_1aqi4sm" name="extraction_loss" />
   <bpmn2:message id="Message_1vi2szm" name="floor_area" />
-  <bpmn2:choreography id="PizzaDelivery">
+  <bpmn2:choreography id="FloorCertification">
     <bpmn2:participant id="Participant_06qakjv" name="Buyer">
       <bpmn2:participantMultiplicity maximum="2" />
     </bpmn2:participant>
@@ -106,7 +106,7 @@
     <bpmn2:sequenceFlow id="Flow_0vus68d" sourceRef="ChoreographyTask_029uvi2" targetRef="Event_1nem22a" />
   </bpmn2:choreography>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_Choreography_1" bpmnElement="PizzaDelivery">
+    <bpmndi:BPMNPlane id="BPMNPlane_Choreography_1" bpmnElement="FloorCertification">
       <bpmndi:BPMNShape id="StartEvent_00yy9i8_di" bpmnElement="StartEvent_00yy9i8">
         <dc:Bounds x="252" y="350" width="36" height="36" />
       </bpmndi:BPMNShape>

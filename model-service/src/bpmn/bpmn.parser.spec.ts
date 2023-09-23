@@ -3,8 +3,8 @@ import { BpmnParser } from './bpmn.parser';
 
 describe('BpmnParser', () => {
   let bpmnParser: BpmnParser;
-  const process1 = TestdataProvider.getChoreography1();
-  const bpmnString = TestdataProvider.getBarbaraReChoreography();
+  const definitions2 = TestdataProvider.getDefinitions2();
+  const bpmnString = TestdataProvider.getExampleChoreography();
 
   beforeAll(async () => {
     bpmnParser = new BpmnParser();
@@ -13,7 +13,7 @@ describe('BpmnParser', () => {
   describe('parseBpmn', () => {
     it('should parse bpmn process correctly', () => {
       const result = bpmnParser.parseBpmn(bpmnString);
-      expect(result.process).toEqual(process1);
+      expect(result).toEqual(definitions2);
     });
   });
 });
