@@ -1,7 +1,7 @@
 package circuit
 
 import (
-	"proof-service/model"
+	"proof-service/domain"
 
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/lookup/logderivlookup"
@@ -19,7 +19,7 @@ type TransitionCircuit struct {
 	CurrentInstance       Instance
 	NextInstance          Instance
 	NextInstanceSignature Signature
-	PetriNet              PetriNet
+	Model                 Model
 }
 
 func (circuit *TransitionCircuit) Define(api frontend.API) error {
@@ -81,8 +81,8 @@ func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCoun
 	tokenCountDecreasesPerPlaceId.Insert(1)
 	tokenCountIncreasesPerPlaceId.Insert(1)
 
-	api.AssertIsLessOrEqual(tokenCountDecreasesCount, model.MaxBranchingFactor)
-	api.AssertIsLessOrEqual(tokenCountIncreasesCount, model.MaxBranchingFactor)
+	api.AssertIsLessOrEqual(tokenCountDecreasesCount, domain.MaxBranchingFactor)
+	api.AssertIsLessOrEqual(tokenCountIncreasesCount, domain.MaxBranchingFactor)
 
 	noChanges := api.And(api.IsZero(tokenCountDecreasesCount), api.IsZero(tokenCountIncreasesCount))
 
@@ -95,7 +95,7 @@ func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountCh
 
 	var transitionFound frontend.Variable = 0
 
-	for _, transition := range circuit.PetriNet.Transitions {
+	for _, transition := range circuit.Model.Transitions {
 		participantIdMatches := api.Or(transition.IsExecutableByAnyParticipant, equals(api, transition.Participant, participantId))
 		incomingPlacesMatch := equals(api, transition.IncomingPlaceCount, tokenCountChanges.tokenCountDecreasesCount)
 		outgoingPlacesMatch := equals(api, transition.OutgoingPlaceCount, tokenCountChanges.tokenCountIncreasesCount)

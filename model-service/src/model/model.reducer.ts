@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PetriNet, PlaceId, Transition, TransitionType } from './petri-net';
+import { Model, PlaceId, Transition, TransitionType } from './model';
 
 @Injectable()
-export class PetriNetReducer {
-  reducePetriNet(petriNet: PetriNet): PetriNet {
-    const newPetriNet = this.copyPetriNet(petriNet);
-    for (const transition of newPetriNet.transitions) {
+export class ModelReducer {
+  reduceModel(model: Model): Model {
+    const newModel = this.copyModel(model);
+    for (const transition of newModel.transitions) {
       switch (transition.type) {
         case TransitionType.START:
         case TransitionType.END:
@@ -13,26 +13,26 @@ export class PetriNetReducer {
           break;
         case TransitionType.XOR_SPLIT:
         case TransitionType.AND_JOIN:
-          this.removeTransitionAndOutgoingPlaces(newPetriNet, transition);
+          this.removeTransitionAndOutgoingPlaces(newModel, transition);
           break;
         case TransitionType.XOR_JOIN:
         case TransitionType.AND_SPLIT:
-          this.removeTransitionAndIncomingPlaces(newPetriNet, transition);
+          this.removeTransitionAndIncomingPlaces(newModel, transition);
           break;
       }
     }
-    this.repairPlaceIds(newPetriNet);
-    return newPetriNet;
+    this.repairPlaceIds(newModel);
+    return newModel;
   }
 
-  private repairPlaceIds(petriNet: PetriNet) {
-    const places = this.collectPlaces(petriNet);
+  private repairPlaceIds(model: Model) {
+    const places = this.collectPlaces(model);
     const placeMap: Map<PlaceId, PlaceId> = new Map();
     let index = 0;
     for (const place of places) {
       placeMap.set(place, index++);
     }
-    for (const transition of petriNet.transitions) {
+    for (const transition of model.transitions) {
       transition.incomingPlaces = transition.incomingPlaces.map(
         (place) => placeMap.get(place)!,
       );
@@ -40,14 +40,14 @@ export class PetriNetReducer {
         (place) => placeMap.get(place)!,
       );
     }
-    petriNet.placeCount = places.length;
-    petriNet.startPlace = placeMap.get(petriNet.startPlace)!;
-    petriNet.endPlace = placeMap.get(petriNet.endPlace)!;
+    model.placeCount = places.length;
+    model.startPlace = placeMap.get(model.startPlace)!;
+    model.endPlace = placeMap.get(model.endPlace)!;
   }
 
-  private collectPlaces(petriNet: PetriNet): PlaceId[] {
+  private collectPlaces(model: Model): PlaceId[] {
     let places: PlaceId[] = [];
-    for (const transition of petriNet.transitions) {
+    for (const transition of model.transitions) {
       places = [
         ...places,
         ...transition.incomingPlaces,
@@ -58,10 +58,10 @@ export class PetriNetReducer {
   }
 
   private removeTransitionAndOutgoingPlaces(
-    petriNet: PetriNet,
+    model: Model,
     transitionToRemove: Transition,
   ) {
-    for (const transition of petriNet.transitions) {
+    for (const transition of model.transitions) {
       const intersect = this.intersect(
         transition.incomingPlaces,
         transitionToRemove.outgoingPlaces,
@@ -77,16 +77,16 @@ export class PetriNetReducer {
         );
       }
     }
-    petriNet.transitions = petriNet.transitions.filter(
+    model.transitions = model.transitions.filter(
       (t) => t.id !== transitionToRemove.id,
     );
   }
 
   private removeTransitionAndIncomingPlaces(
-    petriNet: PetriNet,
+    model: Model,
     transitionToRemove: Transition,
   ) {
-    for (const transition of petriNet.transitions.values()) {
+    for (const transition of model.transitions.values()) {
       const intersect = this.intersect(
         transition.outgoingPlaces,
         transitionToRemove.incomingPlaces,
@@ -102,7 +102,7 @@ export class PetriNetReducer {
         );
       }
     }
-    petriNet.transitions = petriNet.transitions.filter(
+    model.transitions = model.transitions.filter(
       (t) => t.id !== transitionToRemove.id,
     );
   }
@@ -119,8 +119,8 @@ export class PetriNetReducer {
     return [...new Set([...places1, ...places2])];
   }
 
-  private copyPetriNet(petriNet: PetriNet): PetriNet {
-    const transitions: Transition[] = [...petriNet.transitions.values()].map(
+  private copyModel(model: Model): Model {
+    const transitions: Transition[] = [...model.transitions.values()].map(
       (transition) => ({
         id: transition.id,
         type: transition.type,
@@ -131,10 +131,11 @@ export class PetriNetReducer {
     );
 
     return {
-      id: petriNet.id,
-      placeCount: petriNet.placeCount,
-      startPlace: petriNet.startPlace,
-      endPlace: petriNet.endPlace,
+      id: model.id,
+      placeCount: model.placeCount,
+      startPlace: model.startPlace,
+      endPlace: model.endPlace,
+      participantCount: model.participantCount,
       transitions,
     };
   }

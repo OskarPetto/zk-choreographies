@@ -3,7 +3,7 @@ package testdata
 import (
 	"crypto/rand"
 	"proof-service/authentication"
-	"proof-service/instance"
+	"proof-service/domain"
 	"proof-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
@@ -22,8 +22,8 @@ func GetPublicKeys(count int) [][]byte {
 	return publicKeys
 }
 
-func GetPetriNet1Instance1(publicKey []byte) instance.Instance {
-	return instance.Instance{
+func GetModel1Instance1(publicKey []byte) domain.Instance {
+	return domain.Instance{
 		TokenCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
 		PublicKeys: [][]byte{
 			publicKey,
@@ -33,8 +33,8 @@ func GetPetriNet1Instance1(publicKey []byte) instance.Instance {
 	}
 }
 
-func GetPetriNet1Instance2(publicKey []byte) instance.Instance {
-	return instance.Instance{
+func GetModel1Instance2(publicKey []byte) domain.Instance {
+	return domain.Instance{
 		TokenCounts: []int{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		PublicKeys: [][]byte{
 			publicKey,
@@ -44,8 +44,8 @@ func GetPetriNet1Instance2(publicKey []byte) instance.Instance {
 	}
 }
 
-func GetPetriNet1Instance3(publicKey []byte) instance.Instance {
-	return instance.Instance{
+func GetModel1Instance3(publicKey []byte) domain.Instance {
+	return domain.Instance{
 		TokenCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 		PublicKeys: [][]byte{
 			publicKey,

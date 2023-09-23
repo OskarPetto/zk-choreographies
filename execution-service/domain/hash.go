@@ -1,8 +1,7 @@
-package instance
+package domain
 
 import (
 	"crypto/rand"
-	"proof-service/model"
 	"proof-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
@@ -18,7 +17,7 @@ func (instance *Instance) ComputeHash() {
 		bytes[fr.Bytes-1] = byte(tokenCount) // big endian
 		mimc.Write(bytes[:])
 	}
-	for i := len(instance.TokenCounts); i < model.MaxPlaceCount; i++ {
+	for i := len(instance.TokenCounts); i < MaxPlaceCount; i++ {
 		var zeros [fr.Bytes]byte
 		mimc.Write(zeros[:])
 	}
@@ -30,7 +29,7 @@ func (instance *Instance) ComputeHash() {
 		mimc.Write(xBytes[:])
 		mimc.Write(yBytes[:])
 	}
-	for i := len(instance.PublicKeys); i < model.MaxParticipantCount; i++ {
+	for i := len(instance.PublicKeys); i < MaxParticipantCount; i++ {
 		var zeros [fr.Bytes]byte
 		mimc.Write(zeros[:])
 		mimc.Write(zeros[:])

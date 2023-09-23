@@ -1,8 +1,7 @@
-package instance
+package domain
 
 import (
 	"fmt"
-	"proof-service/model"
 )
 
 type Instance struct {
@@ -12,21 +11,7 @@ type Instance struct {
 	Salt        []byte
 }
 
-func InstantiatePetriNet(petriNet model.PetriNet, publicKeys [][]byte) (Instance, error) {
-	if int(petriNet.ParticipantCount) != len(publicKeys) {
-		return Instance{}, fmt.Errorf("the number of public keys must match the number of participants in the petriNet %s", petriNet.Id)
-	}
-	tokenCounts := make([]int, petriNet.PlaceCount)
-	tokenCounts[petriNet.StartPlace] = 1
-	instance := Instance{
-		TokenCounts: tokenCounts,
-		PublicKeys:  publicKeys,
-	}
-	instance.ComputeHash()
-	return instance, nil
-}
-
-func (instance Instance) ExecuteTransition(transition model.Transition) (Instance, error) {
+func (instance Instance) ExecuteTransition(transition Transition) (Instance, error) {
 	if !isTransitionExecutable(instance, transition) {
 		return instance, fmt.Errorf("transition %s is not executable", transition.Id)
 	}
@@ -43,7 +28,7 @@ func (instance Instance) ExecuteTransition(transition model.Transition) (Instanc
 	return instance, nil
 }
 
-func isTransitionExecutable(instance Instance, transition model.Transition) bool {
+func isTransitionExecutable(instance Instance, transition Transition) bool {
 	for _, incomingPlaceId := range transition.IncomingPlaces {
 		if instance.TokenCounts[incomingPlaceId] < 1 {
 			return false

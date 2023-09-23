@@ -1,132 +1,181 @@
 import { Injectable } from '@nestjs/common';
 import { XMLParser } from 'fast-xml-parser';
-import { Definitions, Process, Element, SequenceFlow } from './bpmn';
-import { TransitionType } from '../petri-net/petri-net';
+import { Definitions, SequenceFlow, Message, Choreography, Participant, StartEvent, EndEvent, GatewayType, ChoreographyTask, ExclusiveGateway, ParallelGateway } from './bpmn';
 
 @Injectable()
 export class BpmnParser {
-  private readonly definitionsTag = 'bpmn:definitions';
-  private readonly processTag = 'bpmn:process';
-  private readonly startEventTag = 'bpmn:startEvent';
-  private readonly endEventTag = 'bpmn:endEvent';
-  private readonly taskTag = 'bpmn:task';
-  private readonly exclusiveGatewayTag = 'bpmn:exclusiveGateway';
-  private readonly parallelGatewayTag = 'bpmn:parallelGateway';
-  private readonly incomingTag = 'bpmn:incoming';
-  private readonly outgoingTag = 'bpmn:outgoing';
-  private readonly sequenceFlowTag = 'bpmn:sequenceFlow';
+  private readonly definitionsTag = 'bpmn2:definitions';
+  private readonly messageTag = 'bpmn2:message';
+  private readonly choreographyTag = 'bpmn2:choreography';
+  private readonly participantTag = 'bpmn2:participant';
+  private readonly participantMultiplicityTag = 'bpmn2:participantMultiplicity';
+  private readonly sequenceFlowTag = 'bpmn2:sequenceFlow';
+  private readonly messageFlowTag = 'bpmn2:messageFlow';
+  private readonly startEventTag = 'bpmn2:startEvent';
+  private readonly endEventTag = 'bpmn2:endEvent';
+  private readonly exclusiveGatewayTag = 'bpmn2:exclusiveGateway';
+  private readonly parallelGatewayTag = 'bpmn2:parallelGateway';
+  private readonly choreographyTaskTag = 'bpmn2:choreographyTask';
+  private readonly incomingTag = 'bpmn2:incoming';
+  private readonly outgoingTag = 'bpmn2:outgoing';
+  private readonly participantRefTag = 'bpmn2:participantRef';
+  private readonly messageFlowRefTag = 'bpmn2:messageFlowRef';
 
   private options = {
     attributeNamePrefix: '',
     ignoreAttributes: false,
     isArray: (tagName: string) =>
       [
+        this.messageTag,
+        this.choreographyTag,
+        this.participantTag,
         this.endEventTag,
-        this.taskTag,
+        this.choreographyTaskTag,
         this.exclusiveGatewayTag,
         this.parallelGatewayTag,
         this.incomingTag,
         this.outgoingTag,
+        this.sequenceFlowTag,
+        this.messageFlowTag
       ].includes(tagName),
   };
   private parser = new XMLParser(this.options);
 
   parseBpmn(bpmnString: string): Definitions {
     const definitions = this.parser.parse(bpmnString)[this.definitionsTag];
-    const process = definitions[this.processTag];
     return {
-      process: this.parseProcess(process),
+      choreographies: this.parseChoreographies(definitions),
     };
   }
 
-  parseProcess(process: any): Process {
-    const startEvent = this.parseStartEvent(process);
-    const endEvents = this.parseEndEvents(process);
-    const tasks = this.parseTasks(process);
-    const exclusiveGateways = this.parseExclusiveGateways(process);
-    const parallelGateways = this.parseParallelGateways(process);
-    const sequenceFlows = this.parseSequenceFlows(process);
+  parseChoreographies(definitions: any): Choreography[] {
+    const choreographies = definitions[this.choreographyTag];
+    const messages = this.parseMessages(definitions);
+    return choreographies.map((choreography: any) => this.parseChoreography(choreography, messages))
+  }
+
+  parseMessages(definitions: any): Message[] {
+    const messages = definitions[this.messageTag]
+    return messages.map((message: any) => ({
+      id: message.id,
+      name: message.name,
+    }));
+  }
+
+  parseChoreography(choreography: any, messages: Message[]): Choreography {
+    const sequenceFlows = this.parseSequenceFlows(choreography);
+    const participants = this.parseParticipants(choreography);
+    const startEvent = this.parseStartEvent(choreography);
+    const endEvents = this.parseEndEvents(choreography);
+    const exclusiveGateways = this.parseExclusiveGateways(choreography);
+    const parallelGateways = this.parseParallelGateways(choreography);
+    const choreographyTasks = this.parseChoreographyTasks(choreography);
+    const relevantMessages = messages.filter((message: Message) => choreographyTasks.find((choreographyTask: ChoreographyTask) => choreographyTask.initialMessage === message.id || choreographyTask.responseMessage === message.id));
     return {
-      id: process.id,
+      id: choreography.id,
+      sequenceFlows,
+      participants,
       startEvent,
       endEvents,
-      tasks,
       exclusiveGateways,
       parallelGateways,
-      sequenceFlows,
+      choreographyTasks,
+      messages: relevantMessages
     };
   }
 
-  private parseStartEvent(process: any): Element {
-    const startEvent = process[this.startEventTag];
+  parseSequenceFlows(choreography: any): SequenceFlow[] {
+    const sequenceFlows = choreography[this.sequenceFlowTag];
+    return sequenceFlows.map((sequenceFlow: any) => ({
+      id: sequenceFlow.id,
+      name: sequenceFlow.name,
+    }));
+  }
+
+  private parseParticipants(choreography: any): Participant[] {
+    return choreography[this.participantTag].map((participant: any) => ({
+      id: participant.id,
+      name: participant.name,
+      maxMultiplicity: participant[this.participantMultiplicityTag].maximum
+    }));
+  }
+
+  private parseStartEvent(choreography: any): StartEvent {
+    const startEvent = choreography[this.startEventTag];
     return {
       id: startEvent.id,
-      type: TransitionType.START,
       name: startEvent.name,
-      incomingSequenceFlows: [],
-      outgoingSequenceFlows: startEvent[this.outgoingTag],
+      outgoing: startEvent[this.outgoingTag][0],
     };
   }
 
-  private parseEndEvents(process: any): Element[] {
-    const endEvents = process[this.endEventTag];
+  private parseEndEvents(choreography: any): EndEvent[] {
+    const endEvents = choreography[this.endEventTag];
     return endEvents.map((endEvent: any) => ({
       id: endEvent.id,
-      type: TransitionType.END,
       name: endEvent.name,
-      incomingSequenceFlows: endEvent[this.incomingTag],
-      outgoingSequenceFlows: [],
+      incomingSequenceFlows: endEvent[this.incomingTag][0],
     }));
   }
 
-  private parseTasks(process: any): Element[] {
-    const tasks = process[this.taskTag];
-    return tasks.map((task: any) => ({
-      id: task.id,
-      type: TransitionType.TASK,
-      name: task.name,
-      incomingSequenceFlows: task[this.incomingTag],
-      outgoingSequenceFlows: task[this.outgoingTag],
-    }));
-  }
-
-  private parseExclusiveGateways(process: any): Element[] {
-    const exclusiveGateways = process[this.exclusiveGatewayTag];
+  private parseExclusiveGateways(choreography: any): ExclusiveGateway[] {
+    const exclusiveGateways = choreography[this.exclusiveGatewayTag];
     return exclusiveGateways.map((exclusiveGateway: any) => {
-      const incomingPlaceIds: any[] = exclusiveGateway[this.incomingTag];
-      const outgoingPlaceIds: any[] = exclusiveGateway[this.outgoingTag];
+      const incoming: any[] = exclusiveGateway[this.incomingTag];
+      const outgoing: any[] = exclusiveGateway[this.outgoingTag];
       return {
         id: exclusiveGateway.id,
         type:
-          incomingPlaceIds.length > 1
-            ? TransitionType.XOR_JOIN
-            : TransitionType.XOR_SPLIT,
-        incomingSequenceFlows: incomingPlaceIds,
-        outgoingSequenceFlows: outgoingPlaceIds,
+          incoming.length > 1
+            ? GatewayType.JOIN
+            : GatewayType.SPLIT,
+        default: exclusiveGateway.default,
+        incoming,
+        outgoing,
       };
     });
   }
-  private parseParallelGateways(process: any): Element[] {
-    const parallelGateways = process[this.parallelGatewayTag];
+  private parseParallelGateways(choreography: any): ParallelGateway[] {
+    const parallelGateways = choreography[this.parallelGatewayTag];
     return parallelGateways.map((parallelGateway: any) => {
-      const incomingPlaceIds: any[] = parallelGateway[this.incomingTag];
-      const outgoingPlaceIds: any[] = parallelGateway[this.outgoingTag];
+      const incoming: any[] = parallelGateway[this.incomingTag];
+      const outgoing: any[] = parallelGateway[this.outgoingTag];
       return {
         id: parallelGateway.id,
         type:
-          incomingPlaceIds.length > 1
-            ? TransitionType.AND_JOIN
-            : TransitionType.AND_SPLIT,
-        incomingSequenceFlows: incomingPlaceIds,
-        outgoingSequenceFlows: outgoingPlaceIds,
+          incoming.length > 1
+            ? GatewayType.JOIN
+            : GatewayType.SPLIT,
+        incoming,
+        outgoing,
       };
     });
   }
 
-  parseSequenceFlows(process: any): SequenceFlow[] {
-    const sequenceFlows = process[this.sequenceFlowTag];
-    return sequenceFlows.map((sequenceFlow: any) => ({
-      id: sequenceFlow.id,
-    }));
+
+  private parseChoreographyTasks(choreography: any): ChoreographyTask[] {
+    const allMessageFlows: Map<string, any> = new Map(choreography[this.messageFlowTag].map((messageFlow: any) => [messageFlow.id, messageFlow]));
+    const choreographyTasks = choreography[this.choreographyTaskTag];
+    return choreographyTasks.map((choreographyTask: any) => {
+      const participantRefs = choreographyTask[this.participantRefTag];
+      const initiatingParticipantRef = choreographyTask.initiatingParticipantRef;
+      const respondingParticipantRef = participantRefs.find((participantRef: any) => participantRef !=
+        choreographyTask.initiatingParticipantRef)!;
+      const messageFlows = choreographyTask[this.messageFlowRefTag]
+        .map((messageFlowRef: any) => allMessageFlows.get(messageFlowRef)!);
+      const initialMessageRef = messageFlows.find((messageFlow: any) => messageFlow.sourceRef === initiatingParticipantRef).messageRef;
+      const responseMessageRef = messageFlows.find((messageFlow: any) => messageFlow.sourceRef === respondingParticipantRef).messageRef;
+
+      return {
+        id: choreographyTask.id,
+        name: choreographyTask.name,
+        incoming: choreographyTask[this.incomingTag],
+        outgoing: choreographyTask[this.outgoingTag],
+        initiatingParticipant: initiatingParticipantRef,
+        respondingParticipant: respondingParticipantRef,
+        initialMessage: initialMessageRef,
+        responseMessage: responseMessageRef,
+      }
+    });
   }
 }

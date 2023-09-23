@@ -1,4 +1,4 @@
-package instance
+package domain
 
 import (
 	"encoding/hex"

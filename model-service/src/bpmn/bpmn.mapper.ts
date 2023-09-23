@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Element, Process, SequenceFlow, SequenceFlowId } from './bpmn';
 import {
-  PetriNet,
+  Model,
   PlaceId,
   Transition,
   TransitionType,
-} from '../petri-net/petri-net';
+} from '../model/model';
 
 @Injectable()
 export class BpmnMapper {
-  toPetriNet(process: Process): PetriNet {
+  toModel(process: Process): Model {
     const elements = [
       process.startEvent,
       ...process.endEvents,
@@ -26,6 +26,7 @@ export class BpmnMapper {
       startPlace: sequenceFlowPlaceIds.size,
       endPlace: sequenceFlowPlaceIds.size + 1,
       placeCount: sequenceFlowPlaceIds.size + 2,
+      participantCount: 1,
       transitions,
     };
   }

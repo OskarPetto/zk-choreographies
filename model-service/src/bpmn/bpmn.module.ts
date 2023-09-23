@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { BpmnMapper } from './bpmn.mapper';
 import { BpmnParser } from './bpmn.parser';
 import { BpmnService } from './bpmn.service';
-import { PetriNetModule } from '../petri-net/petri-net.module';
+import { ModelModule } from '../model/model.module';
 
 @Module({
-  imports: [PetriNetModule],
+  imports: [ModelModule],
   controllers: [],
   providers: [BpmnMapper, BpmnParser, BpmnService],
 })
-export class BpmnModule {}
+export class BpmnModule { }

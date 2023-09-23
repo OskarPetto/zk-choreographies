@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"proof-service/authentication"
 	"proof-service/circuit"
-	"proof-service/instance"
-	"proof-service/model"
+	"proof-service/domain"
 	"proof-service/proof/parameters"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -34,19 +33,19 @@ func NewProofService() ProofService {
 	return proofService
 }
 
-func (service *ProofService) ProveInstantiation(instance instance.Instance, pertiNet model.PetriNet, signature authentication.Signature) (Proof, error) {
+func (service *ProofService) ProveInstantiation(instance domain.Instance, pertiNet domain.Model, signature authentication.Signature) (Proof, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return Proof{}, err
 	}
-	circuitPetriNet, err := circuit.FromPetriNet(pertiNet)
+	circuitModel, err := circuit.FromModel(pertiNet)
 	if err != nil {
 		return Proof{}, err
 	}
 	assignment := &circuit.InstantiationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),
-		PetriNet:  circuitPetriNet,
+		Model:     circuitModel,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -63,7 +62,7 @@ func (service *ProofService) ProveInstantiation(instance instance.Instance, pert
 	}, nil
 }
 
-func (service *ProofService) ProveTransition(currentInstance instance.Instance, nextInstance instance.Instance, pertiNet model.PetriNet, nextSignature authentication.Signature) (Proof, error) {
+func (service *ProofService) ProveTransition(currentInstance domain.Instance, nextInstance domain.Instance, pertiNet domain.Model, nextSignature authentication.Signature) (Proof, error) {
 	currentCircuitInstance, err := circuit.FromInstance(currentInstance)
 	if err != nil {
 		return Proof{}, err
@@ -72,7 +71,7 @@ func (service *ProofService) ProveTransition(currentInstance instance.Instance, 
 	if err != nil {
 		return Proof{}, err
 	}
-	circuitPetriNet, err := circuit.FromPetriNet(pertiNet)
+	circuitModel, err := circuit.FromModel(pertiNet)
 	if err != nil {
 		return Proof{}, err
 	}
@@ -81,7 +80,7 @@ func (service *ProofService) ProveTransition(currentInstance instance.Instance, 
 		CurrentInstance:       currentCircuitInstance,
 		NextInstance:          nextCircuitInstance,
 		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		PetriNet:              circuitPetriNet,
+		Model:                 circuitModel,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -98,19 +97,19 @@ func (service *ProofService) ProveTransition(currentInstance instance.Instance, 
 	}, nil
 }
 
-func (service *ProofService) ProveTermination(instance instance.Instance, pertiNet model.PetriNet, signature authentication.Signature) (Proof, error) {
+func (service *ProofService) ProveTermination(instance domain.Instance, pertiNet domain.Model, signature authentication.Signature) (Proof, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return Proof{}, err
 	}
-	circuitPetriNet, err := circuit.FromPetriNet(pertiNet)
+	circuitModel, err := circuit.FromModel(pertiNet)
 	if err != nil {
 		return Proof{}, err
 	}
 	assignment := &circuit.TerminationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),
-		PetriNet:  circuitPetriNet,
+		Model:     circuitModel,
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {

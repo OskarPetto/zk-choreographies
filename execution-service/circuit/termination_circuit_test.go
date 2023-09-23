@@ -16,16 +16,16 @@ var terminationCircuit circuit.TerminationCircuit
 func TestTermination(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	instance := testdata.GetPetriNet1Instance3(publicKey)
+	instance := testdata.GetModel1Instance3(publicKey)
 	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
-	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
+	model, _ := circuit.FromModel(testdata.GetModel1())
 	witness := circuit.TerminationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),
-		PetriNet:  petriNet,
+		Model:     model,
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -37,15 +37,15 @@ func TestTermination(t *testing.T) {
 func TestTermination_InvalidSaltedHash(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	instance := testdata.GetPetriNet1Instance3(publicKey)
+	instance := testdata.GetModel1Instance3(publicKey)
 	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
-	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
+	model, _ := circuit.FromModel(testdata.GetModel1())
 	witness := circuit.TerminationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),
-		PetriNet:  petriNet,
+		Model:     model,
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -55,16 +55,16 @@ func TestTermination_InvalidSaltedHash(t *testing.T) {
 func TestTermination_InvalidTokenCounts(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	instance := testdata.GetPetriNet1Instance2(publicKey)
+	instance := testdata.GetModel1Instance2(publicKey)
 	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
-	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
+	model, _ := circuit.FromModel(testdata.GetModel1())
 	witness := circuit.TerminationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),
-		PetriNet:  petriNet,
+		Model:     model,
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -74,18 +74,18 @@ func TestTermination_InvalidTokenCounts(t *testing.T) {
 func TestTermination_InvalidSignature(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	instance := testdata.GetPetriNet1Instance3(publicKey)
+	instance := testdata.GetModel1Instance3(publicKey)
 	instance.ComputeHash()
-	instance2 := testdata.GetPetriNet1Instance2(publicKey)
+	instance2 := testdata.GetModel1Instance2(publicKey)
 	instance2.ComputeHash()
 	signature := signatureService.Sign(instance2)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
-	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
+	model, _ := circuit.FromModel(testdata.GetModel1())
 	witness := circuit.TerminationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),
-		PetriNet:  petriNet,
+		Model:     model,
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -95,16 +95,16 @@ func TestTermination_InvalidSignature(t *testing.T) {
 func TestTermination_InvalidAuthorization(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := testdata.GetPublicKeys(2)[1]
-	instance := testdata.GetPetriNet1Instance3(publicKey)
+	instance := testdata.GetModel1Instance3(publicKey)
 	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
-	petriNet, _ := circuit.FromPetriNet(testdata.GetPetriNet1())
+	model, _ := circuit.FromModel(testdata.GetModel1())
 	witness := circuit.TerminationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),
-		PetriNet:  petriNet,
+		Model:     model,
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())

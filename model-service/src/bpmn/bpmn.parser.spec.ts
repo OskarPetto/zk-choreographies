@@ -3,8 +3,8 @@ import { BpmnParser } from './bpmn.parser';
 
 describe('BpmnParser', () => {
   let bpmnParser: BpmnParser;
-  const process1 = TestdataProvider.getProcess1();
-  const bpmnString = TestdataProvider.getConformanceExample();
+  const process1 = TestdataProvider.getChoreography1();
+  const bpmnString = TestdataProvider.getBarbaraReChoreography();
 
   beforeAll(async () => {
     bpmnParser = new BpmnParser();

@@ -4,21 +4,21 @@ import { BpmnService } from './bpmn.service';
 import { BpmnParser } from './bpmn.parser';
 import { BpmnMapper } from './bpmn.mapper';
 import { TestdataProvider } from 'test/data/testdata.provider';
-import { PetriNetReducer } from '../petri-net/perti-net.reducer';
-import { PetriNetService } from '../petri-net/petri-net.service';
+import { ModelReducer } from '../model/model.reducer';
+import { ModelService } from '../model/model.service';
 
 describe('CatsController', () => {
   let bpmnService: BpmnService;
   let bpmnParser: BpmnParser;
   let bpmnMapper: BpmnMapper;
-  let petriNetReducer: PetriNetReducer;
-  let petriNetService: PetriNetService;
-  const bpmnString = TestdataProvider.getConformanceExample();
+  let modelReducer: ModelReducer;
+  let modelService: ModelService;
+  const bpmnString = TestdataProvider.getBarbaraReChoreography();
   const definitions = {
-    process: TestdataProvider.getProcess1(),
+    process: TestdataProvider.getChoreography1(),
   };
-  const petriNet1 = TestdataProvider.getPetriNet1();
-  const petriNet2 = TestdataProvider.getPetriNet2();
+  const model1 = TestdataProvider.getModel1();
+  const model2 = TestdataProvider.getModel2();
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -27,16 +27,16 @@ describe('CatsController', () => {
         BpmnService,
         BpmnParser,
         BpmnMapper,
-        PetriNetReducer,
-        PetriNetService,
+        ModelReducer,
+        ModelService,
       ],
     }).compile();
 
     bpmnService = await moduleRef.resolve(BpmnService);
     bpmnParser = await moduleRef.resolve(BpmnParser);
     bpmnMapper = await moduleRef.resolve(BpmnMapper);
-    petriNetReducer = await moduleRef.resolve(PetriNetReducer);
-    petriNetService = await moduleRef.resolve(PetriNetService);
+    modelReducer = await moduleRef.resolve(ModelReducer);
+    modelService = await moduleRef.resolve(ModelService);
   });
 
   describe('importBpmnProcess', () => {
@@ -44,18 +44,18 @@ describe('CatsController', () => {
       when(jest.spyOn(bpmnParser, 'parseBpmn'))
         .calledWith(bpmnString)
         .mockReturnValue(definitions);
-      when(jest.spyOn(bpmnMapper, 'toPetriNet'))
+      when(jest.spyOn(bpmnMapper, 'toModel'))
         .calledWith(definitions.process)
-        .mockReturnValue(petriNet1);
-      when(jest.spyOn(petriNetReducer, 'reducePetriNet'))
-        .calledWith(petriNet1)
-        .mockReturnValue(petriNet2);
+        .mockReturnValue(model1);
+      when(jest.spyOn(modelReducer, 'reduceModel'))
+        .calledWith(model1)
+        .mockReturnValue(model2);
 
-      jest.spyOn(petriNetService, 'savePetriNet');
+      jest.spyOn(modelService, 'saveModel');
 
       bpmnService.importBpmn(bpmnString);
 
-      expect(petriNetService.savePetriNet).toBeCalledWith(petriNet2);
+      expect(modelService.saveModel).toBeCalledWith(model2);
     });
   });
 });

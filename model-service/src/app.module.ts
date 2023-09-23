@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { BpmnModule } from './bpmn/bpmn.module';
-import { PetriNetModule } from './petri-net/petri-net.module';
+import { ModelModule } from './model/model.module';
 
 @Module({
-  imports: [BpmnModule, PetriNetModule],
+  imports: [BpmnModule, ModelModule],
   exports: [],
   controllers: [],
   providers: [],

@@ -1,22 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { BpmnParser } from './bpmn.parser';
 import { BpmnMapper } from './bpmn.mapper';
-import { PetriNetReducer } from '../petri-net/perti-net.reducer';
-import { PetriNetService } from '../petri-net/petri-net.service';
+import { ModelReducer } from '../model/model.reducer';
+import { ModelService } from '../model/model.service';
 
 @Injectable()
 export class BpmnService {
   constructor(
     private bpmnParser: BpmnParser,
     private bpmnMapper: BpmnMapper,
-    private petriNetReducer: PetriNetReducer,
-    private petriNetService: PetriNetService,
+    private modelReducer: ModelReducer,
+    private modelService: ModelService,
   ) { }
 
   importBpmn(bpmnString: string) {
     const definitions = this.bpmnParser.parseBpmn(bpmnString);
-    const petriNet = this.bpmnMapper.toPetriNet(definitions.process);
-    const reducedPetriNet = this.petriNetReducer.reducePetriNet(petriNet);
-    this.petriNetService.savePetriNet(reducedPetriNet);
+    const model = this.bpmnMapper.toModel(definitions.process);
+    const reducedModel = this.modelReducer.reduceModel(model);
+    this.modelService.saveModel(reducedModel);
   }
 }

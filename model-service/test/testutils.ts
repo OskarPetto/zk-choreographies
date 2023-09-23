@@ -1,6 +1,6 @@
 import {
   PlaceId,
-  PetriNet,
+  Model,
   TransitionId,
   Transition,
 } from 'src/petri-net/petri-net';
@@ -10,14 +10,14 @@ export function logObject(object: any) {
 }
 
 export function findTransitions(
-  petriNet: PetriNet,
+  model: Model,
   transitionIds: TransitionId[],
 ): Transition[] {
   return transitionIds.map((transitionId) => {
-    const transition = petriNet.transitions.find((t) => t.id === transitionId);
+    const transition = model.transitions.find((t) => t.id === transitionId);
     if (!transition) {
       throw Error(
-        `Transition ${transitionId} in petriNet ${petriNet.id} not found`,
+        `Transition ${transitionId} in model ${model.id} not found`,
       );
     }
     return transition;
@@ -25,15 +25,15 @@ export function findTransitions(
 }
 
 export function findPlaceMapping(
-  petriNet1: PetriNet,
-  petriNet2: PetriNet,
+  model1: Model,
+  model2: Model,
 ): Map<PlaceId, PlaceId> | undefined {
-  if (petriNet1.transitions.length !== petriNet2.transitions.length) {
+  if (model1.transitions.length !== model2.transitions.length) {
     return undefined;
   }
   const placeMapping = new Map<PlaceId, PlaceId>();
-  for (const transition1 of petriNet1.transitions) {
-    const transition2 = findTransitions(petriNet2, [transition1.id])[0];
+  for (const transition1 of model1.transitions) {
+    const transition2 = findTransitions(model2, [transition1.id])[0];
     if (!transition2 || transition1.name !== transition2.name) {
       return undefined;
     }

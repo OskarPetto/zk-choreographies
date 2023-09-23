@@ -7,7 +7,7 @@ import (
 type TerminationCircuit struct {
 	Instance  Instance
 	Signature Signature
-	PetriNet  PetriNet
+	Model     Model
 }
 
 func (circuit *TerminationCircuit) Define(api frontend.API) error {
@@ -27,7 +27,7 @@ func (circuit *TerminationCircuit) Define(api frontend.API) error {
 func (circuit *TerminationCircuit) checkTokenCounts(api frontend.API) {
 	for placeId := range circuit.Instance.TokenCounts {
 		tokenCount := circuit.Instance.TokenCounts[placeId]
-		isEndPlace := equals(api, placeId, circuit.PetriNet.EndPlace)
+		isEndPlace := equals(api, placeId, circuit.Model.EndPlace)
 		api.AssertIsEqual(tokenCount, isEndPlace)
 	}
 }

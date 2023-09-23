@@ -1,5 +1,5 @@
 export type PlaceId = number;
-
+export type ParticipantId = number;
 export type TransitionId = string;
 
 export enum TransitionType {
@@ -12,20 +12,26 @@ export enum TransitionType {
   AND_JOIN,
 }
 
+export interface Message {
+
+}
+
 export interface Transition {
   id: TransitionId;
   type: TransitionType;
   name?: string;
+  participant?: ParticipantId;
   incomingPlaces: PlaceId[];
   outgoingPlaces: PlaceId[];
 }
 
-export type PetriNetId = string;
+export type ModelId = string;
 
-export interface PetriNet {
-  id: PetriNetId;
+export interface Model {
+  id: ModelId;
   placeCount: number;
   startPlace: PlaceId;
   endPlace: PlaceId;
+  participantCount: number;
   transitions: Transition[];
 }

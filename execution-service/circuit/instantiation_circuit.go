@@ -7,7 +7,7 @@ import (
 type InstantiationCircuit struct {
 	Instance  Instance
 	Signature Signature
-	PetriNet  PetriNet
+	Model     Model
 }
 
 func (circuit *InstantiationCircuit) Define(api frontend.API) error {
@@ -27,7 +27,7 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 func (circuit *InstantiationCircuit) checkTokenCounts(api frontend.API) {
 	for placeId := range circuit.Instance.TokenCounts {
 		tokenCount := circuit.Instance.TokenCounts[placeId]
-		isStartPlace := equals(api, placeId, circuit.PetriNet.StartPlace)
+		isStartPlace := equals(api, placeId, circuit.Model.StartPlace)
 		api.AssertIsEqual(tokenCount, isStartPlace)
 	}
 }
