@@ -32,7 +32,7 @@ func (service *ExecutionService) InstantiateModel(model domain.Model, publicKeys
 		return domain.Instance{}, proof.Proof{}, err
 	}
 	signature := service.signatureService.Sign(instanceResult)
-	proofResult, err := service.proofService.ProveInstantiation(instanceResult, model, signature)
+	proofResult, err := service.proofService.ProveInstantiation(model, instanceResult, signature)
 	if err != nil {
 		return domain.Instance{}, proof.Proof{}, err
 	}
@@ -40,13 +40,13 @@ func (service *ExecutionService) InstantiateModel(model domain.Model, publicKeys
 	return instanceResult, proofResult, nil
 }
 
-func (service *ExecutionService) ExecuteTransition(inst domain.Instance, model domain.Model, transition domain.Transition) (domain.Instance, proof.Proof, error) {
-	instanceResult, err := inst.ExecuteTransition(transition)
+func (service *ExecutionService) ExecuteTransition(model domain.Model, inst domain.Instance, transition domain.Transition, message []byte) (domain.Instance, proof.Proof, error) {
+	instanceResult, err := inst.ExecuteTransition(transition, message)
 	if err != nil {
 		return domain.Instance{}, proof.Proof{}, err
 	}
 	signature := service.signatureService.Sign(instanceResult)
-	proofResult, err := service.proofService.ProveTransition(inst, instanceResult, model, signature)
+	proofResult, err := service.proofService.ProveTransition(model, inst, instanceResult, signature)
 	if err != nil {
 		return domain.Instance{}, proof.Proof{}, err
 	}
@@ -56,7 +56,7 @@ func (service *ExecutionService) ExecuteTransition(inst domain.Instance, model d
 
 func (service *ExecutionService) TerminateInstance(inst domain.Instance, model domain.Model) (proof.Proof, error) {
 	signature := service.signatureService.Sign(inst)
-	proofResult, err := service.proofService.ProveTermination(inst, model, signature)
+	proofResult, err := service.proofService.ProveTermination(model, inst, signature)
 	if err != nil {
 		return proof.Proof{}, err
 	}

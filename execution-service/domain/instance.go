@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"crypto/sha256"
 	"fmt"
 )
 
@@ -22,9 +23,33 @@ type Instance struct {
 	Salt          []byte
 }
 
-func (instance Instance) ExecuteTransition(transition Transition) (Instance, error) {
+func (instance Instance) ExecuteTransition(transition Transition, message []byte) (Instance, error) {
+	if len(message) > 0 {
+		err := instance.storeMessageHash(transition.Message, message)
+		if err != nil {
+			return Instance{}, err
+		}
+	}
+	err := instance.executeTransition(transition)
+	if err != nil {
+		return Instance{}, err
+	}
+	return instance, nil
+}
+
+func (instance *Instance) storeMessageHash(messageId MessageId, message []byte) error {
+	if messageId >= MaxMessageCount {
+		return fmt.Errorf("messageId %d is not valid", messageId)
+	}
+	instance.MessageHashes[messageId] = MessageHash{
+		Value: sha256.Sum256(message),
+	}
+	return nil
+}
+
+func (instance *Instance) executeTransition(transition Transition) error {
 	if !isTransitionExecutable(instance, transition) {
-		return instance, fmt.Errorf("transition %s is not executable", transition.Id)
+		return fmt.Errorf("transition %s is not executable", transition.Id)
 	}
 	tokenCounts := make([]int, len(instance.TokenCounts))
 	copy(tokenCounts, instance.TokenCounts)
@@ -36,10 +61,10 @@ func (instance Instance) ExecuteTransition(transition Transition) (Instance, err
 	}
 	instance.TokenCounts = tokenCounts
 	instance.ComputeHash()
-	return instance, nil
+	return nil
 }
 
-func isTransitionExecutable(instance Instance, transition Transition) bool {
+func isTransitionExecutable(instance *Instance, transition Transition) bool {
 	for _, incomingPlaceId := range transition.IncomingPlaces {
 		if instance.TokenCounts[incomingPlaceId] < 1 {
 			return false

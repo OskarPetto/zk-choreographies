@@ -22,7 +22,7 @@ func TestProveInstantiation(t *testing.T) {
 	model := testdata.GetModel2()
 	proofService := proof.NewProofService()
 
-	_, err := proofService.ProveInstantiation(instance, model, signature)
+	_, err := proofService.ProveInstantiation(model, instance, signature)
 	assert.Nil(t, err)
 }
 
@@ -37,7 +37,7 @@ func TestProveTransition1(t *testing.T) {
 	model := testdata.GetModel2()
 	proofService := proof.NewProofService()
 
-	_, err := proofService.ProveTransition(currentInstance, nextInstance, model, signature)
+	_, err := proofService.ProveTransition(model, currentInstance, nextInstance, signature)
 	assert.Nil(t, err)
 }
 
@@ -50,6 +50,6 @@ func TestProveTermination(t *testing.T) {
 	model := testdata.GetModel2()
 	proofService := proof.NewProofService()
 
-	_, err := proofService.ProveTermination(instance, model, signature)
+	_, err := proofService.ProveTermination(model, instance, signature)
 	assert.Nil(t, err)
 }

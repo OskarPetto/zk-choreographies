@@ -33,12 +33,12 @@ func NewProofService() ProofService {
 	return proofService
 }
 
-func (service *ProofService) ProveInstantiation(instance domain.Instance, pertiNet domain.Model, signature authentication.Signature) (Proof, error) {
+func (service *ProofService) ProveInstantiation(model domain.Model, instance domain.Instance, signature authentication.Signature) (Proof, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return Proof{}, err
 	}
-	circuitModel, err := circuit.FromModel(pertiNet)
+	circuitModel, err := circuit.FromModel(model)
 	if err != nil {
 		return Proof{}, err
 	}
@@ -62,7 +62,7 @@ func (service *ProofService) ProveInstantiation(instance domain.Instance, pertiN
 	}, nil
 }
 
-func (service *ProofService) ProveTransition(currentInstance domain.Instance, nextInstance domain.Instance, pertiNet domain.Model, nextSignature authentication.Signature) (Proof, error) {
+func (service *ProofService) ProveTransition(model domain.Model, currentInstance domain.Instance, nextInstance domain.Instance, nextSignature authentication.Signature) (Proof, error) {
 	currentCircuitInstance, err := circuit.FromInstance(currentInstance)
 	if err != nil {
 		return Proof{}, err
@@ -71,7 +71,7 @@ func (service *ProofService) ProveTransition(currentInstance domain.Instance, ne
 	if err != nil {
 		return Proof{}, err
 	}
-	circuitModel, err := circuit.FromModel(pertiNet)
+	circuitModel, err := circuit.FromModel(model)
 	if err != nil {
 		return Proof{}, err
 	}
@@ -97,12 +97,12 @@ func (service *ProofService) ProveTransition(currentInstance domain.Instance, ne
 	}, nil
 }
 
-func (service *ProofService) ProveTermination(instance domain.Instance, pertiNet domain.Model, signature authentication.Signature) (Proof, error) {
+func (service *ProofService) ProveTermination(model domain.Model, instance domain.Instance, signature authentication.Signature) (Proof, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
 		return Proof{}, err
 	}
-	circuitModel, err := circuit.FromModel(pertiNet)
+	circuitModel, err := circuit.FromModel(model)
 	if err != nil {
 		return Proof{}, err
 	}

@@ -79,7 +79,7 @@ func GetModel2Instance3(publicKeys []domain.PublicKey) domain.Instance {
 			domain.MessageHash{},
 			domain.MessageHash{},
 			domain.MessageHash{
-				Value: sha256.Sum256([]byte("hallo")),
+				Value: sha256.Sum256([]byte("hello")),
 			},
 		},
 		Hash: make([]byte, 32),
