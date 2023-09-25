@@ -59,6 +59,30 @@ func TestExecution_Transition0(t *testing.T) {
 	}
 }
 
+func TestExecution_Transition1(t *testing.T) {
+	signatureService := authentication.NewSignatureService()
+	publicKeys := testdata.GetPublicKeys(2)
+	currentInstance := testdata.GetModel2Instance2(publicKeys)
+	currentInstance.ComputeHash()
+	nextInstance := testdata.GetModel2Instance3(publicKeys)
+	nextInstance.ComputeHash()
+	nextSignature := signatureService.Sign(nextInstance)
+	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
+	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
+	model, _ := circuit.FromModel(testdata.GetModel2())
+	witness := circuit.TransitionCircuit{
+		CurrentInstance:       currentCircuitInstance,
+		NextInstance:          nextCircuitInstance,
+		NextInstanceSignature: circuit.FromSignature(nextSignature),
+		Model:                 model,
+	}
+
+	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestExecution_InvalidHash(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKeys := testdata.GetPublicKeys(2)

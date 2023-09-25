@@ -2,7 +2,6 @@ package circuit
 
 import (
 	"github.com/consensys/gnark/frontend"
-	"github.com/consensys/gnark/std/math/uints"
 )
 
 type InstantiationCircuit struct {
@@ -36,13 +35,9 @@ func (circuit *InstantiationCircuit) checkTokenCounts(api frontend.API) {
 }
 
 func (circuit *InstantiationCircuit) checkMessageHashes(api frontend.API) error {
-	uapi, err := uints.New[uints.U32](api)
-	if err != nil {
-		return err
-	}
 	for _, messageHash := range circuit.Instance.MessageHashes {
 		for _, messageHashByte := range messageHash.Value {
-			uapi.ByteAssertEq(messageHashByte, uints.NewU8(0))
+			api.AssertIsEqual(messageHashByte, 0)
 		}
 	}
 	return nil

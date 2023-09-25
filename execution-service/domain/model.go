@@ -2,13 +2,13 @@ package domain
 
 import "fmt"
 
-const MaxPlaceCount = 100
-const MaxParticipantCount = 20
-const MaxMessageCount = 80
-const MaxStartPlaceCount = 5
-const MaxEndPlaceCount = 5
-const MaxTransitionCount = 100
-const MaxBranchingFactor = 3
+const MaxPlaceCount = 63
+const MaxParticipantCount = 8
+const MaxMessageCount = 64
+const MaxStartPlaceCount = 4
+const MaxEndPlaceCount = 4
+const MaxTransitionCount = 64
+const MaxBranchingFactor = 4
 
 type PlaceId = uint
 type ParticipantId = uint

@@ -8,7 +8,6 @@ import (
 
 	"github.com/consensys/gnark-crypto/ecc/twistededwards"
 	"github.com/consensys/gnark/frontend"
-	"github.com/consensys/gnark/std/math/uints"
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
@@ -18,7 +17,7 @@ type Signature struct {
 }
 
 type MessageHash struct {
-	Value [domain.MessageHashLength]uints.U8
+	Value [domain.MessageHashLength]frontend.Variable
 }
 
 type Instance struct {
@@ -117,16 +116,23 @@ func emptyPublicKey() eddsa.PublicKey {
 	return publicKey
 }
 
-func fromMessageHash(messageHash domain.MessageHash) MessageHash {
+func fromMessageHash(domainMessageHash domain.MessageHash) MessageHash {
+	var messageHash [domain.MessageHashLength]frontend.Variable
+	for i := 0; i < domain.MessageHashLength; i++ {
+		messageHash[i] = domainMessageHash.Value[i]
+	}
 	return MessageHash{
-		Value: ([domain.MessageHashLength]uints.U8)(uints.NewU8Array(messageHash.Value[:])),
+		Value: messageHash,
 	}
 }
 
 func emptyMessageHash() MessageHash {
-	var zeros [domain.MessageHashLength]byte
+	var messageHash [domain.MessageHashLength]frontend.Variable
+	for i := 0; i < domain.MessageHashLength; i++ {
+		messageHash[i] = 0
+	}
 	return MessageHash{
-		Value: ([domain.MessageHashLength]uints.U8)(uints.NewU8Array(zeros[:])),
+		Value: messageHash,
 	}
 }
 

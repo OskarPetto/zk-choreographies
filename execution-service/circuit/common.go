@@ -20,7 +20,7 @@ func checkInstanceHash(api frontend.API, instance Instance) error {
 	}
 	for _, messageHash := range instance.MessageHashes {
 		for _, messageHashByte := range messageHash.Value {
-			mimc.Write(messageHashByte.Val)
+			mimc.Write(messageHashByte)
 		}
 	}
 	mimc.Write(instance.Salt)
