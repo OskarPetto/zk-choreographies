@@ -55,5 +55,5 @@ func getPrivatePath(filename string) string {
 }
 
 func getFilePath() string {
-	return "/home/opetto/uni/zk-choreographies/execution-service/files/"
+	return "/home/opetto/uni/zk-choreographies/files/"
 }
