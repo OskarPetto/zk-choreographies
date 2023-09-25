@@ -2,7 +2,7 @@ package domain
 
 import "fmt"
 
-const MaxPlaceCount = 63
+const MaxPlaceCount = 64
 const MaxParticipantCount = 8
 const MaxMessageCount = 64
 const MaxStartPlaceCount = 4
