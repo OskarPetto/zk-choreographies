@@ -26,12 +26,12 @@ func TestProveInstantiation(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestProveTransition(t *testing.T) {
+func TestProveTransition1(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKeys := testdata.GetPublicKeys(2)
-	currentInstance := testdata.GetModel2Instance1(publicKeys)
+	currentInstance := testdata.GetModel2Instance2(publicKeys)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel2Instance2(publicKeys)
+	nextInstance := testdata.GetModel2Instance3(publicKeys)
 	nextInstance.ComputeHash()
 	signature := signatureService.Sign(nextInstance)
 	model := testdata.GetModel2()
