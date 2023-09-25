@@ -87,7 +87,7 @@ func GetModel2Instance3(publicKeys []domain.PublicKey) domain.Instance {
 	}
 }
 
-func GetModel2ReducedInstance4(publicKeys []domain.PublicKey) domain.Instance {
+func GetModel2Instance4(publicKeys []domain.PublicKey) domain.Instance {
 	return domain.Instance{
 		TokenCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 		PublicKeys:  publicKeys,

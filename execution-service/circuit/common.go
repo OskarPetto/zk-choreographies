@@ -18,6 +18,11 @@ func checkInstanceHash(api frontend.API, instance Instance) error {
 		mimc.Write(publicKey.A.X)
 		mimc.Write(publicKey.A.Y)
 	}
+	for _, messageHash := range instance.MessageHashes {
+		for _, messageHashByte := range messageHash.Value {
+			mimc.Write(messageHashByte.Val)
+		}
+	}
 	mimc.Write(instance.Salt)
 	hash := mimc.Sum()
 	api.AssertIsEqual(hash, instance.Hash)

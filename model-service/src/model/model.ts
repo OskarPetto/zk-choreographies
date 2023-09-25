@@ -25,7 +25,7 @@ export interface Model {
   placeCount: number;
   participantCount: number;
   messageCount: number;
-  startPlace: PlaceId;
+  startPlaces: PlaceId[];
   endPlaces: PlaceId[];
   transitions: Transition[];
 }

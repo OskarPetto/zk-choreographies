@@ -30,22 +30,20 @@ type Instance struct {
 }
 
 type Transition struct {
-	IncomingPlaceCount frontend.Variable                            `gnark:",public"`
-	IncomingPlaces     [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
-	OutgoingPlaceCount frontend.Variable                            `gnark:",public"`
-	OutgoingPlaces     [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
-	ParticipantIsValid frontend.Variable                            `gnark:",public"`
-	Participant        frontend.Variable                            `gnark:",public"`
-	MessageIsValid     frontend.Variable                            `gnark:",public"`
-	Message            frontend.Variable                            `gnark:",public"`
+	IsValid        frontend.Variable
+	IncomingPlaces [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
+	OutgoingPlaces [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
+	Participant    frontend.Variable                            `gnark:",public"`
+	Message        frontend.Variable                            `gnark:",public"`
 }
 
 type Model struct {
-	PlaceCount       frontend.Variable                          `gnark:",public"`
-	StartPlace       frontend.Variable                          `gnark:",public"`
-	EndPlaces        [domain.MaxEndPlaceCount]frontend.Variable `gnark:",public"`
+	PlaceCount       frontend.Variable                            `gnark:",public"`
+	ParticipantCount frontend.Variable                            `gnark:",public"`
+	MessageCount     frontend.Variable                            `gnark:",public"`
+	StartPlaces      [domain.MaxStartPlaceCount]frontend.Variable `gnark:",public"`
+	EndPlaces        [domain.MaxEndPlaceCount]frontend.Variable   `gnark:",public"`
 	Transitions      [domain.MaxTransitionCount]Transition
-	ParticipantCount frontend.Variable `gnark:",public"`
 }
 
 func FromSignature(signature authentication.Signature) Signature {
@@ -147,8 +145,18 @@ func FromModel(model domain.Model) (Model, error) {
 	if err != nil {
 		return Model{}, err
 	}
-	if model.StartPlace >= domain.MaxPlaceCount {
-		return Model{}, fmt.Errorf("model '%s' has invalid startPlace", model.Id)
+	if len(model.StartPlaces) > domain.MaxStartPlaceCount || len(model.StartPlaces) < 1 {
+		return Model{}, fmt.Errorf("model '%s' has invalid number of startPlaces", model.Id)
+	}
+	var startPlaces [domain.MaxStartPlaceCount]frontend.Variable
+	for i, startPlace := range model.StartPlaces {
+		if startPlace >= domain.MaxPlaceCount {
+			return Model{}, fmt.Errorf("model '%s' has invalid startPlace", model.Id)
+		}
+		startPlaces[i] = startPlace
+	}
+	for i := len(model.StartPlaces); i < domain.MaxStartPlaceCount; i++ {
+		startPlaces[i] = startPlaces[0]
 	}
 	if len(model.EndPlaces) > domain.MaxEndPlaceCount || len(model.EndPlaces) < 1 {
 		return Model{}, fmt.Errorf("model '%s' has invalid number of endPlaces", model.Id)
@@ -165,10 +173,11 @@ func FromModel(model domain.Model) (Model, error) {
 	}
 	return Model{
 		PlaceCount:       model.PlaceCount,
-		StartPlace:       model.StartPlace,
+		ParticipantCount: model.ParticipantCount,
+		MessageCount:     model.MessageCount,
+		StartPlaces:      startPlaces,
 		EndPlaces:        endPlaces,
 		Transitions:      transitions,
-		ParticipantCount: model.ParticipantCount,
 	}, nil
 }
 
@@ -212,14 +221,11 @@ func fromTransition(transition domain.Transition) (Transition, error) {
 		outgoingPlaces[i] = domain.MaxPlaceCount
 	}
 	return Transition{
-		IncomingPlaceCount: incomingPlaceCount,
-		IncomingPlaces:     incomingPlaces,
-		OutgoingPlaceCount: outgoingPlaceCount,
-		OutgoingPlaces:     outgoingPlaces,
-		Participant:        transition.Participant,
-		ParticipantIsValid: boolToInt(transition.ParticipantIsValid),
-		Message:            transition.Message,
-		MessageIsValid:     boolToInt(transition.MessageIsValid),
+		IsValid:        1,
+		IncomingPlaces: incomingPlaces,
+		OutgoingPlaces: outgoingPlaces,
+		Participant:    transition.Participant,
+		Message:        transition.Message,
 	}, nil
 }
 
@@ -233,21 +239,10 @@ func emptyTransition() Transition {
 		outgoingPlaces[i] = domain.MaxPlaceCount
 	}
 	return Transition{
-		IncomingPlaceCount: 0,
-		IncomingPlaces:     incomingPlaces,
-		OutgoingPlaceCount: 0,
-		OutgoingPlaces:     outgoingPlaces,
-		ParticipantIsValid: 0,
-		Participant:        0,
-		MessageIsValid:     0,
-		Message:            0,
+		IsValid:        0,
+		IncomingPlaces: incomingPlaces,
+		OutgoingPlaces: outgoingPlaces,
+		Participant:    domain.MaxParticipantCount,
+		Message:        domain.MaxMessageCount,
 	}
-}
-
-func boolToInt(value bool) int {
-	result := 0
-	if value {
-		result = 1
-	}
-	return result
 }

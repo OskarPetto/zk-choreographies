@@ -45,13 +45,13 @@ export class BpmnMapper {
         ),
     );
 
-    const startTransition = this.startEventToTransition(
-      choreography.startEvent,
+    const startTransitions = choreography.startEvents.flatMap((startEvent) => this.startEventToTransition(
+      startEvent,
       sequenceFlowPlaceIds,
       additionalPlaceIds,
-    );
+    ));
     const endTransitions = choreography.endEvents.flatMap((endEvent) =>
-      this.endEventToTransitions(
+      this.endEventToTransition(
         endEvent,
         sequenceFlowPlaceIds,
         additionalPlaceIds,
@@ -73,7 +73,7 @@ export class BpmnMapper {
     );
 
     const transitions = [
-      startTransition,
+      ...startTransitions,
       ...endTransitions,
       ...exclusiveGatewayTransitions,
       ...parallelGatewayTransitions,
@@ -84,7 +84,9 @@ export class BpmnMapper {
       placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length + 2,
       participantCount: participantIds.size,
       messageCount: messageIds.size,
-      startPlace: startTransition.incomingPlaces[0],
+      startPlaces: startTransitions.flatMap(
+        (startTransition) => startTransition.incomingPlaces,
+      ),
       endPlaces: endTransitions.flatMap(
         (endTransition) => endTransition.outgoingPlaces,
       ),
@@ -142,7 +144,7 @@ export class BpmnMapper {
     };
   }
 
-  private endEventToTransitions(
+  private endEventToTransition(
     endEvent: EndEvent,
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
     additionalPlaceIds: PlaceId[],

@@ -41,6 +41,12 @@ func (instance *Instance) ComputeHash() {
 			mimc.Write(bytes[:])
 		}
 	}
+	for i := len(instance.MessageHashes); i < MaxMessageCount; i++ {
+		for j := 0; j < MessageHashLength; j++ {
+			var zeros [fr.Bytes]byte
+			mimc.Write(zeros[:])
+		}
+	}
 	mimc.Write(instance.Salt)
 	instance.Hash = mimc.Sum([]byte{})
 }

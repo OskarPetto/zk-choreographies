@@ -37,7 +37,9 @@ export class ModelReducer {
       );
     }
     model.placeCount = places.length;
-    model.startPlace = placeMap.get(model.startPlace)!;
+    model.startPlaces = model.startPlaces.map(
+      (startPlace) => placeMap.get(startPlace)!,
+    );
     model.endPlaces = model.endPlaces.map(
       (endPlace) => placeMap.get(endPlace)!,
     );
@@ -170,8 +172,8 @@ export class ModelReducer {
       placeCount: model.placeCount,
       participantCount: model.participantCount,
       messageCount: model.messageCount,
-      startPlace: model.startPlace,
-      endPlaces: model.endPlaces,
+      startPlaces: [...model.startPlaces],
+      endPlaces: [...model.endPlaces],
       transitions,
     };
   }

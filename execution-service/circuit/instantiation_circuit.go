@@ -26,9 +26,11 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 }
 
 func (circuit *InstantiationCircuit) checkTokenCounts(api frontend.API) {
-	for placeId := range circuit.Instance.TokenCounts {
-		tokenCount := circuit.Instance.TokenCounts[placeId]
-		isStartPlace := equals(api, placeId, circuit.Model.StartPlace)
+	for placeId, tokenCount := range circuit.Instance.TokenCounts {
+		var isStartPlace frontend.Variable = 0
+		for _, startPlaceId := range circuit.Model.StartPlaces {
+			isStartPlace = api.Or(isStartPlace, equals(api, placeId, startPlaceId))
+		}
 		api.AssertIsEqual(tokenCount, isStartPlace)
 	}
 }

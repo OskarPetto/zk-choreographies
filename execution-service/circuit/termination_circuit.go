@@ -25,9 +25,13 @@ func (circuit *TerminationCircuit) Define(api frontend.API) error {
 }
 
 func (circuit *TerminationCircuit) checkTokenCounts(api frontend.API) {
-	for placeId := range circuit.Instance.TokenCounts {
-		tokenCount := circuit.Instance.TokenCounts[placeId]
-		isEndPlace := equals(api, placeId, circuit.Model.EndPlace)
-		api.AssertIsEqual(tokenCount, isEndPlace)
+	var hasEnoughTokens frontend.Variable = 0
+	for placeId, tokenCount := range circuit.Instance.TokenCounts {
+		tokenCountIsOne := equals(api, tokenCount, 1)
+		for _, endPlaceId := range circuit.Model.EndPlaces {
+			isEndPlace := equals(api, endPlaceId, placeId)
+			hasEnoughTokens = api.Or(hasEnoughTokens, api.And(isEndPlace, tokenCountIsOne))
+		}
 	}
+	api.AssertIsEqual(1, hasEnoughTokens)
 }

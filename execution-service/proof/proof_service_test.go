@@ -15,8 +15,8 @@ func TestNewProofService(t *testing.T) {
 
 func TestProveInstantiation(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	publicKey := signatureService.GetPublicKey()
-	instance := testdata.GetModel2Instance1(publicKey)
+	publicKeys := testdata.GetPublicKeys(2)
+	instance := testdata.GetModel2Instance1(publicKeys)
 	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 	model := testdata.GetModel2()
@@ -28,10 +28,10 @@ func TestProveInstantiation(t *testing.T) {
 
 func TestProveTransition(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel2Instance1(publicKey)
+	publicKeys := testdata.GetPublicKeys(2)
+	currentInstance := testdata.GetModel2Instance1(publicKeys)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel2Instance2(publicKey)
+	nextInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance.ComputeHash()
 	signature := signatureService.Sign(nextInstance)
 	model := testdata.GetModel2()
@@ -43,8 +43,8 @@ func TestProveTransition(t *testing.T) {
 
 func TestProveTermination(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	publicKey := signatureService.GetPublicKey()
-	instance := testdata.GetModel2Instance3(publicKey)
+	publicKeys := testdata.GetPublicKeys(2)
+	instance := testdata.GetModel2Instance4(publicKeys)
 	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 	model := testdata.GetModel2()

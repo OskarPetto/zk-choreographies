@@ -65,7 +65,7 @@ export interface ChoreographyTask {
 
 export interface Choreography {
   id: string;
-  startEvent: StartEvent;
+  startEvents: StartEvent[];
   endEvents: EndEvent[];
   participants: Participant[];
   choreographyTasks: ChoreographyTask[];

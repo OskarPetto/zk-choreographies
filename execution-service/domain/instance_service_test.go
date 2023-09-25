@@ -10,8 +10,8 @@ import (
 
 func TestFindInstance(t *testing.T) {
 	service := domain.NewInstanceService()
-	publicKey := testdata.GetPublicKeys(1)[0]
-	instance := testdata.GetModel2Instance1(publicKey)
+	publicKeys := testdata.GetPublicKeys(1)
+	instance := testdata.GetModel2Instance1(publicKeys)
 	service.SaveInstance(instance)
 	_, err := service.FindInstanceByHash(instance.Hash)
 	assert.Nil(t, err)

@@ -3,6 +3,7 @@ package circuit_test
 import (
 	"proof-service/authentication"
 	"proof-service/circuit"
+	"proof-service/domain"
 	"proof-service/testdata"
 	"testing"
 
@@ -15,8 +16,8 @@ var transitionCircuit circuit.TransitionCircuit
 
 func TestExecution_NoTokenChange(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel2Instance1(publicKey)
+	publicKeys := testdata.GetPublicKeys(2)
+	currentInstance := testdata.GetModel2Instance1(publicKeys)
 	currentInstance.ComputeHash()
 	signature := signatureService.Sign(currentInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
@@ -36,10 +37,10 @@ func TestExecution_NoTokenChange(t *testing.T) {
 
 func TestExecution_Transition0(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel2Instance1(publicKey)
+	publicKeys := testdata.GetPublicKeys(2)
+	currentInstance := testdata.GetModel2Instance1(publicKeys)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel2Instance2(publicKey)
+	nextInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
@@ -60,10 +61,10 @@ func TestExecution_Transition0(t *testing.T) {
 
 func TestExecution_InvalidHash(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel2Instance1(publicKey)
+	publicKeys := testdata.GetPublicKeys(2)
+	currentInstance := testdata.GetModel2Instance1(publicKeys)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel2Instance2(publicKey)
+	nextInstance := testdata.GetModel2Instance2(publicKeys)
 	nextSignature := signatureService.Sign(nextInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
@@ -81,10 +82,10 @@ func TestExecution_InvalidHash(t *testing.T) {
 
 func TestExecution_InvalidTokenCounts(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel2Instance1(publicKey)
+	publicKeys := testdata.GetPublicKeys(2)
+	currentInstance := testdata.GetModel2Instance1(publicKeys)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel2Instance3(publicKey)
+	nextInstance := testdata.GetModel2Instance3(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
@@ -103,10 +104,10 @@ func TestExecution_InvalidTokenCounts(t *testing.T) {
 
 func TestExecution_InvalidSignature(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel2Instance1(publicKey)
+	publicKeys := testdata.GetPublicKeys(2)
+	currentInstance := testdata.GetModel2Instance1(publicKeys)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel2Instance2(publicKey)
+	nextInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(currentInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
@@ -125,10 +126,11 @@ func TestExecution_InvalidSignature(t *testing.T) {
 
 func TestExecution_InvalidAuthorization(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	publicKey := testdata.GetPublicKeys(2)[1]
-	currentInstance := testdata.GetModel2Instance1(publicKey)
+	publicKeys := testdata.GetPublicKeys(3)
+	publicKeys = []domain.PublicKey{publicKeys[1], publicKeys[2]}
+	currentInstance := testdata.GetModel2Instance1(publicKeys)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel2Instance2(publicKey)
+	nextInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
@@ -147,10 +149,11 @@ func TestExecution_InvalidAuthorization(t *testing.T) {
 
 func TestExecution_AlteredPublicKeys(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2)[1])
+	publicKeys := testdata.GetPublicKeys(2)
+	publicKeys2 := []domain.PublicKey{publicKeys[1], publicKeys[0]}
+	currentInstance := testdata.GetModel2Instance1(publicKeys2)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel2Instance2(publicKey)
+	nextInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)

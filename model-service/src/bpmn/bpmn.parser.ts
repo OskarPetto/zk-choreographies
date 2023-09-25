@@ -41,6 +41,7 @@ export class BpmnParser {
         this.messageTag,
         this.choreographyTag,
         this.participantTag,
+        this.startEventTag,
         this.endEventTag,
         this.choreographyTaskTag,
         this.exclusiveGatewayTag,
@@ -80,7 +81,7 @@ export class BpmnParser {
   parseChoreography(choreography: any, messages: Message[]): Choreography {
     const sequenceFlows = this.parseSequenceFlows(choreography);
     const participants = this.parseParticipants(choreography);
-    const startEvent = this.parseStartEvent(choreography);
+    const startEvents = this.parseStartEvents(choreography);
     const endEvents = this.parseEndEvents(choreography);
     const exclusiveGateways = this.parseExclusiveGateways(choreography);
     const parallelGateways = this.parseParallelGateways(choreography);
@@ -104,7 +105,7 @@ export class BpmnParser {
       id: choreography.id,
       sequenceFlows,
       participants: relevantParticipants,
-      startEvent,
+      startEvents,
       endEvents,
       exclusiveGateways,
       parallelGateways,
@@ -133,13 +134,13 @@ export class BpmnParser {
     });
   }
 
-  private parseStartEvent(choreography: any): StartEvent {
-    const startEvent = choreography[this.startEventTag];
-    return {
+  private parseStartEvents(choreography: any): StartEvent[] {
+    const startEvents = choreography[this.startEventTag];
+    return startEvents.map((startEvent: any) => ({
       id: startEvent.id,
       name: startEvent.name,
       outgoing: startEvent[this.outgoingTag][0],
-    };
+    }));
   }
 
   private parseEndEvents(choreography: any): EndEvent[] {

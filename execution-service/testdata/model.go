@@ -9,7 +9,7 @@ import (
 )
 
 func GetModel2() domain.Model {
-	jsonFile, err := os.Open("./example_choreography.json")
+	jsonFile, err := os.Open("/home/opetto/uni/zk-choreographies/execution-service/testdata/example_choreography.json")
 	utils.PanicOnError(err)
 	defer jsonFile.Close()
 	byteValue, _ := io.ReadAll(jsonFile)

@@ -37,10 +37,10 @@ export class TestdataProvider {
               maxMultiplicity: 2,
             },
           ],
-          startEvent: {
+          startEvents: [{
             id: 'Event_1525yky',
             outgoing: 'Flow_1f6eaf2',
-          },
+          }],
           endEvents: [
             {
               id: 'Event_08d32d7',
@@ -228,7 +228,7 @@ export class TestdataProvider {
       placeCount: 20,
       participantCount: 2,
       messageCount: 9,
-      startPlace: 18,
+      startPlaces: [18],
       endPlaces: [19],
       transitions: [
         {
@@ -395,7 +395,7 @@ export class TestdataProvider {
       placeCount: 14,
       participantCount: 2,
       messageCount: 9,
-      startPlace: 12,
+      startPlaces: [12],
       endPlaces: [13],
       transitions: [
         {

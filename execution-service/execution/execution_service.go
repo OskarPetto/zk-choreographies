@@ -26,7 +26,7 @@ func NewExecutionService() ExecutionService {
 	return executionService
 }
 
-func (service *ExecutionService) InstantiateModel(model domain.Model, publicKeys [][]byte) (domain.Instance, proof.Proof, error) {
+func (service *ExecutionService) InstantiateModel(model domain.Model, publicKeys []domain.PublicKey) (domain.Instance, proof.Proof, error) {
 	instanceResult, err := model.Instantiate(publicKeys)
 	if err != nil {
 		return domain.Instance{}, proof.Proof{}, err

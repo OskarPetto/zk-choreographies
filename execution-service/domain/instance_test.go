@@ -9,8 +9,8 @@ import (
 
 func TestInstantiateModel(t *testing.T) {
 	model := testdata.GetModel2()
-	publicKeys := testdata.GetPublicKeys(1)
-	expected := testdata.GetModel2RecucedInstance1(publicKeys[0])
+	publicKeys := testdata.GetPublicKeys(2)
+	expected := testdata.GetModel2Instance1(publicKeys)
 	instance, err := model.Instantiate(publicKeys)
 	assert.Nil(t, err)
 	assert.Equal(t, instance.TokenCounts, expected.TokenCounts)
@@ -20,9 +20,9 @@ func TestInstantiateModel(t *testing.T) {
 
 func TestExecuteTransition(t *testing.T) {
 	model := testdata.GetModel2()
-	publicKey := testdata.GetPublicKeys(1)[0]
-	instance1 := testdata.GetModel2Instance1(publicKey)
-	expected := testdata.GetModel2Instance2(publicKey)
+	publicKeys := testdata.GetPublicKeys(1)
+	instance1 := testdata.GetModel2Instance1(publicKeys)
+	expected := testdata.GetModel2Instance2(publicKeys)
 	instance2, err := instance1.ExecuteTransition(model.Transitions[0])
 	assert.Nil(t, err)
 	assert.Equal(t, instance2.TokenCounts, expected.TokenCounts)

@@ -21,7 +21,7 @@ type Model struct {
 	PlaceCount       uint         `json:"placeCount"`
 	ParticipantCount uint         `json:"participantCount"`
 	MessageCount     uint         `json:"messageCount"`
-	StartPlace       uint         `json:"startPlace"`
+	StartPlaces      []uint       `json:"startPlaces"`
 	EndPlaces        []uint       `json:"endPlaces"`
 	Transitions      []Transition `json:"transitions"`
 }
@@ -37,28 +37,26 @@ func toDomainModel(model Model) domain.Model {
 	for i, transition := range model.Transitions {
 		domainTransitions[i] = toDomainTransition(transition)
 	}
-	domainEndPlaces := make([]uint, len(model.EndPlaces))
-	copy(domainEndPlaces, model.EndPlaces)
 	return domain.Model{
 		Id:               model.Id,
 		PlaceCount:       model.PlaceCount,
 		ParticipantCount: model.ParticipantCount,
 		MessageCount:     model.MessageCount,
-		StartPlace:       model.StartPlace,
-		EndPlaces:        domainEndPlaces,
+		StartPlaces:      model.StartPlaces,
+		EndPlaces:        model.EndPlaces,
 		Transitions:      domainTransitions,
 	}
 }
 
 func toDomainTransition(transition Transition) domain.Transition {
-	participant := 0
+	participant := domain.MaxParticipantCount
 	particpantIsValid := transition.Participant != ""
 	if particpantIsValid {
 		var err error
 		participant, err = strconv.Atoi(transition.Participant)
 		utils.PanicOnError(err)
 	}
-	message := 0
+	message := domain.MaxMessageCount
 	messageIsValid := transition.Message != ""
 	if messageIsValid {
 		var err error
@@ -66,13 +64,11 @@ func toDomainTransition(transition Transition) domain.Transition {
 		utils.PanicOnError(err)
 	}
 	return domain.Transition{
-		Id:                 transition.Id,
-		Name:               transition.Name,
-		IncomingPlaces:     transition.IncomingPlaces,
-		OutgoingPlaces:     transition.OutgoingPlaces,
-		ParticipantIsValid: particpantIsValid,
-		Participant:        uint(participant),
-		MessageIsValid:     messageIsValid,
-		Message:            uint(message),
+		Id:             transition.Id,
+		Name:           transition.Name,
+		IncomingPlaces: transition.IncomingPlaces,
+		OutgoingPlaces: transition.OutgoingPlaces,
+		Participant:    uint(participant),
+		Message:        uint(message),
 	}
 }
