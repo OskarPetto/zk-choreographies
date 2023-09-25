@@ -37,7 +37,7 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	circuit.comparePublicKeys(api)
 	participantId := findParticipantId(api, circuit.NextInstanceSignature, circuit.NextInstance)
 	messageId := circuit.findMessageId(api)
-	circuit.checkTransition(api, tokenCountChanges, participantId, messageId)
+	circuit.findTransition(api, tokenCountChanges, participantId, messageId)
 	return nil
 }
 
@@ -114,7 +114,7 @@ func (circuit *TransitionCircuit) findMessageId(api frontend.API) frontend.Varia
 	return addedMessageId
 }
 
-func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountChanges TokenCountChanges, participantId frontend.Variable, messageId frontend.Variable) {
+func (circuit *TransitionCircuit) findTransition(api frontend.API, tokenCountChanges TokenCountChanges, participantId frontend.Variable, messageId frontend.Variable) {
 
 	var transitionFound frontend.Variable = 0
 

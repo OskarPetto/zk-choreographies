@@ -7,8 +7,27 @@ import (
 	"proof-service/utils"
 )
 
-func WriteFile(writeable io.WriterTo, filename string) {
-	path := getPath(filename)
+func WritePrivateFile(writeable io.WriterTo, filename string) {
+	path := getPrivatePath(filename)
+	writeFile(writeable, path)
+}
+
+func ReadPrivateFile(readable io.ReaderFrom, filename string) error {
+	path := getPrivatePath(filename)
+	return readFile(readable, path)
+}
+
+func WritePublicFile(writeable io.WriterTo, filename string) {
+	path := getPublicPath(filename)
+	writeFile(writeable, path)
+}
+
+func ReadPublicFile(readable io.ReaderFrom, filename string) error {
+	path := getPublicPath(filename)
+	return readFile(readable, path)
+}
+
+func writeFile(writeable io.WriterTo, path string) {
 	file, err := os.Create(path)
 	utils.PanicOnError(err)
 	defer file.Close()
@@ -17,8 +36,7 @@ func WriteFile(writeable io.WriterTo, filename string) {
 	fmt.Printf("Wrote file of size %d in %s\n", bytesWritten, path)
 }
 
-func ReadFile(readable io.ReaderFrom, filename string) error {
-	path := getPath(filename)
+func readFile(readable io.ReaderFrom, path string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -29,6 +47,13 @@ func ReadFile(readable io.ReaderFrom, filename string) error {
 	return err
 }
 
-func getPath(filename string) string {
-	return "/home/opetto/uni/zk-choreographies/execution-service/keys/" + filename
+func getPublicPath(filename string) string {
+	return getFilePath() + "public/" + filename
+}
+func getPrivatePath(filename string) string {
+	return getFilePath() + "private/" + filename
+}
+
+func getFilePath() string {
+	return "/home/opetto/uni/zk-choreographies/execution-service/files/"
 }

@@ -4,9 +4,9 @@ import "fmt"
 
 const MaxPlaceCount = 64
 const MaxParticipantCount = 8
-const MaxMessageCount = 64
-const MaxStartPlaceCount = 4
-const MaxEndPlaceCount = 4
+const MaxMessageCount = 32
+const MaxStartPlaceCount = 1
+const MaxEndPlaceCount = 2
 const MaxTransitionCount = 64
 const MaxBranchingFactor = 4
 

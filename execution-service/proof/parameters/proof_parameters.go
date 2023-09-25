@@ -51,7 +51,7 @@ func LoadProofParameters() ProofParameters {
 
 func importConstraintSystem(circuit frontend.Circuit, filename string) constraint.ConstraintSystem {
 	cs := groth16.NewCS(ecc.BN254)
-	err := file.ReadFile(cs, filename)
+	err := file.ReadPublicFile(cs, filename)
 	if err != nil {
 		cs = compileCircuit(circuit, filename)
 	}
@@ -60,7 +60,7 @@ func importConstraintSystem(circuit frontend.Circuit, filename string) constrain
 
 func importProvingKey(cs constraint.ConstraintSystem, pkFilename string, vkFilename string) groth16.ProvingKey {
 	pk := groth16.NewProvingKey(ecc.BN254)
-	err := file.ReadFile(pk, pkFilename)
+	err := file.ReadPublicFile(pk, pkFilename)
 	if err != nil {
 		pk = generateProvingKey(cs, pkFilename, vkFilename)
 	}
@@ -70,16 +70,16 @@ func importProvingKey(cs constraint.ConstraintSystem, pkFilename string, vkFilen
 func compileCircuit(circuit frontend.Circuit, filename string) constraint.ConstraintSystem {
 	cs, err := frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, circuit)
 	utils.PanicOnError(err)
-	file.WriteFile(cs, filename)
+	file.WritePublicFile(cs, filename)
 	return cs
 }
 
 func generateProvingKey(cs constraint.ConstraintSystem, pkFilename string, vkFilename string) groth16.ProvingKey {
 	pk, vk, err := groth16.Setup(cs)
 	utils.PanicOnError(err)
-	file.WriteFile(pk, pkFilename)
+	file.WritePublicFile(pk, pkFilename)
 	byteBuffer := new(bytes.Buffer)
 	vk.ExportSolidity(byteBuffer)
-	file.WriteFile(byteBuffer, vkFilename)
+	file.WritePublicFile(byteBuffer, vkFilename)
 	return pk
 }

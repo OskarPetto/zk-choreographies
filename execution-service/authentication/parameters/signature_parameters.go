@@ -25,7 +25,7 @@ func LoadSignatureParameters() SignatureParameters {
 func importSignaturePrivateKey(filename string) *eddsa.PrivateKey {
 	var pk eddsa.PrivateKey
 	byteBuffer := new(bytes.Buffer)
-	err := file.ReadFile(byteBuffer, filename)
+	err := file.ReadPrivateFile(byteBuffer, filename)
 	if err != nil {
 		pk = *generateSignaturePrivateKey(filename)
 	} else {
@@ -38,6 +38,6 @@ func generateSignaturePrivateKey(filename string) *eddsa.PrivateKey {
 	privateKey, err := eddsa.GenerateKey(rand.Reader)
 	utils.PanicOnError(err)
 	byteBuffer := bytes.NewBuffer(privateKey.Bytes())
-	file.WriteFile(byteBuffer, filename)
+	file.WritePrivateFile(byteBuffer, filename)
 	return privateKey
 }
