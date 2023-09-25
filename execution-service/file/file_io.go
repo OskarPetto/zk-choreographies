@@ -30,5 +30,5 @@ func ReadFile(readable io.ReaderFrom, filename string) error {
 }
 
 func getPath(filename string) string {
-	return "/home/opetto/uni/zk-choreographies/execution-service/files/" + filename
+	return "/home/opetto/uni/zk-choreographies/execution-service/keys/" + filename
 }

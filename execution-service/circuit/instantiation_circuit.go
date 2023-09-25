@@ -5,9 +5,9 @@ import (
 )
 
 type InstantiationCircuit struct {
+	Model     Model
 	Instance  Instance
 	Signature Signature
-	Model     Model
 }
 
 func (circuit *InstantiationCircuit) Define(api frontend.API) error {

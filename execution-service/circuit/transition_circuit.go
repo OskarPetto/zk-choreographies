@@ -14,10 +14,10 @@ type TokenCountChanges struct {
 }
 
 type TransitionCircuit struct {
+	Model                 Model
 	CurrentInstance       Instance
 	NextInstance          Instance
 	NextInstanceSignature Signature
-	Model                 Model
 }
 
 func (circuit *TransitionCircuit) Define(api frontend.API) error {
