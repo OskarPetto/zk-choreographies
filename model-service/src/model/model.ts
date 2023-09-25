@@ -7,7 +7,7 @@ export type ModelId = string;
 export enum TransitionType {
   REQUIRED,
   OPTIONAL_INCOMING,
-  OPTIONAL_OUTGOING
+  OPTIONAL_OUTGOING,
 }
 
 export interface Transition {

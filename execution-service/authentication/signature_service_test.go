@@ -8,6 +8,6 @@ import (
 
 func TestSign(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	instance := testdata.GetModel1Instance1(testdata.GetPublicKeys(1)[0])
+	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
 	signatureService.Sign(instance)
 }

@@ -1,9 +1,4 @@
-import {
-  PlaceId,
-  Model,
-  TransitionId,
-  Transition,
-} from 'src/model/model';
+import { PlaceId, Model, TransitionId, Transition } from 'src/model/model';
 
 export function logObject(object: any) {
   console.dir(object, { depth: null });
@@ -16,9 +11,7 @@ export function findTransitions(
   return transitionIds.map((transitionId) => {
     const transition = model.transitions.find((t) => t.id === transitionId);
     if (!transition) {
-      throw Error(
-        `Transition ${transitionId} in model ${model.id} not found`,
-      );
+      throw Error(`Transition ${transitionId} in model ${model.id} not found`);
     }
     return transition;
   });

@@ -4,11 +4,22 @@ import (
 	"fmt"
 )
 
+const MessageHashLength = 32
+
+type MessageHash struct {
+	Value [MessageHashLength]byte
+}
+
+type PublicKey struct {
+	Value []byte
+}
+
 type Instance struct {
-	Hash        []byte
-	TokenCounts []int
-	PublicKeys  [][]byte
-	Salt        []byte
+	Hash          []byte
+	TokenCounts   []int
+	MessageHashes []MessageHash
+	PublicKeys    []PublicKey
+	Salt          []byte
 }
 
 func (instance Instance) ExecuteTransition(transition Transition) (Instance, error) {

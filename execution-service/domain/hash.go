@@ -21,11 +21,11 @@ func (instance *Instance) ComputeHash() {
 		var zeros [fr.Bytes]byte
 		mimc.Write(zeros[:])
 	}
-	for _, publicKeyBytes := range instance.PublicKeys {
-		var publicKey eddsa.PublicKey
-		publicKey.A.SetBytes(publicKeyBytes)
-		xBytes := publicKey.A.X.Bytes()
-		yBytes := publicKey.A.Y.Bytes()
+	for _, publicKey := range instance.PublicKeys {
+		var eddsaPublicKey eddsa.PublicKey
+		eddsaPublicKey.A.SetBytes(publicKey.Value)
+		xBytes := eddsaPublicKey.A.X.Bytes()
+		yBytes := eddsaPublicKey.A.Y.Bytes()
 		mimc.Write(xBytes[:])
 		mimc.Write(yBytes[:])
 	}
@@ -33,6 +33,13 @@ func (instance *Instance) ComputeHash() {
 		var zeros [fr.Bytes]byte
 		mimc.Write(zeros[:])
 		mimc.Write(zeros[:])
+	}
+	for _, messageHash := range instance.MessageHashes {
+		for _, messageHashByte := range messageHash.Value {
+			var bytes [fr.Bytes]byte
+			bytes[fr.Bytes-1] = messageHashByte // big endian
+			mimc.Write(bytes[:])
+		}
 	}
 	mimc.Write(instance.Salt)
 	instance.Hash = mimc.Sum([]byte{})

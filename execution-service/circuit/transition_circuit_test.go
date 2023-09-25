@@ -16,11 +16,11 @@ var transitionCircuit circuit.TransitionCircuit
 func TestExecution_NoTokenChange(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel1Instance1(publicKey)
+	currentInstance := testdata.GetModel2Instance1(publicKey)
 	currentInstance.ComputeHash()
 	signature := signatureService.Sign(currentInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.TransitionCircuit{
 		CurrentInstance:       currentCircuitInstance,
 		NextInstance:          currentCircuitInstance,
@@ -37,14 +37,14 @@ func TestExecution_NoTokenChange(t *testing.T) {
 func TestExecution_Transition0(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel1Instance1(publicKey)
+	currentInstance := testdata.GetModel2Instance1(publicKey)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel1Instance2(publicKey)
+	nextInstance := testdata.GetModel2Instance2(publicKey)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.TransitionCircuit{
 		CurrentInstance:       currentCircuitInstance,
 		NextInstance:          nextCircuitInstance,
@@ -61,13 +61,13 @@ func TestExecution_Transition0(t *testing.T) {
 func TestExecution_InvalidHash(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel1Instance1(publicKey)
+	currentInstance := testdata.GetModel2Instance1(publicKey)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel1Instance2(publicKey)
+	nextInstance := testdata.GetModel2Instance2(publicKey)
 	nextSignature := signatureService.Sign(nextInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.TransitionCircuit{
 		CurrentInstance:       currentCircuitInstance,
 		NextInstance:          nextCircuitInstance,
@@ -82,14 +82,14 @@ func TestExecution_InvalidHash(t *testing.T) {
 func TestExecution_InvalidTokenCounts(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel1Instance1(publicKey)
+	currentInstance := testdata.GetModel2Instance1(publicKey)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel1Instance3(publicKey)
+	nextInstance := testdata.GetModel2Instance3(publicKey)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.TransitionCircuit{
 		CurrentInstance:       currentCircuitInstance,
 		NextInstance:          nextCircuitInstance,
@@ -104,14 +104,14 @@ func TestExecution_InvalidTokenCounts(t *testing.T) {
 func TestExecution_InvalidSignature(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel1Instance1(publicKey)
+	currentInstance := testdata.GetModel2Instance1(publicKey)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel1Instance2(publicKey)
+	nextInstance := testdata.GetModel2Instance2(publicKey)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(currentInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.TransitionCircuit{
 		CurrentInstance:       currentCircuitInstance,
 		NextInstance:          nextCircuitInstance,
@@ -126,14 +126,14 @@ func TestExecution_InvalidSignature(t *testing.T) {
 func TestExecution_InvalidAuthorization(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := testdata.GetPublicKeys(2)[1]
-	currentInstance := testdata.GetModel1Instance1(publicKey)
+	currentInstance := testdata.GetModel2Instance1(publicKey)
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel1Instance2(publicKey)
+	nextInstance := testdata.GetModel2Instance2(publicKey)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.TransitionCircuit{
 		CurrentInstance:       currentCircuitInstance,
 		NextInstance:          nextCircuitInstance,
@@ -148,14 +148,14 @@ func TestExecution_InvalidAuthorization(t *testing.T) {
 func TestExecution_AlteredPublicKeys(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	currentInstance := testdata.GetModel1Instance1(testdata.GetPublicKeys(2)[1])
+	currentInstance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2)[1])
 	currentInstance.ComputeHash()
-	nextInstance := testdata.GetModel1Instance2(publicKey)
+	nextInstance := testdata.GetModel2Instance2(publicKey)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
 	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.TransitionCircuit{
 		CurrentInstance:       currentCircuitInstance,
 		NextInstance:          nextCircuitInstance,

@@ -10,7 +10,7 @@ import (
 
 type Signature struct {
 	Value     []byte
-	PublicKey []byte
+	PublicKey domain.PublicKey
 }
 
 type SignatureService struct {
@@ -41,7 +41,9 @@ func (service *SignatureService) Sign(instance domain.Instance) Signature {
 	}
 }
 
-func (service *SignatureService) GetPublicKey() []byte {
+func (service *SignatureService) GetPublicKey() domain.PublicKey {
 	privateKey := service.signatureParameters.SignaturePrivateKey
-	return privateKey.PublicKey.Bytes()
+	return domain.PublicKey{
+		Value: privateKey.PublicKey.Bytes(),
+	}
 }

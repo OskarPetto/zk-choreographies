@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Model, PlaceId, Transition, TransitionType } from './model';
-import { logObject } from 'test/testutils';
 
 @Injectable()
 export class ModelReducer {
@@ -39,7 +38,9 @@ export class ModelReducer {
     }
     model.placeCount = places.length;
     model.startPlace = placeMap.get(model.startPlace)!;
-    model.endPlaces = model.endPlaces.map(endPlace => placeMap.get(endPlace)!);
+    model.endPlaces = model.endPlaces.map(
+      (endPlace) => placeMap.get(endPlace)!,
+    );
   }
 
   private collectPlaces(model: Model): PlaceId[] {
@@ -160,7 +161,7 @@ export class ModelReducer {
         incomingPlaces: [...transition.incomingPlaces],
         outgoingPlaces: [...transition.outgoingPlaces],
         participant: transition.participant,
-        message: transition.message
+        message: transition.message,
       }),
     );
 

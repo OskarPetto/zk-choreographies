@@ -15,13 +15,13 @@ var instantiationCircuit circuit.InstantiationCircuit
 
 func TestInstantiation(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
-	publicKey := signatureService.GetPublicKey()
-	instance := testdata.GetModel1Instance1(publicKey)
+	publicKeys := testdata.GetPublicKeys(2)
+	instance := testdata.GetModel2Instance1(publicKeys)
 	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.InstantiationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),
@@ -37,11 +37,11 @@ func TestInstantiation(t *testing.T) {
 func TestInstantiation_InvalidHash(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	instance := testdata.GetModel1Instance1(publicKey)
+	instance := testdata.GetModel2Instance1(publicKey)
 	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.InstantiationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),
@@ -55,12 +55,12 @@ func TestInstantiation_InvalidHash(t *testing.T) {
 func TestInstantiation_InvalidTokenCounts(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	instance := testdata.GetModel1Instance2(publicKey)
+	instance := testdata.GetModel2Instance2(publicKey)
 	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.InstantiationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),
@@ -74,14 +74,14 @@ func TestInstantiation_InvalidTokenCounts(t *testing.T) {
 func TestInstantiation_InvalidSignature(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := signatureService.GetPublicKey()
-	instance := testdata.GetModel1Instance1(publicKey)
+	instance := testdata.GetModel2Instance1(publicKey)
 	instance.ComputeHash()
-	instance2 := testdata.GetModel1Instance2(publicKey)
+	instance2 := testdata.GetModel2Instance2(publicKey)
 	instance2.ComputeHash()
 	signature := signatureService.Sign(instance2)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.InstantiationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),
@@ -95,12 +95,12 @@ func TestInstantiation_InvalidSignature(t *testing.T) {
 func TestInstantiation_InvalidAuthorization(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKey := testdata.GetPublicKeys(2)[1]
-	instance := testdata.GetModel1Instance1(publicKey)
+	instance := testdata.GetModel2Instance1(publicKey)
 	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 	circuitInstance, _ := circuit.FromInstance(instance)
 
-	model, _ := circuit.FromModel(testdata.GetModel1())
+	model, _ := circuit.FromModel(testdata.GetModel2())
 	witness := circuit.InstantiationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),

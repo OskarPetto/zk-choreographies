@@ -8,4 +8,4 @@ import { ModelService } from './model.service';
   controllers: [],
   providers: [ModelService, ModelReducer],
 })
-export class ModelModule { }
+export class ModelModule {}

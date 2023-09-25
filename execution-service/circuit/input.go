@@ -8,6 +8,7 @@ import (
 
 	"github.com/consensys/gnark-crypto/ecc/twistededwards"
 	"github.com/consensys/gnark/frontend"
+	"github.com/consensys/gnark/std/math/uints"
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
@@ -16,26 +17,33 @@ type Signature struct {
 	PublicKey eddsa.PublicKey
 }
 
+type MessageHash struct {
+	Value [domain.MessageHashLength]uints.U8
+}
+
 type Instance struct {
-	Hash        frontend.Variable `gnark:",public"`
-	TokenCounts [domain.MaxPlaceCount]frontend.Variable
-	PublicKeys  [domain.MaxParticipantCount]eddsa.PublicKey
-	Salt        frontend.Variable
+	Hash          frontend.Variable `gnark:",public"`
+	TokenCounts   [domain.MaxPlaceCount]frontend.Variable
+	PublicKeys    [domain.MaxParticipantCount]eddsa.PublicKey
+	MessageHashes [domain.MaxMessageCount]MessageHash
+	Salt          frontend.Variable
 }
 
 type Transition struct {
-	IsExecutableByAnyParticipant frontend.Variable                            `gnark:",public"`
-	Participant                  frontend.Variable                            `gnark:",public"`
-	IncomingPlaceCount           frontend.Variable                            `gnark:",public"`
-	IncomingPlaces               [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
-	OutgoingPlaceCount           frontend.Variable                            `gnark:",public"`
-	OutgoingPlaces               [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
+	IncomingPlaceCount frontend.Variable                            `gnark:",public"`
+	IncomingPlaces     [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
+	OutgoingPlaceCount frontend.Variable                            `gnark:",public"`
+	OutgoingPlaces     [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
+	ParticipantIsValid frontend.Variable                            `gnark:",public"`
+	Participant        frontend.Variable                            `gnark:",public"`
+	MessageIsValid     frontend.Variable                            `gnark:",public"`
+	Message            frontend.Variable                            `gnark:",public"`
 }
 
 type Model struct {
-	PlaceCount       frontend.Variable `gnark:",public"`
-	StartPlace       frontend.Variable `gnark:",public"`
-	EndPlace         frontend.Variable `gnark:",public"`
+	PlaceCount       frontend.Variable                          `gnark:",public"`
+	StartPlace       frontend.Variable                          `gnark:",public"`
+	EndPlaces        [domain.MaxEndPlaceCount]frontend.Variable `gnark:",public"`
 	Transitions      [domain.MaxTransitionCount]Transition
 	ParticipantCount frontend.Variable `gnark:",public"`
 }
@@ -44,7 +52,7 @@ func FromSignature(signature authentication.Signature) Signature {
 	var value eddsa.Signature
 	value.Assign(twistededwards.BN254, signature.Value)
 	var publicKey eddsa.PublicKey
-	publicKey.Assign(twistededwards.BN254, signature.PublicKey)
+	publicKey.Assign(twistededwards.BN254, signature.PublicKey.Value)
 	return Signature{
 		Value:     value,
 		PublicKey: publicKey,
@@ -76,18 +84,31 @@ func FromInstance(instance domain.Instance) (Instance, error) {
 		publicKeys[i] = emptyPublicKey()
 	}
 
+	messageHashCount := len(instance.MessageHashes)
+	if messageHashCount > domain.MaxMessageCount {
+		return Instance{}, fmt.Errorf("instance '%s' has too many messageHashes", hex.EncodeToString(instance.Hash))
+	}
+	var messageHashes [domain.MaxMessageCount]MessageHash
+	for i := 0; i < messageHashCount; i++ {
+		messageHashes[i] = fromMessageHash(instance.MessageHashes[i])
+	}
+	for i := messageHashCount; i < domain.MaxMessageCount; i++ {
+		messageHashes[i] = emptyMessageHash()
+	}
+
 	return Instance{
-		Hash:        instance.Hash,
-		TokenCounts: tokenCounts,
-		PublicKeys:  publicKeys,
-		Salt:        instance.Salt,
+		Hash:          instance.Hash,
+		TokenCounts:   tokenCounts,
+		PublicKeys:    publicKeys,
+		MessageHashes: messageHashes,
+		Salt:          instance.Salt,
 	}, nil
 }
 
-func fromPublicKey(publicKeyBytes []byte) eddsa.PublicKey {
-	var publicKey eddsa.PublicKey
-	publicKey.Assign(twistededwards.BN254, publicKeyBytes)
-	return publicKey
+func fromPublicKey(publicKey domain.PublicKey) eddsa.PublicKey {
+	var eddsaPublicKey eddsa.PublicKey
+	eddsaPublicKey.Assign(twistededwards.BN254, publicKey.Value)
+	return eddsaPublicKey
 }
 
 func emptyPublicKey() eddsa.PublicKey {
@@ -98,6 +119,19 @@ func emptyPublicKey() eddsa.PublicKey {
 	return publicKey
 }
 
+func fromMessageHash(messageHash domain.MessageHash) MessageHash {
+	return MessageHash{
+		Value: ([domain.MessageHashLength]uints.U8)(uints.NewU8Array(messageHash.Value[:])),
+	}
+}
+
+func emptyMessageHash() MessageHash {
+	var zeros [domain.MessageHashLength]byte
+	return MessageHash{
+		Value: ([domain.MessageHashLength]uints.U8)(uints.NewU8Array(zeros[:])),
+	}
+}
+
 func FromModel(model domain.Model) (Model, error) {
 	placeCount := model.PlaceCount
 	if placeCount > domain.MaxPlaceCount {
@@ -106,6 +140,9 @@ func FromModel(model domain.Model) (Model, error) {
 	if model.ParticipantCount > domain.MaxParticipantCount {
 		return Model{}, fmt.Errorf("model '%s' has too many participants", model.Id)
 	}
+	if model.MessageCount > domain.MaxMessageCount {
+		return Model{}, fmt.Errorf("model '%s' has too many messages", model.Id)
+	}
 	transitions, err := fromTransitions(model.Id, model.Transitions)
 	if err != nil {
 		return Model{}, err
@@ -113,13 +150,23 @@ func FromModel(model domain.Model) (Model, error) {
 	if model.StartPlace >= domain.MaxPlaceCount {
 		return Model{}, fmt.Errorf("model '%s' has invalid startPlace", model.Id)
 	}
-	if model.EndPlace >= domain.MaxPlaceCount {
-		return Model{}, fmt.Errorf("model '%s' has invalid endPlace", model.Id)
+	if len(model.EndPlaces) > domain.MaxEndPlaceCount || len(model.EndPlaces) < 1 {
+		return Model{}, fmt.Errorf("model '%s' has invalid number of endPlaces", model.Id)
+	}
+	var endPlaces [domain.MaxEndPlaceCount]frontend.Variable
+	for i, endPlace := range model.EndPlaces {
+		if endPlace >= domain.MaxPlaceCount {
+			return Model{}, fmt.Errorf("model '%s' has invalid endPlace", model.Id)
+		}
+		endPlaces[i] = endPlace
+	}
+	for i := len(model.EndPlaces); i < domain.MaxEndPlaceCount; i++ {
+		endPlaces[i] = endPlaces[0]
 	}
 	return Model{
 		PlaceCount:       model.PlaceCount,
 		StartPlace:       model.StartPlace,
-		EndPlace:         model.EndPlace,
+		EndPlaces:        endPlaces,
 		Transitions:      transitions,
 		ParticipantCount: model.ParticipantCount,
 	}, nil
@@ -164,17 +211,15 @@ func fromTransition(transition domain.Transition) (Transition, error) {
 	for i := outgoingPlaceCount; i < domain.MaxBranchingFactor; i++ {
 		outgoingPlaces[i] = domain.MaxPlaceCount
 	}
-	isExecutableByAnyParticipant := 0
-	if transition.IsExecutableByAnyParticipant {
-		isExecutableByAnyParticipant = 1
-	}
 	return Transition{
-		IncomingPlaceCount:           incomingPlaceCount,
-		IncomingPlaces:               incomingPlaces,
-		OutgoingPlaceCount:           outgoingPlaceCount,
-		OutgoingPlaces:               outgoingPlaces,
-		Participant:                  transition.Participant,
-		IsExecutableByAnyParticipant: isExecutableByAnyParticipant,
+		IncomingPlaceCount: incomingPlaceCount,
+		IncomingPlaces:     incomingPlaces,
+		OutgoingPlaceCount: outgoingPlaceCount,
+		OutgoingPlaces:     outgoingPlaces,
+		Participant:        transition.Participant,
+		ParticipantIsValid: boolToInt(transition.ParticipantIsValid),
+		Message:            transition.Message,
+		MessageIsValid:     boolToInt(transition.MessageIsValid),
 	}, nil
 }
 
@@ -188,11 +233,21 @@ func emptyTransition() Transition {
 		outgoingPlaces[i] = domain.MaxPlaceCount
 	}
 	return Transition{
-		IncomingPlaceCount:           0,
-		IncomingPlaces:               incomingPlaces,
-		OutgoingPlaceCount:           0,
-		OutgoingPlaces:               outgoingPlaces,
-		IsExecutableByAnyParticipant: 0,
-		Participant:                  0,
+		IncomingPlaceCount: 0,
+		IncomingPlaces:     incomingPlaces,
+		OutgoingPlaceCount: 0,
+		OutgoingPlaces:     outgoingPlaces,
+		ParticipantIsValid: 0,
+		Participant:        0,
+		MessageIsValid:     0,
+		Message:            0,
 	}
+}
+
+func boolToInt(value bool) int {
+	result := 0
+	if value {
+		result = 1
+	}
+	return result
 }

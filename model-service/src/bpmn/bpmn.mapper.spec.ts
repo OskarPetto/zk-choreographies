@@ -1,7 +1,5 @@
 import { TestdataProvider } from 'test/data/testdata.provider';
 import { BpmnMapper } from './bpmn.mapper';
-import { Transition } from '../model/model';
-import { logObject } from 'test/testutils';
 
 describe('BpmnMapper', () => {
   let bpmnMapper: BpmnMapper;

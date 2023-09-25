@@ -1,5 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { ChoreographyTask, EndEvent, ExclusiveGateway, GatewayType, ParallelGateway, Participant, SequenceFlow, SequenceFlowId, StartEvent, ParticipantId as BpmnParticipantId, MessageId as BpmnMessageId, Message, Choreography } from './bpmn';
+import {
+  ChoreographyTask,
+  EndEvent,
+  ExclusiveGateway,
+  GatewayType,
+  ParallelGateway,
+  Participant,
+  SequenceFlow,
+  SequenceFlowId,
+  StartEvent,
+  ParticipantId as BpmnParticipantId,
+  MessageId as BpmnMessageId,
+  Message,
+  Choreography,
+} from './bpmn';
 import {
   Model,
   ParticipantId,
@@ -12,31 +26,68 @@ import {
 @Injectable()
 export class BpmnMapper {
   toModel(choreography: Choreography): Model {
-    const sequenceFlowPlaceIds = this.createSequenceFlowMapping(choreography.sequenceFlows);
-    const participantIds = this.createParticipantMapping(choreography.participants);
+    const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
+      choreography.sequenceFlows,
+    );
+    const participantIds = this.createParticipantMapping(
+      choreography.participants,
+    );
     const messageIds = this.createMessageMapping(choreography.messages);
     const additionalPlaceIds: PlaceId[] = [];
-    const choreographyTaskTransitions = choreography.choreographyTasks.flatMap(choreographyTask => this.choreographyTaskToTransitions(choreographyTask, sequenceFlowPlaceIds, participantIds, messageIds, additionalPlaceIds))
+    const choreographyTaskTransitions = choreography.choreographyTasks.flatMap(
+      (choreographyTask) =>
+        this.choreographyTaskToTransitions(
+          choreographyTask,
+          sequenceFlowPlaceIds,
+          participantIds,
+          messageIds,
+          additionalPlaceIds,
+        ),
+    );
 
-    const startTransition = this.startEventToTransition(choreography.startEvent, sequenceFlowPlaceIds, additionalPlaceIds);
-    const endTransitions = choreography.endEvents.flatMap(endEvent => this.endEventToTransitions(endEvent, sequenceFlowPlaceIds, additionalPlaceIds));
-    const exclusiveGatewayTransitions = choreography.exclusiveGateways.flatMap(exclusiveGateway => this.exclusiveGatewayToTransitions(exclusiveGateway, sequenceFlowPlaceIds));
-    const parallelGatewayTransitions = choreography.parallelGateways.flatMap(parallelGateway => this.parallelGatewayToTransitions(parallelGateway, sequenceFlowPlaceIds));
+    const startTransition = this.startEventToTransition(
+      choreography.startEvent,
+      sequenceFlowPlaceIds,
+      additionalPlaceIds,
+    );
+    const endTransitions = choreography.endEvents.flatMap((endEvent) =>
+      this.endEventToTransitions(
+        endEvent,
+        sequenceFlowPlaceIds,
+        additionalPlaceIds,
+      ),
+    );
+    const exclusiveGatewayTransitions = choreography.exclusiveGateways.flatMap(
+      (exclusiveGateway) =>
+        this.exclusiveGatewayToTransitions(
+          exclusiveGateway,
+          sequenceFlowPlaceIds,
+        ),
+    );
+    const parallelGatewayTransitions = choreography.parallelGateways.flatMap(
+      (parallelGateway) =>
+        this.parallelGatewayToTransitions(
+          parallelGateway,
+          sequenceFlowPlaceIds,
+        ),
+    );
 
     const transitions = [
       startTransition,
       ...endTransitions,
       ...exclusiveGatewayTransitions,
       ...parallelGatewayTransitions,
-      ...choreographyTaskTransitions
-    ]
+      ...choreographyTaskTransitions,
+    ];
     return {
       id: choreography.id,
       placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length + 2,
       participantCount: participantIds.size,
       messageCount: messageIds.size,
       startPlace: startTransition.incomingPlaces[0],
-      endPlaces: endTransitions.flatMap(endTransition => endTransition.outgoingPlaces),
+      endPlaces: endTransitions.flatMap(
+        (endTransition) => endTransition.outgoingPlaces,
+      ),
       transitions,
     };
   }
@@ -76,11 +127,10 @@ export class BpmnMapper {
     return map;
   }
 
-
   private startEventToTransition(
     startEvent: StartEvent,
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
-    additionalPlaceIds: PlaceId[]
+    additionalPlaceIds: PlaceId[],
   ): Transition {
     const outgoingPlaceId = sequenceFlowPlaceIds.get(startEvent.outgoing)!;
     return {
@@ -95,7 +145,7 @@ export class BpmnMapper {
   private endEventToTransitions(
     endEvent: EndEvent,
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
-    additionalPlaceIds: PlaceId[]
+    additionalPlaceIds: PlaceId[],
   ): Transition[] {
     const incomingPlaceId = sequenceFlowPlaceIds.get(endEvent.incoming)!;
     return [
@@ -104,7 +154,9 @@ export class BpmnMapper {
         type: TransitionType.REQUIRED,
         name: endEvent.name,
         incomingPlaces: [incomingPlaceId],
-        outgoingPlaces: [sequenceFlowPlaceIds.size + additionalPlaceIds.length + 1],
+        outgoingPlaces: [
+          sequenceFlowPlaceIds.size + additionalPlaceIds.length + 1,
+        ],
       },
     ];
   }
@@ -122,19 +174,30 @@ export class BpmnMapper {
     return [
       {
         id: parallelGateway.id,
-        type: parallelGateway.type === GatewayType.JOIN ? TransitionType.OPTIONAL_OUTGOING : TransitionType.OPTIONAL_INCOMING,
+        type:
+          parallelGateway.type === GatewayType.JOIN
+            ? TransitionType.OPTIONAL_OUTGOING
+            : TransitionType.OPTIONAL_INCOMING,
         incomingPlaces: incomingPlaceIds,
         outgoingPlaces: outgoingPlaceIds,
       },
     ];
   }
 
-  private exclusiveGatewayToTransitions(exclusiveGateway: ExclusiveGateway,
-    sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>): Transition[] {
+  private exclusiveGatewayToTransitions(
+    exclusiveGateway: ExclusiveGateway,
+    sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
+  ): Transition[] {
     if (exclusiveGateway.type === GatewayType.JOIN) {
-      return this.exclusiveJoinGatewayToTransitions(exclusiveGateway, sequenceFlowPlaceIds);
+      return this.exclusiveJoinGatewayToTransitions(
+        exclusiveGateway,
+        sequenceFlowPlaceIds,
+      );
     } else {
-      return this.exclusiveSplitGatewayToTransitions(exclusiveGateway, sequenceFlowPlaceIds);
+      return this.exclusiveSplitGatewayToTransitions(
+        exclusiveGateway,
+        sequenceFlowPlaceIds,
+      );
     }
   }
 
@@ -142,7 +205,9 @@ export class BpmnMapper {
     exclusiveGateway: ExclusiveGateway,
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
   ): Transition[] {
-    const outgoingPlaceId = sequenceFlowPlaceIds.get(exclusiveGateway.outgoing[0])!;
+    const outgoingPlaceId = sequenceFlowPlaceIds.get(
+      exclusiveGateway.outgoing[0],
+    )!;
 
     return exclusiveGateway.incoming.map((incomingSequenceFlowId) => ({
       id: `${exclusiveGateway.id}_${incomingSequenceFlowId}`,
@@ -156,7 +221,9 @@ export class BpmnMapper {
     exclusiveGateway: ExclusiveGateway,
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
   ): Transition[] {
-    const incomingPlaceId = sequenceFlowPlaceIds.get(exclusiveGateway.incoming[0])!;
+    const incomingPlaceId = sequenceFlowPlaceIds.get(
+      exclusiveGateway.incoming[0],
+    )!;
 
     return exclusiveGateway.outgoing.map((outgoingSequenceFlowId) => ({
       id: `${exclusiveGateway.id}_${outgoingSequenceFlowId}`,
@@ -166,23 +233,33 @@ export class BpmnMapper {
     }));
   }
 
-
   private choreographyTaskToTransitions(
     choreographyTask: ChoreographyTask,
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
     participantIds: Map<BpmnParticipantId, ParticipantId>,
     messageIds: Map<BpmnMessageId, MessageId>,
-    additionalPlaceIds: PlaceId[]
+    additionalPlaceIds: PlaceId[],
   ): Transition[] {
+    const incomingPlaceId = sequenceFlowPlaceIds.get(
+      choreographyTask.incoming,
+    )!;
+    const outgoingPlaceId = sequenceFlowPlaceIds.get(
+      choreographyTask.outgoing,
+    )!;
 
-    const incomingPlaceId = sequenceFlowPlaceIds.get(choreographyTask.incoming)!;
-    const outgoingPlaceId = sequenceFlowPlaceIds.get(choreographyTask.outgoing)!;
+    const initiatingParticipantId = participantIds.get(
+      choreographyTask.initiatingParticipant,
+    );
+    const respondingParticipantId = participantIds.get(
+      choreographyTask.respondingParticipant,
+    );
 
-    const initiatingParticipantId = participantIds.get(choreographyTask.initiatingParticipant);
-    const respondingParticipantId = participantIds.get(choreographyTask.respondingParticipant);
-
-    const initialMessage = choreographyTask.initialMessage ? messageIds.get(choreographyTask.initialMessage) : undefined;
-    const responseMessage = choreographyTask.responseMessage ? messageIds.get(choreographyTask.responseMessage) : undefined;
+    const initialMessage = choreographyTask.initialMessage
+      ? messageIds.get(choreographyTask.initialMessage)
+      : undefined;
+    const responseMessage = choreographyTask.responseMessage
+      ? messageIds.get(choreographyTask.responseMessage)
+      : undefined;
 
     // multiplicity > 1
     if (respondingParticipantId === undefined) {
@@ -219,7 +296,8 @@ export class BpmnMapper {
         },
       ];
     } else {
-      const additionalPlaceId = sequenceFlowPlaceIds.size + additionalPlaceIds.length;
+      const additionalPlaceId =
+        sequenceFlowPlaceIds.size + additionalPlaceIds.length;
       additionalPlaceIds.push(additionalPlaceId);
 
       return [
@@ -240,7 +318,8 @@ export class BpmnMapper {
           outgoingPlaces: [outgoingPlaceId],
           participant: respondingParticipantId,
           message: responseMessage,
-        }];
+        },
+      ];
     }
   }
 }

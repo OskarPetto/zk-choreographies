@@ -1,5 +1,3 @@
-import { TransitionType } from '../model/model';
-
 export type SequenceFlowId = string;
 
 export interface SequenceFlow {
