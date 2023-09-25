@@ -8,7 +8,6 @@ import {
   Transition,
   TransitionType,
 } from '../model/model';
-import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class BpmnMapper {
@@ -59,7 +58,9 @@ export class BpmnMapper {
     const map: Map<BpmnParticipantId, ParticipantId> = new Map();
     let index = 0;
     for (const participant of participants.sort()) {
-      map.set(participant.id, index++);
+      if (participant.maxMultiplicity === undefined) {
+        map.set(participant.id, index++);
+      }
     }
     return map;
   }
@@ -84,7 +85,7 @@ export class BpmnMapper {
     const outgoingPlaceId = sequenceFlowPlaceIds.get(startEvent.outgoing)!;
     return {
       id: startEvent.id,
-      type: TransitionType.START,
+      type: TransitionType.REQUIRED,
       name: startEvent.name,
       incomingPlaces: [sequenceFlowPlaceIds.size + additionalPlaceIds.length],
       outgoingPlaces: [outgoingPlaceId],
@@ -100,7 +101,7 @@ export class BpmnMapper {
     return [
       {
         id: endEvent.id,
-        type: TransitionType.END,
+        type: TransitionType.REQUIRED,
         name: endEvent.name,
         incomingPlaces: [incomingPlaceId],
         outgoingPlaces: [sequenceFlowPlaceIds.size + additionalPlaceIds.length + 1],
@@ -121,7 +122,7 @@ export class BpmnMapper {
     return [
       {
         id: parallelGateway.id,
-        type: parallelGateway.type === GatewayType.JOIN ? TransitionType.AND_JOIN : TransitionType.AND_SPLIT,
+        type: parallelGateway.type === GatewayType.JOIN ? TransitionType.OPTIONAL_OUTGOING : TransitionType.OPTIONAL_INCOMING,
         incomingPlaces: incomingPlaceIds,
         outgoingPlaces: outgoingPlaceIds,
       },
@@ -145,7 +146,7 @@ export class BpmnMapper {
 
     return exclusiveGateway.incoming.map((incomingSequenceFlowId) => ({
       id: `${exclusiveGateway.id}_${incomingSequenceFlowId}`,
-      type: TransitionType.XOR_JOIN,
+      type: TransitionType.OPTIONAL_INCOMING,
       incomingPlaces: [sequenceFlowPlaceIds.get(incomingSequenceFlowId)!],
       outgoingPlaces: [outgoingPlaceId],
     }));
@@ -159,7 +160,7 @@ export class BpmnMapper {
 
     return exclusiveGateway.outgoing.map((outgoingSequenceFlowId) => ({
       id: `${exclusiveGateway.id}_${outgoingSequenceFlowId}`,
-      type: TransitionType.XOR_SPLIT,
+      type: TransitionType.OPTIONAL_OUTGOING,
       incomingPlaces: [incomingPlaceId],
       outgoingPlaces: [sequenceFlowPlaceIds.get(outgoingSequenceFlowId)!],
     }));
@@ -173,35 +174,73 @@ export class BpmnMapper {
     messageIds: Map<BpmnMessageId, MessageId>,
     additionalPlaceIds: PlaceId[]
   ): Transition[] {
+
     const incomingPlaceId = sequenceFlowPlaceIds.get(choreographyTask.incoming)!;
     const outgoingPlaceId = sequenceFlowPlaceIds.get(choreographyTask.outgoing)!;
 
-    const additionalPlaceId = sequenceFlowPlaceIds.size + additionalPlaceIds.length;
-    additionalPlaceIds.push(additionalPlaceId);
+    const initiatingParticipantId = participantIds.get(choreographyTask.initiatingParticipant);
+    const respondingParticipantId = participantIds.get(choreographyTask.respondingParticipant);
 
     const initialMessage = choreographyTask.initialMessage ? messageIds.get(choreographyTask.initialMessage) : undefined;
     const responseMessage = choreographyTask.responseMessage ? messageIds.get(choreographyTask.responseMessage) : undefined;
 
-    return [
-      {
-        id: `${choreographyTask.id}_${choreographyTask.initiatingParticipant}`,
-        type: TransitionType.TASK,
-        name: choreographyTask.name,
-        incomingPlaces: [incomingPlaceId],
-        outgoingPlaces: [additionalPlaceId],
-        participant: participantIds.get(choreographyTask.initiatingParticipant),
-        message: initialMessage,
-      },
-      {
-        id: `${choreographyTask.id}_${choreographyTask.respondingParticipant}`,
-        type: TransitionType.TASK,
-        name: choreographyTask.name,
-        incomingPlaces: [additionalPlaceId],
-        outgoingPlaces: [outgoingPlaceId],
-        participant: participantIds.get(choreographyTask.respondingParticipant),
-        message: responseMessage,
-      },
-    ];
-  }
+    // multiplicity > 1
+    if (respondingParticipantId === undefined) {
+      return [
+        {
+          id: `${choreographyTask.id}_loop`,
+          type: TransitionType.REQUIRED,
+          name: choreographyTask.name,
+          incomingPlaces: [incomingPlaceId],
+          outgoingPlaces: [incomingPlaceId], // can be executed multiple times
+          participant: initiatingParticipantId,
+          message: initialMessage,
+        },
+        {
+          id: `${choreographyTask.id}_end`,
+          type: TransitionType.REQUIRED,
+          name: choreographyTask.name,
+          incomingPlaces: [incomingPlaceId],
+          outgoingPlaces: [outgoingPlaceId],
+          participant: initiatingParticipantId,
+          message: initialMessage,
+        },
+      ];
+    } else if (initiatingParticipantId === respondingParticipantId) {
+      return [
+        {
+          id: choreographyTask.id,
+          type: TransitionType.REQUIRED,
+          name: choreographyTask.name,
+          incomingPlaces: [incomingPlaceId],
+          outgoingPlaces: [outgoingPlaceId],
+          participant: initiatingParticipantId,
+          message: initialMessage,
+        },
+      ];
+    } else {
+      const additionalPlaceId = sequenceFlowPlaceIds.size + additionalPlaceIds.length;
+      additionalPlaceIds.push(additionalPlaceId);
 
+      return [
+        {
+          id: `${choreographyTask.id}_${choreographyTask.initiatingParticipant}`,
+          type: TransitionType.REQUIRED,
+          name: choreographyTask.name,
+          incomingPlaces: [incomingPlaceId],
+          outgoingPlaces: [additionalPlaceId],
+          participant: initiatingParticipantId,
+          message: initialMessage,
+        },
+        {
+          id: `${choreographyTask.id}_${choreographyTask.respondingParticipant}`,
+          type: TransitionType.REQUIRED,
+          name: choreographyTask.name,
+          incomingPlaces: [additionalPlaceId],
+          outgoingPlaces: [outgoingPlaceId],
+          participant: respondingParticipantId,
+          message: responseMessage,
+        }];
+    }
+  }
 }

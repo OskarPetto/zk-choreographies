@@ -15,7 +15,7 @@ export class BpmnService {
 
   importBpmn(bpmnString: string) {
     const definitions = this.bpmnParser.parseBpmn(bpmnString);
-    const model = this.bpmnMapper.toModel(definitions.process);
+    const model = this.bpmnMapper.toModel(definitions.choreographies[0]);
     const reducedModel = this.modelReducer.reduceModel(model);
     this.modelService.saveModel(reducedModel);
   }

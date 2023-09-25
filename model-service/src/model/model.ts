@@ -5,13 +5,9 @@ export type TransitionId = string;
 export type ModelId = string;
 
 export enum TransitionType {
-  START,
-  END,
-  TASK,
-  XOR_SPLIT,
-  XOR_JOIN,
-  AND_SPLIT,
-  AND_JOIN,
+  REQUIRED,
+  OPTIONAL_INCOMING,
+  OPTIONAL_OUTGOING
 }
 
 export interface Transition {

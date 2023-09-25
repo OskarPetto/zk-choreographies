@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Model, PlaceId, Transition, TransitionType } from './model';
+import { logObject } from 'test/testutils';
 
 @Injectable()
 export class ModelReducer {
@@ -7,16 +8,12 @@ export class ModelReducer {
     const newModel = this.copyModel(model);
     for (const transition of newModel.transitions) {
       switch (transition.type) {
-        case TransitionType.START:
-        case TransitionType.END:
-        case TransitionType.TASK:
+        case TransitionType.REQUIRED:
           break;
-        case TransitionType.XOR_SPLIT:
-        case TransitionType.AND_JOIN:
+        case TransitionType.OPTIONAL_OUTGOING:
           this.removeTransitionAndOutgoingPlaces(newModel, transition);
           break;
-        case TransitionType.XOR_JOIN:
-        case TransitionType.AND_SPLIT:
+        case TransitionType.OPTIONAL_INCOMING:
           this.removeTransitionAndIncomingPlaces(newModel, transition);
           break;
       }
@@ -42,7 +39,7 @@ export class ModelReducer {
     }
     model.placeCount = places.length;
     model.startPlace = placeMap.get(model.startPlace)!;
-    model.endPlace = placeMap.get(model.endPlace)!;
+    model.endPlaces = model.endPlaces.map(endPlace => placeMap.get(endPlace)!);
   }
 
   private collectPlaces(model: Model): PlaceId[] {
@@ -62,17 +59,34 @@ export class ModelReducer {
     transitionToRemove: Transition,
   ) {
     for (const transition of model.transitions) {
-      const intersect = this.intersect(
+      if (transition.id === transitionToRemove.id) {
+        continue;
+      }
+      const incomingIntersect = this.intersect(
         transition.incomingPlaces,
         transitionToRemove.outgoingPlaces,
       );
-      if (intersect.length > 0) {
+      if (incomingIntersect.length > 0) {
         transition.incomingPlaces = this.setMinus(
           transition.incomingPlaces,
           transitionToRemove.outgoingPlaces,
         );
         transition.incomingPlaces = this.union(
           transition.incomingPlaces,
+          transitionToRemove.incomingPlaces,
+        );
+      }
+      const outgoingIntersect = this.intersect(
+        transition.outgoingPlaces,
+        transitionToRemove.outgoingPlaces,
+      );
+      if (outgoingIntersect.length > 0) {
+        transition.outgoingPlaces = this.setMinus(
+          transition.outgoingPlaces,
+          transitionToRemove.outgoingPlaces,
+        );
+        transition.outgoingPlaces = this.union(
+          transition.outgoingPlaces,
           transitionToRemove.incomingPlaces,
         );
       }
@@ -86,12 +100,15 @@ export class ModelReducer {
     model: Model,
     transitionToRemove: Transition,
   ) {
-    for (const transition of model.transitions.values()) {
-      const intersect = this.intersect(
+    for (const transition of model.transitions) {
+      if (transition.id === transitionToRemove.id) {
+        continue;
+      }
+      const outgoingIntersect = this.intersect(
         transition.outgoingPlaces,
         transitionToRemove.incomingPlaces,
       );
-      if (intersect.length > 0) {
+      if (outgoingIntersect.length > 0) {
         transition.outgoingPlaces = this.setMinus(
           transition.outgoingPlaces,
           transitionToRemove.incomingPlaces,
@@ -101,7 +118,22 @@ export class ModelReducer {
           transitionToRemove.outgoingPlaces,
         );
       }
+      const incomingIntersect = this.intersect(
+        transition.incomingPlaces,
+        transitionToRemove.incomingPlaces,
+      );
+      if (incomingIntersect.length > 0) {
+        transition.incomingPlaces = this.setMinus(
+          transition.incomingPlaces,
+          transitionToRemove.incomingPlaces,
+        );
+        transition.incomingPlaces = this.union(
+          transition.incomingPlaces,
+          transitionToRemove.outgoingPlaces,
+        );
+      }
     }
+
     model.transitions = model.transitions.filter(
       (t) => t.id !== transitionToRemove.id,
     );
@@ -127,15 +159,18 @@ export class ModelReducer {
         name: transition.name,
         incomingPlaces: [...transition.incomingPlaces],
         outgoingPlaces: [...transition.outgoingPlaces],
+        participant: transition.participant,
+        message: transition.message
       }),
     );
 
     return {
       id: model.id,
       placeCount: model.placeCount,
-      startPlace: model.startPlace,
-      endPlace: model.endPlace,
       participantCount: model.participantCount,
+      messageCount: model.messageCount,
+      startPlace: model.startPlace,
+      endPlaces: model.endPlaces,
       transitions,
     };
   }

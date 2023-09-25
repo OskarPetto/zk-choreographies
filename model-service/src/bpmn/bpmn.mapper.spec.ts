@@ -1,6 +1,7 @@
 import { TestdataProvider } from 'test/data/testdata.provider';
 import { BpmnMapper } from './bpmn.mapper';
 import { Transition } from '../model/model';
+import { logObject } from 'test/testutils';
 
 describe('BpmnMapper', () => {
   let bpmnMapper: BpmnMapper;
@@ -13,14 +14,8 @@ describe('BpmnMapper', () => {
 
   describe('toModel', () => {
     it('should map bpmn process correctly', () => {
-      // const result = bpmnMapper.toModel(definitions2);
-      // expect(result.id).toEqual(model2.id);
-      // model2.transitions.forEach((transition: Transition) =>
-      //   expect(result.transitions).toContainEqual(transition),
-      // );
-      // result.transitions.forEach((transition: Transition) =>
-      //   expect(model2.transitions).toContainEqual(transition),
-      // );
+      const result = bpmnMapper.toModel(definitions2.choreographies[0]);
+      expect(result).toEqual(model2);
     });
   });
 });
