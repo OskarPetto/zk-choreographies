@@ -4,11 +4,11 @@ import "fmt"
 
 const MaxPlaceCount = 64
 const MaxParticipantCount = 8
-const MaxMessageCount = 128
+const MaxMessageCount = 64
 const MaxStartPlaceCount = 1
 const MaxEndPlaceCount = 2
 const MaxTransitionCount = 64
-const MaxBranchingFactor = 4
+const MaxBranchingFactor = 2
 
 type PlaceId = uint8
 type ParticipantId = uint8
@@ -30,8 +30,8 @@ type Transition struct {
 
 var DefaultTransition = Transition{
 	IsInitialized:  false,
-	IncomingPlaces: [MaxBranchingFactor]PlaceId{DefaultPlaceId, DefaultPlaceId, DefaultPlaceId, DefaultPlaceId},
-	OutgoingPlaces: [MaxBranchingFactor]PlaceId{DefaultPlaceId, DefaultPlaceId, DefaultPlaceId, DefaultPlaceId},
+	IncomingPlaces: [MaxBranchingFactor]PlaceId{DefaultPlaceId, DefaultPlaceId},
+	OutgoingPlaces: [MaxBranchingFactor]PlaceId{DefaultPlaceId, DefaultPlaceId},
 	Participant:    DefaultParticipantId,
 	Message:        DefaultMessageId,
 }
