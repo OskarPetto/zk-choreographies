@@ -2,7 +2,7 @@
   "id": "Choreography_07n6r3q",
   "placeCount": 14,
   "participantCount": 2,
-  "messageCount": 9,
+  "messageCount": 12,
   "startPlaces": [
     12
   ],
@@ -58,20 +58,7 @@
       "participant": 1
     },
     {
-      "id": "ChoreographyTask_0nl2rhr_loop",
-      "type": 0,
-      "name": "Purchase raw materials",
-      "incomingPlaces": [
-        1
-      ],
-      "outgoingPlaces": [
-        1
-      ],
-      "participant": 1,
-      "message": 7
-    },
-    {
-      "id": "ChoreographyTask_0nl2rhr_end",
+      "id": "ChoreographyTask_0nl2rhr_0",
       "type": 0,
       "name": "Purchase raw materials",
       "incomingPlaces": [
@@ -82,6 +69,45 @@
       ],
       "participant": 1,
       "message": 7
+    },
+    {
+      "id": "ChoreographyTask_0nl2rhr_1",
+      "type": 0,
+      "name": "Purchase raw materials",
+      "incomingPlaces": [
+        6
+      ],
+      "outgoingPlaces": [
+        6
+      ],
+      "participant": 1,
+      "message": 9
+    },
+    {
+      "id": "ChoreographyTask_0nl2rhr_2",
+      "type": 0,
+      "name": "Purchase raw materials",
+      "incomingPlaces": [
+        6
+      ],
+      "outgoingPlaces": [
+        6
+      ],
+      "participant": 1,
+      "message": 10
+    },
+    {
+      "id": "ChoreographyTask_0nl2rhr_3",
+      "type": 0,
+      "name": "Purchase raw materials",
+      "incomingPlaces": [
+        6
+      ],
+      "outgoingPlaces": [
+        6
+      ],
+      "participant": 1,
+      "message": 11
     },
     {
       "id": "ChoreographyTask_1uie9z3_Participant_0n7kwiu",

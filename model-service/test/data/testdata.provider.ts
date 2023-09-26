@@ -8,6 +8,11 @@ function readTextFile(filename: string) {
   return fs.readFileSync(filePath, 'utf-8').toString();
 }
 
+function writeTextFile(filename: string, data: string) {
+  const filePath = path.join(process.cwd(), filename);
+  return fs.writeFileSync(filePath, data);
+}
+
 export class TestdataProvider {
   static getFloorChoreography(): string {
     return readTextFile('test/data/floor_choreography.bpmn');
@@ -15,6 +20,10 @@ export class TestdataProvider {
 
   static getExampleChoreography(): string {
     return readTextFile('test/data/example_choreography.bpmn');
+  }
+
+  static writeExampleChoreography() {
+    writeTextFile('test/data/example_choreography.json', JSON.stringify(this.getModel2Reduced()))
   }
 
   static getDefinitions2(): Definitions {

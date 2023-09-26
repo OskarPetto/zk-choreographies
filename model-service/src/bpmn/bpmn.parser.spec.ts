@@ -14,6 +14,7 @@ describe('BpmnParser', () => {
     it('should parse bpmn process correctly', () => {
       const result = bpmnParser.parseBpmn(bpmnString);
       expect(result).toEqual(definitions2);
+      TestdataProvider.writeExampleChoreography();
     });
   });
 });
