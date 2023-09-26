@@ -12,6 +12,7 @@ import {
   ChoreographyTask,
   ExclusiveGateway,
   ParallelGateway,
+  LoopType,
 } from './bpmn';
 
 @Injectable()
@@ -124,12 +125,9 @@ export class BpmnParser {
 
   private parseParticipants(choreography: any): Participant[] {
     return choreography[this.participantTag].map((participant: any) => {
-      const maxMultiplicity =
-        participant[this.participantMultiplicityTag]?.maximum;
       return {
         id: participant.id,
         name: participant.name,
-        maxMultiplicity: maxMultiplicity ? Number(maxMultiplicity) : undefined,
       };
     });
   }
@@ -217,7 +215,21 @@ export class BpmnParser {
         respondingParticipant: respondingParticipantRef,
         initialMessage: initialMessageRef,
         responseMessage: responseMessageRef,
+        loopType: this.parseLoopType(choreographyTask),
       };
     });
+  }
+
+  private parseLoopType(choreographyTask: any): LoopType | undefined {
+    switch (choreographyTask.loopType) {
+      case "Standard":
+        return LoopType.STANDARD;
+      case "MultiInstanceSequential":
+        return LoopType.MULTI_INSTANCE_SEQUENTIAL;
+      case "MultiInstanceParallel":
+        return LoopType.MULTI_INSTANCE_PARALLEL;
+      default:
+        return undefined;
+    }
   }
 }

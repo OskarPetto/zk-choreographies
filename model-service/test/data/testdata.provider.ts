@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Model, TransitionType } from 'src/model/model';
-import { Definitions, GatewayType } from 'src/bpmn/bpmn';
+import { Definitions, GatewayType, LoopType } from 'src/bpmn/bpmn';
 
 function readTextFile(filename: string) {
   const filePath = path.join(process.cwd(), filename);
@@ -34,7 +34,6 @@ export class TestdataProvider {
             {
               id: 'Participant_0xxs9a7',
               name: 'Supplier',
-              maxMultiplicity: 2,
             },
           ],
           startEvents: [{
@@ -96,6 +95,7 @@ export class TestdataProvider {
               respondingParticipant: 'Participant_0xxs9a7',
               initialMessage: 'Message_0xe03aa',
               responseMessage: 'Message_1p1ke3y',
+              loopType: LoopType.MULTI_INSTANCE_SEQUENTIAL,
             },
             {
               id: 'ChoreographyTask_1uie9z3',
@@ -227,7 +227,7 @@ export class TestdataProvider {
       id: 'Choreography_07n6r3q',
       placeCount: 20,
       participantCount: 2,
-      messageCount: 9,
+      messageCount: 12,
       startPlaces: [18],
       endPlaces: [19],
       transitions: [
@@ -298,22 +298,40 @@ export class TestdataProvider {
           participant: 1,
         },
         {
-          id: 'ChoreographyTask_0nl2rhr_loop',
-          type: TransitionType.REQUIRED,
-          name: 'Purchase raw materials',
-          incomingPlaces: [2],
-          outgoingPlaces: [2],
-          participant: 1,
-          message: 7,
-        },
-        {
-          id: 'ChoreographyTask_0nl2rhr_end',
+          id: 'ChoreographyTask_0nl2rhr_0',
           type: TransitionType.REQUIRED,
           name: 'Purchase raw materials',
           incomingPlaces: [2],
           outgoingPlaces: [10],
           participant: 1,
           message: 7,
+        },
+        {
+          id: 'ChoreographyTask_0nl2rhr_1',
+          type: TransitionType.REQUIRED,
+          name: 'Purchase raw materials',
+          incomingPlaces: [10],
+          outgoingPlaces: [10],
+          participant: 1,
+          message: 9,
+        },
+        {
+          id: 'ChoreographyTask_0nl2rhr_2',
+          type: TransitionType.REQUIRED,
+          name: 'Purchase raw materials',
+          incomingPlaces: [10],
+          outgoingPlaces: [10],
+          participant: 1,
+          message: 10,
+        },
+        {
+          id: 'ChoreographyTask_0nl2rhr_3',
+          type: TransitionType.REQUIRED,
+          name: 'Purchase raw materials',
+          incomingPlaces: [10],
+          outgoingPlaces: [10],
+          participant: 1,
+          message: 11,
         },
         {
           id: 'ChoreographyTask_1uie9z3_Participant_0n7kwiu',
@@ -394,7 +412,7 @@ export class TestdataProvider {
       id: 'Choreography_07n6r3q',
       placeCount: 14,
       participantCount: 2,
-      messageCount: 9,
+      messageCount: 12,
       startPlaces: [12],
       endPlaces: [13],
       transitions: [
@@ -429,22 +447,40 @@ export class TestdataProvider {
           participant: 1,
         },
         {
-          id: 'ChoreographyTask_0nl2rhr_loop',
-          type: TransitionType.REQUIRED,
-          name: 'Purchase raw materials',
-          incomingPlaces: [1],
-          outgoingPlaces: [1],
-          participant: 1,
-          message: 7,
-        },
-        {
-          id: 'ChoreographyTask_0nl2rhr_end',
+          id: 'ChoreographyTask_0nl2rhr_0',
           type: TransitionType.REQUIRED,
           name: 'Purchase raw materials',
           incomingPlaces: [1],
           outgoingPlaces: [6],
           participant: 1,
           message: 7,
+        },
+        {
+          id: 'ChoreographyTask_0nl2rhr_1',
+          type: TransitionType.REQUIRED,
+          name: 'Purchase raw materials',
+          incomingPlaces: [6],
+          outgoingPlaces: [6],
+          participant: 1,
+          message: 9,
+        },
+        {
+          id: 'ChoreographyTask_0nl2rhr_2',
+          type: TransitionType.REQUIRED,
+          name: 'Purchase raw materials',
+          incomingPlaces: [6],
+          outgoingPlaces: [6],
+          participant: 1,
+          message: 10,
+        },
+        {
+          id: 'ChoreographyTask_0nl2rhr_3',
+          type: TransitionType.REQUIRED,
+          name: 'Purchase raw materials',
+          incomingPlaces: [6],
+          outgoingPlaces: [6],
+          participant: 1,
+          message: 11,
         },
         {
           id: 'ChoreographyTask_1uie9z3_Participant_0n7kwiu',

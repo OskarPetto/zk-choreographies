@@ -49,7 +49,12 @@ export type ParticipantId = string;
 export interface Participant {
   id: ParticipantId;
   name: string;
-  maxMultiplicity?: number;
+}
+
+export enum LoopType {
+  STANDARD,
+  MULTI_INSTANCE_SEQUENTIAL,
+  MULTI_INSTANCE_PARALLEL,
 }
 
 export interface ChoreographyTask {
@@ -61,6 +66,7 @@ export interface ChoreographyTask {
   respondingParticipant: ParticipantId;
   initialMessage?: MessageId;
   responseMessage?: MessageId;
+  loopType?: LoopType;
 }
 
 export interface Choreography {

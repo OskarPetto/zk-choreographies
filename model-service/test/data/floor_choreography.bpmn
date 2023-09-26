@@ -10,9 +10,7 @@
   <bpmn2:message id="Message_1aqi4sm" name="extraction_loss" />
   <bpmn2:message id="Message_1vi2szm" name="floor_area" />
   <bpmn2:choreography id="FloorCertification">
-    <bpmn2:participant id="Participant_06qakjv" name="Buyer">
-      <bpmn2:participantMultiplicity maximum="2" />
-    </bpmn2:participant>
+    <bpmn2:participant id="Participant_06qakjv" name="Buyer" />
     <bpmn2:participant id="Participant_0mgz9si" name="Refurbisher" />
     <bpmn2:participant id="Participant_0537iz2" name="Delivery Boy" />
     <bpmn2:participant id="Participant_0zzp0kk" name="Refurbisher" />
@@ -75,7 +73,7 @@
       <bpmn2:messageFlowRef>MessageFlow_1anw94x</bpmn2:messageFlowRef>
     </bpmn2:choreographyTask>
     <bpmn2:sequenceFlow id="Flow_1qyjrhq" sourceRef="ChoreographyTask_17uc0gy" targetRef="ChoreographyTask_0yg4hyy" />
-    <bpmn2:choreographyTask id="ChoreographyTask_029uvi2" name="Sell floor" initiatingParticipantRef="Participant_0zzp0kk">
+    <bpmn2:choreographyTask id="ChoreographyTask_029uvi2" name="Sell floor" initiatingParticipantRef="Participant_0zzp0kk" loopType="MultiInstanceSequential">
       <bpmn2:incoming>Flow_1ahmnlk</bpmn2:incoming>
       <bpmn2:outgoing>Flow_0vus68d</bpmn2:outgoing>
       <bpmn2:participantRef>Participant_0zzp0kk</bpmn2:participantRef>
@@ -178,7 +176,7 @@
         <dc:Bounds x="1310" y="328" width="100" height="20" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1jebmi1" bpmnElement="Participant_06qakjv" isMessageVisible="false" participantBandKind="bottom_non_initiating" choreographyActivityShape="ChoreographyTask_029uvi2_di">
-        <dc:Bounds x="1310" y="372" width="100" height="36" />
+        <dc:Bounds x="1310" y="388" width="100" height="20" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1ahmnlk_di" bpmnElement="Flow_1ahmnlk">
         <di:waypoint x="1271" y="368" />

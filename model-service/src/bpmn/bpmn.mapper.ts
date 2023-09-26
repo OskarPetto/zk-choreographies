@@ -13,6 +13,7 @@ import {
   MessageId as BpmnMessageId,
   Message,
   Choreography,
+  LoopType,
 } from './bpmn';
 import {
   Model,
@@ -23,8 +24,12 @@ import {
   TransitionType,
 } from '../model/model';
 
+
 @Injectable()
 export class BpmnMapper {
+  maxLoopCount = 4;
+
+
   toModel(choreography: Choreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
@@ -34,6 +39,7 @@ export class BpmnMapper {
     );
     const messageIds = this.createMessageMapping(choreography.messages);
     const additionalPlaceIds: PlaceId[] = [];
+    const additionalMessageIds: MessageId[] = [];
     const choreographyTaskTransitions = choreography.choreographyTasks.flatMap(
       (choreographyTask) =>
         this.choreographyTaskToTransitions(
@@ -42,6 +48,7 @@ export class BpmnMapper {
           participantIds,
           messageIds,
           additionalPlaceIds,
+          additionalMessageIds
         ),
     );
 
@@ -79,11 +86,15 @@ export class BpmnMapper {
       ...parallelGatewayTransitions,
       ...choreographyTaskTransitions,
     ];
+    const relevantParticipants = [...participantIds.values()].filter(participantId => choreographyTaskTransitions.some(choreographyTask =>
+      choreographyTask.participant === participantId
+    ));
+
     return {
       id: choreography.id,
       placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length + 2,
-      participantCount: participantIds.size,
-      messageCount: messageIds.size,
+      participantCount: relevantParticipants.length,
+      messageCount: messageIds.size + additionalMessageIds.length,
       startPlaces: startTransitions.flatMap(
         (startTransition) => startTransition.incomingPlaces,
       ),
@@ -111,9 +122,7 @@ export class BpmnMapper {
     const map: Map<BpmnParticipantId, ParticipantId> = new Map();
     let index = 0;
     for (const participant of participants.sort()) {
-      if (participant.maxMultiplicity === undefined) {
-        map.set(participant.id, index++);
-      }
+      map.set(participant.id, index++);
     }
     return map;
   }
@@ -241,6 +250,7 @@ export class BpmnMapper {
     participantIds: Map<BpmnParticipantId, ParticipantId>,
     messageIds: Map<BpmnMessageId, MessageId>,
     additionalPlaceIds: PlaceId[],
+    additionalMessageIds: MessageId[]
   ): Transition[] {
     const incomingPlaceId = sequenceFlowPlaceIds.get(
       choreographyTask.incoming,
@@ -263,41 +273,7 @@ export class BpmnMapper {
       ? messageIds.get(choreographyTask.responseMessage)
       : undefined;
 
-    // multiplicity > 1
-    if (respondingParticipantId === undefined) {
-      return [
-        {
-          id: `${choreographyTask.id}_loop`,
-          type: TransitionType.REQUIRED,
-          name: choreographyTask.name,
-          incomingPlaces: [incomingPlaceId],
-          outgoingPlaces: [incomingPlaceId], // can be executed multiple times
-          participant: initiatingParticipantId,
-          message: initialMessage,
-        },
-        {
-          id: `${choreographyTask.id}_end`,
-          type: TransitionType.REQUIRED,
-          name: choreographyTask.name,
-          incomingPlaces: [incomingPlaceId],
-          outgoingPlaces: [outgoingPlaceId],
-          participant: initiatingParticipantId,
-          message: initialMessage,
-        },
-      ];
-    } else if (initiatingParticipantId === respondingParticipantId) {
-      return [
-        {
-          id: choreographyTask.id,
-          type: TransitionType.REQUIRED,
-          name: choreographyTask.name,
-          incomingPlaces: [incomingPlaceId],
-          outgoingPlaces: [outgoingPlaceId],
-          participant: initiatingParticipantId,
-          message: initialMessage,
-        },
-      ];
-    } else {
+    if (choreographyTask.loopType === undefined) {
       const additionalPlaceId =
         sequenceFlowPlaceIds.size + additionalPlaceIds.length;
       additionalPlaceIds.push(additionalPlaceId);
@@ -322,6 +298,37 @@ export class BpmnMapper {
           message: responseMessage,
         },
       ];
+
+    } else if (choreographyTask.loopType === LoopType.MULTI_INSTANCE_SEQUENTIAL) {
+
+      const transitions = [
+        {
+          id: `${choreographyTask.id}_0`,
+          type: TransitionType.REQUIRED,
+          name: choreographyTask.name,
+          incomingPlaces: [incomingPlaceId],
+          outgoingPlaces: [outgoingPlaceId],
+          participant: initiatingParticipantId,
+          message: initialMessage,
+        },
+      ];
+      for (let index = 1; index < this.maxLoopCount; index++) {
+        const additionalMessageId = messageIds.size + additionalMessageIds.length;
+        additionalMessageIds.push(additionalMessageId);
+        const transition = {
+          id: `${choreographyTask.id}_${index}`,
+          type: TransitionType.REQUIRED,
+          name: choreographyTask.name,
+          incomingPlaces: [outgoingPlaceId],
+          outgoingPlaces: [outgoingPlaceId],
+          participant: initiatingParticipantId,
+          message: additionalMessageId,
+        }
+        transitions.push(transition);
+      }
+      return transitions;
+    } else {
+      throw Error("not supported")
     }
   }
 }

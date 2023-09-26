@@ -15,9 +15,7 @@
   <bpmn2:choreography id="Choreography_07n6r3q">
     <bpmn2:participant id="Participant_0x6v44d" name="Customer" />
     <bpmn2:participant id="Participant_0n7kwiu" name="Seller" />
-    <bpmn2:participant id="Participant_0xxs9a7" name="Supplier">
-      <bpmn2:participantMultiplicity maximum="2" />
-    </bpmn2:participant>
+    <bpmn2:participant id="Participant_0xxs9a7" name="Supplier" />
     <bpmn2:messageFlow id="MessageFlow_1nrprkj" sourceRef="Participant_0n7kwiu" targetRef="Participant_0x6v44d" messageRef="Message_0gdct3r" />
     <bpmn2:messageFlow id="MessageFlow_1gi4kem" sourceRef="Participant_0x6v44d" targetRef="Participant_0n7kwiu" messageRef="Message_05ebl37" />
     <bpmn2:messageFlow id="MessageFlow_19vlwbw" sourceRef="Participant_0n7kwiu" targetRef="Participant_0x6v44d" messageRef="Message_01cp9ki" />
@@ -44,7 +42,7 @@
       <bpmn2:outgoing>Flow_1stf9mf</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
     <bpmn2:sequenceFlow id="Flow_0kyymfy" sourceRef="ChoreographyTask_0kp4flv" targetRef="Gateway_10fv7g5" />
-    <bpmn2:choreographyTask id="ChoreographyTask_0nl2rhr" name="Purchase raw materials" initiatingParticipantRef="Participant_0n7kwiu">
+    <bpmn2:choreographyTask id="ChoreographyTask_0nl2rhr" name="Purchase raw materials" initiatingParticipantRef="Participant_0n7kwiu" loopType="MultiInstanceSequential">
       <bpmn2:incoming>Flow_1k5cri3</bpmn2:incoming>
       <bpmn2:outgoing>Flow_0c5yqsz</bpmn2:outgoing>
       <bpmn2:participantRef>Participant_0n7kwiu</bpmn2:participantRef>
@@ -144,7 +142,7 @@
         <dc:Bounds x="980" y="180" width="100" height="20" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1he4b9l" bpmnElement="Participant_0xxs9a7" isMessageVisible="true" participantBandKind="bottom_non_initiating" choreographyActivityShape="ChoreographyTask_0nl2rhr_di">
-        <dc:Bounds x="980" y="244" width="100" height="36" />
+        <dc:Bounds x="980" y="260" width="100" height="20" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1k5cri3_di" bpmnElement="Flow_1k5cri3">
         <di:waypoint x="940" y="325" />
