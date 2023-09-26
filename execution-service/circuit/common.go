@@ -8,6 +8,8 @@ import (
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
+const defaultMessageHash = "18386210742325734038511415457231681258408421947992479991590796204613365952235"
+
 func checkInstanceHash(api frontend.API, instance Instance) error {
 	mimc, err := mimc.NewMiMC(api)
 	if err != nil {
@@ -19,9 +21,7 @@ func checkInstanceHash(api frontend.API, instance Instance) error {
 		mimc.Write(publicKey.A.Y)
 	}
 	for _, messageHash := range instance.MessageHashes {
-		for _, messageHashByte := range messageHash.Value {
-			mimc.Write(messageHashByte)
-		}
+		mimc.Write(messageHash.Value)
 	}
 	mimc.Write(instance.Salt)
 	hash := mimc.Sum()

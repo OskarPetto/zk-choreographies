@@ -36,9 +36,7 @@ func (circuit *InstantiationCircuit) checkTokenCounts(api frontend.API) {
 
 func (circuit *InstantiationCircuit) checkMessageHashes(api frontend.API) error {
 	for _, messageHash := range circuit.Instance.MessageHashes {
-		for _, messageHashByte := range messageHash.Value {
-			api.AssertIsEqual(messageHashByte, 0)
-		}
+		api.AssertIsEqual(messageHash.Value, defaultMessageHash)
 	}
 	return nil
 }

@@ -22,6 +22,7 @@ func TestInstantiation(t *testing.T) {
 	circuitInstance, _ := circuit.FromInstance(instance)
 
 	model, _ := circuit.FromModel(testdata.GetModel2())
+
 	witness := circuit.InstantiationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),

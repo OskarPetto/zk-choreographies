@@ -35,17 +35,13 @@ func (instance *Instance) ComputeHash() {
 		mimc.Write(zeros[:])
 	}
 	for _, messageHash := range instance.MessageHashes {
-		for _, messageHashByte := range messageHash.Value {
-			var bytes [fr.Bytes]byte
-			bytes[fr.Bytes-1] = messageHashByte // big endian
-			mimc.Write(bytes[:])
-		}
+		fieldElement := utils.HashToField(messageHash.Value)
+		mimc.Write(fieldElement[:])
 	}
 	for i := len(instance.MessageHashes); i < MaxMessageCount; i++ {
-		for j := 0; j < MessageHashLength; j++ {
-			var zeros [fr.Bytes]byte
-			mimc.Write(zeros[:])
-		}
+		var zeros [fr.Bytes]byte
+		fieldElement := utils.HashToField(zeros)
+		mimc.Write(fieldElement[:])
 	}
 	mimc.Write(instance.Salt)
 	instance.Hash = mimc.Sum([]byte{})
@@ -53,15 +49,13 @@ func (instance *Instance) ComputeHash() {
 
 func randomFieldElement() []byte {
 	randomBytes := randomFrSizedBytes()
-	fieldElements, err := fr.Hash(randomBytes, []byte("randomFieldElement"), 1)
-	utils.PanicOnError(err)
-	fieldElementBytes := fieldElements[0].Bytes()
-	return fieldElementBytes[:]
+	fieldElement := utils.HashToField(randomBytes)
+	return fieldElement[:]
 }
 
-func randomFrSizedBytes() []byte {
+func randomFrSizedBytes() [fr.Bytes]byte {
 	res := make([]byte, fr.Bytes)
 	_, err := rand.Read(res)
 	utils.PanicOnError(err)
-	return res
+	return [fr.Bytes]byte(res)
 }

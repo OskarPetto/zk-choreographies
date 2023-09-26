@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"proof-service/authentication"
 	"proof-service/domain"
+	"proof-service/utils"
 
+	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/consensys/gnark-crypto/ecc/twistededwards"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/signature/eddsa"
@@ -17,7 +19,7 @@ type Signature struct {
 }
 
 type MessageHash struct {
-	Value [domain.MessageHashLength]frontend.Variable
+	Value frontend.Variable
 }
 
 type Instance struct {
@@ -29,7 +31,7 @@ type Instance struct {
 }
 
 type Transition struct {
-	IsValid        frontend.Variable
+	IsValid        frontend.Variable                            `gnark:",public"`
 	IncomingPlaces [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
 	OutgoingPlaces [domain.MaxBranchingFactor]frontend.Variable `gnark:",public"`
 	Participant    frontend.Variable                            `gnark:",public"`
@@ -117,22 +119,15 @@ func emptyPublicKey() eddsa.PublicKey {
 }
 
 func fromMessageHash(domainMessageHash domain.MessageHash) MessageHash {
-	var messageHash [domain.MessageHashLength]frontend.Variable
-	for i := 0; i < domain.MessageHashLength; i++ {
-		messageHash[i] = domainMessageHash.Value[i]
-	}
 	return MessageHash{
-		Value: messageHash,
+		Value: utils.HashToField(domainMessageHash.Value),
 	}
 }
 
 func emptyMessageHash() MessageHash {
-	var messageHash [domain.MessageHashLength]frontend.Variable
-	for i := 0; i < domain.MessageHashLength; i++ {
-		messageHash[i] = 0
-	}
+	var zeros [fr.Bytes]byte
 	return MessageHash{
-		Value: messageHash,
+		Value: utils.HashToField(zeros),
 	}
 }
 
