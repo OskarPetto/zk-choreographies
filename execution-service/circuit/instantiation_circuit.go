@@ -11,7 +11,11 @@ type InstantiationCircuit struct {
 }
 
 func (circuit *InstantiationCircuit) Define(api frontend.API) error {
-	err := checkInstanceHash(api, circuit.Instance)
+	err := checkModelHash(api, circuit.Model)
+	if err != nil {
+		return err
+	}
+	err = checkInstanceHash(api, circuit.Instance)
 	if err != nil {
 		return err
 	}
@@ -36,7 +40,7 @@ func (circuit *InstantiationCircuit) checkTokenCounts(api frontend.API) {
 
 func (circuit *InstantiationCircuit) checkMessageHashes(api frontend.API) error {
 	for _, messageHash := range circuit.Instance.MessageHashes {
-		api.AssertIsEqual(messageHash.Value, defaultMessageHash)
+		api.AssertIsEqual(messageHash, defaultMessageHash)
 	}
 	return nil
 }

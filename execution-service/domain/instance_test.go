@@ -1,6 +1,7 @@
 package domain_test
 
 import (
+	"proof-service/domain"
 	"proof-service/testdata"
 	"testing"
 
@@ -24,7 +25,7 @@ func TestExecuteTransition0(t *testing.T) {
 	publicKeys := testdata.GetPublicKeys(2)
 	instance1 := testdata.GetModel2Instance1(publicKeys)
 	expected := testdata.GetModel2Instance2(publicKeys)
-	instance2, err := instance1.ExecuteTransition(model.Transitions[0], []byte{})
+	instance2, err := instance1.ExecuteTransition(model.Transitions[0], domain.DefaultMessageHash)
 	assert.Nil(t, err)
 	assert.Equal(t, instance2.TokenCounts, expected.TokenCounts)
 	assert.Equal(t, instance2.PublicKeys, expected.PublicKeys)
@@ -37,7 +38,7 @@ func TestExecuteTransition1(t *testing.T) {
 	publicKeys := testdata.GetPublicKeys(2)
 	instance1 := testdata.GetModel2Instance2(publicKeys)
 	expected := testdata.GetModel2Instance3(publicKeys)
-	instance2, err := instance1.ExecuteTransition(model.Transitions[2], []byte("hello"))
+	instance2, err := instance1.ExecuteTransition(model.Transitions[2], domain.HashMessage([]byte("hello")))
 	assert.Nil(t, err)
 	assert.Equal(t, instance2.TokenCounts, expected.TokenCounts)
 	assert.Equal(t, instance2.PublicKeys, expected.PublicKeys)

@@ -1,35 +1,40 @@
 package domain
 
 import (
-	"crypto/sha256"
 	"fmt"
 )
 
-const MessageHashLength = 32
+const MessageHashSize = 32
+const PublicKeySize = 32
 
 type MessageHash struct {
-	Value [MessageHashLength]byte
+	Value [MessageHashSize]byte
 }
 
 type PublicKey struct {
 	Value []byte
 }
 
+const DefaultTokenCount = 0
+
+var DefaultPublicKey = PublicKey{
+	Value: make([]byte, PublicKeySize),
+}
+
+var DefaultMessageHash = MessageHash{
+	Value: [MessageHashSize]byte{},
+}
+
 type Instance struct {
 	Hash          []byte
-	TokenCounts   []int
-	MessageHashes []MessageHash
-	PublicKeys    []PublicKey
+	TokenCounts   [MaxPlaceCount]int8
+	PublicKeys    [MaxParticipantCount]PublicKey
+	MessageHashes [MaxMessageCount]MessageHash
 	Salt          []byte
 }
 
-func (instance Instance) ExecuteTransition(transition Transition, message []byte) (Instance, error) {
-	if len(message) > 0 {
-		err := instance.storeMessageHash(transition.Message, message)
-		if err != nil {
-			return Instance{}, err
-		}
-	}
+func (instance Instance) ExecuteTransition(transition Transition, messageHash MessageHash) (Instance, error) {
+	instance.storeMessageHash(transition.Message, messageHash)
 	err := instance.executeTransition(transition)
 	if err != nil {
 		return Instance{}, err
@@ -37,27 +42,27 @@ func (instance Instance) ExecuteTransition(transition Transition, message []byte
 	return instance, nil
 }
 
-func (instance *Instance) storeMessageHash(messageId MessageId, message []byte) error {
-	if messageId >= MaxMessageCount {
-		return fmt.Errorf("messageId %d is not valid", messageId)
+func (instance *Instance) storeMessageHash(messageId MessageId, messageHash MessageHash) {
+	if messageId != DefaultMessageId {
+		instance.MessageHashes[messageId] = messageHash
 	}
-	instance.MessageHashes[messageId] = MessageHash{
-		Value: sha256.Sum256(message),
-	}
-	return nil
 }
 
 func (instance *Instance) executeTransition(transition Transition) error {
 	if !isTransitionExecutable(instance, transition) {
 		return fmt.Errorf("transition %s is not executable", transition.Id)
 	}
-	tokenCounts := make([]int, len(instance.TokenCounts))
-	copy(tokenCounts, instance.TokenCounts)
+	var tokenCounts [MaxPlaceCount]int8
+	copy(tokenCounts[:], instance.TokenCounts[:])
 	for _, incomingPlaceId := range transition.IncomingPlaces {
-		tokenCounts[incomingPlaceId] -= 1
+		if incomingPlaceId != DefaultPlaceId {
+			tokenCounts[incomingPlaceId] -= 1
+		}
 	}
 	for _, outgoingPlaceId := range transition.OutgoingPlaces {
-		tokenCounts[outgoingPlaceId] += 1
+		if outgoingPlaceId != DefaultPlaceId {
+			tokenCounts[outgoingPlaceId] += 1
+		}
 	}
 	instance.TokenCounts = tokenCounts
 	instance.ComputeHash()
@@ -66,6 +71,9 @@ func (instance *Instance) executeTransition(transition Transition) error {
 
 func isTransitionExecutable(instance *Instance, transition Transition) bool {
 	for _, incomingPlaceId := range transition.IncomingPlaces {
+		if incomingPlaceId == DefaultPlaceId {
+			break
+		}
 		if instance.TokenCounts[incomingPlaceId] < 1 {
 			return false
 		}

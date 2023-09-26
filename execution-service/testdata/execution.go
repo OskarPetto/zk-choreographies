@@ -26,19 +26,24 @@ func GetPublicKeys(count int) []domain.PublicKey {
 }
 
 func GetModel2Instance1(publicKeys []domain.PublicKey) domain.Instance {
+	var publicKeysFixedSize [domain.MaxParticipantCount]domain.PublicKey
+	copy(publicKeysFixedSize[:], publicKeys)
+	for i := len(publicKeys); i < domain.MaxParticipantCount; i++ {
+		publicKeysFixedSize[i] = domain.DefaultPublicKey
+	}
 	return domain.Instance{
-		TokenCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-		PublicKeys:  publicKeys,
-		MessageHashes: []domain.MessageHash{
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
+		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+		PublicKeys:  publicKeysFixedSize,
+		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
 		},
 		Hash: make([]byte, 32),
 		Salt: make([]byte, 32),
@@ -46,19 +51,24 @@ func GetModel2Instance1(publicKeys []domain.PublicKey) domain.Instance {
 }
 
 func GetModel2Instance2(publicKeys []domain.PublicKey) domain.Instance {
+	var publicKeysFixedSize [domain.MaxParticipantCount]domain.PublicKey
+	copy(publicKeysFixedSize[:], publicKeys)
+	for i := len(publicKeys); i < domain.MaxParticipantCount; i++ {
+		publicKeysFixedSize[i] = domain.DefaultPublicKey
+	}
 	return domain.Instance{
-		TokenCounts: []int{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		PublicKeys:  publicKeys,
-		MessageHashes: []domain.MessageHash{
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
+		TokenCounts: [domain.MaxPlaceCount]int8{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		PublicKeys:  publicKeysFixedSize,
+		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
 		},
 		Hash: make([]byte, 32),
 		Salt: make([]byte, 32),
@@ -66,18 +76,23 @@ func GetModel2Instance2(publicKeys []domain.PublicKey) domain.Instance {
 }
 
 func GetModel2Instance3(publicKeys []domain.PublicKey) domain.Instance {
+	var publicKeysFixedSize [domain.MaxParticipantCount]domain.PublicKey
+	copy(publicKeysFixedSize[:], publicKeys)
+	for i := len(publicKeys); i < domain.MaxParticipantCount; i++ {
+		publicKeysFixedSize[i] = domain.DefaultPublicKey
+	}
 	return domain.Instance{
-		TokenCounts: []int{0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-		PublicKeys:  publicKeys,
-		MessageHashes: []domain.MessageHash{
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
+		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
+		PublicKeys:  publicKeysFixedSize,
+		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
 			domain.MessageHash{
 				Value: sha256.Sum256([]byte("hello")),
 			},
@@ -88,19 +103,24 @@ func GetModel2Instance3(publicKeys []domain.PublicKey) domain.Instance {
 }
 
 func GetModel2Instance4(publicKeys []domain.PublicKey) domain.Instance {
+	var publicKeysFixedSize [domain.MaxParticipantCount]domain.PublicKey
+	copy(publicKeysFixedSize[:], publicKeys)
+	for i := len(publicKeys); i < domain.MaxParticipantCount; i++ {
+		publicKeysFixedSize[i] = domain.DefaultPublicKey
+	}
 	return domain.Instance{
-		TokenCounts: []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-		PublicKeys:  publicKeys,
-		MessageHashes: []domain.MessageHash{
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
-			domain.MessageHash{},
+		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		PublicKeys:  publicKeysFixedSize,
+		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
+			domain.DefaultMessageHash,
 		},
 		Hash: make([]byte, 32),
 		Salt: make([]byte, 32),

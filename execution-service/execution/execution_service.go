@@ -41,7 +41,8 @@ func (service *ExecutionService) InstantiateModel(model domain.Model, publicKeys
 }
 
 func (service *ExecutionService) ExecuteTransition(model domain.Model, inst domain.Instance, transition domain.Transition, message []byte) (domain.Instance, proof.Proof, error) {
-	instanceResult, err := inst.ExecuteTransition(transition, message)
+	messageHash := domain.HashMessage(message)
+	instanceResult, err := inst.ExecuteTransition(transition, messageHash)
 	if err != nil {
 		return domain.Instance{}, proof.Proof{}, err
 	}

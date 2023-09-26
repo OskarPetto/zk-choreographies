@@ -8,7 +8,36 @@ import (
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
-const defaultMessageHash = "18386210742325734038511415457231681258408421947992479991590796204613365952235"
+func checkModelHash(api frontend.API, model Model) error {
+	mimc, err := mimc.NewMiMC(api)
+	if err != nil {
+		return err
+	}
+	mimc.Write(model.PlaceCount)
+	mimc.Write(model.ParticipantCount)
+	mimc.Write(model.MessageCount)
+	for _, startPlace := range model.StartPlaces {
+		mimc.Write(startPlace)
+	}
+	for _, endPlace := range model.EndPlaces {
+		mimc.Write(endPlace)
+	}
+	for _, transition := range model.Transitions {
+		mimc.Write(transition.IsInitialized)
+		for _, incomingPlace := range transition.IncomingPlaces {
+			mimc.Write(incomingPlace)
+		}
+		for _, outgoingPlace := range transition.OutgoingPlaces {
+			mimc.Write(outgoingPlace)
+		}
+		mimc.Write(transition.Participant)
+		mimc.Write(transition.Message)
+	}
+	mimc.Write(model.Salt)
+	hash := mimc.Sum()
+	api.AssertIsEqual(hash, model.Hash)
+	return nil
+}
 
 func checkInstanceHash(api frontend.API, instance Instance) error {
 	mimc, err := mimc.NewMiMC(api)
@@ -21,7 +50,7 @@ func checkInstanceHash(api frontend.API, instance Instance) error {
 		mimc.Write(publicKey.A.Y)
 	}
 	for _, messageHash := range instance.MessageHashes {
-		mimc.Write(messageHash.Value)
+		mimc.Write(messageHash)
 	}
 	mimc.Write(instance.Salt)
 	hash := mimc.Sum()

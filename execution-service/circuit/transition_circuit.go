@@ -21,7 +21,11 @@ type TransitionCircuit struct {
 }
 
 func (circuit *TransitionCircuit) Define(api frontend.API) error {
-	err := checkInstanceHash(api, circuit.CurrentInstance)
+	err := checkModelHash(api, circuit.Model)
+	if err != nil {
+		return err
+	}
+	err = checkInstanceHash(api, circuit.CurrentInstance)
 	if err != nil {
 		return err
 	}
@@ -96,8 +100,8 @@ func (circuit *TransitionCircuit) findMessageId(api frontend.API) frontend.Varia
 	for messageId := range circuit.CurrentInstance.MessageHashes {
 		currentMessageHash := circuit.CurrentInstance.MessageHashes[messageId]
 		nextMessageHash := circuit.NextInstance.MessageHashes[messageId]
-		var currentMessageHashIsDefault frontend.Variable = equals(api, currentMessageHash.Value, defaultMessageHash)
-		var messageHashesMatch frontend.Variable = equals(api, currentMessageHash.Value, nextMessageHash.Value)
+		var currentMessageHashIsDefault frontend.Variable = equals(api, currentMessageHash, defaultMessageHash)
+		var messageHashesMatch frontend.Variable = equals(api, currentMessageHash, nextMessageHash)
 		api.AssertIsEqual(1, api.Or(currentMessageHashIsDefault, messageHashesMatch))
 
 		messageHashAdded := api.IsZero(messageHashesMatch)
@@ -127,7 +131,7 @@ func (circuit *TransitionCircuit) findTransition(api frontend.API, tokenCountCha
 			tokenCountChangesMatch = api.And(tokenCountChangesMatch, outgoingTokenCountsIncrease[j])
 		}
 		transitionMatches := api.And(api.And(tokenCountChangesMatch, participantMatches), messageMatches)
-		transitionFound = api.Or(transitionFound, api.And(transition.IsValid, transitionMatches))
+		transitionFound = api.Or(transitionFound, api.And(transition.IsInitialized, transitionMatches))
 	}
 
 	noMessageHashesAdded := equals(api, messageId, domain.MaxMessageCount)

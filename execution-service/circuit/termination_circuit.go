@@ -11,7 +11,11 @@ type TerminationCircuit struct {
 }
 
 func (circuit *TerminationCircuit) Define(api frontend.API) error {
-	err := checkInstanceHash(api, circuit.Instance)
+	err := checkModelHash(api, circuit.Model)
+	if err != nil {
+		return err
+	}
+	err = checkInstanceHash(api, circuit.Instance)
 	if err != nil {
 		return err
 	}

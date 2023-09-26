@@ -13,5 +13,7 @@ func GetModel2() domain.Model {
 	utils.PanicOnError(err)
 	defer jsonFile.Close()
 	byteValue, _ := io.ReadAll(jsonFile)
-	return infrastructure.FromJson(byteValue)
+	model, err := infrastructure.FromJson(byteValue)
+	utils.PanicOnError(err)
+	return model
 }
