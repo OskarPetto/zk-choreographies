@@ -1,6 +1,7 @@
 package circuit_test
 
 import (
+	"crypto/sha256"
 	"proof-service/authentication"
 	"proof-service/circuit"
 	"proof-service/domain"
@@ -35,7 +36,27 @@ func TestInstantiation(t *testing.T) {
 	}
 }
 
-func TestInstantiation_InvalidHash(t *testing.T) {
+func TestInstantiation_InvalidModelHash(t *testing.T) {
+	signatureService := authentication.NewSignatureService()
+	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
+	instance.ComputeHash()
+	signature := signatureService.Sign(instance)
+	circuitInstance, _ := circuit.FromInstance(instance)
+
+	model, _ := circuit.FromModel(testdata.GetModel2())
+	model.Hash = 1
+
+	witness := circuit.InstantiationCircuit{
+		Instance:  circuitInstance,
+		Signature: circuit.FromSignature(signature),
+		Model:     model,
+	}
+
+	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestInstantiation_InvalidInstanceHash(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
 	signature := signatureService.Sign(instance)
@@ -99,6 +120,28 @@ func TestInstantiation_InvalidAuthorization(t *testing.T) {
 	circuitInstance, _ := circuit.FromInstance(instance)
 
 	model, _ := circuit.FromModel(testdata.GetModel2())
+	witness := circuit.InstantiationCircuit{
+		Instance:  circuitInstance,
+		Signature: circuit.FromSignature(signature),
+		Model:     model,
+	}
+
+	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestInstantiation_InvalidMessageHashes(t *testing.T) {
+	signatureService := authentication.NewSignatureService()
+	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
+	instance.MessageHashes[0] = domain.MessageHash{
+		Value: sha256.Sum256([]byte("invalid")),
+	}
+	instance.ComputeHash()
+	signature := signatureService.Sign(instance)
+	circuitInstance, _ := circuit.FromInstance(instance)
+
+	model, _ := circuit.FromModel(testdata.GetModel2())
+
 	witness := circuit.InstantiationCircuit{
 		Instance:  circuitInstance,
 		Signature: circuit.FromSignature(signature),

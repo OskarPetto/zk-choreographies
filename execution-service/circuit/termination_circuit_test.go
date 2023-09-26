@@ -35,7 +35,27 @@ func TestTermination(t *testing.T) {
 	}
 }
 
-func TestTermination_InvalidSaltedHash(t *testing.T) {
+func TestTermination_InvalidModelHash(t *testing.T) {
+	signatureService := authentication.NewSignatureService()
+	publicKeys := testdata.GetPublicKeys(2)
+	instance := testdata.GetModel2Instance4(publicKeys)
+	instance.ComputeHash()
+	signature := signatureService.Sign(instance)
+	circuitInstance, _ := circuit.FromInstance(instance)
+
+	model, _ := circuit.FromModel(testdata.GetModel2())
+	model.Hash = 1
+	witness := circuit.TerminationCircuit{
+		Instance:  circuitInstance,
+		Signature: circuit.FromSignature(signature),
+		Model:     model,
+	}
+
+	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestTermination_InvalidInstanceHash(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKeys := testdata.GetPublicKeys(2)
 	instance := testdata.GetModel2Instance4(publicKeys)

@@ -1,6 +1,7 @@
 package circuit_test
 
 import (
+	"crypto/sha256"
 	"proof-service/authentication"
 	"proof-service/circuit"
 	"proof-service/domain"
@@ -83,7 +84,30 @@ func TestExecution_Transition1(t *testing.T) {
 	}
 }
 
-func TestExecution_InvalidHash(t *testing.T) {
+func TestExecution_InvalidModelHash(t *testing.T) {
+	signatureService := authentication.NewSignatureService()
+	publicKeys := testdata.GetPublicKeys(2)
+	currentInstance := testdata.GetModel2Instance2(publicKeys)
+	currentInstance.ComputeHash()
+	nextInstance := testdata.GetModel2Instance3(publicKeys)
+	nextInstance.ComputeHash()
+	nextSignature := signatureService.Sign(nextInstance)
+	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
+	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
+	model, _ := circuit.FromModel(testdata.GetModel2())
+	model.Hash = 1
+	witness := circuit.TransitionCircuit{
+		CurrentInstance:       currentCircuitInstance,
+		NextInstance:          nextCircuitInstance,
+		NextInstanceSignature: circuit.FromSignature(nextSignature),
+		Model:                 model,
+	}
+
+	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestExecution_InvalidInstanceHash(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKeys := testdata.GetPublicKeys(2)
 	currentInstance := testdata.GetModel2Instance1(publicKeys)
@@ -178,6 +202,31 @@ func TestExecution_AlteredPublicKeys(t *testing.T) {
 	currentInstance := testdata.GetModel2Instance1(publicKeys2)
 	currentInstance.ComputeHash()
 	nextInstance := testdata.GetModel2Instance2(publicKeys)
+	nextInstance.ComputeHash()
+	nextSignature := signatureService.Sign(nextInstance)
+	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
+	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
+	model, _ := circuit.FromModel(testdata.GetModel2())
+	witness := circuit.TransitionCircuit{
+		CurrentInstance:       currentCircuitInstance,
+		NextInstance:          nextCircuitInstance,
+		NextInstanceSignature: circuit.FromSignature(nextSignature),
+		Model:                 model,
+	}
+
+	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestExecution_OverwrittenMessageHash(t *testing.T) {
+	signatureService := authentication.NewSignatureService()
+	publicKeys := testdata.GetPublicKeys(2)
+	currentInstance := testdata.GetModel2Instance2(publicKeys)
+	currentInstance.MessageHashes[8] = domain.MessageHash{
+		Value: sha256.Sum256([]byte("invalid")),
+	}
+	currentInstance.ComputeHash()
+	nextInstance := testdata.GetModel2Instance3(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
 	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
