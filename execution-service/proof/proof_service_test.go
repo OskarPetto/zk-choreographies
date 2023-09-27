@@ -22,8 +22,9 @@ func TestProveInstantiation(t *testing.T) {
 	model := testdata.GetModel2()
 	proofService := proof.NewProofService()
 
-	_, err := proofService.ProveInstantiation(model, instance, signature)
+	verifierInput, err := proofService.ProveInstantiation(model, instance, signature)
 	assert.Nil(t, err)
+	assert.Equal(t, 2, len(verifierInput.Input))
 }
 
 func TestProveTransition1(t *testing.T) {
@@ -37,8 +38,9 @@ func TestProveTransition1(t *testing.T) {
 	model := testdata.GetModel2()
 	proofService := proof.NewProofService()
 
-	_, err := proofService.ProveTransition(model, currentInstance, nextInstance, signature)
+	verifierInput, err := proofService.ProveTransition(model, currentInstance, nextInstance, signature)
 	assert.Nil(t, err)
+	assert.Equal(t, 3, len(verifierInput.Input))
 }
 
 func TestProveTermination(t *testing.T) {
@@ -50,6 +52,7 @@ func TestProveTermination(t *testing.T) {
 	model := testdata.GetModel2()
 	proofService := proof.NewProofService()
 
-	_, err := proofService.ProveTermination(model, instance, signature)
+	verifierInput, err := proofService.ProveTermination(model, instance, signature)
 	assert.Nil(t, err)
+	assert.Equal(t, 2, len(verifierInput.Input))
 }
