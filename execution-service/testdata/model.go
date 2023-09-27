@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 	"proof-service/domain"
-	"proof-service/infrastructure"
+	"proof-service/infrastructure/json"
 	"proof-service/utils"
 )
 
@@ -13,7 +13,7 @@ func GetModel2() domain.Model {
 	utils.PanicOnError(err)
 	defer jsonFile.Close()
 	byteValue, _ := io.ReadAll(jsonFile)
-	model, err := infrastructure.FromJson(byteValue)
+	model, err := json.UnmarshalModel(byteValue)
 	utils.PanicOnError(err)
 	return model
 }

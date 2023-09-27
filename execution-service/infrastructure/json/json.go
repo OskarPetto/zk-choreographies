@@ -1,4 +1,4 @@
-package infrastructure
+package json
 
 import (
 	"encoding/json"
@@ -51,7 +51,7 @@ func (transition *Transition) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func FromJson(data []byte) (domain.Model, error) {
+func UnmarshalModel(data []byte) (domain.Model, error) {
 	var model Model
 	err := json.Unmarshal(data, &model)
 	if err != nil {
