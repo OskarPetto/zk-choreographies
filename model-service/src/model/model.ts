@@ -28,4 +28,5 @@ export interface Model {
   startPlaces: PlaceId[];
   endPlaces: PlaceId[];
   transitions: Transition[];
+  createdAt: Date;
 }

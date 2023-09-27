@@ -222,11 +222,11 @@ export class BpmnParser {
 
   private parseLoopType(choreographyTask: any): LoopType | undefined {
     switch (choreographyTask.loopType) {
-      case "Standard":
+      case 'Standard':
         return LoopType.STANDARD;
-      case "MultiInstanceSequential":
+      case 'MultiInstanceSequential':
         return LoopType.MULTI_INSTANCE_SEQUENTIAL;
-      case "MultiInstanceParallel":
+      case 'MultiInstanceParallel':
         return LoopType.MULTI_INSTANCE_PARALLEL;
       default:
         return undefined;

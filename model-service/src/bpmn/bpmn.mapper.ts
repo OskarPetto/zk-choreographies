@@ -24,11 +24,9 @@ import {
   TransitionType,
 } from '../model/model';
 
-
 @Injectable()
 export class BpmnMapper {
   maxLoopCount = 4;
-
 
   toModel(choreography: Choreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
@@ -48,15 +46,17 @@ export class BpmnMapper {
           participantIds,
           messageIds,
           additionalPlaceIds,
-          additionalMessageIds
+          additionalMessageIds,
         ),
     );
 
-    const startTransitions = choreography.startEvents.flatMap((startEvent) => this.startEventToTransition(
-      startEvent,
-      sequenceFlowPlaceIds,
-      additionalPlaceIds,
-    ));
+    const startTransitions = choreography.startEvents.flatMap((startEvent) =>
+      this.startEventToTransition(
+        startEvent,
+        sequenceFlowPlaceIds,
+        additionalPlaceIds,
+      ),
+    );
     const endTransitions = choreography.endEvents.flatMap((endEvent) =>
       this.endEventToTransition(
         endEvent,
@@ -86,9 +86,12 @@ export class BpmnMapper {
       ...parallelGatewayTransitions,
       ...choreographyTaskTransitions,
     ];
-    const relevantParticipants = [...participantIds.values()].filter(participantId => choreographyTaskTransitions.some(choreographyTask =>
-      choreographyTask.participant === participantId
-    ));
+    const relevantParticipants = [...participantIds.values()].filter(
+      (participantId) =>
+        choreographyTaskTransitions.some(
+          (choreographyTask) => choreographyTask.participant === participantId,
+        ),
+    );
 
     return {
       id: choreography.id,
@@ -102,6 +105,7 @@ export class BpmnMapper {
         (endTransition) => endTransition.outgoingPlaces,
       ),
       transitions,
+      createdAt: new Date(),
     };
   }
 
@@ -250,7 +254,7 @@ export class BpmnMapper {
     participantIds: Map<BpmnParticipantId, ParticipantId>,
     messageIds: Map<BpmnMessageId, MessageId>,
     additionalPlaceIds: PlaceId[],
-    additionalMessageIds: MessageId[]
+    additionalMessageIds: MessageId[],
   ): Transition[] {
     const incomingPlaceId = sequenceFlowPlaceIds.get(
       choreographyTask.incoming,
@@ -298,9 +302,9 @@ export class BpmnMapper {
           message: responseMessage,
         },
       ];
-
-    } else if (choreographyTask.loopType === LoopType.MULTI_INSTANCE_SEQUENTIAL) {
-
+    } else if (
+      choreographyTask.loopType === LoopType.MULTI_INSTANCE_SEQUENTIAL
+    ) {
       const transitions = [
         {
           id: `${choreographyTask.id}_0`,
@@ -313,7 +317,8 @@ export class BpmnMapper {
         },
       ];
       for (let index = 1; index < this.maxLoopCount; index++) {
-        const additionalMessageId = messageIds.size + additionalMessageIds.length;
+        const additionalMessageId =
+          messageIds.size + additionalMessageIds.length;
         additionalMessageIds.push(additionalMessageId);
         const transition = {
           id: `${choreographyTask.id}_${index}`,
@@ -323,12 +328,12 @@ export class BpmnMapper {
           outgoingPlaces: [outgoingPlaceId],
           participant: initiatingParticipantId,
           message: additionalMessageId,
-        }
+        };
         transitions.push(transition);
       }
       return transitions;
     } else {
-      throw Error("not supported")
+      throw Error('not supported');
     }
   }
 }

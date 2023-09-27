@@ -174,6 +174,7 @@ export class ModelReducer {
       messageCount: model.messageCount,
       startPlaces: [...model.startPlaces],
       endPlaces: [...model.endPlaces],
+      createdAt: model.createdAt,
       transitions,
     };
   }

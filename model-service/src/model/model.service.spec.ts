@@ -12,8 +12,15 @@ describe('ModelService', () => {
 
   describe('findModel', () => {
     it('should find model1', () => {
-      const result = modelService.findModel(model2.id);
+      const result = modelService.findModelById(model2.id);
       expect(result).toEqual(model2);
+    });
+  });
+
+  describe('findAllModels', () => {
+    it('should find model1', () => {
+      const result = modelService.findAllModels();
+      expect(result[0]).toEqual(model2);
     });
   });
 });

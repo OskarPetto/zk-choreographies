@@ -6,8 +6,10 @@ describe('BpmnMapper', () => {
   const definitions2 = TestdataProvider.getDefinitions2();
   const model2 = TestdataProvider.getModel2();
 
-  beforeAll(async () => {
+  beforeAll(() => {
     bpmnMapper = new BpmnMapper();
+    jest.useFakeTimers();
+    jest.setSystemTime(TestdataProvider.getDate());
   });
 
   describe('toModel', () => {
@@ -15,5 +17,9 @@ describe('BpmnMapper', () => {
       const result = bpmnMapper.toModel(definitions2.choreographies[0]);
       expect(result).toEqual(model2);
     });
+  });
+
+  afterAll(() => {
+    jest.useRealTimers();
   });
 });

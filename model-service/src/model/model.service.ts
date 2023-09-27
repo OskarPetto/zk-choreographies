@@ -9,16 +9,20 @@ export class ModelService {
   saveModel(model: Model) {
     if (!model.id) {
       model.id = this.createModelId();
+      model.createdAt = new Date();
     }
     this.models.set(model.id, model);
   }
 
-  findModel(modelId: ModelId): Model {
+  findModelById(modelId: ModelId): Model | undefined {
     const model = this.models.get(modelId);
-    if (!model) {
-      throw Error(`Model ${modelId} not found`);
-    }
     return model;
+  }
+
+  findAllModels(): Model[] {
+    return [...this.models.values()].sort(
+      (m1, m2) => m1.createdAt.getTime() - m2.createdAt.getTime(),
+    );
   }
 
   private createModelId(): ModelId {

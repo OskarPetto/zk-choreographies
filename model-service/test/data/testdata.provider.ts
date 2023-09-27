@@ -23,7 +23,10 @@ export class TestdataProvider {
   }
 
   static writeExampleChoreography() {
-    writeTextFile('test/data/example_choreography.json', JSON.stringify(this.getModel2Reduced()))
+    writeTextFile(
+      'test/data/example_choreography.json',
+      JSON.stringify(this.getModel2Reduced()),
+    );
   }
 
   static getDefinitions2(): Definitions {
@@ -45,10 +48,12 @@ export class TestdataProvider {
               name: 'Supplier',
             },
           ],
-          startEvents: [{
-            id: 'Event_1525yky',
-            outgoing: 'Flow_1f6eaf2',
-          }],
+          startEvents: [
+            {
+              id: 'Event_1525yky',
+              outgoing: 'Flow_1f6eaf2',
+            },
+          ],
           endEvents: [
             {
               id: 'Event_08d32d7',
@@ -239,6 +244,7 @@ export class TestdataProvider {
       messageCount: 12,
       startPlaces: [18],
       endPlaces: [19],
+      createdAt: TestdataProvider.getDate(),
       transitions: [
         {
           id: 'Event_1525yky',
@@ -424,6 +430,7 @@ export class TestdataProvider {
       messageCount: 12,
       startPlaces: [12],
       endPlaces: [13],
+      createdAt: TestdataProvider.getDate(),
       transitions: [
         {
           id: 'Event_1525yky',
@@ -563,5 +570,9 @@ export class TestdataProvider {
         },
       ],
     };
+  }
+
+  static getDate(): Date {
+    return new Date(Date.parse('2023-09-27T22:57:44.261Z'));
   }
 }
