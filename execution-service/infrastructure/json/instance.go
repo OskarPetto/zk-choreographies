@@ -2,7 +2,7 @@ package json
 
 import (
 	"bytes"
-	"encoding/hex"
+	"encoding/base64"
 	"execution-service/domain"
 	"time"
 )
@@ -35,7 +35,7 @@ func FromDomainInstance(instance domain.Instance) Instance {
 		if bytes.Equal(domain.InvalidPublicKey().Value, publicKey.Value) {
 			break
 		}
-		publicKeys = append(publicKeys, hex.EncodeToString(publicKey.Value))
+		publicKeys = append(publicKeys, bytesToString(publicKey.Value))
 	}
 	messageHashes := make([]Hash, 0)
 	for _, messageHash := range instance.MessageHashes {
@@ -44,15 +44,15 @@ func FromDomainInstance(instance domain.Instance) Instance {
 			break
 		}
 		messageHashes = append(messageHashes, Hash{
-			Value: hex.EncodeToString(messageHash.Value[:]),
-			Salt:  hex.EncodeToString(messageHash.Salt[:]),
+			Value: bytesToString(messageHash.Value[:]),
+			Salt:  bytesToString(messageHash.Salt[:]),
 		})
 	}
 	return Instance{
 		Id: instance.Id(),
 		Hash: Hash{
-			Value: hex.EncodeToString(instance.Hash.Value[:]),
-			Salt:  hex.EncodeToString(instance.Hash.Salt[:]),
+			Value: bytesToString(instance.Hash.Value[:]),
+			Salt:  bytesToString(instance.Hash.Salt[:]),
 		},
 		Model:         instance.Model,
 		TokenCounts:   tokenCounts,
@@ -60,4 +60,8 @@ func FromDomainInstance(instance domain.Instance) Instance {
 		MessageHashes: messageHashes,
 		UpdatedAt:     time.Unix(instance.UpdatedAt, 0),
 	}
+}
+
+func bytesToString(bytes []byte) string {
+	return base64.StdEncoding.EncodeToString(bytes)
 }

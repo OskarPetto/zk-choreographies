@@ -8,9 +8,9 @@ import (
 
 func main() {
 	router := gin.Default()
-	router.GET("/models/:id/instances", rest.GetInstances)
-	router.POST("/execution/instantiateModel", rest.InstantiateModel)
-	router.POST("/execution/executeTransition", rest.ExecuteTransition)
+	router.GET("/models/:modelId/instances", rest.GetInstances)
+	router.POST("/models/:modelId/instantiate", rest.InstantiateModel)
+	router.POST("/models/:modelId/instances/:instanceId", rest.ExecuteTransition)
 	router.PUT("/proof/proveInstantiation", rest.ProveInstantiation)
 	router.PUT("/proof/proveTransition", rest.ProveTransition)
 	router.PUT("/proof/proveTermination", rest.ProveTermination)

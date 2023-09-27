@@ -18,7 +18,7 @@ func TestFindInstanceById(t *testing.T) {
 	service.DeleteInstance(instance.Id())
 }
 
-func TestFindInstanceByModel(t *testing.T) {
+func TestFindInstancesByModel(t *testing.T) {
 	service := domain.NewInstanceService()
 	publicKeys := testdata.GetPublicKeys(1)
 	instance := testdata.GetModel2Instance1(publicKeys)

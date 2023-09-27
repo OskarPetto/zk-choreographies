@@ -17,7 +17,6 @@ type Transition struct {
 
 type Model struct {
 	Id               string       `json:"id"`
-	Hash             Hash         `json:"hash"`
 	Name             string       `json:"name"`
 	PlaceCount       uint         `json:"placeCount"`
 	ParticipantCount uint         `json:"participantCount"`
