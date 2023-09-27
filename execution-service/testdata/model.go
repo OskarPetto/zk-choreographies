@@ -1,11 +1,11 @@
 package testdata
 
 import (
+	"execution-service/domain"
+	"execution-service/infrastructure/json"
+	"execution-service/utils"
 	"io"
 	"os"
-	"proof-service/domain"
-	"proof-service/infrastructure/json"
-	"proof-service/utils"
 )
 
 func GetModel2() domain.Model {

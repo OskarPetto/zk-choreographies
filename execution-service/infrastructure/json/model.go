@@ -2,8 +2,8 @@ package json
 
 import (
 	"encoding/json"
+	"execution-service/domain"
 	"fmt"
-	"proof-service/domain"
 )
 
 type Transition struct {

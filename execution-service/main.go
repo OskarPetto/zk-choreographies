@@ -1,7 +1,14 @@
 package main
 
-import "fmt"
+import (
+	"execution-service/infrastructure/rest"
+
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
-	fmt.Println("Hello, world.")
+	router := gin.Default()
+	router.GET("/models", rest.GetModels)
+
+	router.Run("localhost:8080")
 }

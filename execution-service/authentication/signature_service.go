@@ -1,9 +1,9 @@
 package authentication
 
 import (
-	"proof-service/authentication/parameters"
-	"proof-service/domain"
-	"proof-service/utils"
+	"execution-service/authentication/parameters"
+	"execution-service/domain"
+	"execution-service/utils"
 
 	"github.com/consensys/gnark-crypto/hash"
 )

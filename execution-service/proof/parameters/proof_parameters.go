@@ -2,9 +2,9 @@ package parameters
 
 import (
 	"bytes"
-	"proof-service/file"
-	"proof-service/proof/circuit"
-	"proof-service/utils"
+	"execution-service/file"
+	"execution-service/proof/circuit"
+	"execution-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/groth16"

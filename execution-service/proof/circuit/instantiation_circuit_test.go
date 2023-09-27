@@ -1,10 +1,10 @@
 package circuit_test
 
 import (
-	"proof-service/authentication"
-	"proof-service/domain"
-	"proof-service/proof/circuit"
-	"proof-service/testdata"
+	"execution-service/authentication"
+	"execution-service/domain"
+	"execution-service/proof/circuit"
+	"execution-service/testdata"
 	"testing"
 
 	"github.com/consensys/gnark-crypto/ecc"

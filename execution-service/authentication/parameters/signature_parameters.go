@@ -3,8 +3,8 @@ package parameters
 import (
 	"bytes"
 	"crypto/rand"
-	"proof-service/file"
-	"proof-service/utils"
+	"execution-service/file"
+	"execution-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )

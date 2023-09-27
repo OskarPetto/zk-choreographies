@@ -1,10 +1,10 @@
 package execution
 
 import (
+	"execution-service/authentication"
+	"execution-service/domain"
+	"execution-service/proof"
 	"fmt"
-	"proof-service/authentication"
-	"proof-service/domain"
-	"proof-service/proof"
 )
 
 type InstantiateModelCommand struct {

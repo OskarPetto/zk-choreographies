@@ -1,9 +1,9 @@
 package proof_test
 
 import (
-	"proof-service/authentication"
-	"proof-service/proof"
-	"proof-service/testdata"
+	"execution-service/authentication"
+	"execution-service/proof"
+	"execution-service/testdata"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

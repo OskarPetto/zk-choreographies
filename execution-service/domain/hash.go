@@ -3,9 +3,9 @@ package domain
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"execution-service/utils"
 	"hash"
 	"math/big"
-	"proof-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"

@@ -1,10 +1,10 @@
 package file
 
 import (
+	"execution-service/utils"
 	"fmt"
 	"io"
 	"os"
-	"proof-service/utils"
 )
 
 func WritePrivateFile(writeable io.WriterTo, filename string) {

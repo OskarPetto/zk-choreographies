@@ -2,9 +2,9 @@ package testdata
 
 import (
 	"crypto/rand"
-	"proof-service/authentication"
-	"proof-service/domain"
-	"proof-service/utils"
+	"execution-service/authentication"
+	"execution-service/domain"
+	"execution-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )

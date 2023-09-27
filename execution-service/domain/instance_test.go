@@ -1,7 +1,7 @@
 package domain_test
 
 import (
-	"proof-service/testdata"
+	"execution-service/testdata"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

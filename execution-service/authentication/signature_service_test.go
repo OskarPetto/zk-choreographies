@@ -1,8 +1,8 @@
 package authentication_test
 
 import (
-	"proof-service/authentication"
-	"proof-service/testdata"
+	"execution-service/authentication"
+	"execution-service/testdata"
 	"testing"
 )
 

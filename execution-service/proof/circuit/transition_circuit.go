@@ -1,7 +1,7 @@
 package circuit
 
 import (
-	"proof-service/domain"
+	"execution-service/domain"
 
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/lookup/logderivlookup"
