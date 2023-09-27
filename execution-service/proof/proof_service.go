@@ -40,18 +40,10 @@ func NewProofService() ProofService {
 }
 
 func (service *ProofService) ProveInstantiation(model domain.Model, instance domain.Instance, signature authentication.Signature) (Proof, error) {
-	circuitInstance, err := circuit.FromInstance(instance)
-	if err != nil {
-		return Proof{}, err
-	}
-	circuitModel, err := circuit.FromModel(model)
-	if err != nil {
-		return Proof{}, err
-	}
 	assignment := &circuit.InstantiationCircuit{
-		Instance:  circuitInstance,
+		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
-		Model:     circuitModel,
+		Model:     circuit.FromModel(model),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -65,24 +57,11 @@ func (service *ProofService) ProveInstantiation(model domain.Model, instance dom
 }
 
 func (service *ProofService) ProveTransition(model domain.Model, currentInstance domain.Instance, nextInstance domain.Instance, nextSignature authentication.Signature) (Proof, error) {
-	currentCircuitInstance, err := circuit.FromInstance(currentInstance)
-	if err != nil {
-		return Proof{}, err
-	}
-	nextCircuitInstance, err := circuit.FromInstance(nextInstance)
-	if err != nil {
-		return Proof{}, err
-	}
-	circuitModel, err := circuit.FromModel(model)
-	if err != nil {
-		return Proof{}, err
-	}
-
 	assignment := &circuit.TransitionCircuit{
-		CurrentInstance:       currentCircuitInstance,
-		NextInstance:          nextCircuitInstance,
+		CurrentInstance:       circuit.FromInstance(currentInstance),
+		NextInstance:          circuit.FromInstance(nextInstance),
 		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		Model:                 circuitModel,
+		Model:                 circuit.FromModel(model),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -96,18 +75,10 @@ func (service *ProofService) ProveTransition(model domain.Model, currentInstance
 }
 
 func (service *ProofService) ProveTermination(model domain.Model, instance domain.Instance, signature authentication.Signature) (Proof, error) {
-	circuitInstance, err := circuit.FromInstance(instance)
-	if err != nil {
-		return Proof{}, err
-	}
-	circuitModel, err := circuit.FromModel(model)
-	if err != nil {
-		return Proof{}, err
-	}
 	assignment := &circuit.TerminationCircuit{
-		Instance:  circuitInstance,
+		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
-		Model:     circuitModel,
+		Model:     circuit.FromModel(model),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {

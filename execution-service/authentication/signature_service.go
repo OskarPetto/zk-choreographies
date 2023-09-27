@@ -32,7 +32,7 @@ func NewSignatureService() SignatureService {
 
 func (service *SignatureService) Sign(instance domain.Instance) Signature {
 	privateKey := service.signatureParameters.SignaturePrivateKey
-	signature, err := privateKey.Sign(instance.Hash, hash.MIMC_BN254.New())
+	signature, err := privateKey.Sign(instance.Hash.Value[:], hash.MIMC_BN254.New())
 	utils.PanicOnError(err)
 
 	return Signature{

@@ -2,7 +2,6 @@ package testdata
 
 import (
 	"crypto/rand"
-	"crypto/sha256"
 	"proof-service/authentication"
 	"proof-service/domain"
 	"proof-service/utils"
@@ -36,19 +35,18 @@ func GetModel2Instance1(publicKeys []domain.PublicKey) domain.Instance {
 		Model:       "example_choreography",
 		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
 		PublicKeys:  publicKeysFixedSize,
-		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
+		MessageHashes: [domain.MaxMessageCount]domain.Hash{
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
 		},
-		Hash: make([]byte, 32),
-		Salt: make([]byte, 32),
+		Hash: domain.DefaultHash,
 	}
 }
 
@@ -63,19 +61,18 @@ func GetModel2Instance2(publicKeys []domain.PublicKey) domain.Instance {
 		Model:       "example_choreography",
 		TokenCounts: [domain.MaxPlaceCount]int8{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		PublicKeys:  publicKeysFixedSize,
-		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
+		MessageHashes: [domain.MaxMessageCount]domain.Hash{
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
 		},
-		Hash: make([]byte, 32),
-		Salt: make([]byte, 32),
+		Hash: domain.DefaultHash,
 	}
 }
 
@@ -90,21 +87,18 @@ func GetModel2Instance3(publicKeys []domain.PublicKey) domain.Instance {
 		Model:       "example_choreography",
 		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
 		PublicKeys:  publicKeysFixedSize,
-		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.MessageHash{
-				Value: sha256.Sum256([]byte("hello")),
-			},
+		MessageHashes: [domain.MaxMessageCount]domain.Hash{
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.HashMessage([]byte("hello")),
 		},
-		Hash: make([]byte, 32),
-		Salt: make([]byte, 32),
+		Hash: domain.DefaultHash,
 	}
 }
 
@@ -119,18 +113,17 @@ func GetModel2Instance4(publicKeys []domain.PublicKey) domain.Instance {
 		Model:       "example_choreography",
 		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 		PublicKeys:  publicKeysFixedSize,
-		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
-			domain.DefaultMessageHash,
+		MessageHashes: [domain.MaxMessageCount]domain.Hash{
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
+			domain.DefaultHash,
 		},
-		Hash: make([]byte, 32),
-		Salt: make([]byte, 32),
+		Hash: domain.DefaultHash,
 	}
 }

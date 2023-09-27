@@ -12,9 +12,20 @@ import (
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )
 
-func hashMessage(message []byte) MessageHash {
-	return MessageHash{
-		Value: sha256.Sum256(message),
+const HashSize = 32
+const SaltSize = 32
+
+type Hash struct {
+	Value [HashSize]byte // field element
+	Salt  [SaltSize]byte
+}
+
+var DefaultHash = Hash{}
+
+func HashMessage(message []byte) Hash {
+	bytesHash := sha256.Sum256(message)
+	return Hash{
+		Value: hashToField(bytesHash),
 	}
 }
 
@@ -40,9 +51,12 @@ func (model *Model) ComputeHash() {
 		hashUint8(mimc, transition.Participant)
 		hashUint8(mimc, transition.Message)
 	}
-	model.Salt = randomFieldElement()
-	mimc.Write(model.Salt)
-	model.Hash = mimc.Sum([]byte{})
+	salt := randomFieldElement()
+	mimc.Write(salt[:])
+	model.Hash = Hash{
+		Value: [HashSize]byte(mimc.Sum([]byte{})),
+		Salt:  salt,
+	}
 }
 
 func (instance *Instance) ComputeHash() {
@@ -59,12 +73,14 @@ func (instance *Instance) ComputeHash() {
 		mimc.Write(yBytes[:])
 	}
 	for _, messageHash := range instance.MessageHashes {
-		fieldElement := utils.HashToField(messageHash.Value)
-		mimc.Write(fieldElement)
+		mimc.Write(messageHash.Value[:])
 	}
-	instance.Salt = randomFieldElement()
-	mimc.Write(instance.Salt)
-	instance.Hash = mimc.Sum([]byte{})
+	salt := randomFieldElement()
+	mimc.Write(salt[:])
+	instance.Hash = Hash{
+		Value: [HashSize]byte(mimc.Sum([]byte{})),
+		Salt:  salt,
+	}
 }
 
 func hashInt8(hasher hash.Hash, value int8) {
@@ -88,10 +104,10 @@ func boolToUint8(value bool) uint8 {
 	return result
 }
 
-func randomFieldElement() []byte {
+func randomFieldElement() [fr.Bytes]byte {
 	randomBytes := randomFrSizedBytes()
-	fieldElement := utils.HashToField(randomBytes)
-	return fieldElement[:]
+	fieldElement := hashToField(randomBytes)
+	return fieldElement
 }
 
 func randomFrSizedBytes() [fr.Bytes]byte {
@@ -99,4 +115,11 @@ func randomFrSizedBytes() [fr.Bytes]byte {
 	_, err := rand.Read(res)
 	utils.PanicOnError(err)
 	return [fr.Bytes]byte(res)
+}
+
+func hashToField(data [fr.Bytes]byte) [fr.Bytes]byte {
+	fieldElements, err := fr.Hash(data[:], []byte("c5f6c44a-050b-469d-8d5d-a66992a40ca7"), 1)
+	utils.PanicOnError(err)
+	fieldElementBytes := fieldElements[0].Bytes()
+	return fieldElementBytes
 }

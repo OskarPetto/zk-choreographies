@@ -4,12 +4,7 @@ import (
 	"fmt"
 )
 
-const MessageHashSize = 32
 const PublicKeySize = 32
-
-type MessageHash struct {
-	Value [MessageHashSize]byte
-}
 
 type PublicKey struct {
 	Value []byte
@@ -21,20 +16,15 @@ var DefaultPublicKey = PublicKey{
 	Value: make([]byte, PublicKeySize),
 }
 
-var DefaultMessageHash = MessageHash{
-	Value: [MessageHashSize]byte{},
-}
-
 type InstanceId = string
 
 type Instance struct {
 	Id            InstanceId
 	Model         ModelId
-	Hash          []byte
+	Hash          Hash
 	TokenCounts   [MaxPlaceCount]int8
 	PublicKeys    [MaxParticipantCount]PublicKey
-	MessageHashes [MaxMessageCount]MessageHash
-	Salt          []byte
+	MessageHashes [MaxMessageCount]Hash
 }
 
 func (instance Instance) ExecuteTransition(transition Transition) (Instance, error) {
@@ -46,8 +36,7 @@ func (instance Instance) ExecuteTransition(transition Transition) (Instance, err
 }
 
 func (instance Instance) ExecuteTransitionWithMessage(transition Transition, message []byte) (Instance, error) {
-	messageHash := hashMessage(message)
-	instance.storeMessageHash(transition.Message, messageHash)
+	instance.storeMessageHash(transition.Message, message)
 	err := instance.executeTransition(transition)
 	if err != nil {
 		return Instance{}, err
@@ -55,7 +44,8 @@ func (instance Instance) ExecuteTransitionWithMessage(transition Transition, mes
 	return instance, nil
 }
 
-func (instance *Instance) storeMessageHash(messageId MessageId, messageHash MessageHash) {
+func (instance *Instance) storeMessageHash(messageId MessageId, message []byte) {
+	messageHash := HashMessage(message)
 	if messageId != DefaultMessageId {
 		instance.MessageHashes[messageId] = messageHash
 	}

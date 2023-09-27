@@ -5,12 +5,13 @@ import (
 	"proof-service/domain"
 	"proof-service/utils"
 
+	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/consensys/gnark-crypto/ecc/twistededwards"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
-const defaultMessageHash = "18386210742325734038511415457231681258408421947992479991590796204613365952235"
+const defaultMessageHash = 0
 
 type Signature struct {
 	Value     eddsa.Signature
@@ -19,10 +20,10 @@ type Signature struct {
 
 type Instance struct {
 	Hash          frontend.Variable `gnark:",public"`
+	Salt          frontend.Variable
 	TokenCounts   [domain.MaxPlaceCount]frontend.Variable
 	PublicKeys    [domain.MaxParticipantCount]eddsa.PublicKey
 	MessageHashes [domain.MaxMessageCount]frontend.Variable
-	Salt          frontend.Variable
 }
 
 type Transition struct {
@@ -35,13 +36,13 @@ type Transition struct {
 
 type Model struct {
 	Hash             frontend.Variable `gnark:",public"`
+	Salt             frontend.Variable
 	PlaceCount       frontend.Variable
 	ParticipantCount frontend.Variable
 	MessageCount     frontend.Variable
 	StartPlaces      [domain.MaxStartPlaceCount]frontend.Variable
 	EndPlaces        [domain.MaxEndPlaceCount]frontend.Variable
 	Transitions      [domain.MaxTransitionCount]Transition
-	Salt             frontend.Variable
 }
 
 func FromSignature(signature authentication.Signature) Signature {
@@ -55,7 +56,7 @@ func FromSignature(signature authentication.Signature) Signature {
 	}
 }
 
-func FromInstance(instance domain.Instance) (Instance, error) {
+func FromInstance(instance domain.Instance) Instance {
 	var tokenCounts [domain.MaxPlaceCount]frontend.Variable
 	for i, tokenCount := range instance.TokenCounts {
 		tokenCounts[i] = tokenCount
@@ -66,15 +67,15 @@ func FromInstance(instance domain.Instance) (Instance, error) {
 	}
 	var messageHashes [domain.MaxMessageCount]frontend.Variable
 	for i, messageHash := range instance.MessageHashes {
-		messageHashes[i] = utils.HashToField(messageHash.Value)
+		messageHashes[i] = fromBytes(messageHash.Value)
 	}
 	return Instance{
-		Hash:          instance.Hash,
+		Hash:          fromBytes(instance.Hash.Value),
+		Salt:          fromBytes(instance.Hash.Salt),
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
-		Salt:          instance.Salt,
-	}, nil
+	}
 }
 
 func fromPublicKey(publicKey domain.PublicKey) eddsa.PublicKey {
@@ -83,7 +84,7 @@ func fromPublicKey(publicKey domain.PublicKey) eddsa.PublicKey {
 	return eddsaPublicKey
 }
 
-func FromModel(model domain.Model) (Model, error) {
+func FromModel(model domain.Model) Model {
 	var startPlaces [domain.MaxStartPlaceCount]frontend.Variable
 	for i, startPlace := range model.StartPlaces {
 		startPlaces[i] = startPlace
@@ -97,15 +98,15 @@ func FromModel(model domain.Model) (Model, error) {
 		transitions[i] = fromTransition(transition)
 	}
 	return Model{
-		Hash:             model.Hash,
+		Hash:             fromBytes(model.Hash.Value),
+		Salt:             fromBytes(model.Hash.Salt),
 		PlaceCount:       model.PlaceCount,
 		ParticipantCount: model.ParticipantCount,
 		MessageCount:     model.MessageCount,
 		StartPlaces:      startPlaces,
 		EndPlaces:        endPlaces,
 		Transitions:      transitions,
-		Salt:             model.Salt,
-	}, nil
+	}
 }
 
 func fromTransition(transition domain.Transition) Transition {
@@ -128,4 +129,10 @@ func fromTransition(transition domain.Transition) Transition {
 		Participant:    transition.Participant,
 		Message:        transition.Message,
 	}
+}
+
+func fromBytes(data [fr.Bytes]byte) frontend.Variable {
+	fieldElement, err := fr.BigEndian.Element(&data)
+	utils.PanicOnError(err)
+	return fieldElement
 }

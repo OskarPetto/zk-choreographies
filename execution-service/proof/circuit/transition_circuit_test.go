@@ -1,7 +1,6 @@
 package circuit_test
 
 import (
-	"crypto/sha256"
 	"proof-service/authentication"
 	"proof-service/domain"
 	"proof-service/proof/circuit"
@@ -21,13 +20,12 @@ func TestExecution_NoTokenChange(t *testing.T) {
 	currentInstance := testdata.GetModel2Instance1(publicKeys)
 	currentInstance.ComputeHash()
 	signature := signatureService.Sign(currentInstance)
-	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	model, _ := circuit.FromModel(testdata.GetModel2())
+
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:       currentCircuitInstance,
-		NextInstance:          currentCircuitInstance,
+		CurrentInstance:       circuit.FromInstance(currentInstance),
+		NextInstance:          circuit.FromInstance(currentInstance),
 		NextInstanceSignature: circuit.FromSignature(signature),
-		Model:                 model,
+		Model:                 circuit.FromModel(testdata.GetModel2()),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -44,14 +42,12 @@ func TestExecution_Transition0(t *testing.T) {
 	nextInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
-	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel2())
+
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:       currentCircuitInstance,
-		NextInstance:          nextCircuitInstance,
+		CurrentInstance:       circuit.FromInstance(currentInstance),
+		NextInstance:          circuit.FromInstance(nextInstance),
 		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		Model:                 model,
+		Model:                 circuit.FromModel(testdata.GetModel2()),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -68,14 +64,12 @@ func TestExecution_Transition1(t *testing.T) {
 	nextInstance := testdata.GetModel2Instance3(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
-	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel2())
+
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:       currentCircuitInstance,
-		NextInstance:          nextCircuitInstance,
+		CurrentInstance:       circuit.FromInstance(currentInstance),
+		NextInstance:          circuit.FromInstance(nextInstance),
 		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		Model:                 model,
+		Model:                 circuit.FromModel(testdata.GetModel2()),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -92,15 +86,15 @@ func TestExecution_InvalidModelHash(t *testing.T) {
 	nextInstance := testdata.GetModel2Instance3(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
-	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel2())
-	model.Hash = 1
+
+	model := testdata.GetModel2()
+	model.Hash = domain.DefaultHash
+
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:       currentCircuitInstance,
-		NextInstance:          nextCircuitInstance,
+		CurrentInstance:       circuit.FromInstance(currentInstance),
+		NextInstance:          circuit.FromInstance(nextInstance),
 		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		Model:                 model,
+		Model:                 circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -114,14 +108,12 @@ func TestExecution_InvalidInstanceHash(t *testing.T) {
 	currentInstance.ComputeHash()
 	nextInstance := testdata.GetModel2Instance2(publicKeys)
 	nextSignature := signatureService.Sign(nextInstance)
-	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel2())
+
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:       currentCircuitInstance,
-		NextInstance:          nextCircuitInstance,
+		CurrentInstance:       circuit.FromInstance(currentInstance),
+		NextInstance:          circuit.FromInstance(nextInstance),
 		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		Model:                 model,
+		Model:                 circuit.FromModel(testdata.GetModel2()),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -136,14 +128,12 @@ func TestExecution_InvalidTokenCounts(t *testing.T) {
 	nextInstance := testdata.GetModel2Instance3(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
-	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel2())
+
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:       currentCircuitInstance,
-		NextInstance:          nextCircuitInstance,
+		CurrentInstance:       circuit.FromInstance(currentInstance),
+		NextInstance:          circuit.FromInstance(nextInstance),
 		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		Model:                 model,
+		Model:                 circuit.FromModel(testdata.GetModel2()),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -158,14 +148,12 @@ func TestExecution_InvalidSignature(t *testing.T) {
 	nextInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(currentInstance)
-	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel2())
+
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:       currentCircuitInstance,
-		NextInstance:          nextCircuitInstance,
+		CurrentInstance:       circuit.FromInstance(currentInstance),
+		NextInstance:          circuit.FromInstance(nextInstance),
 		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		Model:                 model,
+		Model:                 circuit.FromModel(testdata.GetModel2()),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -181,14 +169,12 @@ func TestExecution_InvalidAuthorization(t *testing.T) {
 	nextInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
-	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel2())
+
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:       currentCircuitInstance,
-		NextInstance:          nextCircuitInstance,
+		CurrentInstance:       circuit.FromInstance(currentInstance),
+		NextInstance:          circuit.FromInstance(nextInstance),
 		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		Model:                 model,
+		Model:                 circuit.FromModel(testdata.GetModel2()),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -204,14 +190,12 @@ func TestExecution_AlteredPublicKeys(t *testing.T) {
 	nextInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
-	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel2())
+
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:       currentCircuitInstance,
-		NextInstance:          nextCircuitInstance,
+		CurrentInstance:       circuit.FromInstance(currentInstance),
+		NextInstance:          circuit.FromInstance(nextInstance),
 		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		Model:                 model,
+		Model:                 circuit.FromModel(testdata.GetModel2()),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -222,21 +206,18 @@ func TestExecution_OverwrittenMessageHash(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKeys := testdata.GetPublicKeys(2)
 	currentInstance := testdata.GetModel2Instance2(publicKeys)
-	currentInstance.MessageHashes[8] = domain.MessageHash{
-		Value: sha256.Sum256([]byte("invalid")),
-	}
+	currentInstance.MessageHashes[8] = domain.HashMessage([]byte("other"))
 	currentInstance.ComputeHash()
+
 	nextInstance := testdata.GetModel2Instance3(publicKeys)
 	nextInstance.ComputeHash()
 	nextSignature := signatureService.Sign(nextInstance)
-	currentCircuitInstance, _ := circuit.FromInstance(currentInstance)
-	nextCircuitInstance, _ := circuit.FromInstance(nextInstance)
-	model, _ := circuit.FromModel(testdata.GetModel2())
+
 	witness := circuit.TransitionCircuit{
-		CurrentInstance:       currentCircuitInstance,
-		NextInstance:          nextCircuitInstance,
+		CurrentInstance:       circuit.FromInstance(currentInstance),
+		NextInstance:          circuit.FromInstance(nextInstance),
 		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		Model:                 model,
+		Model:                 circuit.FromModel(testdata.GetModel2()),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())

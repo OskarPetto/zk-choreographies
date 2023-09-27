@@ -46,14 +46,13 @@ type ModelId = string
 
 type Model struct {
 	Id               ModelId
-	Hash             []byte
+	Hash             Hash
 	PlaceCount       uint8
 	ParticipantCount uint8
 	MessageCount     uint8
 	StartPlaces      [MaxStartPlaceCount]PlaceId
 	EndPlaces        [MaxEndPlaceCount]PlaceId
 	Transitions      [MaxTransitionCount]Transition
-	Salt             []byte
 }
 
 func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
@@ -66,9 +65,9 @@ func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
 			tokenCounts[startPlace] = 1
 		}
 	}
-	var messageHashes [MaxMessageCount]MessageHash
+	var messageHashes [MaxMessageCount]Hash
 	for i := 0; i < MaxMessageCount; i++ {
-		messageHashes[i] = DefaultMessageHash
+		messageHashes[i] = DefaultHash
 	}
 	var publicKeysFixedSize [MaxParticipantCount]PublicKey
 	copy(publicKeysFixedSize[:], publicKeys)
