@@ -23,9 +23,12 @@ type Hash struct {
 var DefaultHash = Hash{}
 
 func HashMessage(message []byte) Hash {
-	bytesHash := sha256.Sum256(message)
+	salt := randomFrSizedBytes()
+	input := append(message, salt[:]...)
+	bytesHash := sha256.Sum256(input)
 	return Hash{
 		Value: hashToField(bytesHash),
+		Salt:  salt,
 	}
 }
 

@@ -14,10 +14,10 @@ func TestExecuteTransition0(t *testing.T) {
 	expected := testdata.GetModel2Instance2(publicKeys)
 	instance2, err := instance1.ExecuteTransition(model.Transitions[0])
 	assert.Nil(t, err)
-	assert.Equal(t, instance2.TokenCounts, expected.TokenCounts)
-	assert.Equal(t, instance2.PublicKeys, expected.PublicKeys)
-	assert.Equal(t, instance2.MessageHashes, expected.MessageHashes)
-	assert.NotEqual(t, instance2.Hash, instance1.Hash)
+	assert.Equal(t, expected.TokenCounts, instance2.TokenCounts)
+	assert.Equal(t, expected.PublicKeys, instance2.PublicKeys)
+	assert.Equal(t, instance1.MessageHashes, instance2.MessageHashes)
+	assert.NotEqual(t, instance1.Hash, instance2.Hash)
 }
 
 func TestExecuteTransition1(t *testing.T) {
@@ -27,8 +27,8 @@ func TestExecuteTransition1(t *testing.T) {
 	expected := testdata.GetModel2Instance3(publicKeys)
 	instance2, err := instance1.ExecuteTransitionWithMessage(model.Transitions[2], []byte("hello"))
 	assert.Nil(t, err)
-	assert.Equal(t, instance2.TokenCounts, expected.TokenCounts)
-	assert.Equal(t, instance2.PublicKeys, expected.PublicKeys)
-	assert.Equal(t, instance2.MessageHashes, expected.MessageHashes)
-	assert.NotEqual(t, instance2.Hash, instance1.Hash)
+	assert.Equal(t, expected.TokenCounts, instance2.TokenCounts)
+	assert.Equal(t, expected.PublicKeys, instance2.PublicKeys)
+	assert.NotEqual(t, instance1.MessageHashes, instance2.MessageHashes)
+	assert.NotEqual(t, instance1.Hash, instance2.Hash)
 }
