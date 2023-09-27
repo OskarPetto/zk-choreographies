@@ -59,6 +59,7 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 	}
 	//TODO call ethereumservice with proofResult
 	fmt.Println(proofResult.PublicInput)
+	service.modelService.SaveModel(model)
 	service.instanceService.SaveInstance(instanceResult)
 	return instanceResult, nil
 }
