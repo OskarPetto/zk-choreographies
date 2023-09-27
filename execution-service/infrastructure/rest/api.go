@@ -31,7 +31,8 @@ func InstantiateModel(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	c.IndentedJSON(http.StatusOK, result)
+	jsonResult := json.FromExecutionResult(result)
+	c.IndentedJSON(http.StatusOK, jsonResult)
 }
 
 func ExecuteTransition(c *gin.Context) {
@@ -47,7 +48,8 @@ func ExecuteTransition(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	c.IndentedJSON(http.StatusOK, result)
+	jsonResult := json.FromExecutionResult(result)
+	c.IndentedJSON(http.StatusOK, jsonResult)
 }
 
 func ProveTermination(c *gin.Context) {
@@ -63,5 +65,6 @@ func ProveTermination(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	c.IndentedJSON(http.StatusOK, result)
+	jsonResult := json.FromExecutionResult(result)
+	c.IndentedJSON(http.StatusOK, jsonResult)
 }
