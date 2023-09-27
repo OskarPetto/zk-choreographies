@@ -2,8 +2,7 @@ package domain
 
 import (
 	"fmt"
-
-	"github.com/google/uuid"
+	"time"
 )
 
 const MaxPlaceCount = 64
@@ -80,11 +79,11 @@ func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
 		publicKeysFixedSize[i] = InvalidPublicKey()
 	}
 	instance := Instance{
-		Id:            uuid.NewString(),
 		Model:         model.Id,
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeysFixedSize,
 		MessageHashes: messageHashes,
+		UpdatedAt:     time.Now().Unix(),
 	}
 	instance.ComputeHash()
 	return instance, nil

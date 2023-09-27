@@ -2,6 +2,7 @@ package domain
 
 import (
 	"fmt"
+	"sort"
 )
 
 type InstanceService struct {
@@ -22,7 +23,11 @@ func NewInstanceService() InstanceService {
 }
 
 func (service *InstanceService) SaveInstance(instance Instance) {
-	service.instances[instance.Id] = instance
+	service.instances[instance.Id()] = instance
+}
+
+func (service *InstanceService) DeleteInstance(id InstanceId) {
+	delete(service.instances, id)
 }
 
 func (service *InstanceService) FindInstanceById(id InstanceId) (Instance, error) {
@@ -40,5 +45,8 @@ func (service *InstanceService) FindInstancesByModel(model ModelId) []Instance {
 			instances = append(instances, instance)
 		}
 	}
+	sort.Slice(instances, func(i, j int) bool {
+		return instances[i].UpdatedAt > instances[j].UpdatedAt
+	})
 	return instances
 }

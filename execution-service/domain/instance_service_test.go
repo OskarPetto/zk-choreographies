@@ -13,8 +13,9 @@ func TestFindInstanceById(t *testing.T) {
 	publicKeys := testdata.GetPublicKeys(1)
 	instance := testdata.GetModel2Instance1(publicKeys)
 	service.SaveInstance(instance)
-	_, err := service.FindInstanceById(instance.Id)
+	_, err := service.FindInstanceById(instance.Id())
 	assert.Nil(t, err)
+	service.DeleteInstance(instance.Id())
 }
 
 func TestFindInstanceByModel(t *testing.T) {

@@ -1,7 +1,9 @@
 package domain
 
 import (
+	"encoding/hex"
 	"fmt"
+	"time"
 )
 
 const PublicKeySize = 32
@@ -21,39 +23,41 @@ func InvalidPublicKey() PublicKey {
 type InstanceId = string
 
 type Instance struct {
-	Id            InstanceId
 	Hash          Hash
 	Model         ModelId
 	TokenCounts   [MaxPlaceCount]int8
 	PublicKeys    [MaxParticipantCount]PublicKey
 	MessageHashes [MaxMessageCount]Hash
+	UpdatedAt     int64
 }
 
-func (instance Instance) ExecuteTransition(transition Transition) (Instance, error) {
-	err := instance.executeTransition(transition)
-	if err != nil {
-		return Instance{}, err
-	}
-	return instance, nil
+func (instance *Instance) Id() InstanceId {
+	return hex.EncodeToString(instance.Hash.Value[:])
 }
 
 func (instance Instance) ExecuteTransitionWithMessage(transition Transition, message []byte) (Instance, error) {
-	instance.storeMessageHash(transition.Message, message)
-	err := instance.executeTransition(transition)
-	if err != nil {
-		return Instance{}, err
-	}
-	return instance, nil
+	instance.updateMessageHash(transition.Message, message)
+	return instance.ExecuteTransition(transition)
 }
 
-func (instance *Instance) storeMessageHash(messageId MessageId, message []byte) {
+func (instance *Instance) updateMessageHash(messageId MessageId, message []byte) {
 	messageHash := HashMessage(message)
 	if messageId != InvalidMessageId {
 		instance.MessageHashes[messageId] = messageHash
 	}
 }
 
-func (instance *Instance) executeTransition(transition Transition) error {
+func (instance Instance) ExecuteTransition(transition Transition) (Instance, error) {
+	err := instance.updateTokenCounts(transition)
+	if err != nil {
+		return Instance{}, err
+	}
+	instance.UpdatedAt = time.Now().Unix()
+	instance.ComputeHash()
+	return instance, nil
+}
+
+func (instance *Instance) updateTokenCounts(transition Transition) error {
 	if !isTransitionExecutable(instance, transition) {
 		return fmt.Errorf("transition %s is not executable", transition.Id)
 	}
@@ -70,7 +74,6 @@ func (instance *Instance) executeTransition(transition Transition) error {
 		}
 	}
 	instance.TokenCounts = tokenCounts
-	instance.ComputeHash()
 	return nil
 }
 

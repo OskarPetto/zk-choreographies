@@ -50,6 +50,7 @@ func checkInstanceHash(api frontend.API, instance Instance) error {
 		mimc.Write(publicKey.A.Y)
 	}
 	mimc.Write(instance.MessageHashes[:]...)
+	mimc.Write(instance.UpdatedAt)
 	mimc.Write(instance.Hash.Salt)
 	hash := mimc.Sum()
 	api.AssertIsEqual(hash, instance.Hash.Value)

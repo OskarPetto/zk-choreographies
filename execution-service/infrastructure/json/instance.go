@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"execution-service/domain"
+	"time"
 )
 
 type Hash struct {
@@ -12,12 +13,13 @@ type Hash struct {
 }
 
 type Instance struct {
-	Id            string   `json:"id"`
-	Hash          Hash     `json:"hash"`
-	Model         string   `json:"model"`
-	TokenCounts   []int    `json:"tokenCounts"`
-	PublicKeys    []string `json:"publicKeys"`
-	MessageHashes []Hash   `json:"messageHashes"`
+	Id            string    `json:"id"`
+	Hash          Hash      `json:"hash"`
+	Model         string    `json:"model"`
+	TokenCounts   []int     `json:"tokenCounts"`
+	PublicKeys    []string  `json:"publicKeys"`
+	MessageHashes []Hash    `json:"messageHashes"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 func FromDomainInstance(instance domain.Instance) Instance {
@@ -47,7 +49,7 @@ func FromDomainInstance(instance domain.Instance) Instance {
 		})
 	}
 	return Instance{
-		Id: instance.Id,
+		Id: instance.Id(),
 		Hash: Hash{
 			Value: hex.EncodeToString(instance.Hash.Value[:]),
 			Salt:  hex.EncodeToString(instance.Hash.Salt[:]),
@@ -56,5 +58,6 @@ func FromDomainInstance(instance domain.Instance) Instance {
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
+		UpdatedAt:     time.Unix(instance.UpdatedAt, 0),
 	}
 }

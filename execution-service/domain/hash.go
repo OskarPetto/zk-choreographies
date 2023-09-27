@@ -69,7 +69,7 @@ func HashModel(model Model) Hash {
 func (instance *Instance) ComputeHash() {
 	mimc := mimc.NewMiMC()
 	for _, tokenCount := range instance.TokenCounts {
-		hashInt8(mimc, tokenCount)
+		hashInt64(mimc, int64(tokenCount))
 	}
 	for _, publicKey := range instance.PublicKeys {
 		var eddsaPublicKey eddsa.PublicKey
@@ -82,6 +82,7 @@ func (instance *Instance) ComputeHash() {
 	for _, messageHash := range instance.MessageHashes {
 		mimc.Write(messageHash.Value[:])
 	}
+	hashInt64(mimc, instance.UpdatedAt)
 	salt := randomFieldElement()
 	mimc.Write(salt[:])
 	instance.Hash = Hash{
@@ -90,9 +91,9 @@ func (instance *Instance) ComputeHash() {
 	}
 }
 
-func hashInt8(hasher hash.Hash, value int8) {
+func hashInt64(hasher hash.Hash, value int64) {
 	var fieldElement fr.Element
-	fieldElement.SetInt64(int64(value))
+	fieldElement.SetInt64(value)
 	bytes := fieldElement.Bytes()
 	hasher.Write(bytes[:])
 }

@@ -9,16 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMain(m *testing.M) {
-	model := testdata.GetModel2()
-	publicKeys := testdata.GetPublicKeys(2)
-	instance := testdata.GetModel2Instance1(publicKeys)
-	hashService := domain.NewHashService()
-	instanceService := domain.NewInstanceService()
-	hashService.SaveModelHash(model.Id, domain.HashModel(model))
-	instanceService.SaveInstance(instance)
-}
-
 func TestNewProofService(t *testing.T) {
 	proof.NewProofService()
 }
@@ -27,11 +17,15 @@ func TestProveInstantiation(t *testing.T) {
 	publicKeys := testdata.GetPublicKeys(2)
 	instance := testdata.GetModel2Instance1(publicKeys)
 	model := testdata.GetModel2()
+	hashService := domain.NewHashService()
+	instanceService := domain.NewInstanceService()
+	hashService.SaveModelHash(model.Id, domain.HashModel(model))
+	instanceService.SaveInstance(instance)
 	proofService := proof.NewProofService()
 
 	proof, err := proofService.ProveInstantiation(proof.ProveInstantiationCommand{
 		Model:    model,
-		Instance: instance.Id,
+		Instance: instance.Id(),
 	})
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(proof.PublicInput))
@@ -42,12 +36,17 @@ func TestProveTransition1(t *testing.T) {
 	currentInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance := testdata.GetModel2Instance3(publicKeys)
 	model := testdata.GetModel2()
+	hashService := domain.NewHashService()
+	instanceService := domain.NewInstanceService()
+	hashService.SaveModelHash(model.Id, domain.HashModel(model))
+	instanceService.SaveInstance(currentInstance)
+	instanceService.SaveInstance(nextInstance)
 	proofService := proof.NewProofService()
 
 	proof, err := proofService.ProveTransition(proof.ProveTransitionCommand{
 		Model:           model,
-		CurrentInstance: currentInstance.Id,
-		NextInstance:    nextInstance.Id,
+		CurrentInstance: currentInstance.Id(),
+		NextInstance:    nextInstance.Id(),
 	})
 	assert.Nil(t, err)
 	assert.Equal(t, 3, len(proof.PublicInput))
@@ -57,11 +56,15 @@ func TestProveTermination(t *testing.T) {
 	publicKeys := testdata.GetPublicKeys(2)
 	instance := testdata.GetModel2Instance4(publicKeys)
 	model := testdata.GetModel2()
+	hashService := domain.NewHashService()
+	instanceService := domain.NewInstanceService()
+	hashService.SaveModelHash(model.Id, domain.HashModel(model))
+	instanceService.SaveInstance(instance)
 	proofService := proof.NewProofService()
 
 	proof, err := proofService.ProveTermination(proof.ProveTerminationCommand{
 		Model:    model,
-		Instance: instance.Id,
+		Instance: instance.Id(),
 	})
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(proof.PublicInput))

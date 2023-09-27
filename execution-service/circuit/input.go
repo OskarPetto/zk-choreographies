@@ -26,6 +26,7 @@ type Instance struct {
 	TokenCounts   [domain.MaxPlaceCount]frontend.Variable
 	PublicKeys    [domain.MaxParticipantCount]eddsa.PublicKey
 	MessageHashes [domain.MaxMessageCount]frontend.Variable
+	UpdatedAt     frontend.Variable
 }
 
 type Transition struct {
@@ -74,6 +75,7 @@ func FromInstance(instance domain.Instance) Instance {
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
+		UpdatedAt:     instance.UpdatedAt,
 	}
 }
 

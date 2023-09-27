@@ -5,6 +5,7 @@ import (
 	"execution-service/authentication"
 	"execution-service/domain"
 	"execution-service/utils"
+	"time"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )
@@ -125,11 +126,11 @@ func getModel2Instance(tokenCounts []int8, publicKeys []domain.PublicKey, messag
 		messageHashesFixedSize[i] = domain.InvalidHash()
 	}
 	instance := domain.Instance{
-		Id:            "example_choreography1",
 		Model:         "example_choreography",
 		TokenCounts:   tokenCountsFixedSize,
 		PublicKeys:    publicKeysFixedSize,
 		MessageHashes: messageHashesFixedSize,
+		UpdatedAt:     time.Now().Unix(),
 	}
 	instance.ComputeHash()
 	return instance
