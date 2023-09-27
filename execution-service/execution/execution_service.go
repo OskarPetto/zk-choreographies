@@ -59,3 +59,14 @@ func (service *ExecutionService) ExecuteTransition(model domain.Model, inst doma
 	service.instanceService.SaveInstance(instanceResult)
 	return instanceResult, nil
 }
+
+func (service *ExecutionService) TerminateInstance(model domain.Model, inst domain.Instance) error {
+	signature := service.signatureService.Sign(inst)
+	proofResult, err := service.proofService.ProveTermination(model, inst, signature)
+	if err != nil {
+		return err
+	}
+	//TODO call ethereumservice with proofResult
+	fmt.Println(proofResult.PublicInput)
+	return nil
+}
