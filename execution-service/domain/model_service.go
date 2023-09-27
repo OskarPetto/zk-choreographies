@@ -30,11 +30,3 @@ func (service *ModelService) FindModelById(id ModelId) (Model, error) {
 	}
 	return model, nil
 }
-
-func (service *ModelService) FindAllModels() []Model {
-	models := make([]Model, 0, len(service.models))
-	for _, model := range service.models {
-		models = append(models, model)
-	}
-	return models
-}

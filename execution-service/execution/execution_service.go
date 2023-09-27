@@ -4,25 +4,7 @@ import (
 	"execution-service/authentication"
 	"execution-service/domain"
 	"execution-service/proof"
-	"fmt"
 )
-
-type InstantiateModelCommand struct {
-	Model      domain.Model
-	PublicKeys []domain.PublicKey
-}
-
-type ExecuteTransitionCommand struct {
-	Model      domain.ModelId
-	Instance   domain.InstanceId
-	Transition domain.TransitionId
-	Message    []byte
-}
-
-type TerminateInstanceCommand struct {
-	Model    domain.ModelId
-	Instance domain.InstanceId
-}
 
 type ExecutionService struct {
 	isLoaded         bool
@@ -46,36 +28,37 @@ func NewExecutionService() ExecutionService {
 	return executionService
 }
 
-func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (domain.Instance, error) {
+func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (InstantiationResult, error) {
 	model := cmd.Model
 	instanceResult, err := model.Instantiate(cmd.PublicKeys)
 	if err != nil {
-		return domain.Instance{}, err
+		return InstantiationResult{}, err
 	}
 	signature := service.signatureService.Sign(instanceResult)
 	proofResult, err := service.proofService.ProveInstantiation(model, instanceResult, signature)
 	if err != nil {
-		return domain.Instance{}, err
+		return InstantiationResult{}, err
 	}
-	//TODO call ethereumservice with proofResult
-	fmt.Println(proofResult.PublicInput)
 	service.modelService.SaveModel(model)
 	service.instanceService.SaveInstance(instanceResult)
-	return instanceResult, nil
+	return InstantiationResult{
+		Instance: instanceResult,
+		Proof:    proofResult,
+	}, nil
 }
 
-func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand) (domain.Instance, error) {
+func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand) (TransitionResult, error) {
 	model, err := service.modelService.FindModelById(cmd.Model)
 	if err != nil {
-		return domain.Instance{}, err
+		return TransitionResult{}, err
 	}
 	instance, err := service.instanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
-		return domain.Instance{}, err
+		return TransitionResult{}, err
 	}
 	transition, err := model.FindTransitionById(cmd.Transition)
 	if err != nil {
-		return domain.Instance{}, err
+		return TransitionResult{}, err
 	}
 	var instanceResult domain.Instance
 	if len(cmd.Message) == 0 {
@@ -84,34 +67,35 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 		instanceResult, err = instance.ExecuteTransitionWithMessage(transition, cmd.Message)
 	}
 	if err != nil {
-		return domain.Instance{}, err
+		return TransitionResult{}, err
 	}
 	signature := service.signatureService.Sign(instanceResult)
 	proofResult, err := service.proofService.ProveTransition(model, instance, instanceResult, signature)
 	if err != nil {
-		return domain.Instance{}, err
+		return TransitionResult{}, err
 	}
-	//TODO call ethereumservice with proofResult
-	fmt.Println(proofResult.PublicInput)
 	service.instanceService.SaveInstance(instanceResult)
-	return instanceResult, nil
+	return TransitionResult{
+		Instance: instanceResult,
+		Proof:    proofResult,
+	}, nil
 }
 
-func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand) error {
+func (service *ExecutionService) ProveTermination(cmd ProveTerminationCommand) (TerminationResult, error) {
 	model, err := service.modelService.FindModelById(cmd.Model)
 	if err != nil {
-		return err
+		return TerminationResult{}, err
 	}
 	instance, err := service.instanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
-		return err
+		return TerminationResult{}, err
 	}
 	signature := service.signatureService.Sign(instance)
 	proofResult, err := service.proofService.ProveTermination(model, instance, signature)
 	if err != nil {
-		return err
+		return TerminationResult{}, err
 	}
-	//TODO call ethereumservice with proofResult
-	fmt.Println(proofResult.PublicInput)
-	return nil
+	return TerminationResult{
+		Proof: proofResult,
+	}, nil
 }

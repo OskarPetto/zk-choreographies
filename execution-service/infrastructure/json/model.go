@@ -57,10 +57,10 @@ func UnmarshalModel(data []byte) (domain.Model, error) {
 	if err != nil {
 		return domain.Model{}, err
 	}
-	return toDomainModel(model)
+	return ToDomainModel(model)
 }
 
-func toDomainModel(model Model) (domain.Model, error) {
+func ToDomainModel(model Model) (domain.Model, error) {
 	if model.PlaceCount > domain.MaxPlaceCount {
 		return domain.Model{}, fmt.Errorf("model '%s' has too many places", model.Id)
 	}
