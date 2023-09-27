@@ -122,7 +122,6 @@ func toDomainModel(model Model) (domain.Model, error) {
 		EndPlaces:        endPlaces,
 		Transitions:      transitions,
 	}
-	domainModel.ComputeHash()
 	return domainModel, nil
 }
 

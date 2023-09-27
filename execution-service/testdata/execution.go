@@ -32,6 +32,8 @@ func GetModel2Instance1(publicKeys []domain.PublicKey) domain.Instance {
 		publicKeysFixedSize[i] = domain.DefaultPublicKey
 	}
 	return domain.Instance{
+		Id:          "example_choreography1",
+		Model:       "example_choreography",
 		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
 		PublicKeys:  publicKeysFixedSize,
 		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{
@@ -57,6 +59,8 @@ func GetModel2Instance2(publicKeys []domain.PublicKey) domain.Instance {
 		publicKeysFixedSize[i] = domain.DefaultPublicKey
 	}
 	return domain.Instance{
+		Id:          "example_choreography1",
+		Model:       "example_choreography",
 		TokenCounts: [domain.MaxPlaceCount]int8{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 		PublicKeys:  publicKeysFixedSize,
 		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{
@@ -82,6 +86,8 @@ func GetModel2Instance3(publicKeys []domain.PublicKey) domain.Instance {
 		publicKeysFixedSize[i] = domain.DefaultPublicKey
 	}
 	return domain.Instance{
+		Id:          "example_choreography1",
+		Model:       "example_choreography",
 		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
 		PublicKeys:  publicKeysFixedSize,
 		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{
@@ -109,6 +115,8 @@ func GetModel2Instance4(publicKeys []domain.PublicKey) domain.Instance {
 		publicKeysFixedSize[i] = domain.DefaultPublicKey
 	}
 	return domain.Instance{
+		Id:          "example_choreography1",
+		Model:       "example_choreography",
 		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
 		PublicKeys:  publicKeysFixedSize,
 		MessageHashes: [domain.MaxMessageCount]domain.MessageHash{

@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"encoding/hex"
 	"fmt"
 )
 
@@ -23,15 +22,23 @@ func NewInstanceService() InstanceService {
 }
 
 func (service *InstanceService) SaveInstance(instance Instance) {
-	id := hex.EncodeToString(instance.Hash)
-	service.instances[id] = instance
+	service.instances[instance.Id] = instance
 }
 
-func (service *InstanceService) FindInstanceByHash(hash []byte) (Instance, error) {
-	id := hex.EncodeToString(hash)
+func (service *InstanceService) FindInstanceById(id InstanceId) (Instance, error) {
 	instance, exists := service.instances[id]
 	if !exists {
 		return Instance{}, fmt.Errorf("instance %s not found", id)
 	}
 	return instance, nil
+}
+
+func (service *InstanceService) FindInstancesByModel(model ModelId) []Instance {
+	instances := make([]Instance, 0, len(service.instances))
+	for _, instance := range service.instances {
+		if instance.Model == model {
+			instances = append(instances, instance)
+		}
+	}
+	return instances
 }

@@ -1,6 +1,10 @@
 package domain
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+)
 
 const MaxPlaceCount = 64
 const MaxParticipantCount = 8
@@ -18,8 +22,10 @@ const DefaultPlaceId = MaxPlaceCount
 const DefaultParticipantId = MaxParticipantCount
 const DefaultMessageId = MaxMessageCount
 
+type TransitionId = string
+
 type Transition struct {
-	Id             string
+	Id             TransitionId
 	Name           string
 	IsInitialized  bool
 	IncomingPlaces [MaxBranchingFactor]PlaceId
@@ -36,8 +42,10 @@ var DefaultTransition = Transition{
 	Message:        DefaultMessageId,
 }
 
+type ModelId = string
+
 type Model struct {
-	Id               string
+	Id               ModelId
 	Hash             []byte
 	PlaceCount       uint8
 	ParticipantCount uint8
@@ -68,10 +76,22 @@ func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
 		publicKeysFixedSize[i] = DefaultPublicKey
 	}
 	instance := Instance{
+		Id:            uuid.NewString(),
+		Model:         model.Id,
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeysFixedSize,
 		MessageHashes: messageHashes,
 	}
 	instance.ComputeHash()
+	model.ComputeHash()
 	return instance, nil
+}
+
+func (model *Model) FindTransitionById(id TransitionId) (Transition, error) {
+	for _, transition := range model.Transitions {
+		if transition.Id == id {
+			return transition, nil
+		}
+	}
+	return Transition{}, fmt.Errorf("transition %s not found in model %s", id, model.Id)
 }

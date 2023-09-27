@@ -12,7 +12,7 @@ import (
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )
 
-func HashMessage(message []byte) MessageHash {
+func hashMessage(message []byte) MessageHash {
 	return MessageHash{
 		Value: sha256.Sum256(message),
 	}

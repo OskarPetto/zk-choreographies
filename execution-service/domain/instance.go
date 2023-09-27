@@ -25,7 +25,11 @@ var DefaultMessageHash = MessageHash{
 	Value: [MessageHashSize]byte{},
 }
 
+type InstanceId = string
+
 type Instance struct {
+	Id            InstanceId
+	Model         ModelId
 	Hash          []byte
 	TokenCounts   [MaxPlaceCount]int8
 	PublicKeys    [MaxParticipantCount]PublicKey
@@ -33,7 +37,16 @@ type Instance struct {
 	Salt          []byte
 }
 
-func (instance Instance) ExecuteTransition(transition Transition, messageHash MessageHash) (Instance, error) {
+func (instance Instance) ExecuteTransition(transition Transition) (Instance, error) {
+	err := instance.executeTransition(transition)
+	if err != nil {
+		return Instance{}, err
+	}
+	return instance, nil
+}
+
+func (instance Instance) ExecuteTransitionWithMessage(transition Transition, message []byte) (Instance, error) {
+	messageHash := hashMessage(message)
 	instance.storeMessageHash(transition.Message, messageHash)
 	err := instance.executeTransition(transition)
 	if err != nil {
@@ -74,6 +87,10 @@ func isTransitionExecutable(instance *Instance, transition Transition) bool {
 		if incomingPlaceId == DefaultPlaceId {
 			break
 		}
+		if int(incomingPlaceId) > len(instance.TokenCounts) {
+			return false
+		}
+
 		if instance.TokenCounts[incomingPlaceId] < 1 {
 			return false
 		}
