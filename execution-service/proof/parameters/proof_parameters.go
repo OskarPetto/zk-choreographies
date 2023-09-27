@@ -2,8 +2,8 @@ package parameters
 
 import (
 	"bytes"
-	"proof-service/circuit"
 	"proof-service/file"
+	"proof-service/proof/circuit"
 	"proof-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc"

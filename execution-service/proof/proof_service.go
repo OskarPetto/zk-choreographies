@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"math/big"
 	"proof-service/authentication"
-	"proof-service/circuit"
 	"proof-service/domain"
+	"proof-service/proof/circuit"
 	"proof-service/proof/parameters"
 
 	"github.com/consensys/gnark-crypto/ecc"

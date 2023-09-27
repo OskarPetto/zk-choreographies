@@ -3,8 +3,8 @@ package circuit_test
 import (
 	"crypto/sha256"
 	"proof-service/authentication"
-	"proof-service/circuit"
 	"proof-service/domain"
+	"proof-service/proof/circuit"
 	"proof-service/testdata"
 	"testing"
 
