@@ -12,3 +12,4 @@
 - why no variables? because checking their content in programmable gateways is too expensive
 - reduction does not work when join gateway immediately follows split gateway and there is a task in one branch (loop)
 - message hashes should be hiding, to hide message content from other participants
+- Validity of model can be revealed after termination 

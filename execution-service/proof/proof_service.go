@@ -1,8 +1,6 @@
 package proof
 
 import (
-	"execution-service/authentication"
-	"execution-service/domain"
 	"execution-service/proof/circuit"
 	"execution-service/proof/parameters"
 
@@ -28,11 +26,12 @@ func NewProofService() ProofService {
 	return proofService
 }
 
-func (service *ProofService) ProveInstantiation(model domain.Model, instance domain.Instance, signature authentication.Signature) (Proof, error) {
+func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (Proof, error) {
 	assignment := &circuit.InstantiationCircuit{
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(model),
+		ModelHash: circuit.FromHash(cmd.ModelHash),
+		Model:     circuit.FromModel(cmd.Model),
+		Instance:  circuit.FromInstance(cmd.Instance),
+		Signature: circuit.FromSignature(cmd.Signature),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -45,12 +44,13 @@ func (service *ProofService) ProveInstantiation(model domain.Model, instance dom
 	return newProof(proof, witness)
 }
 
-func (service *ProofService) ProveTransition(model domain.Model, currentInstance domain.Instance, nextInstance domain.Instance, nextSignature authentication.Signature) (Proof, error) {
+func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof, error) {
 	assignment := &circuit.TransitionCircuit{
-		CurrentInstance:       circuit.FromInstance(currentInstance),
-		NextInstance:          circuit.FromInstance(nextInstance),
-		NextInstanceSignature: circuit.FromSignature(nextSignature),
-		Model:                 circuit.FromModel(model),
+		ModelHash:             circuit.FromHash(cmd.ModelHash),
+		Model:                 circuit.FromModel(cmd.Model),
+		CurrentInstance:       circuit.FromInstance(cmd.CurrentInstance),
+		NextInstance:          circuit.FromInstance(cmd.NextInstance),
+		NextInstanceSignature: circuit.FromSignature(cmd.NextSignature),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -63,11 +63,12 @@ func (service *ProofService) ProveTransition(model domain.Model, currentInstance
 	return newProof(proof, witness)
 }
 
-func (service *ProofService) ProveTermination(model domain.Model, instance domain.Instance, signature authentication.Signature) (Proof, error) {
+func (service *ProofService) ProveTermination(cmd ProveTerminationCommand) (Proof, error) {
 	assignment := &circuit.TerminationCircuit{
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(model),
+		ModelHash: circuit.FromHash(cmd.ModelHash),
+		Model:     circuit.FromModel(cmd.Model),
+		Instance:  circuit.FromInstance(cmd.Instance),
+		Signature: circuit.FromSignature(cmd.Signature),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {

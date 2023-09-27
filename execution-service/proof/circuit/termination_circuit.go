@@ -5,13 +5,14 @@ import (
 )
 
 type TerminationCircuit struct {
+	ModelHash Hash
 	Model     Model
 	Instance  Instance
 	Signature Signature
 }
 
 func (circuit *TerminationCircuit) Define(api frontend.API) error {
-	err := checkModelHash(api, circuit.Model)
+	err := checkModelHash(api, circuit.ModelHash, circuit.Model)
 	if err != nil {
 		return err
 	}
@@ -29,13 +30,13 @@ func (circuit *TerminationCircuit) Define(api frontend.API) error {
 }
 
 func (circuit *TerminationCircuit) checkTokenCounts(api frontend.API) {
-	var hasEnoughTokens frontend.Variable = 0
+	var atLeastOneEndPlaceHasTokenCountOne frontend.Variable = 0
 	for placeId, tokenCount := range circuit.Instance.TokenCounts {
 		tokenCountIsOne := equals(api, tokenCount, 1)
 		for _, endPlaceId := range circuit.Model.EndPlaces {
 			isEndPlace := equals(api, endPlaceId, placeId)
-			hasEnoughTokens = api.Or(hasEnoughTokens, api.And(isEndPlace, tokenCountIsOne))
+			atLeastOneEndPlaceHasTokenCountOne = api.Or(atLeastOneEndPlaceHasTokenCountOne, api.And(isEndPlace, tokenCountIsOne))
 		}
 	}
-	api.AssertIsEqual(1, hasEnoughTokens)
+	api.AssertIsEqual(1, atLeastOneEndPlaceHasTokenCountOne)
 }

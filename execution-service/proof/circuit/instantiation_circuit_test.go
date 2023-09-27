@@ -17,13 +17,15 @@ var instantiationCircuit circuit.InstantiationCircuit
 func TestInstantiation(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
-	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 
+	model := testdata.GetModel2()
+
 	witness := circuit.InstantiationCircuit{
+		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(testdata.GetModel2()),
+		Model:     circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -35,13 +37,12 @@ func TestInstantiation(t *testing.T) {
 func TestInstantiation_InvalidModelHash(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
-	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 
 	model := testdata.GetModel2()
-	model.Hash = domain.DefaultHash
 
 	witness := circuit.InstantiationCircuit{
+		ModelHash: circuit.FromHash(domain.InvalidHash()),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -54,28 +55,53 @@ func TestInstantiation_InvalidModelHash(t *testing.T) {
 func TestInstantiation_InvalidInstanceHash(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
+	instance.Hash = domain.InvalidHash()
 	signature := signatureService.Sign(instance)
 
+	model := testdata.GetModel2()
+
 	witness := circuit.InstantiationCircuit{
+		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(testdata.GetModel2()),
+		Model:     circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
 	assert.NotNil(t, err)
 }
 
-func TestInstantiation_InvalidTokenCounts(t *testing.T) {
+func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	instance := testdata.GetModel2Instance2(testdata.GetPublicKeys(2))
-	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 
+	model := testdata.GetModel2()
+
 	witness := circuit.InstantiationCircuit{
+		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(testdata.GetModel2()),
+		Model:     circuit.FromModel(model),
+	}
+
+	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
+	signatureService := authentication.NewSignatureService()
+	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
+	instance.TokenCounts[domain.MaxPlaceCount-1] = 0
+	signature := signatureService.Sign(instance)
+
+	model := testdata.GetModel2()
+
+	witness := circuit.InstantiationCircuit{
+		ModelHash: circuit.FromHash(domain.HashModel(model)),
+		Instance:  circuit.FromInstance(instance),
+		Signature: circuit.FromSignature(signature),
+		Model:     circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -85,15 +111,17 @@ func TestInstantiation_InvalidTokenCounts(t *testing.T) {
 func TestInstantiation_InvalidSignature(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
-	instance.ComputeHash()
 	instance2 := testdata.GetModel2Instance2(testdata.GetPublicKeys(2))
 	instance2.ComputeHash()
 	signature := signatureService.Sign(instance2)
 
+	model := testdata.GetModel2()
+
 	witness := circuit.InstantiationCircuit{
+		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(testdata.GetModel2()),
+		Model:     circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -104,13 +132,15 @@ func TestInstantiation_InvalidAuthorization(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	publicKeys := testdata.GetPublicKeys(3)
 	instance := testdata.GetModel2Instance1([]domain.PublicKey{publicKeys[1], publicKeys[2]})
-	instance.ComputeHash()
 	signature := signatureService.Sign(instance)
 
+	model := testdata.GetModel2()
+
 	witness := circuit.InstantiationCircuit{
+		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(testdata.GetModel2()),
+		Model:     circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -121,14 +151,16 @@ func TestInstantiation_InvalidMessageHashes(t *testing.T) {
 	signatureService := authentication.NewSignatureService()
 	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
 	instance.MessageHashes[0] = domain.HashMessage([]byte("invalid"))
-	instance.ComputeHash()
 
 	signature := signatureService.Sign(instance)
 
+	model := testdata.GetModel2()
+
 	witness := circuit.InstantiationCircuit{
+		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(testdata.GetModel2()),
+		Model:     circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())

@@ -5,16 +5,16 @@ import (
 	"execution-service/proof"
 )
 
-type InstantiationResult struct {
+type InstantiateModelResult struct {
 	Instance domain.Instance
 	Proof    proof.Proof
 }
 
-type TransitionResult struct {
+type ExecuteTransitionResult struct {
 	Instance domain.Instance
 	Proof    proof.Proof
 }
 
-type TerminationResult struct {
+type ProveTerminationResult struct {
 	Proof proof.Proof
 }

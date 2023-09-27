@@ -13,11 +13,11 @@ func TestInstantiateModel(t *testing.T) {
 	expected := testdata.GetModel2Instance1(publicKeys)
 	instance, err := model.Instantiate(publicKeys)
 	assert.Nil(t, err)
-	assert.Equal(t, instance.TokenCounts, expected.TokenCounts)
-	assert.Equal(t, instance.PublicKeys, expected.PublicKeys)
-	assert.Equal(t, instance.MessageHashes, expected.MessageHashes)
+	assert.Equal(t, expected.TokenCounts, instance.TokenCounts)
+	assert.Equal(t, expected.PublicKeys, instance.PublicKeys)
+	assert.Equal(t, expected.MessageHashes, instance.MessageHashes)
 	assert.Equal(t, model.Id, instance.Model)
-	assert.NotEqual(t, instance.Hash, expected.Hash)
+	assert.NotEqual(t, expected.Hash, instance.Hash)
 }
 
 func TestFindTransitionById(t *testing.T) {

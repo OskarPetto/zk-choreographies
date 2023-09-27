@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"execution-service/utils"
 	"hash"
-	"math/big"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
@@ -20,7 +19,12 @@ type Hash struct {
 	Salt  [SaltSize]byte
 }
 
-var DefaultHash = Hash{}
+func InvalidHash() Hash {
+	var defaultHash = Hash{}
+	defaultHash.Value[HashSize-1] = 1
+	defaultHash.Salt[SaltSize-1] = 1
+	return defaultHash
+}
 
 func HashMessage(message []byte) Hash {
 	salt := randomFrSizedBytes()
@@ -32,7 +36,7 @@ func HashMessage(message []byte) Hash {
 	}
 }
 
-func (model *Model) ComputeHash() {
+func HashModel(model Model) Hash {
 	mimc := mimc.NewMiMC()
 	hashUint8(mimc, model.PlaceCount)
 	hashUint8(mimc, model.ParticipantCount)
@@ -44,7 +48,7 @@ func (model *Model) ComputeHash() {
 		hashUint8(mimc, endPlace)
 	}
 	for _, transition := range model.Transitions {
-		hashUint8(mimc, boolToUint8(transition.IsInitialized))
+		hashUint8(mimc, boolToUint8(transition.IsValid))
 		for _, incomingPlace := range transition.IncomingPlaces {
 			hashUint8(mimc, incomingPlace)
 		}
@@ -56,7 +60,7 @@ func (model *Model) ComputeHash() {
 	}
 	salt := randomFieldElement()
 	mimc.Write(salt[:])
-	model.Hash = Hash{
+	return Hash{
 		Value: [HashSize]byte(mimc.Sum([]byte{})),
 		Salt:  salt,
 	}
@@ -87,9 +91,9 @@ func (instance *Instance) ComputeHash() {
 }
 
 func hashInt8(hasher hash.Hash, value int8) {
-	var bytes [fr.Bytes]byte
-	number := big.NewInt(int64(value))
-	number.FillBytes(bytes[:])
+	var fieldElement fr.Element
+	fieldElement.SetInt64(int64(value))
+	bytes := fieldElement.Bytes()
 	hasher.Write(bytes[:])
 }
 

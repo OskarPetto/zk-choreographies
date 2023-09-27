@@ -10,18 +10,20 @@ type PublicKey struct {
 	Value []byte
 }
 
-const DefaultTokenCount = 0
+const InvalidTokenCount = -100
 
-var DefaultPublicKey = PublicKey{
-	Value: make([]byte, PublicKeySize),
+func InvalidPublicKey() PublicKey {
+	return PublicKey{
+		Value: make([]byte, PublicKeySize),
+	}
 }
 
 type InstanceId = string
 
 type Instance struct {
 	Id            InstanceId
-	Model         ModelId
 	Hash          Hash
+	Model         ModelId
 	TokenCounts   [MaxPlaceCount]int8
 	PublicKeys    [MaxParticipantCount]PublicKey
 	MessageHashes [MaxMessageCount]Hash
@@ -46,7 +48,7 @@ func (instance Instance) ExecuteTransitionWithMessage(transition Transition, mes
 
 func (instance *Instance) storeMessageHash(messageId MessageId, message []byte) {
 	messageHash := HashMessage(message)
-	if messageId != DefaultMessageId {
+	if messageId != InvalidMessageId {
 		instance.MessageHashes[messageId] = messageHash
 	}
 }
@@ -58,12 +60,12 @@ func (instance *Instance) executeTransition(transition Transition) error {
 	var tokenCounts [MaxPlaceCount]int8
 	copy(tokenCounts[:], instance.TokenCounts[:])
 	for _, incomingPlaceId := range transition.IncomingPlaces {
-		if incomingPlaceId != DefaultPlaceId {
+		if incomingPlaceId != InvalidPlaceId {
 			tokenCounts[incomingPlaceId] -= 1
 		}
 	}
 	for _, outgoingPlaceId := range transition.OutgoingPlaces {
-		if outgoingPlaceId != DefaultPlaceId {
+		if outgoingPlaceId != InvalidPlaceId {
 			tokenCounts[outgoingPlaceId] += 1
 		}
 	}
@@ -74,7 +76,7 @@ func (instance *Instance) executeTransition(transition Transition) error {
 
 func isTransitionExecutable(instance *Instance, transition Transition) bool {
 	for _, incomingPlaceId := range transition.IncomingPlaces {
-		if incomingPlaceId == DefaultPlaceId {
+		if incomingPlaceId == InvalidPlaceId {
 			break
 		}
 		if int(incomingPlaceId) > len(instance.TokenCounts) {

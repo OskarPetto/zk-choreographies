@@ -3,6 +3,7 @@ package rest
 import (
 	"execution-service/domain"
 	"execution-service/execution"
+	"execution-service/infrastructure/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,8 +19,12 @@ func GetInstances(c *gin.Context) {
 }
 
 func InstantiateModel(c *gin.Context) {
-	var cmd execution.InstantiateModelCommand
-	if err := c.BindJSON(&cmd); err != nil {
+	var jsonCmd json.InstantiateModelCommand
+	if err := c.BindJSON(&jsonCmd); err != nil {
+		return
+	}
+	cmd, err := jsonCmd.ToExecutionCommand()
+	if err != nil {
 		return
 	}
 	result, err := executionService.InstantiateModel(cmd)
@@ -30,8 +35,12 @@ func InstantiateModel(c *gin.Context) {
 }
 
 func ExecuteTransition(c *gin.Context) {
-	var cmd execution.ExecuteTransitionCommand
-	if err := c.BindJSON(&cmd); err != nil {
+	var jsonCmd json.ExecuteTransitionCommand
+	if err := c.BindJSON(&jsonCmd); err != nil {
+		return
+	}
+	cmd, err := jsonCmd.ToExecutionCommand()
+	if err != nil {
 		return
 	}
 	result, err := executionService.ExecuteTransition(cmd)
@@ -42,8 +51,12 @@ func ExecuteTransition(c *gin.Context) {
 }
 
 func ProveTermination(c *gin.Context) {
-	var cmd execution.ProveTerminationCommand
-	if err := c.BindJSON(&cmd); err != nil {
+	var jsonCmd json.ProveTerminationCommand
+	if err := c.BindJSON(&jsonCmd); err != nil {
+		return
+	}
+	cmd, err := jsonCmd.ToExecutionCommand()
+	if err != nil {
 		return
 	}
 	result, err := executionService.ProveTermination(cmd)

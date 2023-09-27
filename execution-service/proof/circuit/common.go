@@ -8,7 +8,7 @@ import (
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
-func checkModelHash(api frontend.API, model Model) error {
+func checkModelHash(api frontend.API, hash Hash, model Model) error {
 	mimc, err := mimc.NewMiMC(api)
 	if err != nil {
 		return err
@@ -23,7 +23,7 @@ func checkModelHash(api frontend.API, model Model) error {
 		mimc.Write(endPlace)
 	}
 	for _, transition := range model.Transitions {
-		mimc.Write(transition.IsInitialized)
+		mimc.Write(transition.IsValid)
 		for _, incomingPlace := range transition.IncomingPlaces {
 			mimc.Write(incomingPlace)
 		}
@@ -33,9 +33,9 @@ func checkModelHash(api frontend.API, model Model) error {
 		mimc.Write(transition.Participant)
 		mimc.Write(transition.Message)
 	}
-	mimc.Write(model.Salt)
-	hash := mimc.Sum()
-	api.AssertIsEqual(hash, model.Hash)
+	mimc.Write(hash.Salt)
+	result := mimc.Sum()
+	api.AssertIsEqual(result, hash.Value)
 	return nil
 }
 
@@ -49,12 +49,10 @@ func checkInstanceHash(api frontend.API, instance Instance) error {
 		mimc.Write(publicKey.A.X)
 		mimc.Write(publicKey.A.Y)
 	}
-	for _, messageHash := range instance.MessageHashes {
-		mimc.Write(messageHash)
-	}
-	mimc.Write(instance.Salt)
+	mimc.Write(instance.MessageHashes[:]...)
+	mimc.Write(instance.Hash.Salt)
 	hash := mimc.Sum()
-	api.AssertIsEqual(hash, instance.Hash)
+	api.AssertIsEqual(hash, instance.Hash.Value)
 	return nil
 }
 
@@ -68,7 +66,7 @@ func checkSignature(api frontend.API, signature Signature, instance Instance) er
 		return err
 	}
 
-	return eddsa.Verify(curve, signature.Value, instance.Hash, signature.PublicKey, &mimc)
+	return eddsa.Verify(curve, signature.Value, instance.Hash.Value, signature.PublicKey, &mimc)
 }
 
 func findParticipantId(api frontend.API, signature Signature, instance Instance) frontend.Variable {

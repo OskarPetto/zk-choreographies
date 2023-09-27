@@ -11,7 +11,7 @@ type ExecutionService struct {
 	proofService     proof.ProofService
 	signatureService authentication.SignatureService
 	instanceService  domain.InstanceService
-	modelService     domain.ModelService
+	hashService      domain.HashService
 }
 
 var executionService ExecutionService
@@ -22,80 +22,99 @@ func NewExecutionService() ExecutionService {
 			isLoaded:        true,
 			proofService:    proof.NewProofService(),
 			instanceService: domain.NewInstanceService(),
-			modelService:    domain.NewModelService(),
+			hashService:     domain.NewHashService(),
 		}
 	}
 	return executionService
 }
 
-func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (InstantiationResult, error) {
+func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (InstantiateModelResult, error) {
 	model := cmd.Model
+	modelHash := domain.HashModel(model)
 	instanceResult, err := model.Instantiate(cmd.PublicKeys)
 	if err != nil {
-		return InstantiationResult{}, err
+		return InstantiateModelResult{}, err
 	}
 	signature := service.signatureService.Sign(instanceResult)
-	proofResult, err := service.proofService.ProveInstantiation(model, instanceResult, signature)
+	proofResult, err := service.proofService.ProveInstantiation(proof.ProveInstantiationCommand{
+		ModelHash: modelHash,
+		Model:     model,
+		Instance:  instanceResult,
+		Signature: signature,
+	})
 	if err != nil {
-		return InstantiationResult{}, err
+		return InstantiateModelResult{}, err
 	}
-	service.modelService.SaveModel(model)
+	service.hashService.SaveModelHash(model.Id, modelHash)
 	service.instanceService.SaveInstance(instanceResult)
-	return InstantiationResult{
+	return InstantiateModelResult{
 		Instance: instanceResult,
 		Proof:    proofResult,
 	}, nil
 }
 
-func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand) (TransitionResult, error) {
-	model, err := service.modelService.FindModelById(cmd.Model)
+func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand) (ExecuteTransitionResult, error) {
+	model := cmd.Model
+	modelHash, err := service.hashService.FindHashByModelId(model.Id)
 	if err != nil {
-		return TransitionResult{}, err
+		return ExecuteTransitionResult{}, err
 	}
-	instance, err := service.instanceService.FindInstanceById(cmd.Instance)
+	currentInstance, err := service.instanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
-		return TransitionResult{}, err
+		return ExecuteTransitionResult{}, err
 	}
 	transition, err := model.FindTransitionById(cmd.Transition)
 	if err != nil {
-		return TransitionResult{}, err
+		return ExecuteTransitionResult{}, err
 	}
-	var instanceResult domain.Instance
+	var nextInstance domain.Instance
 	if len(cmd.Message) == 0 {
-		instanceResult, err = instance.ExecuteTransition(transition)
+		nextInstance, err = currentInstance.ExecuteTransition(transition)
 	} else {
-		instanceResult, err = instance.ExecuteTransitionWithMessage(transition, cmd.Message)
+		nextInstance, err = currentInstance.ExecuteTransitionWithMessage(transition, cmd.Message)
 	}
 	if err != nil {
-		return TransitionResult{}, err
+		return ExecuteTransitionResult{}, err
 	}
-	signature := service.signatureService.Sign(instanceResult)
-	proofResult, err := service.proofService.ProveTransition(model, instance, instanceResult, signature)
+	nextSignature := service.signatureService.Sign(nextInstance)
+	proofResult, err := service.proofService.ProveTransition(proof.ProveTransitionCommand{
+		ModelHash:       modelHash,
+		Model:           model,
+		CurrentInstance: currentInstance,
+		NextInstance:    nextInstance,
+		NextSignature:   nextSignature,
+	})
 	if err != nil {
-		return TransitionResult{}, err
+		return ExecuteTransitionResult{}, err
 	}
-	service.instanceService.SaveInstance(instanceResult)
-	return TransitionResult{
-		Instance: instanceResult,
+	service.instanceService.SaveInstance(nextInstance)
+	return ExecuteTransitionResult{
+		Instance: nextInstance,
 		Proof:    proofResult,
 	}, nil
 }
 
-func (service *ExecutionService) ProveTermination(cmd ProveTerminationCommand) (TerminationResult, error) {
-	model, err := service.modelService.FindModelById(cmd.Model)
+func (service *ExecutionService) ProveTermination(cmd ProveTerminationCommand) (ProveTerminationResult, error) {
+	model := cmd.Model
+	modelHash, err := service.hashService.FindHashByModelId(model.Id)
 	if err != nil {
-		return TerminationResult{}, err
+		return ProveTerminationResult{}, err
 	}
 	instance, err := service.instanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
-		return TerminationResult{}, err
+		return ProveTerminationResult{}, err
 	}
 	signature := service.signatureService.Sign(instance)
-	proofResult, err := service.proofService.ProveTermination(model, instance, signature)
+	proofResult, err := service.proofService.ProveTermination(proof.ProveTerminationCommand{
+		ModelHash: modelHash,
+		Model:     model,
+		Instance:  instance,
+		Signature: signature,
+	})
 	if err != nil {
-		return TerminationResult{}, err
+		return ProveTerminationResult{}, err
 	}
-	return TerminationResult{
+	return ProveTerminationResult{
 		Proof: proofResult,
 	}, nil
 }

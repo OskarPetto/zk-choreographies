@@ -8,13 +8,13 @@ type InstantiateModelCommand struct {
 }
 
 type ExecuteTransitionCommand struct {
-	Model      domain.ModelId
+	Model      domain.Model
 	Instance   domain.InstanceId
 	Transition domain.TransitionId
 	Message    []byte
 }
 
 type ProveTerminationCommand struct {
-	Model    domain.ModelId
+	Model    domain.Model
 	Instance domain.InstanceId
 }

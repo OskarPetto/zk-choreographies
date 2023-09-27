@@ -15,6 +15,5 @@ func GetModel2() domain.Model {
 	byteValue, _ := io.ReadAll(jsonFile)
 	model, err := json.UnmarshalModel(byteValue)
 	utils.PanicOnError(err)
-	model.ComputeHash()
 	return model
 }

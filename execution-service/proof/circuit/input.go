@@ -11,7 +11,10 @@ import (
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
-const defaultMessageHash = 0
+type Hash struct {
+	Value frontend.Variable `gnark:",public"`
+	Salt  frontend.Variable
+}
 
 type Signature struct {
 	Value     eddsa.Signature
@@ -19,15 +22,14 @@ type Signature struct {
 }
 
 type Instance struct {
-	Hash          frontend.Variable `gnark:",public"`
-	Salt          frontend.Variable
+	Hash          Hash
 	TokenCounts   [domain.MaxPlaceCount]frontend.Variable
 	PublicKeys    [domain.MaxParticipantCount]eddsa.PublicKey
 	MessageHashes [domain.MaxMessageCount]frontend.Variable
 }
 
 type Transition struct {
-	IsInitialized  frontend.Variable
+	IsValid        frontend.Variable
 	IncomingPlaces [domain.MaxBranchingFactor]frontend.Variable
 	OutgoingPlaces [domain.MaxBranchingFactor]frontend.Variable
 	Participant    frontend.Variable
@@ -35,8 +37,6 @@ type Transition struct {
 }
 
 type Model struct {
-	Hash             frontend.Variable `gnark:",public"`
-	Salt             frontend.Variable
 	PlaceCount       frontend.Variable
 	ParticipantCount frontend.Variable
 	MessageCount     frontend.Variable
@@ -70,8 +70,7 @@ func FromInstance(instance domain.Instance) Instance {
 		messageHashes[i] = fromBytes(messageHash.Value)
 	}
 	return Instance{
-		Hash:          fromBytes(instance.Hash.Value),
-		Salt:          fromBytes(instance.Hash.Salt),
+		Hash:          FromHash(instance.Hash),
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
@@ -98,8 +97,6 @@ func FromModel(model domain.Model) Model {
 		transitions[i] = fromTransition(transition)
 	}
 	return Model{
-		Hash:             fromBytes(model.Hash.Value),
-		Salt:             fromBytes(model.Hash.Salt),
 		PlaceCount:       model.PlaceCount,
 		ParticipantCount: model.ParticipantCount,
 		MessageCount:     model.MessageCount,
@@ -119,15 +116,22 @@ func fromTransition(transition domain.Transition) Transition {
 		outgoingPlaces[i] = outgoingPlace
 	}
 	isInitialized := 0
-	if transition.IsInitialized {
+	if transition.IsValid {
 		isInitialized = 1
 	}
 	return Transition{
-		IsInitialized:  isInitialized,
+		IsValid:        isInitialized,
 		IncomingPlaces: incomingPlaces,
 		OutgoingPlaces: outgoingPlaces,
 		Participant:    transition.Participant,
 		Message:        transition.Message,
+	}
+}
+
+func FromHash(hash domain.Hash) Hash {
+	return Hash{
+		Value: fromBytes(hash.Value),
+		Salt:  fromBytes(hash.Salt),
 	}
 }
 

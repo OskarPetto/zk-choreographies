@@ -25,105 +25,112 @@ func GetPublicKeys(count int) []domain.PublicKey {
 }
 
 func GetModel2Instance1(publicKeys []domain.PublicKey) domain.Instance {
-	var publicKeysFixedSize [domain.MaxParticipantCount]domain.PublicKey
-	copy(publicKeysFixedSize[:], publicKeys)
-	for i := len(publicKeys); i < domain.MaxParticipantCount; i++ {
-		publicKeysFixedSize[i] = domain.DefaultPublicKey
-	}
-	return domain.Instance{
-		Id:          "example_choreography1",
-		Model:       "example_choreography",
-		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-		PublicKeys:  publicKeysFixedSize,
-		MessageHashes: [domain.MaxMessageCount]domain.Hash{
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
+	return getModel2Instance(
+		[]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
+		publicKeys,
+		[]domain.Hash{
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
 		},
-		Hash: domain.DefaultHash,
-	}
+	)
 }
 
 func GetModel2Instance2(publicKeys []domain.PublicKey) domain.Instance {
-	var publicKeysFixedSize [domain.MaxParticipantCount]domain.PublicKey
-	copy(publicKeysFixedSize[:], publicKeys)
-	for i := len(publicKeys); i < domain.MaxParticipantCount; i++ {
-		publicKeysFixedSize[i] = domain.DefaultPublicKey
-	}
-	return domain.Instance{
-		Id:          "example_choreography1",
-		Model:       "example_choreography",
-		TokenCounts: [domain.MaxPlaceCount]int8{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		PublicKeys:  publicKeysFixedSize,
-		MessageHashes: [domain.MaxMessageCount]domain.Hash{
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
+	return getModel2Instance(
+		[]int8{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+		publicKeys,
+		[]domain.Hash{
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
 		},
-		Hash: domain.DefaultHash,
-	}
+	)
 }
 
 func GetModel2Instance3(publicKeys []domain.PublicKey) domain.Instance {
-	var publicKeysFixedSize [domain.MaxParticipantCount]domain.PublicKey
-	copy(publicKeysFixedSize[:], publicKeys)
-	for i := len(publicKeys); i < domain.MaxParticipantCount; i++ {
-		publicKeysFixedSize[i] = domain.DefaultPublicKey
-	}
-	return domain.Instance{
-		Id:          "example_choreography1",
-		Model:       "example_choreography",
-		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-		PublicKeys:  publicKeysFixedSize,
-		MessageHashes: [domain.MaxMessageCount]domain.Hash{
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
+	return getModel2Instance(
+		[]int8{0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
+		publicKeys,
+		[]domain.Hash{
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
 			domain.HashMessage([]byte("hello")),
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
 		},
-		Hash: domain.DefaultHash,
-	}
+	)
 }
 
 func GetModel2Instance4(publicKeys []domain.PublicKey) domain.Instance {
+	return getModel2Instance(
+		[]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		publicKeys,
+		[]domain.Hash{
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+			domain.HashMessage([]byte("hello2")),
+			domain.Hash{},
+			domain.HashMessage([]byte("hello3")),
+			domain.Hash{},
+			domain.Hash{},
+			domain.HashMessage([]byte("hello")),
+			domain.Hash{},
+			domain.Hash{},
+			domain.Hash{},
+		},
+	)
+}
+
+func getModel2Instance(tokenCounts []int8, publicKeys []domain.PublicKey, messageHashes []domain.Hash) domain.Instance {
+	var tokenCountsFixedSize [domain.MaxPlaceCount]int8
+	copy(tokenCountsFixedSize[:], tokenCounts)
+	for i := len(tokenCounts); i < domain.MaxPlaceCount; i++ {
+		tokenCountsFixedSize[i] = domain.InvalidTokenCount
+	}
 	var publicKeysFixedSize [domain.MaxParticipantCount]domain.PublicKey
 	copy(publicKeysFixedSize[:], publicKeys)
 	for i := len(publicKeys); i < domain.MaxParticipantCount; i++ {
-		publicKeysFixedSize[i] = domain.DefaultPublicKey
+		publicKeysFixedSize[i] = domain.InvalidPublicKey()
 	}
-	return domain.Instance{
-		Id:          "example_choreography1",
-		Model:       "example_choreography",
-		TokenCounts: [domain.MaxPlaceCount]int8{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-		PublicKeys:  publicKeysFixedSize,
-		MessageHashes: [domain.MaxMessageCount]domain.Hash{
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-			domain.DefaultHash,
-		},
-		Hash: domain.DefaultHash,
+	var messageHashesFixedSize [domain.MaxMessageCount]domain.Hash
+	copy(messageHashesFixedSize[:], messageHashes)
+	for i := len(messageHashes); i < domain.MaxMessageCount; i++ {
+		messageHashesFixedSize[i] = domain.InvalidHash()
 	}
+	instance := domain.Instance{
+		Id:            "example_choreography1",
+		Model:         "example_choreography",
+		TokenCounts:   tokenCountsFixedSize,
+		PublicKeys:    publicKeysFixedSize,
+		MessageHashes: messageHashesFixedSize,
+	}
+	instance.ComputeHash()
+	return instance
 }

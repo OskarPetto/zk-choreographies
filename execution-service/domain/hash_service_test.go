@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFindModelById(t *testing.T) {
-	service := domain.NewModelService()
+func TestFindHashByModelId(t *testing.T) {
+	service := domain.NewHashService()
 	model := testdata.GetModel2()
-	service.SaveModel(model)
-	_, err := service.FindModelById(model.Id)
+	service.SaveModelHash(model.Id, domain.HashModel(model))
+	_, err := service.FindHashByModelId(model.Id)
 	assert.Nil(t, err)
 }

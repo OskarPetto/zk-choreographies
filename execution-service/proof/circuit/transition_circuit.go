@@ -14,6 +14,7 @@ type TokenCountChanges struct {
 }
 
 type TransitionCircuit struct {
+	ModelHash             Hash
 	Model                 Model
 	CurrentInstance       Instance
 	NextInstance          Instance
@@ -21,7 +22,7 @@ type TransitionCircuit struct {
 }
 
 func (circuit *TransitionCircuit) Define(api frontend.API) error {
-	err := checkModelHash(api, circuit.Model)
+	err := checkModelHash(api, circuit.ModelHash, circuit.Model)
 	if err != nil {
 		return err
 	}
@@ -61,13 +62,14 @@ func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCoun
 		tokenCountIncreases := equals(api, tokenChange, 1)
 		api.AssertIsEqual(1, api.Or(api.Or(tokenCountStaysTheSame, tokenCountDecreases), tokenCountIncreases))
 
+		nextTokenCountIsValid := api.Or(equals(api, nextTokenCount, 0), equals(api, nextTokenCount, 1))
+		api.AssertIsEqual(1, api.Or(nextTokenCountIsValid, tokenCountStaysTheSame))
+
 		tokenCountDecreasesCount = api.Add(tokenCountDecreasesCount, tokenCountDecreases)
 		tokenCountIncreasesCount = api.Add(tokenCountIncreasesCount, tokenCountIncreases)
 
 		tokenCountDecreasesPerPlaceId.Insert(tokenCountDecreases)
 		tokenCountIncreasesPerPlaceId.Insert(tokenCountIncreases)
-
-		api.AssertIsBoolean(nextTokenCount)
 	}
 
 	// insert 1 at domain.MaxPlaceCount (default value of incomingPlaces and outgoingPlaces arrays)
@@ -131,7 +133,7 @@ func (circuit *TransitionCircuit) findTransition(api frontend.API, tokenCountCha
 			tokenCountChangesMatch = api.And(tokenCountChangesMatch, outgoingTokenCountsIncrease[j])
 		}
 		transitionMatches := api.And(api.And(tokenCountChangesMatch, participantMatches), messageMatches)
-		transitionFound = api.Or(transitionFound, api.And(transition.IsInitialized, transitionMatches))
+		transitionFound = api.Or(transitionFound, api.And(transition.IsValid, transitionMatches))
 	}
 
 	noMessageHashesAdded := equals(api, messageId, domain.MaxMessageCount)
