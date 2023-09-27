@@ -11,7 +11,9 @@ func main() {
 	router.GET("/models/:id/instances", rest.GetInstances)
 	router.POST("/execution/instantiateModel", rest.InstantiateModel)
 	router.POST("/execution/executeTransition", rest.ExecuteTransition)
-	router.PUT("/execution/proveTermination", rest.ProveTermination)
+	router.PUT("/proof/proveInstantiation", rest.ProveInstantiation)
+	router.PUT("/proof/proveTransition", rest.ProveTransition)
+	router.PUT("/proof/proveTermination", rest.ProveTermination)
 
 	router.Run("localhost:8080")
 }

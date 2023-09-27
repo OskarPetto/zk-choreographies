@@ -2,8 +2,8 @@ package circuit_test
 
 import (
 	"execution-service/authentication"
+	"execution-service/circuit"
 	"execution-service/domain"
-	"execution-service/proof/circuit"
 	"execution-service/testdata"
 	"testing"
 

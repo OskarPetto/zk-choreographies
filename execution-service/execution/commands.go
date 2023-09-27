@@ -13,8 +13,3 @@ type ExecuteTransitionCommand struct {
 	Transition domain.TransitionId
 	Message    []byte
 }
-
-type ProveTerminationCommand struct {
-	Model    domain.Model
-	Instance domain.InstanceId
-}

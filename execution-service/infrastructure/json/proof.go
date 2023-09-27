@@ -1,7 +1,6 @@
 package json
 
 import (
-	"execution-service/execution"
 	"execution-service/proof"
 )
 
@@ -12,23 +11,7 @@ type Proof struct {
 	PublicInput []string     `json:"publicInput"`
 }
 
-type ExecutionResult struct {
-	Instance Instance
-	Proof    Proof
-}
-
-type ProofResult struct {
-	Proof Proof
-}
-
-func FromExecutionResult(executionResult execution.ExecutionResult) ExecutionResult {
-	return ExecutionResult{
-		Instance: FromDomainInstance(executionResult.Instance),
-		Proof:    fromDomainProof(executionResult.Proof),
-	}
-}
-
-func fromDomainProof(proof proof.Proof) Proof {
+func FromDomainProof(proof proof.Proof) Proof {
 	publicInputs := make([]string, len(proof.PublicInput))
 	for i, publicInput := range proof.PublicInput {
 		publicInputs[i] = publicInput.String()

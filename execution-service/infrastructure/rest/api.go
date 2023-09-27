@@ -4,6 +4,7 @@ import (
 	"execution-service/domain"
 	"execution-service/execution"
 	"execution-service/infrastructure/json"
+	"execution-service/proof"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,6 +12,7 @@ import (
 
 var instanceService = domain.NewInstanceService()
 var executionService = execution.NewExecutionService()
+var proofService = proof.NewProofService()
 
 func GetInstances(c *gin.Context) {
 	id := c.Param("id")
@@ -31,7 +33,7 @@ func InstantiateModel(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	jsonResult := json.FromExecutionResult(result)
+	jsonResult := json.FromDomainInstance(result)
 	c.IndentedJSON(http.StatusOK, jsonResult)
 }
 
@@ -48,7 +50,41 @@ func ExecuteTransition(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	jsonResult := json.FromExecutionResult(result)
+	jsonResult := json.FromDomainInstance(result)
+	c.IndentedJSON(http.StatusOK, jsonResult)
+}
+
+func ProveInstantiation(c *gin.Context) {
+	var jsonCmd json.ProveInstantiationCommand
+	if err := c.BindJSON(&jsonCmd); err != nil {
+		return
+	}
+	cmd, err := jsonCmd.ToProofCommand()
+	if err != nil {
+		return
+	}
+	result, err := proofService.ProveInstantiation(cmd)
+	if err != nil {
+		return
+	}
+	jsonResult := json.FromDomainProof(result)
+	c.IndentedJSON(http.StatusOK, jsonResult)
+}
+
+func ProveTransition(c *gin.Context) {
+	var jsonCmd json.ProveTransitionCommand
+	if err := c.BindJSON(&jsonCmd); err != nil {
+		return
+	}
+	cmd, err := jsonCmd.ToProofCommand()
+	if err != nil {
+		return
+	}
+	result, err := proofService.ProveTransition(cmd)
+	if err != nil {
+		return
+	}
+	jsonResult := json.FromDomainProof(result)
 	c.IndentedJSON(http.StatusOK, jsonResult)
 }
 
@@ -57,14 +93,14 @@ func ProveTermination(c *gin.Context) {
 	if err := c.BindJSON(&jsonCmd); err != nil {
 		return
 	}
-	cmd, err := jsonCmd.ToExecutionCommand()
+	cmd, err := jsonCmd.ToProofCommand()
 	if err != nil {
 		return
 	}
-	result, err := executionService.ProveTermination(cmd)
+	result, err := proofService.ProveTermination(cmd)
 	if err != nil {
 		return
 	}
-	jsonResult := json.FromExecutionResult(result)
+	jsonResult := json.FromDomainProof(result)
 	c.IndentedJSON(http.StatusOK, jsonResult)
 }
