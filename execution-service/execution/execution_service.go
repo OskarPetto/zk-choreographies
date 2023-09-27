@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"fmt"
 	"proof-service/authentication"
 	"proof-service/domain"
 	"proof-service/proof"
@@ -26,40 +27,35 @@ func NewExecutionService() ExecutionService {
 	return executionService
 }
 
-func (service *ExecutionService) InstantiateModel(model domain.Model, publicKeys []domain.PublicKey) (domain.Instance, proof.VerifierInput, error) {
+func (service *ExecutionService) InstantiateModel(model domain.Model, publicKeys []domain.PublicKey) (domain.Instance, error) {
 	instanceResult, err := model.Instantiate(publicKeys)
 	if err != nil {
-		return domain.Instance{}, proof.VerifierInput{}, err
+		return domain.Instance{}, err
 	}
 	signature := service.signatureService.Sign(instanceResult)
 	proofResult, err := service.proofService.ProveInstantiation(model, instanceResult, signature)
 	if err != nil {
-		return domain.Instance{}, proof.VerifierInput{}, err
+		return domain.Instance{}, err
 	}
+	//TODO call ethereumservice with proofResult
+	fmt.Println(proofResult.PublicInput)
 	service.instanceService.SaveInstance(instanceResult)
-	return instanceResult, proofResult, nil
+	return instanceResult, nil
 }
 
-func (service *ExecutionService) ExecuteTransition(model domain.Model, inst domain.Instance, transition domain.Transition, message []byte) (domain.Instance, proof.VerifierInput, error) {
+func (service *ExecutionService) ExecuteTransition(model domain.Model, inst domain.Instance, transition domain.Transition, message []byte) (domain.Instance, error) {
 	messageHash := domain.HashMessage(message)
 	instanceResult, err := inst.ExecuteTransition(transition, messageHash)
 	if err != nil {
-		return domain.Instance{}, proof.VerifierInput{}, err
+		return domain.Instance{}, err
 	}
 	signature := service.signatureService.Sign(instanceResult)
 	proofResult, err := service.proofService.ProveTransition(model, inst, instanceResult, signature)
 	if err != nil {
-		return domain.Instance{}, proof.VerifierInput{}, err
+		return domain.Instance{}, err
 	}
+	//TODO call ethereumservice with proofResult
+	fmt.Println(proofResult.PublicInput)
 	service.instanceService.SaveInstance(instanceResult)
-	return instanceResult, proofResult, nil
-}
-
-func (service *ExecutionService) TerminateInstance(inst domain.Instance, model domain.Model) (proof.VerifierInput, error) {
-	signature := service.signatureService.Sign(inst)
-	proofResult, err := service.proofService.ProveTermination(model, inst, signature)
-	if err != nil {
-		return proof.VerifierInput{}, err
-	}
-	return proofResult, nil
+	return instanceResult, nil
 }

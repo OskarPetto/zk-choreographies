@@ -15,11 +15,11 @@ import (
 	"github.com/consensys/gnark/frontend"
 )
 
-type VerifierInput struct {
-	A     [2]*big.Int
-	B     [2][2]*big.Int
-	C     [2]*big.Int
-	Input []*big.Int
+type Proof struct {
+	A           [2]*big.Int
+	B           [2][2]*big.Int
+	C           [2]*big.Int
+	PublicInput []*big.Int
 }
 
 type ProofService struct {
@@ -39,14 +39,14 @@ func NewProofService() ProofService {
 	return proofService
 }
 
-func (service *ProofService) ProveInstantiation(model domain.Model, instance domain.Instance, signature authentication.Signature) (VerifierInput, error) {
+func (service *ProofService) ProveInstantiation(model domain.Model, instance domain.Instance, signature authentication.Signature) (Proof, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 	circuitModel, err := circuit.FromModel(model)
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 	assignment := &circuit.InstantiationCircuit{
 		Instance:  circuitInstance,
@@ -55,27 +55,27 @@ func (service *ProofService) ProveInstantiation(model domain.Model, instance dom
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 	proof, err := groth16.Prove(service.proofParameters.CsInstantiation, service.proofParameters.PkInstantiation, witness)
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
-	return toVerifierInput(proof, witness)
+	return toProof(proof, witness)
 }
 
-func (service *ProofService) ProveTransition(model domain.Model, currentInstance domain.Instance, nextInstance domain.Instance, nextSignature authentication.Signature) (VerifierInput, error) {
+func (service *ProofService) ProveTransition(model domain.Model, currentInstance domain.Instance, nextInstance domain.Instance, nextSignature authentication.Signature) (Proof, error) {
 	currentCircuitInstance, err := circuit.FromInstance(currentInstance)
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 	nextCircuitInstance, err := circuit.FromInstance(nextInstance)
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 	circuitModel, err := circuit.FromModel(model)
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 
 	assignment := &circuit.TransitionCircuit{
@@ -86,23 +86,23 @@ func (service *ProofService) ProveTransition(model domain.Model, currentInstance
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 	proof, err := groth16.Prove(service.proofParameters.CsTransition, service.proofParameters.PkTransition, witness)
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
-	return toVerifierInput(proof, witness)
+	return toProof(proof, witness)
 }
 
-func (service *ProofService) ProveTermination(model domain.Model, instance domain.Instance, signature authentication.Signature) (VerifierInput, error) {
+func (service *ProofService) ProveTermination(model domain.Model, instance domain.Instance, signature authentication.Signature) (Proof, error) {
 	circuitInstance, err := circuit.FromInstance(instance)
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 	circuitModel, err := circuit.FromModel(model)
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 	assignment := &circuit.TerminationCircuit{
 		Instance:  circuitInstance,
@@ -111,49 +111,51 @@ func (service *ProofService) ProveTermination(model domain.Model, instance domai
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 	proof, err := groth16.Prove(service.proofParameters.CsTermination, service.proofParameters.PkTermination, witness)
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
-	return toVerifierInput(proof, witness)
+	return toProof(proof, witness)
 }
 
-func toVerifierInput(proof groth16.Proof, fullWitness witness.Witness) (VerifierInput, error) {
-	var buf bytes.Buffer
-	proof.WriteRawTo(&buf)
-	proofBytes := buf.Bytes()
+func toProof(groth16Proof groth16.Proof, fullWitness witness.Witness) (Proof, error) {
 
-	var verifierInput VerifierInput
+	var proof Proof
+
+	var buf bytes.Buffer
+	groth16Proof.WriteRawTo(&buf)
+	proofBytes := buf.Bytes()
 
 	// proof.Ar, proof.Bs, proof.Krs
 	const fpSize = 4 * 8
-	verifierInput.A[0] = new(big.Int).SetBytes(proofBytes[fpSize*0 : fpSize*1])
-	verifierInput.A[1] = new(big.Int).SetBytes(proofBytes[fpSize*1 : fpSize*2])
-	verifierInput.B[0][0] = new(big.Int).SetBytes(proofBytes[fpSize*2 : fpSize*3])
-	verifierInput.B[0][1] = new(big.Int).SetBytes(proofBytes[fpSize*3 : fpSize*4])
-	verifierInput.B[1][0] = new(big.Int).SetBytes(proofBytes[fpSize*4 : fpSize*5])
-	verifierInput.B[1][1] = new(big.Int).SetBytes(proofBytes[fpSize*5 : fpSize*6])
-	verifierInput.C[0] = new(big.Int).SetBytes(proofBytes[fpSize*6 : fpSize*7])
-	verifierInput.C[1] = new(big.Int).SetBytes(proofBytes[fpSize*7 : fpSize*8])
+	proof.A[0] = new(big.Int).SetBytes(proofBytes[fpSize*0 : fpSize*1])
+	proof.A[1] = new(big.Int).SetBytes(proofBytes[fpSize*1 : fpSize*2])
+	proof.B[0][0] = new(big.Int).SetBytes(proofBytes[fpSize*2 : fpSize*3])
+	proof.B[0][1] = new(big.Int).SetBytes(proofBytes[fpSize*3 : fpSize*4])
+	proof.B[1][0] = new(big.Int).SetBytes(proofBytes[fpSize*4 : fpSize*5])
+	proof.B[1][1] = new(big.Int).SetBytes(proofBytes[fpSize*5 : fpSize*6])
+	proof.C[0] = new(big.Int).SetBytes(proofBytes[fpSize*6 : fpSize*7])
+	proof.C[1] = new(big.Int).SetBytes(proofBytes[fpSize*7 : fpSize*8])
 
 	publicWitness, err := fullWitness.Public()
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 	publicWitnessBytes, err := publicWitness.MarshalBinary()
 	if err != nil {
-		return VerifierInput{}, err
+		return Proof{}, err
 	}
 
-	fieldElementCount := len(publicWitnessBytes) / fr.Bytes
-	verifierInput.Input = make([]*big.Int, fieldElementCount)
+	headerByteCount := 12
+	fieldElementCount := (len(publicWitnessBytes) - headerByteCount) / fr.Bytes
+	proof.PublicInput = make([]*big.Int, fieldElementCount)
 	for i := 0; i < fieldElementCount; i++ {
 		var fieldElement [fr.Bytes]byte
-		copy(fieldElement[:], publicWitnessBytes[i*fr.Bytes:(i+1)*fr.Bytes-1])
-		verifierInput.Input[i] = new(big.Int).SetBytes(fieldElement[:])
+		copy(fieldElement[:], publicWitnessBytes[headerByteCount+i*fr.Bytes:headerByteCount+(i+1)*fr.Bytes-1])
+		proof.PublicInput[i] = new(big.Int).SetBytes(fieldElement[:])
 	}
 
-	return verifierInput, nil
+	return proof, nil
 }
