@@ -1,12 +1,18 @@
 package main
 
 import (
+	"execution-service/domain"
 	"execution-service/infrastructure/rest"
 
 	"github.com/gin-gonic/gin"
 )
 
+func bindInterfaces() {
+	domain.ModelServiceImpl = rest.NewModelClient()
+}
+
 func main() {
+	bindInterfaces()
 	router := gin.Default()
 	router.GET("/models/:modelId/instances", rest.GetInstances)
 	router.POST("/models/:modelId/instances", rest.InstantiateModel)

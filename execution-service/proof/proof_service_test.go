@@ -9,7 +9,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type ModelServiceMock struct {
+}
+
+func (service ModelServiceMock) FindModelById(id domain.ModelId) (domain.Model, error) {
+	return testdata.GetModel2(), nil
+}
+
 func TestNewProofService(t *testing.T) {
+	domain.ModelServiceImpl = ModelServiceMock{}
 	proof.NewProofService()
 }
 
@@ -24,7 +32,7 @@ func TestProveInstantiation(t *testing.T) {
 	proofService := proof.NewProofService()
 
 	proof, err := proofService.ProveInstantiation(proof.ProveInstantiationCommand{
-		Model:    model,
+		Model:    model.Id,
 		Instance: instance.Id(),
 	})
 	assert.Nil(t, err)
@@ -44,7 +52,7 @@ func TestProveTransition1(t *testing.T) {
 	proofService := proof.NewProofService()
 
 	proof, err := proofService.ProveTransition(proof.ProveTransitionCommand{
-		Model:           model,
+		Model:           model.Id,
 		CurrentInstance: currentInstance.Id(),
 		NextInstance:    nextInstance.Id(),
 	})
@@ -63,7 +71,7 @@ func TestProveTermination(t *testing.T) {
 	proofService := proof.NewProofService()
 
 	proof, err := proofService.ProveTermination(proof.ProveTerminationCommand{
-		Model:    model,
+		Model:    model.Id,
 		Instance: instance.Id(),
 	})
 	assert.Nil(t, err)

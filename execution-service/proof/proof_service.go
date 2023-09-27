@@ -17,6 +17,7 @@ type ProofService struct {
 	hashService      domain.HashService
 	instanceService  domain.InstanceService
 	signatureService authentication.SignatureService
+	modelService     domain.ModelService
 }
 
 var proofService ProofService
@@ -29,13 +30,17 @@ func NewProofService() ProofService {
 			hashService:      domain.NewHashService(),
 			instanceService:  domain.NewInstanceService(),
 			signatureService: authentication.NewSignatureService(),
+			modelService:     domain.ModelServiceImpl,
 		}
 	}
 	return proofService
 }
 
 func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (Proof, error) {
-	model := cmd.Model
+	model, err := service.modelService.FindModelById(cmd.Model)
+	if err != nil {
+		return Proof{}, err
+	}
 	modelHash, err := service.hashService.FindHashByModelId(model.Id)
 	if err != nil {
 		return Proof{}, err
@@ -63,7 +68,10 @@ func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (
 }
 
 func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof, error) {
-	model := cmd.Model
+	model, err := service.modelService.FindModelById(cmd.Model)
+	if err != nil {
+		return Proof{}, err
+	}
 	modelHash, err := service.hashService.FindHashByModelId(model.Id)
 	if err != nil {
 		return Proof{}, err
@@ -96,7 +104,10 @@ func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 }
 
 func (service *ProofService) ProveTermination(cmd ProveTerminationCommand) (Proof, error) {
-	model := cmd.Model
+	model, err := service.modelService.FindModelById(cmd.Model)
+	if err != nil {
+		return Proof{}, err
+	}
 	modelHash, err := service.hashService.FindHashByModelId(model.Id)
 	if err != nil {
 		return Proof{}, err

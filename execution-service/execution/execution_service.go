@@ -10,6 +10,7 @@ type ExecutionService struct {
 	signatureService authentication.SignatureService
 	instanceService  domain.InstanceService
 	hashService      domain.HashService
+	modelService     domain.ModelService
 }
 
 var executionService ExecutionService
@@ -20,13 +21,17 @@ func NewExecutionService() ExecutionService {
 			isLoaded:        true,
 			instanceService: domain.NewInstanceService(),
 			hashService:     domain.NewHashService(),
+			modelService:    domain.ModelServiceImpl,
 		}
 	}
 	return executionService
 }
 
 func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (domain.Instance, error) {
-	model := cmd.Model
+	model, err := service.modelService.FindModelById(cmd.Model)
+	if err != nil {
+		return domain.Instance{}, err
+	}
 	modelHash := domain.HashModel(model)
 	instanceResult, err := model.Instantiate(cmd.PublicKeys)
 	if err != nil {
@@ -38,8 +43,11 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 }
 
 func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand) (domain.Instance, error) {
-	model := cmd.Model
-	_, err := service.hashService.FindHashByModelId(model.Id)
+	model, err := service.modelService.FindModelById(cmd.Model)
+	if err != nil {
+		return domain.Instance{}, err
+	}
+	_, err = service.hashService.FindHashByModelId(model.Id)
 	if err != nil {
 		return domain.Instance{}, err
 	}

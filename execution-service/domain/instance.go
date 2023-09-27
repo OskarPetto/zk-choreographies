@@ -40,13 +40,6 @@ func (instance Instance) ExecuteTransitionWithMessage(transition Transition, mes
 	return instance.ExecuteTransition(transition)
 }
 
-func (instance *Instance) updateMessageHash(messageId MessageId, message []byte) {
-	messageHash := HashMessage(message)
-	if messageId != InvalidMessageId {
-		instance.MessageHashes[messageId] = messageHash
-	}
-}
-
 func (instance Instance) ExecuteTransition(transition Transition) (Instance, error) {
 	err := instance.updateTokenCounts(transition)
 	if err != nil {
@@ -55,6 +48,13 @@ func (instance Instance) ExecuteTransition(transition Transition) (Instance, err
 	instance.UpdatedAt = time.Now().Unix()
 	instance.ComputeHash()
 	return instance, nil
+}
+
+func (instance *Instance) updateMessageHash(messageId MessageId, message []byte) {
+	messageHash := HashMessage(message)
+	if messageId != InvalidMessageId {
+		instance.MessageHashes[messageId] = messageHash
+	}
 }
 
 func (instance *Instance) updateTokenCounts(transition Transition) error {

@@ -8,38 +8,34 @@ import (
 )
 
 type InstantiateModelCommand struct {
-	Model      Model    `json:"model"`
+	Model      string   `json:"model"`
 	PublicKeys []string `json:"publicKeys"`
 }
 
 type ExecuteTransitionCommand struct {
-	Model      Model  `json:"model"`
+	Model      string `json:"model"`
 	Instance   string `json:"instance"`
 	Transition string `json:"transition"`
 	Message    string `json:"message"`
 }
 
 type ProveInstantiationCommand struct {
-	Model    Model  `json:"model"`
+	Model    string `json:"model"`
 	Instance string `json:"instance"`
 }
 
 type ProveTransitionCommand struct {
-	Model           Model  `json:"model"`
+	Model           string `json:"model"`
 	CurrentInstance string `json:"currentInstance"`
 	NextInstance    string `json:"nextInstance"`
 }
 
 type ProveTerminationCommand struct {
-	Model    Model  `json:"model"`
+	Model    string `json:"model"`
 	Instance string `json:"instance"`
 }
 
 func (cmd *InstantiateModelCommand) ToExecutionCommand() (execution.InstantiateModelCommand, error) {
-	model, err := cmd.Model.ToDomainModel()
-	if err != nil {
-		return execution.InstantiateModelCommand{}, err
-	}
 	publicKeys := make([]domain.PublicKey, len(cmd.PublicKeys))
 	for i, publicKey := range cmd.PublicKeys {
 		bytes, err := hex.DecodeString(publicKey)
@@ -51,7 +47,7 @@ func (cmd *InstantiateModelCommand) ToExecutionCommand() (execution.InstantiateM
 		}
 	}
 	return execution.InstantiateModelCommand{
-		Model:      model,
+		Model:      cmd.Model,
 		PublicKeys: publicKeys,
 	}, nil
 }
@@ -61,12 +57,8 @@ func (cmd *ExecuteTransitionCommand) ToExecutionCommand() (execution.ExecuteTran
 	if err != nil {
 		return execution.ExecuteTransitionCommand{}, err
 	}
-	model, err := cmd.Model.ToDomainModel()
-	if err != nil {
-		return execution.ExecuteTransitionCommand{}, err
-	}
 	return execution.ExecuteTransitionCommand{
-		Model:      model,
+		Model:      cmd.Model,
 		Instance:   cmd.Instance,
 		Transition: cmd.Transition,
 		Message:    message,
@@ -74,35 +66,23 @@ func (cmd *ExecuteTransitionCommand) ToExecutionCommand() (execution.ExecuteTran
 }
 
 func (cmd *ProveInstantiationCommand) ToProofCommand() (proof.ProveInstantiationCommand, error) {
-	model, err := cmd.Model.ToDomainModel()
-	if err != nil {
-		return proof.ProveInstantiationCommand{}, err
-	}
 	return proof.ProveInstantiationCommand{
-		Model:    model,
+		Model:    cmd.Model,
 		Instance: cmd.Instance,
 	}, nil
 }
 
 func (cmd *ProveTransitionCommand) ToProofCommand() (proof.ProveTransitionCommand, error) {
-	model, err := cmd.Model.ToDomainModel()
-	if err != nil {
-		return proof.ProveTransitionCommand{}, err
-	}
 	return proof.ProveTransitionCommand{
-		Model:           model,
+		Model:           cmd.Model,
 		CurrentInstance: cmd.CurrentInstance,
 		NextInstance:    cmd.NextInstance,
 	}, nil
 }
 
 func (cmd *ProveTerminationCommand) ToProofCommand() (proof.ProveTerminationCommand, error) {
-	model, err := cmd.Model.ToDomainModel()
-	if err != nil {
-		return proof.ProveTerminationCommand{}, err
-	}
 	return proof.ProveTerminationCommand{
-		Model:    model,
+		Model:    cmd.Model,
 		Instance: cmd.Instance,
 	}, nil
 }

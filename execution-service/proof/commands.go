@@ -5,17 +5,17 @@ import (
 )
 
 type ProveInstantiationCommand struct {
-	Model    domain.Model
+	Model    domain.ModelId
 	Instance domain.InstanceId
 }
 
 type ProveTransitionCommand struct {
-	Model           domain.Model
+	Model           domain.ModelId
 	CurrentInstance domain.InstanceId
 	NextInstance    domain.InstanceId
 }
 
 type ProveTerminationCommand struct {
-	Model    domain.Model
+	Model    domain.ModelId
 	Instance domain.InstanceId
 }
