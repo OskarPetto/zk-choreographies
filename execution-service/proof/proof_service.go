@@ -4,10 +4,10 @@
 package proof
 
 import (
-	"execution-service/circuit"
 	"execution-service/hash"
 	"execution-service/instance"
 	"execution-service/model"
+	"execution-service/proof/circuit"
 	"execution-service/signature"
 
 	"github.com/consensys/gnark-crypto/ecc"
