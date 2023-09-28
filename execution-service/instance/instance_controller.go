@@ -34,3 +34,16 @@ func (controller *InstanceController) GetInstance(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, ToJson(instance))
 }
+
+func (controller *InstanceController) PutInstance(c *gin.Context) {
+	var instanceJson InstanceJson
+	if err := c.BindJSON(&instanceJson); err != nil {
+		return
+	}
+	instance, err := instanceJson.ToInstance()
+	if err != nil {
+		return
+	}
+	controller.instanceService.SaveInstance(instance)
+	c.Status(http.StatusOK)
+}

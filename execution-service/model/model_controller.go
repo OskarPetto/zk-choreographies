@@ -24,3 +24,16 @@ func (controller *ModelController) GetModel(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, ToJson(model))
 }
+
+func (controller *ModelController) PutModel(c *gin.Context) {
+	var modelJson ModelJson
+	if err := c.BindJSON(&modelJson); err != nil {
+		return
+	}
+	model, err := modelJson.ToModel()
+	if err != nil {
+		return
+	}
+	controller.modelService.SaveModel(model)
+	c.Status(http.StatusOK)
+}

@@ -48,14 +48,19 @@ func main() {
 	proofController := InitializeProofController()
 
 	router := gin.Default()
+	router.PUT("/models", modelController.PutModel)
 	router.GET("/models/:modelId", modelController.GetModel)
+
 	router.GET("/models/:modelId/instances", instanceController.GetInstances)
-	router.GET("/models/:modelId/instances/:instanceId", instanceController.GetInstance)
+	router.PUT("/instances", instanceController.PutInstance)
+	router.GET("/instances/:instanceId", instanceController.GetInstance)
+
 	router.POST("/models/:modelId/instances", executionController.InstantiateModel)
 	router.POST("/models/:modelId/instances/:instanceId", executionController.ExecuteTransition)
-	router.PUT("/instantiation-proof", proofController.ProveInstantiation)
-	router.PUT("/transition-proof", proofController.ProveTransition)
-	router.PUT("/termination-proof", proofController.ProveTermination)
+
+	router.PUT("/proof/instantiation", proofController.ProveInstantiation)
+	router.PUT("/proof/transition", proofController.ProveTransition)
+	router.PUT("/proof/termination", proofController.ProveTermination)
 
 	router.Run("localhost:8080")
 }
