@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"encoding/hex"
 	"fmt"
 	"time"
 )
@@ -32,7 +31,7 @@ type Instance struct {
 }
 
 func (instance *Instance) Id() InstanceId {
-	return hex.EncodeToString(instance.Hash.Value[:])
+	return instance.Hash.Id()
 }
 
 func (instance Instance) ExecuteTransitionWithMessage(transition Transition, message []byte) (Instance, error) {

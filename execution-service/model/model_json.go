@@ -3,6 +3,7 @@ package model
 import (
 	"encoding/json"
 	"execution-service/domain"
+	"execution-service/hash"
 	"fmt"
 )
 
@@ -17,6 +18,7 @@ type TransitionJson struct {
 
 type ModelJson struct {
 	Id               string           `json:"id"`
+	Hash             hash.HashJson    `json:"hash"`
 	Name             string           `json:"name"`
 	PlaceCount       uint             `json:"placeCount"`
 	ParticipantCount uint             `json:"participantCount"`
@@ -114,6 +116,10 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 	for i := transitionCount; i < domain.MaxTransitionCount; i++ {
 		transitions[i] = domain.InvalidTransition()
 	}
+	hash, err := model.Hash.ToHash()
+	if err != nil {
+		return domain.Model{}, fmt.Errorf("model '%s' has invalid hash", model.Id)
+	}
 	domainModel := domain.Model{
 		Id:               model.Id,
 		Name:             model.Name,
@@ -123,6 +129,7 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 		StartPlaces:      startPlaces,
 		EndPlaces:        endPlaces,
 		Transitions:      transitions,
+		Hash:             hash,
 	}
 	return domainModel, nil
 }
@@ -196,6 +203,7 @@ func ToJson(model domain.Model) ModelJson {
 		StartPlaces:      startPlaces,
 		EndPlaces:        endPlaces,
 		Transitions:      transitions,
+		Hash:             hash.HashToJson(model.Hash),
 	}
 }
 

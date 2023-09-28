@@ -8,7 +8,6 @@ package execution
 
 import (
 	"execution-service/domain"
-	"execution-service/hash"
 	"execution-service/instance"
 	"execution-service/model"
 )
@@ -17,52 +16,44 @@ import (
 
 func InitializeExecutionService(modelPort model.ModelPort) ExecutionService {
 	instanceService := instance.NewInstanceService()
-	hashService := hash.NewHashService()
-	executionService := NewExecutionService(modelPort, instanceService, hashService)
+	modelService := model.NewModelService(modelPort)
+	executionService := NewExecutionService(instanceService, modelService)
 	return executionService
 }
 
 // execution_service.go:
 
 type ExecutionService struct {
-	modelPort       model.ModelPort
-	instanceService instance.InstanceService
-	hashService     hash.HashService
+	InstanceService instance.InstanceService
+	ModelService    model.ModelService
 }
 
-func NewExecutionService(modelPort model.ModelPort, instanceService instance.InstanceService, hashService hash.HashService) ExecutionService {
+func NewExecutionService(instanceService instance.InstanceService, modelService model.ModelService) ExecutionService {
 	return ExecutionService{
-		modelPort:       modelPort,
-		instanceService: instanceService,
-		hashService:     hashService,
+		InstanceService: instanceService,
+		ModelService:    modelService,
 	}
 }
 
 func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (domain.Instance, error) {
-	model2, err := service.modelPort.FindModelById(cmd.Model)
+	model2, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
 		return domain.Instance{}, err
 	}
-	modelHash := domain.HashModel(model2)
 	instanceResult, err := model2.Instantiate(cmd.PublicKeys)
 	if err != nil {
 		return domain.Instance{}, err
 	}
-	service.hashService.SaveModelHash(model2.Id, modelHash)
-	service.instanceService.SaveInstance(instanceResult)
+	service.InstanceService.SaveInstance(instanceResult)
 	return instanceResult, nil
 }
 
 func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand) (domain.Instance, error) {
-	model2, err := service.modelPort.FindModelById(cmd.Model)
+	model2, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
 		return domain.Instance{}, err
 	}
-	_, err = service.hashService.FindHashByModelId(model2.Id)
-	if err != nil {
-		return domain.Instance{}, err
-	}
-	currentInstance, err := service.instanceService.FindInstanceById(cmd.Instance)
+	currentInstance, err := service.InstanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
 		return domain.Instance{}, err
 	}
@@ -79,5 +70,6 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return domain.Instance{}, err
 	}
+	service.InstanceService.SaveInstance(nextInstance)
 	return nextInstance, nil
 }

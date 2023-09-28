@@ -10,14 +10,13 @@ const defaultMessageHash = 0
 const invalidMessageHash = 1
 
 type InstantiationCircuit struct {
-	ModelHash Hash
 	Model     Model
 	Instance  Instance
 	Signature Signature
 }
 
 func (circuit *InstantiationCircuit) Define(api frontend.API) error {
-	err := checkModelHash(api, circuit.ModelHash, circuit.Model)
+	err := checkModelHash(api, circuit.Model)
 	if err != nil {
 		return err
 	}

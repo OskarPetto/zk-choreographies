@@ -8,7 +8,7 @@ import (
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
-func checkModelHash(api frontend.API, hash Hash, model Model) error {
+func checkModelHash(api frontend.API, model Model) error {
 	mimc, err := mimc.NewMiMC(api)
 	if err != nil {
 		return err
@@ -33,9 +33,9 @@ func checkModelHash(api frontend.API, hash Hash, model Model) error {
 		mimc.Write(transition.Participant)
 		mimc.Write(transition.Message)
 	}
-	mimc.Write(hash.Salt)
+	mimc.Write(model.Hash.Salt)
 	result := mimc.Sum()
-	api.AssertIsEqual(result, hash.Value)
+	api.AssertIsEqual(result, model.Hash.Value)
 	return nil
 }
 

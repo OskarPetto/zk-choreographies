@@ -31,7 +31,7 @@ func (controller *ExecutionController) InstantiateModel(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	jsonResult := instance.InstanceToJson(result)
+	jsonResult := instance.ToJson(result)
 	c.IndentedJSON(http.StatusOK, jsonResult)
 }
 
@@ -51,6 +51,6 @@ func (controller *ExecutionController) ExecuteTransition(c *gin.Context) {
 	if err != nil {
 		return
 	}
-	jsonResult := instance.InstanceToJson(result)
+	jsonResult := instance.ToJson(result)
 	c.IndentedJSON(http.StatusOK, jsonResult)
 }

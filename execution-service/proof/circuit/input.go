@@ -38,6 +38,7 @@ type Transition struct {
 }
 
 type Model struct {
+	Hash             Hash
 	PlaceCount       frontend.Variable
 	ParticipantCount frontend.Variable
 	MessageCount     frontend.Variable
@@ -71,7 +72,7 @@ func FromInstance(instance domain.Instance) Instance {
 		messageHashes[i] = fromBytes(messageHash.Value)
 	}
 	return Instance{
-		Hash:          FromHash(instance.Hash),
+		Hash:          fromHash(instance.Hash),
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
@@ -99,6 +100,7 @@ func FromModel(model domain.Model) Model {
 		transitions[i] = fromTransition(transition)
 	}
 	return Model{
+		Hash:             fromHash(model.Hash),
 		PlaceCount:       model.PlaceCount,
 		ParticipantCount: model.ParticipantCount,
 		MessageCount:     model.MessageCount,
@@ -130,7 +132,7 @@ func fromTransition(transition domain.Transition) Transition {
 	}
 }
 
-func FromHash(hash domain.Hash) Hash {
+func fromHash(hash domain.Hash) Hash {
 	return Hash{
 		Value: fromBytes(hash.Value),
 		Salt:  fromBytes(hash.Salt),

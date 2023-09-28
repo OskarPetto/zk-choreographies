@@ -1,8 +1,8 @@
 package execution
 
 import (
-	"encoding/hex"
 	"execution-service/domain"
+	"execution-service/utils"
 )
 
 type InstantiateModelCommandJson struct {
@@ -17,7 +17,7 @@ type ExecuteTransitionCommandJson struct {
 func (cmd *InstantiateModelCommandJson) ToExecutionCommand(modelId domain.ModelId) (InstantiateModelCommand, error) {
 	publicKeys := make([]domain.PublicKey, len(cmd.PublicKeys))
 	for i, publicKey := range cmd.PublicKeys {
-		bytes, err := hex.DecodeString(publicKey)
+		bytes, err := utils.StringToBytes(publicKey)
 		if err != nil {
 			return InstantiateModelCommand{}, err
 		}
@@ -32,7 +32,7 @@ func (cmd *InstantiateModelCommandJson) ToExecutionCommand(modelId domain.ModelI
 }
 
 func (cmd *ExecuteTransitionCommandJson) ToExecutionCommand(modelId domain.ModelId, instanceId domain.InstanceId) (ExecuteTransitionCommand, error) {
-	message, err := hex.DecodeString(cmd.Message)
+	message, err := utils.StringToBytes(cmd.Message)
 	if err != nil {
 		return ExecuteTransitionCommand{}, err
 	}

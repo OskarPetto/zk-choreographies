@@ -47,6 +47,7 @@ type ModelId = string
 
 type Model struct {
 	Id               ModelId
+	Hash             Hash
 	Name             string
 	PlaceCount       uint8
 	ParticipantCount uint8

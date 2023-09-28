@@ -14,6 +14,8 @@ import (
 const HashSize = 32
 const SaltSize = 32
 
+type HashId = string
+
 type Hash struct {
 	Value [HashSize]byte // field element
 	Salt  [SaltSize]byte
@@ -26,6 +28,10 @@ func InvalidHash() Hash {
 	return defaultHash
 }
 
+func (hash *Hash) Id() string {
+	return utils.BytesToString(hash.Value[:])
+}
+
 func HashMessage(message []byte) Hash {
 	salt := randomFrSizedBytes()
 	input := append(message, salt[:]...)
@@ -36,7 +42,7 @@ func HashMessage(message []byte) Hash {
 	}
 }
 
-func HashModel(model Model) Hash {
+func (model *Model) ComputeHash() {
 	mimc := mimc.NewMiMC()
 	hashUint8(mimc, model.PlaceCount)
 	hashUint8(mimc, model.ParticipantCount)
@@ -60,7 +66,7 @@ func HashModel(model Model) Hash {
 	}
 	salt := randomFieldElement()
 	mimc.Write(salt[:])
-	return Hash{
+	model.Hash = Hash{
 		Value: [HashSize]byte(mimc.Sum([]byte{})),
 		Salt:  salt,
 	}

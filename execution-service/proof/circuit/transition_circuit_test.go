@@ -21,7 +21,6 @@ func TestExecution_NoTokenChange(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TransitionCircuit{
-		ModelHash:             circuit.FromHash(domain.HashModel(model)),
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
 		NextInstance:          circuit.FromInstance(currentInstance),
@@ -43,7 +42,6 @@ func TestExecution_Transition0(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TransitionCircuit{
-		ModelHash:             circuit.FromHash(domain.HashModel(model)),
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
 		NextInstance:          circuit.FromInstance(nextInstance),
@@ -65,7 +63,6 @@ func TestExecution_Transition1(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TransitionCircuit{
-		ModelHash:             circuit.FromHash(domain.HashModel(model)),
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
 		NextInstance:          circuit.FromInstance(nextInstance),
@@ -85,9 +82,9 @@ func TestExecution_InvalidModelHash(t *testing.T) {
 	nextSignature := signatureService.Sign(nextInstance)
 
 	model := testdata.GetModel2()
+	model.Hash = domain.InvalidHash()
 
 	witness := circuit.TransitionCircuit{
-		ModelHash:             circuit.FromHash(domain.InvalidHash()),
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
 		NextInstance:          circuit.FromInstance(nextInstance),
@@ -108,7 +105,6 @@ func TestExecution_InvalidInstanceHash(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TransitionCircuit{
-		ModelHash:             circuit.FromHash(domain.HashModel(model)),
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
 		NextInstance:          circuit.FromInstance(nextInstance),
@@ -128,7 +124,6 @@ func TestExecution_InvalidTokenCounts(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TransitionCircuit{
-		ModelHash:             circuit.FromHash(domain.HashModel(model)),
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
 		NextInstance:          circuit.FromInstance(nextInstance),
@@ -148,7 +143,6 @@ func TestExecution_InvalidSignature(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TransitionCircuit{
-		ModelHash:             circuit.FromHash(domain.HashModel(model)),
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
 		NextInstance:          circuit.FromInstance(nextInstance),
@@ -169,7 +163,6 @@ func TestExecution_InvalidAuthorization(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TransitionCircuit{
-		ModelHash:             circuit.FromHash(domain.HashModel(model)),
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
 		NextInstance:          circuit.FromInstance(nextInstance),
@@ -190,7 +183,6 @@ func TestExecution_AlteredPublicKeys(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TransitionCircuit{
-		ModelHash:             circuit.FromHash(domain.HashModel(model)),
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
 		NextInstance:          circuit.FromInstance(nextInstance),
@@ -212,7 +204,6 @@ func TestExecution_OverwrittenMessageHash(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TransitionCircuit{
-		ModelHash:             circuit.FromHash(domain.HashModel(model)),
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
 		NextInstance:          circuit.FromInstance(nextInstance),

@@ -5,14 +5,13 @@ import (
 )
 
 type TerminationCircuit struct {
-	ModelHash Hash
 	Model     Model
 	Instance  Instance
 	Signature Signature
 }
 
 func (circuit *TerminationCircuit) Define(api frontend.API) error {
-	err := checkModelHash(api, circuit.ModelHash, circuit.Model)
+	err := checkModelHash(api, circuit.Model)
 	if err != nil {
 		return err
 	}

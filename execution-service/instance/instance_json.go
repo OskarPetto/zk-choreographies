@@ -2,27 +2,23 @@ package instance
 
 import (
 	"bytes"
-	"encoding/base64"
 	"execution-service/domain"
+	"execution-service/hash"
+	"execution-service/utils"
 	"time"
 )
 
-type HashJson struct {
-	Value string `json:"value"`
-	Salt  string `json:"salt"`
-}
-
 type InstanceJson struct {
-	Id            string     `json:"id"`
-	Hash          HashJson   `json:"hash"`
-	Model         string     `json:"model"`
-	TokenCounts   []int      `json:"tokenCounts"`
-	PublicKeys    []string   `json:"publicKeys"`
-	MessageHashes []HashJson `json:"messageHashes"`
-	UpdatedAt     time.Time  `json:"updatedAt"`
+	Id            string          `json:"id"`
+	Hash          hash.HashJson   `json:"hash"`
+	Model         string          `json:"model"`
+	TokenCounts   []int           `json:"tokenCounts"`
+	PublicKeys    []string        `json:"publicKeys"`
+	MessageHashes []hash.HashJson `json:"messageHashes"`
+	UpdatedAt     time.Time       `json:"updatedAt"`
 }
 
-func InstanceToJson(instance domain.Instance) InstanceJson {
+func ToJson(instance domain.Instance) InstanceJson {
 	tokenCounts := make([]int, 0)
 	for _, tokenCount := range instance.TokenCounts {
 		if tokenCount == domain.InvalidTokenCount {
@@ -35,33 +31,23 @@ func InstanceToJson(instance domain.Instance) InstanceJson {
 		if bytes.Equal(domain.InvalidPublicKey().Value, publicKey.Value) {
 			break
 		}
-		publicKeys = append(publicKeys, bytesToString(publicKey.Value))
+		publicKeys = append(publicKeys, utils.BytesToString(publicKey.Value))
 	}
-	messageHashes := make([]HashJson, 0)
+	messageHashes := make([]hash.HashJson, 0)
 	for _, messageHash := range instance.MessageHashes {
 		invalidHash := domain.InvalidHash()
 		if bytes.Equal(invalidHash.Value[:], messageHash.Value[:]) && bytes.Equal(invalidHash.Salt[:], messageHash.Salt[:]) {
 			break
 		}
-		messageHashes = append(messageHashes, HashJson{
-			Value: bytesToString(messageHash.Value[:]),
-			Salt:  bytesToString(messageHash.Salt[:]),
-		})
+		messageHashes = append(messageHashes, hash.HashToJson(messageHash))
 	}
 	return InstanceJson{
-		Id: instance.Id(),
-		Hash: HashJson{
-			Value: bytesToString(instance.Hash.Value[:]),
-			Salt:  bytesToString(instance.Hash.Salt[:]),
-		},
+		Id:            instance.Id(),
+		Hash:          hash.HashToJson(instance.Hash),
 		Model:         instance.Model,
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
 		UpdatedAt:     time.Unix(instance.UpdatedAt, 0),
 	}
-}
-
-func bytesToString(bytes []byte) string {
-	return base64.StdEncoding.EncodeToString(bytes)
 }

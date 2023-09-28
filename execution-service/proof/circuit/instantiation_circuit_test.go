@@ -24,7 +24,6 @@ func TestInstantiation(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.InstantiationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -42,9 +41,9 @@ func TestInstantiation_InvalidModelHash(t *testing.T) {
 	signature := signatureService.Sign(instance)
 
 	model := testdata.GetModel2()
+	model.Hash = domain.InvalidHash()
 
 	witness := circuit.InstantiationCircuit{
-		ModelHash: circuit.FromHash(domain.InvalidHash()),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -63,7 +62,6 @@ func TestInstantiation_InvalidInstanceHash(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.InstantiationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -81,7 +79,6 @@ func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.InstantiationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -100,7 +97,6 @@ func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.InstantiationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -120,7 +116,6 @@ func TestInstantiation_InvalidSignature(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.InstantiationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -138,7 +133,6 @@ func TestInstantiation_InvalidAuthorization(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.InstantiationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -158,7 +152,6 @@ func TestInstantiation_InvalidMessageHashes(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.InstantiationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),

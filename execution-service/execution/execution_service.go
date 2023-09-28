@@ -5,7 +5,6 @@ package execution
 
 import (
 	"execution-service/domain"
-	"execution-service/hash"
 	"execution-service/instance"
 	"execution-service/model"
 
@@ -13,49 +12,41 @@ import (
 )
 
 type ExecutionService struct {
-	modelPort       model.ModelPort
-	instanceService instance.InstanceService
-	hashService     hash.HashService
+	InstanceService instance.InstanceService
+	ModelService    model.ModelService
 }
 
 func InitializeExecutionService(modelPort model.ModelPort) ExecutionService {
-	wire.Build(instance.NewInstanceService, hash.NewHashService, NewExecutionService)
+	wire.Build(instance.NewInstanceService, model.NewModelService, NewExecutionService)
 	return ExecutionService{}
 }
 
-func NewExecutionService(modelPort model.ModelPort, instanceService instance.InstanceService, hashService hash.HashService) ExecutionService {
+func NewExecutionService(instanceService instance.InstanceService, modelService model.ModelService) ExecutionService {
 	return ExecutionService{
-		modelPort:       modelPort,
-		instanceService: instanceService,
-		hashService:     hashService,
+		InstanceService: instanceService,
+		ModelService:    modelService,
 	}
 }
 
 func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (domain.Instance, error) {
-	model, err := service.modelPort.FindModelById(cmd.Model)
+	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
 		return domain.Instance{}, err
 	}
-	modelHash := domain.HashModel(model)
 	instanceResult, err := model.Instantiate(cmd.PublicKeys)
 	if err != nil {
 		return domain.Instance{}, err
 	}
-	service.hashService.SaveModelHash(model.Id, modelHash)
-	service.instanceService.SaveInstance(instanceResult)
+	service.InstanceService.SaveInstance(instanceResult)
 	return instanceResult, nil
 }
 
 func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand) (domain.Instance, error) {
-	model, err := service.modelPort.FindModelById(cmd.Model)
+	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
 		return domain.Instance{}, err
 	}
-	_, err = service.hashService.FindHashByModelId(model.Id)
-	if err != nil {
-		return domain.Instance{}, err
-	}
-	currentInstance, err := service.instanceService.FindInstanceById(cmd.Instance)
+	currentInstance, err := service.InstanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
 		return domain.Instance{}, err
 	}
@@ -72,5 +63,6 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return domain.Instance{}, err
 	}
+	service.InstanceService.SaveInstance(nextInstance)
 	return nextInstance, nil
 }

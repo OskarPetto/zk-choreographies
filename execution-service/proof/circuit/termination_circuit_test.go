@@ -21,7 +21,6 @@ func TestTermination(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TerminationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -39,9 +38,9 @@ func TestTermination_InvalidModelHash(t *testing.T) {
 	signature := signatureService.Sign(instance)
 
 	model := testdata.GetModel2()
+	model.Hash = domain.InvalidHash()
 
 	witness := circuit.TerminationCircuit{
-		ModelHash: circuit.FromHash(domain.InvalidHash()),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -60,7 +59,6 @@ func TestTermination_InvalidInstanceHash(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TerminationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -78,7 +76,6 @@ func TestTermination_InvalidTokenCounts(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TerminationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -97,7 +94,6 @@ func TestTermination_InvalidSignature(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TerminationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),
@@ -115,7 +111,6 @@ func TestTermination_InvalidAuthorization(t *testing.T) {
 	model := testdata.GetModel2()
 
 	witness := circuit.TerminationCircuit{
-		ModelHash: circuit.FromHash(domain.HashModel(model)),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
 		Model:     circuit.FromModel(model),

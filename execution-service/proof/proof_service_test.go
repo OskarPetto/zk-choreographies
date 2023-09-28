@@ -2,6 +2,8 @@ package proof_test
 
 import (
 	"execution-service/domain"
+	"execution-service/instance"
+	"execution-service/model"
 	"execution-service/proof"
 	"execution-service/signature"
 	"execution-service/testdata"
@@ -19,18 +21,20 @@ func (service ModelServiceMock) FindModelById(id domain.ModelId) (domain.Model, 
 
 var signatureService signature.SignatureService = signature.InitializeSignatureService()
 var proofService proof.ProofService
+var instanceService instance.InstanceService
+var modelService model.ModelService
 
 func TestInitializeProofService(t *testing.T) {
 	proofService = proof.InitializeProofService(ModelServiceMock{})
+	instanceService = proofService.InstanceService
+	modelService = proofService.ModelService
 }
 
 func TestProveInstantiation(t *testing.T) {
-	hashService := proofService.HashService
-	instanceService := proofService.InstanceService
+
 	publicKeys := testdata.GetPublicKeys(signatureService, 2)
 	instance := testdata.GetModel2Instance1(publicKeys)
 	model := testdata.GetModel2()
-	hashService.SaveModelHash(model.Id, domain.HashModel(model))
 	instanceService.SaveInstance(instance)
 
 	proof, err := proofService.ProveInstantiation(proof.ProveInstantiationCommand{
@@ -42,13 +46,10 @@ func TestProveInstantiation(t *testing.T) {
 }
 
 func TestProveTransition1(t *testing.T) {
-	hashService := proofService.HashService
-	instanceService := proofService.InstanceService
 	publicKeys := testdata.GetPublicKeys(signatureService, 2)
 	currentInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance := testdata.GetModel2Instance3(publicKeys)
 	model := testdata.GetModel2()
-	hashService.SaveModelHash(model.Id, domain.HashModel(model))
 	instanceService.SaveInstance(currentInstance)
 	instanceService.SaveInstance(nextInstance)
 
@@ -62,12 +63,9 @@ func TestProveTransition1(t *testing.T) {
 }
 
 func TestProveTermination(t *testing.T) {
-	hashService := proofService.HashService
-	instanceService := proofService.InstanceService
 	publicKeys := testdata.GetPublicKeys(signatureService, 2)
 	instance := testdata.GetModel2Instance4(publicKeys)
 	model := testdata.GetModel2()
-	hashService.SaveModelHash(model.Id, domain.HashModel(model))
 	instanceService.SaveInstance(instance)
 
 	proof, err := proofService.ProveTermination(proof.ProveTerminationCommand{

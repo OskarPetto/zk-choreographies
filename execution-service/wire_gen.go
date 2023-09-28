@@ -24,6 +24,13 @@ func InitializeInstanceController() instance.InstanceController {
 	return instanceController
 }
 
+func InitializeModelController() model.ModelController {
+	modelAdapter := adapter.NewModelAdapter()
+	modelService := model.NewModelService(modelAdapter)
+	modelController := model.NewModelController(modelService)
+	return modelController
+}
+
 func InitializeExecutionController() execution.ExecutionController {
 	modelAdapter := adapter.NewModelAdapter()
 	executionService := execution.InitializeExecutionService(modelAdapter)
@@ -40,9 +47,11 @@ func InitializeProofController() proof.ProofController {
 
 // main.go:
 
+var instanceProviders = wire.NewSet(instance.NewInstanceController, instance.NewInstanceService)
+
 var providerBindings = wire.NewSet(adapter.NewModelAdapter, wire.Bind(new(model.ModelPort), new(*adapter.ModelAdapter)))
 
-var instanceProviders = wire.NewSet(instance.NewInstanceController, instance.NewInstanceService)
+var modelProviders = wire.NewSet(proofProviders, model.NewModelController, model.NewModelService)
 
 var executionProviders = wire.NewSet(providerBindings, execution.NewExecutionController, execution.InitializeExecutionService)
 
@@ -51,11 +60,14 @@ var proofProviders = wire.NewSet(providerBindings, proof.NewProofController, pro
 func main() {
 
 	instanceController := InitializeInstanceController()
+	modelController := InitializeModelController()
 	executionController := InitializeExecutionController()
 	proofController := InitializeProofController()
 
 	router := gin.Default()
+	router.GET("/models/:modelId", modelController.GetModel)
 	router.GET("/models/:modelId/instances", instanceController.GetInstances)
+	router.GET("/models/:modelId/instances/:instanceId", instanceController.GetInstance)
 	router.POST("/models/:modelId/instances", executionController.InstantiateModel)
 	router.POST("/models/:modelId/instances/:instanceId", executionController.ExecuteTransition)
 	router.PUT("/instantiation-proof", proofController.ProveInstantiation)

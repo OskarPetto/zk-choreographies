@@ -14,7 +14,6 @@ type TokenCountChanges struct {
 }
 
 type TransitionCircuit struct {
-	ModelHash             Hash
 	Model                 Model
 	CurrentInstance       Instance
 	NextInstance          Instance
@@ -22,7 +21,7 @@ type TransitionCircuit struct {
 }
 
 func (circuit *TransitionCircuit) Define(api frontend.API) error {
-	err := checkModelHash(api, circuit.ModelHash, circuit.Model)
+	err := checkModelHash(api, circuit.Model)
 	if err != nil {
 		return err
 	}

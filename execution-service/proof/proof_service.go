@@ -4,7 +4,6 @@
 package proof
 
 import (
-	"execution-service/hash"
 	"execution-service/instance"
 	"execution-service/model"
 	"execution-service/proof/circuit"
@@ -18,33 +17,27 @@ import (
 
 type ProofService struct {
 	proofParameters  ProofParameters
-	modelPort        model.ModelPort
 	InstanceService  instance.InstanceService
-	HashService      hash.HashService
+	ModelService     model.ModelService
 	signatureService signature.SignatureService
 }
 
 func InitializeProofService(modelPort model.ModelPort) ProofService {
-	wire.Build(instance.NewInstanceService, hash.NewHashService, signature.InitializeSignatureService, NewProofParameters, NewProofService)
+	wire.Build(instance.NewInstanceService, model.NewModelService, signature.InitializeSignatureService, NewProofParameters, NewProofService)
 	return ProofService{}
 }
 
-func NewProofService(proofParameters ProofParameters, modelPort model.ModelPort, instanceService instance.InstanceService, hashService hash.HashService, signatureService signature.SignatureService) ProofService {
+func NewProofService(proofParameters ProofParameters, instanceService instance.InstanceService, modelService model.ModelService, signatureService signature.SignatureService) ProofService {
 	return ProofService{
 		proofParameters:  proofParameters,
-		modelPort:        modelPort,
 		InstanceService:  instanceService,
-		HashService:      hashService,
+		ModelService:     modelService,
 		signatureService: signatureService,
 	}
 }
 
 func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (Proof, error) {
-	model, err := service.modelPort.FindModelById(cmd.Model)
-	if err != nil {
-		return Proof{}, err
-	}
-	modelHash, err := service.HashService.FindHashByModelId(model.Id)
+	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
 		return Proof{}, err
 	}
@@ -54,7 +47,6 @@ func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (
 	}
 	signature := service.signatureService.Sign(instance)
 	assignment := &circuit.InstantiationCircuit{
-		ModelHash: circuit.FromHash(modelHash),
 		Model:     circuit.FromModel(model),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
@@ -71,11 +63,7 @@ func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (
 }
 
 func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof, error) {
-	model, err := service.modelPort.FindModelById(cmd.Model)
-	if err != nil {
-		return Proof{}, err
-	}
-	modelHash, err := service.HashService.FindHashByModelId(model.Id)
+	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
 		return Proof{}, err
 	}
@@ -89,7 +77,6 @@ func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 	}
 	signature := service.signatureService.Sign(nextInstance)
 	assignment := &circuit.TransitionCircuit{
-		ModelHash:             circuit.FromHash(modelHash),
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
 		NextInstance:          circuit.FromInstance(nextInstance),
@@ -107,11 +94,7 @@ func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 }
 
 func (service *ProofService) ProveTermination(cmd ProveTerminationCommand) (Proof, error) {
-	model, err := service.modelPort.FindModelById(cmd.Model)
-	if err != nil {
-		return Proof{}, err
-	}
-	modelHash, err := service.HashService.FindHashByModelId(model.Id)
+	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
 		return Proof{}, err
 	}
@@ -121,7 +104,6 @@ func (service *ProofService) ProveTermination(cmd ProveTerminationCommand) (Proo
 	}
 	signature := service.signatureService.Sign(instance)
 	assignment := &circuit.TerminationCircuit{
-		ModelHash: circuit.FromHash(modelHash),
 		Model:     circuit.FromModel(model),
 		Instance:  circuit.FromInstance(instance),
 		Signature: circuit.FromSignature(signature),
