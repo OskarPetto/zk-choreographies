@@ -16,7 +16,7 @@ type InstanceJson struct {
 	TokenCounts   []int           `json:"tokenCounts"`
 	PublicKeys    []string        `json:"publicKeys"`
 	MessageHashes []hash.HashJson `json:"messageHashes"`
-	UpdatedAt     time.Time       `json:"updatedAt"`
+	CreatedAt     time.Time       `json:"updatedAt"`
 }
 
 func ToJson(instance domain.Instance) InstanceJson {
@@ -49,7 +49,7 @@ func ToJson(instance domain.Instance) InstanceJson {
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
-		UpdatedAt:     time.Unix(instance.UpdatedAt, 0),
+		CreatedAt:     time.Unix(instance.CreatedAt, 0),
 	}
 }
 
@@ -100,6 +100,6 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
-		UpdatedAt:     json.UpdatedAt.Unix(),
+		CreatedAt:     json.CreatedAt.Unix(),
 	}, nil
 }

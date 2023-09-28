@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"execution-service/utils"
 	"fmt"
 	"time"
 )
@@ -46,20 +47,24 @@ func InvalidTransition() Transition {
 type ModelId = string
 
 type Model struct {
-	Id               ModelId
 	Hash             Hash
-	Name             string
+	Choreography     string
 	PlaceCount       uint8
 	ParticipantCount uint8
 	MessageCount     uint8
 	StartPlaces      [MaxStartPlaceCount]PlaceId
 	EndPlaces        [MaxEndPlaceCount]PlaceId
 	Transitions      [MaxTransitionCount]Transition
+	CreatedAt        int64
+}
+
+func (model *Model) Id() ModelId {
+	return utils.BytesToString(model.Hash.Value[:])
 }
 
 func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
 	if int(model.ParticipantCount) != len(publicKeys) {
-		return Instance{}, fmt.Errorf("the number of public keys must match the number of participants in the model %s", model.Id)
+		return Instance{}, fmt.Errorf("the number of public keys must match the number of participants in the model %s", model.Id())
 	}
 	var tokenCounts [MaxPlaceCount]int8
 	for i := model.PlaceCount; i < MaxPlaceCount; i++ {
@@ -80,11 +85,11 @@ func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
 		publicKeysFixedSize[i] = InvalidPublicKey()
 	}
 	instance := Instance{
-		Model:         model.Id,
+		Model:         model.Id(),
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeysFixedSize,
 		MessageHashes: messageHashes,
-		UpdatedAt:     time.Now().Unix(),
+		CreatedAt:     time.Now().Unix(),
 	}
 	instance.ComputeHash()
 	return instance, nil
@@ -96,5 +101,5 @@ func (model *Model) FindTransitionById(id TransitionId) (Transition, error) {
 			return transition, nil
 		}
 	}
-	return Transition{}, fmt.Errorf("transition %s not found in model %s", id, model.Id)
+	return Transition{}, fmt.Errorf("transition %s not found in model %s", id, model.Id())
 }

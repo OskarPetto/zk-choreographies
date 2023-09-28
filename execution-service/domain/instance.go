@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"execution-service/utils"
 	"fmt"
 	"time"
 )
@@ -27,11 +28,11 @@ type Instance struct {
 	TokenCounts   [MaxPlaceCount]int8
 	PublicKeys    [MaxParticipantCount]PublicKey
 	MessageHashes [MaxMessageCount]Hash
-	UpdatedAt     int64
+	CreatedAt     int64
 }
 
 func (instance *Instance) Id() InstanceId {
-	return instance.Hash.Id()
+	return utils.BytesToString(instance.Hash.Value[:])
 }
 
 func (instance Instance) ExecuteTransitionWithMessage(transition Transition, message []byte) (Instance, error) {
@@ -44,7 +45,7 @@ func (instance Instance) ExecuteTransition(transition Transition) (Instance, err
 	if err != nil {
 		return Instance{}, err
 	}
-	instance.UpdatedAt = time.Now().Unix()
+	instance.CreatedAt = time.Now().Unix()
 	instance.ComputeHash()
 	return instance, nil
 }

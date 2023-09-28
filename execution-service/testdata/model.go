@@ -6,6 +6,7 @@ import (
 	"execution-service/utils"
 	"io"
 	"os"
+	"time"
 )
 
 func GetModel2() domain.Model {
@@ -15,6 +16,7 @@ func GetModel2() domain.Model {
 	byteValue, _ := io.ReadAll(jsonFile)
 	model, err := model.FromJson(byteValue)
 	utils.PanicOnError(err)
+	model.CreatedAt = time.Now().Unix()
 	model.ComputeHash()
 	return model
 }

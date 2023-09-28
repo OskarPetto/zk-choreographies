@@ -5,6 +5,7 @@ import (
 	"execution-service/domain"
 	"execution-service/hash"
 	"fmt"
+	"time"
 )
 
 type TransitionJson struct {
@@ -17,15 +18,19 @@ type TransitionJson struct {
 }
 
 type ModelJson struct {
-	Id               string           `json:"id"`
 	Hash             hash.HashJson    `json:"hash"`
-	Name             string           `json:"name"`
+	Choreography     string           `json:"name"`
 	PlaceCount       uint             `json:"placeCount"`
 	ParticipantCount uint             `json:"participantCount"`
 	MessageCount     uint             `json:"messageCount"`
 	StartPlaces      []uint           `json:"startPlaces"`
 	EndPlaces        []uint           `json:"endPlaces"`
 	Transitions      []TransitionJson `json:"transitions"`
+	CreatedAt        time.Time        `json:"createdAt"`
+}
+
+func (model *ModelJson) Id() string {
+	return model.Hash.Value
 }
 
 func (transition *TransitionJson) UnmarshalJSON(data []byte) error {
@@ -65,22 +70,22 @@ func FromJson(data []byte) (domain.Model, error) {
 
 func (model *ModelJson) ToModel() (domain.Model, error) {
 	if model.PlaceCount > domain.MaxPlaceCount {
-		return domain.Model{}, fmt.Errorf("model '%s' has too many places", model.Id)
+		return domain.Model{}, fmt.Errorf("model '%s' has too many places", model.Id())
 	}
 	if model.ParticipantCount > domain.MaxParticipantCount {
-		return domain.Model{}, fmt.Errorf("model '%s' has too many participants", model.Id)
+		return domain.Model{}, fmt.Errorf("model '%s' has too many participants", model.Id())
 	}
 	if model.MessageCount > domain.MaxMessageCount {
-		return domain.Model{}, fmt.Errorf("model '%s' has too many messages", model.Id)
+		return domain.Model{}, fmt.Errorf("model '%s' has too many messages", model.Id())
 	}
 	startPlaceCount := len(model.StartPlaces)
 	if startPlaceCount > domain.MaxStartPlaceCount || startPlaceCount < 1 {
-		return domain.Model{}, fmt.Errorf("model '%s' has invalid number of startPlaces", model.Id)
+		return domain.Model{}, fmt.Errorf("model '%s' has invalid number of startPlaces", model.Id())
 	}
 	var startPlaces [domain.MaxStartPlaceCount]domain.PlaceId
 	for i, startPlace := range model.StartPlaces {
 		if startPlace >= domain.MaxPlaceCount {
-			return domain.Model{}, fmt.Errorf("model '%s' has invalid startPlace", model.Id)
+			return domain.Model{}, fmt.Errorf("model '%s' has invalid startPlace", model.Id())
 		}
 		startPlaces[i] = domain.PlaceId(startPlace)
 	}
@@ -89,12 +94,12 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 	}
 	endPlaceCount := len(model.EndPlaces)
 	if endPlaceCount > domain.MaxEndPlaceCount || endPlaceCount < 1 {
-		return domain.Model{}, fmt.Errorf("model '%s' has invalid number of endPlaces", model.Id)
+		return domain.Model{}, fmt.Errorf("model '%s' has invalid number of endPlaces", model.Id())
 	}
 	var endPlaces [domain.MaxEndPlaceCount]domain.PlaceId
 	for i, endPlace := range model.EndPlaces {
 		if endPlace >= domain.MaxPlaceCount {
-			return domain.Model{}, fmt.Errorf("model '%s' has invalid endPlace", model.Id)
+			return domain.Model{}, fmt.Errorf("model '%s' has invalid endPlace", model.Id())
 		}
 		endPlaces[i] = domain.PlaceId(endPlace)
 	}
@@ -103,7 +108,7 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 	}
 	transitionCount := len(model.Transitions)
 	if transitionCount > domain.MaxTransitionCount {
-		return domain.Model{}, fmt.Errorf("model '%s' has too many transitions", model.Id)
+		return domain.Model{}, fmt.Errorf("model '%s' has too many transitions", model.Id())
 	}
 	var transitions [domain.MaxTransitionCount]domain.Transition
 	for i, transition := range model.Transitions {
@@ -118,20 +123,19 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 	}
 	hash, err := model.Hash.ToHash()
 	if err != nil {
-		return domain.Model{}, fmt.Errorf("model '%s' has invalid hash", model.Id)
+		return domain.Model{}, fmt.Errorf("model '%s' has invalid hash", model.Id())
 	}
-	domainModel := domain.Model{
-		Id:               model.Id,
-		Name:             model.Name,
+	return domain.Model{
+		Hash:             hash,
+		Choreography:     model.Choreography,
 		PlaceCount:       uint8(model.PlaceCount),
 		ParticipantCount: uint8(model.ParticipantCount),
 		MessageCount:     uint8(model.MessageCount),
 		StartPlaces:      startPlaces,
 		EndPlaces:        endPlaces,
 		Transitions:      transitions,
-		Hash:             hash,
-	}
-	return domainModel, nil
+		CreatedAt:        model.CreatedAt.Unix(),
+	}, nil
 }
 
 func (transition *TransitionJson) toTransition() (domain.Transition, error) {
@@ -195,15 +199,15 @@ func ToJson(model domain.Model) ModelJson {
 		transitions = append(transitions, transitionToJson(transition))
 	}
 	return ModelJson{
-		Id:               model.Id,
-		Name:             model.Name,
+		Hash:             hash.HashToJson(model.Hash),
+		Choreography:     model.Choreography,
 		PlaceCount:       uint(model.PlaceCount),
 		ParticipantCount: uint(model.ParticipantCount),
 		MessageCount:     uint(model.MessageCount),
 		StartPlaces:      startPlaces,
 		EndPlaces:        endPlaces,
 		Transitions:      transitions,
-		Hash:             hash.HashToJson(model.Hash),
+		CreatedAt:        time.Unix(model.CreatedAt, 0),
 	}
 }
 

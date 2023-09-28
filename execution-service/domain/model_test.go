@@ -16,7 +16,7 @@ func TestInstantiateModel(t *testing.T) {
 	assert.Equal(t, expected.TokenCounts, instance.TokenCounts)
 	assert.Equal(t, expected.PublicKeys, instance.PublicKeys)
 	assert.Equal(t, expected.MessageHashes, instance.MessageHashes)
-	assert.Equal(t, model.Id, instance.Model)
+	assert.Equal(t, model.Id(), instance.Model)
 	assert.NotEqual(t, expected.Hash, instance.Hash)
 }
 

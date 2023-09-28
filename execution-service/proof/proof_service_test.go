@@ -19,26 +19,27 @@ func (service ModelServiceMock) FindModelById(id domain.ModelId) (domain.Model, 
 	return testdata.GetModel2(), nil
 }
 
-var signatureService signature.SignatureService = signature.InitializeSignatureService()
+var signatureService signature.SignatureService
 var proofService proof.ProofService
 var instanceService instance.InstanceService
 var modelService model.ModelService
 
 func TestInitializeProofService(t *testing.T) {
-	proofService = proof.InitializeProofService(ModelServiceMock{})
+	proofService = proof.InitializeProofService()
 	instanceService = proofService.InstanceService
 	modelService = proofService.ModelService
+	signatureService = proofService.SignatureService
 }
 
 func TestProveInstantiation(t *testing.T) {
-
+	model := testdata.GetModel2()
+	modelService.ImportModel(model)
 	publicKeys := testdata.GetPublicKeys(signatureService, 2)
 	instance := testdata.GetModel2Instance1(publicKeys)
-	model := testdata.GetModel2()
-	instanceService.SaveInstance(instance)
+	instanceService.ImportInstance(instance)
 
 	proof, err := proofService.ProveInstantiation(proof.ProveInstantiationCommand{
-		Model:    model.Id,
+		Model:    model.Id(),
 		Instance: instance.Id(),
 	})
 	assert.Nil(t, err)
@@ -46,15 +47,16 @@ func TestProveInstantiation(t *testing.T) {
 }
 
 func TestProveTransition1(t *testing.T) {
+	model := testdata.GetModel2()
+	modelService.ImportModel(model)
 	publicKeys := testdata.GetPublicKeys(signatureService, 2)
 	currentInstance := testdata.GetModel2Instance2(publicKeys)
 	nextInstance := testdata.GetModel2Instance3(publicKeys)
-	model := testdata.GetModel2()
-	instanceService.SaveInstance(currentInstance)
-	instanceService.SaveInstance(nextInstance)
+	instanceService.ImportInstance(currentInstance)
+	instanceService.ImportInstance(nextInstance)
 
 	proof, err := proofService.ProveTransition(proof.ProveTransitionCommand{
-		Model:           model.Id,
+		Model:           model.Id(),
 		CurrentInstance: currentInstance.Id(),
 		NextInstance:    nextInstance.Id(),
 	})
@@ -63,13 +65,14 @@ func TestProveTransition1(t *testing.T) {
 }
 
 func TestProveTermination(t *testing.T) {
+	model := testdata.GetModel2()
+	modelService.ImportModel(model)
 	publicKeys := testdata.GetPublicKeys(signatureService, 2)
 	instance := testdata.GetModel2Instance4(publicKeys)
-	model := testdata.GetModel2()
-	instanceService.SaveInstance(instance)
+	instanceService.ImportInstance(instance)
 
 	proof, err := proofService.ProveTermination(proof.ProveTerminationCommand{
-		Model:    model.Id,
+		Model:    model.Id(),
 		Instance: instance.Id(),
 	})
 	assert.Nil(t, err)

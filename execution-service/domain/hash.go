@@ -28,10 +28,6 @@ func InvalidHash() Hash {
 	return defaultHash
 }
 
-func (hash *Hash) Id() string {
-	return utils.BytesToString(hash.Value[:])
-}
-
 func HashMessage(message []byte) Hash {
 	salt := randomFrSizedBytes()
 	input := append(message, salt[:]...)
@@ -64,6 +60,7 @@ func (model *Model) ComputeHash() {
 		hashUint8(mimc, transition.Participant)
 		hashUint8(mimc, transition.Message)
 	}
+	hashInt64(mimc, model.CreatedAt)
 	salt := randomFieldElement()
 	mimc.Write(salt[:])
 	model.Hash = Hash{
@@ -88,7 +85,7 @@ func (instance *Instance) ComputeHash() {
 	for _, messageHash := range instance.MessageHashes {
 		mimc.Write(messageHash.Value[:])
 	}
-	hashInt64(mimc, instance.UpdatedAt)
+	hashInt64(mimc, instance.CreatedAt)
 	salt := randomFieldElement()
 	mimc.Write(salt[:])
 	instance.Hash = Hash{

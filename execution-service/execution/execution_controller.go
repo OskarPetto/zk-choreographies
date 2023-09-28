@@ -18,12 +18,11 @@ func NewExecutionController(executionService ExecutionService) ExecutionControll
 }
 
 func (controller *ExecutionController) InstantiateModel(c *gin.Context) {
-	modelId := c.Param("modelId")
 	var jsonCmd InstantiateModelCommandJson
 	if err := c.BindJSON(&jsonCmd); err != nil {
 		return
 	}
-	cmd, err := jsonCmd.ToExecutionCommand(modelId)
+	cmd, err := jsonCmd.ToExecutionCommand()
 	if err != nil {
 		return
 	}
@@ -36,14 +35,11 @@ func (controller *ExecutionController) InstantiateModel(c *gin.Context) {
 }
 
 func (controller *ExecutionController) ExecuteTransition(c *gin.Context) {
-	modelId := c.Param("modelId")
-	instanceId := c.Param("instanceId")
-
 	var jsonCmd ExecuteTransitionCommandJson
 	if err := c.BindJSON(&jsonCmd); err != nil {
 		return
 	}
-	cmd, err := jsonCmd.ToExecutionCommand(modelId, instanceId)
+	cmd, err := jsonCmd.ToExecutionCommand()
 	if err != nil {
 		return
 	}

@@ -1,14 +1,9 @@
-//go:build wireinject
-// +build wireinject
-
 package execution
 
 import (
 	"execution-service/domain"
 	"execution-service/instance"
 	"execution-service/model"
-
-	"github.com/google/wire"
 )
 
 type ExecutionService struct {
@@ -16,9 +11,10 @@ type ExecutionService struct {
 	ModelService    model.ModelService
 }
 
-func InitializeExecutionService(modelPort model.ModelPort) ExecutionService {
-	wire.Build(instance.NewInstanceService, model.NewModelService, NewExecutionService)
-	return ExecutionService{}
+func InitializeExecutionService() ExecutionService {
+	instanceService := instance.NewInstanceService()
+	modelService := model.NewModelService()
+	return NewExecutionService(instanceService, modelService)
 }
 
 func NewExecutionService(instanceService instance.InstanceService, modelService model.ModelService) ExecutionService {
@@ -37,7 +33,7 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 	if err != nil {
 		return domain.Instance{}, err
 	}
-	service.InstanceService.SaveInstance(instanceResult)
+	service.InstanceService.ImportInstance(instanceResult)
 	return instanceResult, nil
 }
 
@@ -63,6 +59,6 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return domain.Instance{}, err
 	}
-	service.InstanceService.SaveInstance(nextInstance)
+	service.InstanceService.ImportInstance(nextInstance)
 	return nextInstance, nil
 }

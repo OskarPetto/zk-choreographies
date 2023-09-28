@@ -6,15 +6,18 @@ import (
 )
 
 type InstantiateModelCommandJson struct {
+	Model      string   `json:"model"`
 	PublicKeys []string `json:"publicKeys"`
 }
 
 type ExecuteTransitionCommandJson struct {
+	Model      string `json:"model"`
+	Instance   string `json:"instance"`
 	Transition string `json:"transition"`
 	Message    string `json:"message"`
 }
 
-func (cmd *InstantiateModelCommandJson) ToExecutionCommand(modelId domain.ModelId) (InstantiateModelCommand, error) {
+func (cmd *InstantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCommand, error) {
 	publicKeys := make([]domain.PublicKey, len(cmd.PublicKeys))
 	for i, publicKey := range cmd.PublicKeys {
 		bytes, err := utils.StringToBytes(publicKey)
@@ -26,19 +29,19 @@ func (cmd *InstantiateModelCommandJson) ToExecutionCommand(modelId domain.ModelI
 		}
 	}
 	return InstantiateModelCommand{
-		Model:      modelId,
+		Model:      cmd.Model,
 		PublicKeys: publicKeys,
 	}, nil
 }
 
-func (cmd *ExecuteTransitionCommandJson) ToExecutionCommand(modelId domain.ModelId, instanceId domain.InstanceId) (ExecuteTransitionCommand, error) {
+func (cmd *ExecuteTransitionCommandJson) ToExecutionCommand() (ExecuteTransitionCommand, error) {
 	message, err := utils.StringToBytes(cmd.Message)
 	if err != nil {
 		return ExecuteTransitionCommand{}, err
 	}
 	return ExecuteTransitionCommand{
-		Model:      modelId,
-		Instance:   instanceId,
+		Model:      cmd.Model,
+		Instance:   cmd.Instance,
 		Transition: cmd.Transition,
 		Message:    message,
 	}, nil

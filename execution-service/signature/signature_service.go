@@ -1,6 +1,3 @@
-//go:build wireinject
-// +build wireinject
-
 package signature
 
 import (
@@ -8,7 +5,6 @@ import (
 	"execution-service/utils"
 
 	"github.com/consensys/gnark-crypto/hash"
-	"github.com/google/wire"
 )
 
 type SignatureService struct {
@@ -16,8 +12,8 @@ type SignatureService struct {
 }
 
 func InitializeSignatureService() SignatureService {
-	wire.Build(NewSignatureService, NewSignatureParameters)
-	return SignatureService{}
+	signatureParameters := NewSignatureParameters()
+	return NewSignatureService(signatureParameters)
 }
 
 func NewSignatureService(signatureParameters SignatureParameters) SignatureService {

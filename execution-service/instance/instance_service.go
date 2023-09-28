@@ -16,12 +16,8 @@ func NewInstanceService() InstanceService {
 	}
 }
 
-func (service *InstanceService) SaveInstance(instance domain.Instance) {
+func (service *InstanceService) ImportInstance(instance domain.Instance) {
 	service.instances[instance.Id()] = instance
-}
-
-func (service *InstanceService) DeleteInstance(id domain.InstanceId) {
-	delete(service.instances, id)
 }
 
 func (service *InstanceService) FindInstanceById(id domain.InstanceId) (domain.Instance, error) {
@@ -40,7 +36,7 @@ func (service *InstanceService) FindInstancesByModel(model domain.ModelId) []dom
 		}
 	}
 	sort.Slice(instances, func(i, j int) bool {
-		return instances[i].UpdatedAt > instances[j].UpdatedAt
+		return instances[i].CreatedAt > instances[j].CreatedAt
 	})
 	return instances
 }

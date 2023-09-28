@@ -1,7 +1,6 @@
 package model_test
 
 import (
-	"execution-service/domain"
 	"execution-service/model"
 	"execution-service/testdata"
 	"testing"
@@ -9,18 +8,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type ModelPortMock struct {
-}
+var modelService = model.NewModelService()
 
-func (service ModelPortMock) FindModelById(id domain.ModelId) (domain.Model, error) {
-	return testdata.GetModel2(), nil
-}
-
-var modelService = model.NewModelService(ModelPortMock{})
-
-func TestFindModelById(t *testing.T) {
+func TestImportModel(t *testing.T) {
 	model := testdata.GetModel2()
-	modelResult, err := modelService.FindModelById(model.Id)
+	modelService.ImportModel(model)
+	modelResult, err := modelService.FindModelById(model.Id())
 	assert.Nil(t, err)
+	assert.Equal(t, model.Hash, modelResult.Hash)
+}
+
+func TestCreateModel(t *testing.T) {
+	model := testdata.GetModel2()
+	modelResult := modelService.CreateModel(model)
 	assert.NotEqual(t, model.Hash, modelResult.Hash)
 }

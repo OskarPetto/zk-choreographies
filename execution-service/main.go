@@ -4,7 +4,6 @@
 package main
 
 import (
-	"execution-service/adapter"
 	"execution-service/execution"
 	"execution-service/instance"
 	"execution-service/model"
@@ -15,10 +14,9 @@ import (
 )
 
 var instanceProviders = wire.NewSet(instance.NewInstanceController, instance.NewInstanceService)
-var providerBindings = wire.NewSet(adapter.NewModelAdapter, wire.Bind(new(model.ModelPort), new(*adapter.ModelAdapter)))
-var modelProviders = wire.NewSet(proofProviders, model.NewModelController, model.NewModelService)
-var executionProviders = wire.NewSet(providerBindings, execution.NewExecutionController, execution.InitializeExecutionService)
-var proofProviders = wire.NewSet(providerBindings, proof.NewProofController, proof.InitializeProofService)
+var modelProviders = wire.NewSet(model.NewModelController, model.NewModelService)
+var executionProviders = wire.NewSet(execution.NewExecutionController, execution.InitializeExecutionService)
+var proofProviders = wire.NewSet(proof.NewProofController, proof.InitializeProofService)
 
 func InitializeInstanceController() instance.InstanceController {
 	wire.Build(instanceProviders)
@@ -48,15 +46,18 @@ func main() {
 	proofController := InitializeProofController()
 
 	router := gin.Default()
-	router.PUT("/models", modelController.PutModel)
-	router.GET("/models/:modelId", modelController.GetModel)
+	router.POST("/models", modelController.CreateModel)
 
-	router.GET("/models/:modelId/instances", instanceController.GetInstances)
-	router.PUT("/instances", instanceController.PutInstance)
-	router.GET("/instances/:instanceId", instanceController.GetInstance)
+	router.GET("/models/:modelId", modelController.FindModelById)
+	router.GET("/models/choreography/:choreographyId", modelController.FindModelsByChoreography)
+	router.PUT("/models", modelController.ImportModel)
 
-	router.POST("/models/:modelId/instances", executionController.InstantiateModel)
-	router.POST("/models/:modelId/instances/:instanceId", executionController.ExecuteTransition)
+	router.GET("/instances/:instanceId", instanceController.FindInstanceById)
+	router.GET("/instances/model/:modelId/", instanceController.FindInstancesByModel)
+	router.PUT("/instances", instanceController.ImportInstance)
+
+	router.POST("/instances/instantiation", executionController.InstantiateModel)
+	router.POST("/instances/transition", executionController.ExecuteTransition)
 
 	router.PUT("/proof/instantiation", proofController.ProveInstantiation)
 	router.PUT("/proof/transition", proofController.ProveTransition)

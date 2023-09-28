@@ -26,7 +26,7 @@ type Instance struct {
 	TokenCounts   [domain.MaxPlaceCount]frontend.Variable
 	PublicKeys    [domain.MaxParticipantCount]eddsa.PublicKey
 	MessageHashes [domain.MaxMessageCount]frontend.Variable
-	UpdatedAt     frontend.Variable
+	CreatedAt     frontend.Variable
 }
 
 type Transition struct {
@@ -45,6 +45,7 @@ type Model struct {
 	StartPlaces      [domain.MaxStartPlaceCount]frontend.Variable
 	EndPlaces        [domain.MaxEndPlaceCount]frontend.Variable
 	Transitions      [domain.MaxTransitionCount]Transition
+	CreatedAt        frontend.Variable
 }
 
 func FromSignature(signature signature.Signature) Signature {
@@ -76,7 +77,7 @@ func FromInstance(instance domain.Instance) Instance {
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
-		UpdatedAt:     instance.UpdatedAt,
+		CreatedAt:     instance.CreatedAt,
 	}
 }
 
@@ -107,6 +108,7 @@ func FromModel(model domain.Model) Model {
 		StartPlaces:      startPlaces,
 		EndPlaces:        endPlaces,
 		Transitions:      transitions,
+		CreatedAt:        model.CreatedAt,
 	}
 }
 

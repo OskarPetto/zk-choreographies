@@ -1,6 +1,3 @@
-//go:build wireinject
-// +build wireinject
-
 package proof
 
 import (
@@ -12,19 +9,21 @@ import (
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/groth16"
 	"github.com/consensys/gnark/frontend"
-	"github.com/google/wire"
 )
 
 type ProofService struct {
 	proofParameters  ProofParameters
 	InstanceService  instance.InstanceService
 	ModelService     model.ModelService
-	signatureService signature.SignatureService
+	SignatureService signature.SignatureService
 }
 
-func InitializeProofService(modelPort model.ModelPort) ProofService {
-	wire.Build(instance.NewInstanceService, model.NewModelService, signature.InitializeSignatureService, NewProofParameters, NewProofService)
-	return ProofService{}
+func InitializeProofService() ProofService {
+	proofParameters := NewProofParameters()
+	instanceService := instance.NewInstanceService()
+	modelService := model.NewModelService()
+	signatureService := signature.InitializeSignatureService()
+	return NewProofService(proofParameters, instanceService, modelService, signatureService)
 }
 
 func NewProofService(proofParameters ProofParameters, instanceService instance.InstanceService, modelService model.ModelService, signatureService signature.SignatureService) ProofService {
@@ -32,7 +31,7 @@ func NewProofService(proofParameters ProofParameters, instanceService instance.I
 		proofParameters:  proofParameters,
 		InstanceService:  instanceService,
 		ModelService:     modelService,
-		signatureService: signatureService,
+		SignatureService: signatureService,
 	}
 }
 
@@ -45,7 +44,7 @@ func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (
 	if err != nil {
 		return Proof{}, err
 	}
-	signature := service.signatureService.Sign(instance)
+	signature := service.SignatureService.Sign(instance)
 	assignment := &circuit.InstantiationCircuit{
 		Model:     circuit.FromModel(model),
 		Instance:  circuit.FromInstance(instance),
@@ -75,7 +74,7 @@ func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 	if err != nil {
 		return Proof{}, err
 	}
-	signature := service.signatureService.Sign(nextInstance)
+	signature := service.SignatureService.Sign(nextInstance)
 	assignment := &circuit.TransitionCircuit{
 		Model:                 circuit.FromModel(model),
 		CurrentInstance:       circuit.FromInstance(currentInstance),
@@ -102,7 +101,7 @@ func (service *ProofService) ProveTermination(cmd ProveTerminationCommand) (Proo
 	if err != nil {
 		return Proof{}, err
 	}
-	signature := service.signatureService.Sign(instance)
+	signature := service.SignatureService.Sign(instance)
 	assignment := &circuit.TerminationCircuit{
 		Model:     circuit.FromModel(model),
 		Instance:  circuit.FromInstance(instance),

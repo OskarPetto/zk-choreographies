@@ -128,7 +128,7 @@ func getModel2Instance(tokenCounts []int8, publicKeys []domain.PublicKey, messag
 		TokenCounts:   tokenCountsFixedSize,
 		PublicKeys:    publicKeysFixedSize,
 		MessageHashes: messageHashesFixedSize,
-		UpdatedAt:     time.Now().Unix(),
+		CreatedAt:     time.Now().Unix(),
 	}
 	instance.ComputeHash()
 	return instance

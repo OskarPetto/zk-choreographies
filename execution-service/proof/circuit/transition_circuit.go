@@ -37,7 +37,7 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	api.AssertIsLessOrEqual(circuit.CurrentInstance.UpdatedAt, circuit.NextInstance.UpdatedAt)
+	api.AssertIsLessOrEqual(circuit.CurrentInstance.CreatedAt, circuit.NextInstance.CreatedAt)
 	tokenCountChanges := circuit.compareTokenCounts(api)
 	circuit.comparePublicKeys(api)
 	participantId := findParticipantId(api, circuit.NextInstanceSignature, circuit.NextInstance)

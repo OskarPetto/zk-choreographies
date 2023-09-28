@@ -28,6 +28,7 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
+	api.AssertIsLessOrEqual(circuit.Model.CreatedAt, circuit.Instance.CreatedAt)
 	findParticipantId(api, circuit.Signature, circuit.Instance)
 	circuit.checkTokenCounts(api)
 	circuit.checkMessageHashes(api)
