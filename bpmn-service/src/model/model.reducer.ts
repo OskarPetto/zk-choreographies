@@ -168,13 +168,12 @@ export class ModelReducer {
     );
 
     return {
-      id: model.id,
+      choreography: model.choreography,
       placeCount: model.placeCount,
       participantCount: model.participantCount,
       messageCount: model.messageCount,
       startPlaces: [...model.startPlaces],
       endPlaces: [...model.endPlaces],
-      createdAt: model.createdAt,
       transitions,
     };
   }

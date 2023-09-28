@@ -2,7 +2,6 @@ export type PlaceId = number;
 export type ParticipantId = number;
 export type MessageId = number;
 export type TransitionId = string;
-export type ModelId = string;
 
 export enum TransitionType {
   REQUIRED,
@@ -21,12 +20,11 @@ export interface Transition {
 }
 
 export interface Model {
-  id: ModelId;
+  choreography: string;
   placeCount: number;
   participantCount: number;
   messageCount: number;
   startPlaces: PlaceId[];
   endPlaces: PlaceId[];
   transitions: Transition[];
-  createdAt: Date;
 }

@@ -13,15 +13,14 @@ import {
   ExclusiveGateway,
   ParallelGateway,
   LoopType,
-} from './bpmn';
+} from './choreography';
 
 @Injectable()
-export class BpmnParser {
+export class ChoreographyParser {
   private readonly definitionsTag = 'bpmn2:definitions';
   private readonly messageTag = 'bpmn2:message';
   private readonly choreographyTag = 'bpmn2:choreography';
   private readonly participantTag = 'bpmn2:participant';
-  private readonly participantMultiplicityTag = 'bpmn2:participantMultiplicity';
   private readonly sequenceFlowTag = 'bpmn2:sequenceFlow';
   private readonly messageFlowTag = 'bpmn2:messageFlow';
   private readonly startEventTag = 'bpmn2:startEvent';

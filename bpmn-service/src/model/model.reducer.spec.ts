@@ -1,4 +1,4 @@
-import { TestdataProvider } from 'test/data/testdata.provider';
+import { TestdataProvider } from '../../test/data/testdata.provider';
 import { ModelReducer } from './model.reducer';
 
 describe('ReductionService', () => {

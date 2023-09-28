@@ -1,4 +1,4 @@
-import { PlaceId, Model, TransitionId, Transition } from 'src/model/model';
+import { PlaceId, Model, TransitionId, Transition } from '../src/model/model';
 
 export function logObject(object: any) {
   console.dir(object, { depth: null });

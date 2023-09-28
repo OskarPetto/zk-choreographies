@@ -1,7 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Model, TransitionType } from 'src/model/model';
-import { Definitions, GatewayType, LoopType } from 'src/bpmn/bpmn';
+import { Model, TransitionType } from '../../src/model/model';
+import {
+  Definitions,
+  GatewayType,
+  LoopType,
+} from 'src/choreography/choreography';
 
 function readTextFile(filename: string) {
   const filePath = path.join(process.cwd(), filename);
@@ -238,13 +242,12 @@ export class TestdataProvider {
 
   static getModel2(): Model {
     return {
-      id: 'Choreography_07n6r3q',
+      choreography: 'Choreography_07n6r3q',
       placeCount: 20,
       participantCount: 2,
       messageCount: 12,
       startPlaces: [18],
       endPlaces: [19],
-      createdAt: TestdataProvider.getDate(),
       transitions: [
         {
           id: 'Event_1525yky',
@@ -424,13 +427,12 @@ export class TestdataProvider {
 
   static getModel2Reduced(): Model {
     return {
-      id: 'Choreography_07n6r3q',
+      choreography: 'Choreography_07n6r3q',
       placeCount: 14,
       participantCount: 2,
       messageCount: 12,
       startPlaces: [12],
       endPlaces: [13],
-      createdAt: TestdataProvider.getDate(),
       transitions: [
         {
           id: 'Event_1525yky',

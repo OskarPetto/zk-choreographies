@@ -14,7 +14,7 @@ import {
   Message,
   Choreography,
   LoopType,
-} from './bpmn';
+} from './choreography';
 import {
   Model,
   ParticipantId,
@@ -25,7 +25,7 @@ import {
 } from '../model/model';
 
 @Injectable()
-export class BpmnMapper {
+export class ChoreographyMapper {
   maxLoopCount = 4;
 
   toModel(choreography: Choreography): Model {
@@ -94,7 +94,7 @@ export class BpmnMapper {
     );
 
     return {
-      id: choreography.id,
+      choreography: choreography.id,
       placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length + 2,
       participantCount: relevantParticipants.length,
       messageCount: messageIds.size + additionalMessageIds.length,
@@ -105,7 +105,6 @@ export class BpmnMapper {
         (endTransition) => endTransition.outgoingPlaces,
       ),
       transitions,
-      createdAt: new Date(),
     };
   }
 
