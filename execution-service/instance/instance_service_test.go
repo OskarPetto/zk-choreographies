@@ -1,16 +1,19 @@
-package domain_test
+package instance_test
 
 import (
-	"execution-service/domain"
+	"execution-service/instance"
+	"execution-service/signature"
 	"execution-service/testdata"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+var signatureService signature.SignatureService = signature.InitializeSignatureService()
+
 func TestFindInstanceById(t *testing.T) {
-	service := domain.NewInstanceService()
-	publicKeys := testdata.GetPublicKeys(1)
+	service := instance.NewInstanceService()
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
 	instance := testdata.GetModel2Instance1(publicKeys)
 	service.SaveInstance(instance)
 	_, err := service.FindInstanceById(instance.Id())
@@ -19,8 +22,8 @@ func TestFindInstanceById(t *testing.T) {
 }
 
 func TestFindInstancesByModel(t *testing.T) {
-	service := domain.NewInstanceService()
-	publicKeys := testdata.GetPublicKeys(1)
+	service := instance.NewInstanceService()
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
 	instance := testdata.GetModel2Instance1(publicKeys)
 	service.SaveInstance(instance)
 	result := service.FindInstancesByModel(instance.Model)

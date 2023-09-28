@@ -1,24 +1,24 @@
-package rest
+package adapter
 
 import (
 	"execution-service/domain"
-	"execution-service/infrastructure/json"
+	"execution-service/model"
 	"io"
 	"net/http"
 	"os"
 )
 
-type ModelServiceClient struct {
+type ModelAdapter struct {
 	modelServiceUrl string
 }
 
-func NewModelClient() domain.ModelService {
-	return ModelServiceClient{
+func NewModelAdapter() *ModelAdapter {
+	return &ModelAdapter{
 		modelServiceUrl: os.Getenv("MODEL_SERVICE_URL"),
 	}
 }
 
-func (client ModelServiceClient) FindModelById(modelId domain.ModelId) (domain.Model, error) {
+func (client ModelAdapter) FindModelById(modelId domain.ModelId) (domain.Model, error) {
 
 	response, err := http.Get(client.modelServiceUrl + "/models/" + modelId)
 	if err != nil {
@@ -28,7 +28,7 @@ func (client ModelServiceClient) FindModelById(modelId domain.ModelId) (domain.M
 	if err != nil {
 		return domain.Model{}, err
 	}
-	model, err := json.UnmarshalModel(body)
+	model, err := model.FromJson(body)
 	if err != nil {
 		return domain.Model{}, err
 	}

@@ -9,7 +9,7 @@ import (
 
 func TestInstantiateModel(t *testing.T) {
 	model := testdata.GetModel2()
-	publicKeys := testdata.GetPublicKeys(2)
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
 	expected := testdata.GetModel2Instance1(publicKeys)
 	instance, err := model.Instantiate(publicKeys)
 	assert.Nil(t, err)

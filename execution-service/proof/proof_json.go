@@ -1,22 +1,18 @@
-package json
+package proof
 
-import (
-	"execution-service/proof"
-)
-
-type Proof struct {
+type ProofJson struct {
 	A           [2]string    `json:"a"`
 	B           [2][2]string `json:"b"`
 	C           [2]string    `json:"c"`
 	PublicInput []string     `json:"publicInput"`
 }
 
-func FromDomainProof(proof proof.Proof) Proof {
+func (proof Proof) ToJson() ProofJson {
 	publicInputs := make([]string, len(proof.PublicInput))
 	for i, publicInput := range proof.PublicInput {
 		publicInputs[i] = publicInput.String()
 	}
-	return Proof{
+	return ProofJson{
 		A: [2]string{
 			proof.A[0].String(),
 			proof.A[1].String(),

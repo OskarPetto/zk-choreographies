@@ -1,15 +1,18 @@
 package domain_test
 
 import (
+	"execution-service/signature"
 	"execution-service/testdata"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+var signatureService signature.SignatureService = signature.InitializeSignatureService()
+
 func TestExecuteTransition0(t *testing.T) {
 	model := testdata.GetModel2()
-	publicKeys := testdata.GetPublicKeys(2)
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
 	instance1 := testdata.GetModel2Instance1(publicKeys)
 	expected := testdata.GetModel2Instance2(publicKeys)
 	instance2, err := instance1.ExecuteTransition(model.Transitions[0])
@@ -22,7 +25,7 @@ func TestExecuteTransition0(t *testing.T) {
 
 func TestExecuteTransition1(t *testing.T) {
 	model := testdata.GetModel2()
-	publicKeys := testdata.GetPublicKeys(2)
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
 	instance1 := testdata.GetModel2Instance2(publicKeys)
 	expected := testdata.GetModel2Instance3(publicKeys)
 	instance2, err := instance1.ExecuteTransitionWithMessage(model.Transitions[2], []byte("hello"))

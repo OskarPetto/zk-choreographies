@@ -1,4 +1,4 @@
-package json
+package model
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-type Transition struct {
+type TransitionJson struct {
 	Id             string `json:"id"`
 	Name           string `json:"name"`
 	IncomingPlaces []uint `json:"incomingPlaces"`
@@ -15,19 +15,19 @@ type Transition struct {
 	Message        uint   `json:"message,omitempty"`
 }
 
-type Model struct {
-	Id               string       `json:"id"`
-	Name             string       `json:"name"`
-	PlaceCount       uint         `json:"placeCount"`
-	ParticipantCount uint         `json:"participantCount"`
-	MessageCount     uint         `json:"messageCount"`
-	StartPlaces      []uint       `json:"startPlaces"`
-	EndPlaces        []uint       `json:"endPlaces"`
-	Transitions      []Transition `json:"transitions"`
+type ModelJson struct {
+	Id               string           `json:"id"`
+	Name             string           `json:"name"`
+	PlaceCount       uint             `json:"placeCount"`
+	ParticipantCount uint             `json:"participantCount"`
+	MessageCount     uint             `json:"messageCount"`
+	StartPlaces      []uint           `json:"startPlaces"`
+	EndPlaces        []uint           `json:"endPlaces"`
+	Transitions      []TransitionJson `json:"transitions"`
 }
 
-func (transition *Transition) UnmarshalJSON(data []byte) error {
-	type Alias Transition
+func (transition *TransitionJson) UnmarshalJSON(data []byte) error {
+	type Alias TransitionJson
 	tmp := struct {
 		*Alias
 		Participant *uint `json:"participant"`
@@ -52,16 +52,16 @@ func (transition *Transition) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func UnmarshalModel(data []byte) (domain.Model, error) {
-	var model Model
+func FromJson(data []byte) (domain.Model, error) {
+	var model ModelJson
 	err := json.Unmarshal(data, &model)
 	if err != nil {
 		return domain.Model{}, err
 	}
-	return model.ToDomainModel()
+	return model.ToModel()
 }
 
-func (model *Model) ToDomainModel() (domain.Model, error) {
+func (model *ModelJson) ToModel() (domain.Model, error) {
 	if model.PlaceCount > domain.MaxPlaceCount {
 		return domain.Model{}, fmt.Errorf("model '%s' has too many places", model.Id)
 	}
@@ -106,7 +106,7 @@ func (model *Model) ToDomainModel() (domain.Model, error) {
 	var transitions [domain.MaxTransitionCount]domain.Transition
 	for i, transition := range model.Transitions {
 		var err error
-		transitions[i], err = transition.toDomainTransition()
+		transitions[i], err = transition.toTransition()
 		if err != nil {
 			return domain.Model{}, err
 		}
@@ -127,7 +127,7 @@ func (model *Model) ToDomainModel() (domain.Model, error) {
 	return domainModel, nil
 }
 
-func (transition *Transition) toDomainTransition() (domain.Transition, error) {
+func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 	incomingPlaceCount := len(transition.IncomingPlaces)
 	outgoingPlaceCount := len(transition.OutgoingPlaces)
 	if incomingPlaceCount > domain.MaxBranchingFactor || outgoingPlaceCount > domain.MaxBranchingFactor {
@@ -165,7 +165,7 @@ func (transition *Transition) toDomainTransition() (domain.Transition, error) {
 	}, nil
 }
 
-func FromDomainModel(model domain.Model) Model {
+func ToJson(model domain.Model) ModelJson {
 	startPlaces := make([]uint, 0)
 	for _, startPlace := range model.StartPlaces {
 		if startPlace != domain.InvalidPlaceId {
@@ -180,14 +180,14 @@ func FromDomainModel(model domain.Model) Model {
 		}
 		endPlaces = append(endPlaces, uint(endPlace))
 	}
-	transitions := make([]Transition, 0)
+	transitions := make([]TransitionJson, 0)
 	for _, transition := range model.Transitions {
 		if !transition.IsValid {
 			break
 		}
-		transitions = append(transitions, fromDomainTransition(transition))
+		transitions = append(transitions, transitionToJson(transition))
 	}
-	return Model{
+	return ModelJson{
 		Id:               model.Id,
 		Name:             model.Name,
 		PlaceCount:       uint(model.PlaceCount),
@@ -199,7 +199,7 @@ func FromDomainModel(model domain.Model) Model {
 	}
 }
 
-func fromDomainTransition(transition domain.Transition) Transition {
+func transitionToJson(transition domain.Transition) TransitionJson {
 	incomingPlaces := make([]uint, 0)
 	for _, incomingPlace := range transition.IncomingPlaces {
 		if incomingPlace == domain.InvalidPlaceId {
@@ -214,7 +214,7 @@ func fromDomainTransition(transition domain.Transition) Transition {
 		}
 		outgoingPlaces = append(outgoingPlaces, uint(outgoingPlace))
 	}
-	jsonTransition := Transition{
+	jsonTransition := TransitionJson{
 		Id:             transition.Id,
 		Name:           transition.Name,
 		IncomingPlaces: incomingPlaces,

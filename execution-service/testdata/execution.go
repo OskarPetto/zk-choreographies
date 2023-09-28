@@ -2,17 +2,15 @@ package testdata
 
 import (
 	"crypto/rand"
-	"execution-service/authentication"
 	"execution-service/domain"
+	"execution-service/signature"
 	"execution-service/utils"
 	"time"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )
 
-var signatureService authentication.SignatureService = authentication.NewSignatureService()
-
-func GetPublicKeys(count int) []domain.PublicKey {
+func GetPublicKeys(signatureService signature.SignatureService, count int) []domain.PublicKey {
 	publicKeys := make([]domain.PublicKey, count)
 	publicKeys[0] = signatureService.GetPublicKey()
 	for i := 1; i < count; i++ {

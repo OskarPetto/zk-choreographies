@@ -1,9 +1,9 @@
 package circuit_test
 
 import (
-	"execution-service/authentication"
 	"execution-service/circuit"
 	"execution-service/domain"
+	"execution-service/signature"
 	"execution-service/testdata"
 	"testing"
 
@@ -14,9 +14,11 @@ import (
 
 var instantiationCircuit circuit.InstantiationCircuit
 
+var signatureService signature.SignatureService = signature.InitializeSignatureService()
+
 func TestInstantiation(t *testing.T) {
-	signatureService := authentication.NewSignatureService()
-	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
+	instance := testdata.GetModel2Instance1(publicKeys)
 	signature := signatureService.Sign(instance)
 
 	model := testdata.GetModel2()
@@ -35,8 +37,8 @@ func TestInstantiation(t *testing.T) {
 }
 
 func TestInstantiation_InvalidModelHash(t *testing.T) {
-	signatureService := authentication.NewSignatureService()
-	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
+	instance := testdata.GetModel2Instance1(publicKeys)
 	signature := signatureService.Sign(instance)
 
 	model := testdata.GetModel2()
@@ -53,8 +55,8 @@ func TestInstantiation_InvalidModelHash(t *testing.T) {
 }
 
 func TestInstantiation_InvalidInstanceHash(t *testing.T) {
-	signatureService := authentication.NewSignatureService()
-	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
+	instance := testdata.GetModel2Instance1(publicKeys)
 	instance.Hash = domain.InvalidHash()
 	signature := signatureService.Sign(instance)
 
@@ -72,8 +74,8 @@ func TestInstantiation_InvalidInstanceHash(t *testing.T) {
 }
 
 func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
-	signatureService := authentication.NewSignatureService()
-	instance := testdata.GetModel2Instance2(testdata.GetPublicKeys(2))
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
+	instance := testdata.GetModel2Instance2(publicKeys)
 	signature := signatureService.Sign(instance)
 
 	model := testdata.GetModel2()
@@ -90,8 +92,8 @@ func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
 }
 
 func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
-	signatureService := authentication.NewSignatureService()
-	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
+	instance := testdata.GetModel2Instance1(publicKeys)
 	instance.TokenCounts[domain.MaxPlaceCount-1] = 0
 	signature := signatureService.Sign(instance)
 
@@ -109,9 +111,9 @@ func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
 }
 
 func TestInstantiation_InvalidSignature(t *testing.T) {
-	signatureService := authentication.NewSignatureService()
-	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
-	instance2 := testdata.GetModel2Instance2(testdata.GetPublicKeys(2))
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
+	instance := testdata.GetModel2Instance1(publicKeys)
+	instance2 := testdata.GetModel2Instance2(publicKeys)
 	instance2.ComputeHash()
 	signature := signatureService.Sign(instance2)
 
@@ -129,8 +131,7 @@ func TestInstantiation_InvalidSignature(t *testing.T) {
 }
 
 func TestInstantiation_InvalidAuthorization(t *testing.T) {
-	signatureService := authentication.NewSignatureService()
-	publicKeys := testdata.GetPublicKeys(3)
+	publicKeys := testdata.GetPublicKeys(signatureService, 3)
 	instance := testdata.GetModel2Instance1([]domain.PublicKey{publicKeys[1], publicKeys[2]})
 	signature := signatureService.Sign(instance)
 
@@ -148,8 +149,8 @@ func TestInstantiation_InvalidAuthorization(t *testing.T) {
 }
 
 func TestInstantiation_InvalidMessageHashes(t *testing.T) {
-	signatureService := authentication.NewSignatureService()
-	instance := testdata.GetModel2Instance1(testdata.GetPublicKeys(2))
+	publicKeys := testdata.GetPublicKeys(signatureService, 2)
+	instance := testdata.GetModel2Instance1(publicKeys)
 	instance.MessageHashes[0] = domain.HashMessage([]byte("invalid"))
 
 	signature := signatureService.Sign(instance)

@@ -1,4 +1,4 @@
-package parameters
+package proof
 
 import (
 	"bytes"
@@ -32,7 +32,7 @@ type ProofParameters struct {
 	PkTermination   groth16.ProvingKey
 }
 
-func LoadProofParameters() ProofParameters {
+func NewProofParameters() ProofParameters {
 	csInstantiation := importConstraintSystem(&circuit.InstantiationCircuit{}, instantiationCsFilename)
 	csTransition := importConstraintSystem(&circuit.TransitionCircuit{}, transitionCsFilename)
 	csTermination := importConstraintSystem(&circuit.TerminationCircuit{}, terminationCsFilename)

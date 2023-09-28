@@ -1,7 +1,8 @@
-package domain_test
+package hash_test
 
 import (
 	"execution-service/domain"
+	"execution-service/hash"
 	"execution-service/testdata"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func TestFindHashByModelId(t *testing.T) {
-	service := domain.NewHashService()
+	service := hash.NewHashService()
 	model := testdata.GetModel2()
 	service.SaveModelHash(model.Id, domain.HashModel(model))
 	_, err := service.FindHashByModelId(model.Id)

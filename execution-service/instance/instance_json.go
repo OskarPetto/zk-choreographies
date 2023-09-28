@@ -1,4 +1,4 @@
-package json
+package instance
 
 import (
 	"bytes"
@@ -7,22 +7,22 @@ import (
 	"time"
 )
 
-type Hash struct {
+type HashJson struct {
 	Value string `json:"value"`
 	Salt  string `json:"salt"`
 }
 
-type Instance struct {
-	Id            string    `json:"id"`
-	Hash          Hash      `json:"hash"`
-	Model         string    `json:"model"`
-	TokenCounts   []int     `json:"tokenCounts"`
-	PublicKeys    []string  `json:"publicKeys"`
-	MessageHashes []Hash    `json:"messageHashes"`
-	UpdatedAt     time.Time `json:"updatedAt"`
+type InstanceJson struct {
+	Id            string     `json:"id"`
+	Hash          HashJson   `json:"hash"`
+	Model         string     `json:"model"`
+	TokenCounts   []int      `json:"tokenCounts"`
+	PublicKeys    []string   `json:"publicKeys"`
+	MessageHashes []HashJson `json:"messageHashes"`
+	UpdatedAt     time.Time  `json:"updatedAt"`
 }
 
-func FromDomainInstance(instance domain.Instance) Instance {
+func InstanceToJson(instance domain.Instance) InstanceJson {
 	tokenCounts := make([]int, 0)
 	for _, tokenCount := range instance.TokenCounts {
 		if tokenCount == domain.InvalidTokenCount {
@@ -37,20 +37,20 @@ func FromDomainInstance(instance domain.Instance) Instance {
 		}
 		publicKeys = append(publicKeys, bytesToString(publicKey.Value))
 	}
-	messageHashes := make([]Hash, 0)
+	messageHashes := make([]HashJson, 0)
 	for _, messageHash := range instance.MessageHashes {
 		invalidHash := domain.InvalidHash()
 		if bytes.Equal(invalidHash.Value[:], messageHash.Value[:]) && bytes.Equal(invalidHash.Salt[:], messageHash.Salt[:]) {
 			break
 		}
-		messageHashes = append(messageHashes, Hash{
+		messageHashes = append(messageHashes, HashJson{
 			Value: bytesToString(messageHash.Value[:]),
 			Salt:  bytesToString(messageHash.Salt[:]),
 		})
 	}
-	return Instance{
+	return InstanceJson{
 		Id: instance.Id(),
-		Hash: Hash{
+		Hash: HashJson{
 			Value: bytesToString(instance.Hash.Value[:]),
 			Salt:  bytesToString(instance.Hash.Salt[:]),
 		},

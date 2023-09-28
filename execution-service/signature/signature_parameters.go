@@ -1,4 +1,4 @@
-package parameters
+package signature
 
 import (
 	"bytes"
@@ -15,7 +15,7 @@ type SignatureParameters struct {
 	SignaturePrivateKey *eddsa.PrivateKey
 }
 
-func LoadSignatureParameters() SignatureParameters {
+func NewSignatureParameters() SignatureParameters {
 	signaturePrivateKey := importSignaturePrivateKey(signaturePrivateKeyFilename)
 	return SignatureParameters{
 		signaturePrivateKey,

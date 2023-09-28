@@ -2,7 +2,7 @@ package testdata
 
 import (
 	"execution-service/domain"
-	"execution-service/infrastructure/json"
+	"execution-service/model"
 	"execution-service/utils"
 	"io"
 	"os"
@@ -13,7 +13,7 @@ func GetModel2() domain.Model {
 	utils.PanicOnError(err)
 	defer jsonFile.Close()
 	byteValue, _ := io.ReadAll(jsonFile)
-	model, err := json.UnmarshalModel(byteValue)
+	model, err := model.FromJson(byteValue)
 	utils.PanicOnError(err)
 	return model
 }

@@ -1,8 +1,8 @@
 package circuit
 
 import (
-	"execution-service/authentication"
 	"execution-service/domain"
+	"execution-service/signature"
 	"execution-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
@@ -46,7 +46,7 @@ type Model struct {
 	Transitions      [domain.MaxTransitionCount]Transition
 }
 
-func FromSignature(signature authentication.Signature) Signature {
+func FromSignature(signature signature.Signature) Signature {
 	var value eddsa.Signature
 	value.Assign(twistededwards.BN254, signature.Value)
 	var publicKey eddsa.PublicKey
