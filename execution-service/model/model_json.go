@@ -47,12 +47,12 @@ func (transition *TransitionJson) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if tmp.Participant == nil {
-		transition.Participant = domain.OutOfBoundsParticipantId
+		transition.Participant = domain.EmptyParticipantId
 	} else {
 		transition.Participant = *(tmp.Participant)
 	}
 	if tmp.Message == nil {
-		transition.Message = domain.OutOfBoundsMessageId
+		transition.Message = domain.EmptyMessageId
 	} else {
 		transition.Message = *(tmp.Message)
 	}
@@ -119,7 +119,7 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 		}
 	}
 	for i := transitionCount; i < domain.MaxTransitionCount; i++ {
-		transitions[i] = domain.InvalidTransition()
+		transitions[i] = domain.OutOfBoundsTransition()
 	}
 	hash, err := model.Hash.ToHash()
 	if err != nil {
@@ -232,10 +232,10 @@ func transitionToJson(transition domain.Transition) TransitionJson {
 		IncomingPlaces: incomingPlaces,
 		OutgoingPlaces: outgoingPlaces,
 	}
-	if transition.Participant != domain.OutOfBoundsParticipantId {
+	if transition.Participant != domain.EmptyParticipantId {
 		jsonTransition.Participant = uint(transition.Participant)
 	}
-	if transition.Message != domain.OutOfBoundsMessageId {
+	if transition.Message != domain.EmptyMessageId {
 		jsonTransition.Message = uint(transition.Message)
 	}
 	return jsonTransition

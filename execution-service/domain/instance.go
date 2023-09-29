@@ -47,7 +47,7 @@ func (instance Instance) ExecuteTransition(transition Transition, message []byte
 }
 
 func (instance *Instance) updateMessageHash(messageId MessageId, message []byte) {
-	if messageId != OutOfBoundsMessageId && len(message) > 0 {
+	if messageId != EmptyMessageId && len(message) > 0 {
 		messageHash := HashMessage(message)
 		instance.MessageHashes[messageId] = messageHash
 	}

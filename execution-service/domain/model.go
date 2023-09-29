@@ -19,8 +19,8 @@ type ParticipantId = uint8
 type MessageId = uint8
 
 const OutOfBoundsPlaceId = MaxPlaceCount
-const OutOfBoundsParticipantId = MaxParticipantCount
-const OutOfBoundsMessageId = MaxMessageCount
+const EmptyParticipantId = MaxParticipantCount
+const EmptyMessageId = MaxMessageCount
 
 type TransitionId = string
 
@@ -34,13 +34,13 @@ type Transition struct {
 	Message        MessageId
 }
 
-func InvalidTransition() Transition {
+func OutOfBoundsTransition() Transition {
 	return Transition{
 		IsValid:        false,
 		IncomingPlaces: [MaxBranchingFactor]PlaceId{OutOfBoundsPlaceId, OutOfBoundsPlaceId},
 		OutgoingPlaces: [MaxBranchingFactor]PlaceId{OutOfBoundsPlaceId, OutOfBoundsPlaceId},
-		Participant:    OutOfBoundsParticipantId,
-		Message:        OutOfBoundsMessageId,
+		Participant:    EmptyParticipantId,
+		Message:        EmptyMessageId,
 	}
 }
 

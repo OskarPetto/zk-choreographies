@@ -4,13 +4,12 @@ import (
 	"execution-service/domain"
 
 	"github.com/consensys/gnark/frontend"
-	"github.com/consensys/gnark/std/selector"
 )
 
 type TokenCountChanges struct {
-	tokenCountDecreasesPerPlaceId [domain.MaxPlaceCount + 1]frontend.Variable
-	tokenCountIncreasesPerPlaceId [domain.MaxPlaceCount + 1]frontend.Variable
-	noChanges                     frontend.Variable
+	placesWhereTokenCountDecreases [domain.MaxBranchingFactor]frontend.Variable
+	placesWhereTokenCountIncreases [domain.MaxBranchingFactor]frontend.Variable
+	noChanges                      frontend.Variable
 }
 
 type TransitionCircuit struct {
@@ -42,13 +41,19 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	circuit.comparePublicKeys(api)
 	participantId := findParticipantId(api, circuit.NextSignature, circuit.NextInstance)
 	messageId := circuit.findMessageId(api)
+	api.Println(tokenCountChanges.placesWhereTokenCountDecreases[:]...)
+	api.Println(tokenCountChanges.placesWhereTokenCountIncreases[:]...)
 	circuit.findTransition(api, tokenCountChanges, participantId, messageId)
 	return nil
 }
 
 func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCountChanges {
-	var tokenCountDecreasesPerPlaceId [domain.MaxPlaceCount + 1]frontend.Variable
-	var tokenCountIncreasesPerPlaceId [domain.MaxPlaceCount + 1]frontend.Variable
+	var placesWhereTokenCountDecreases [domain.MaxBranchingFactor]frontend.Variable
+	var placesWhereTokenCountIncreases [domain.MaxBranchingFactor]frontend.Variable
+	for i := 0; i < domain.MaxBranchingFactor; i++ {
+		placesWhereTokenCountDecreases[i] = domain.OutOfBoundsPlaceId
+		placesWhereTokenCountIncreases[i] = domain.OutOfBoundsPlaceId
+	}
 	var tokenCountDecreasesCount frontend.Variable = 0
 	var tokenCountIncreasesCount frontend.Variable = 0
 
@@ -65,16 +70,20 @@ func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCoun
 		tokenCountIncreases := equals(api, tokenChange, 1)
 		api.AssertIsEqual(1, api.Or(api.Or(tokenCountStaysTheSame, tokenCountDecreases), tokenCountIncreases))
 
+		for i := 0; i < domain.MaxBranchingFactor; i++ {
+			isCorrectIndex := equals(api, tokenCountDecreasesCount, i)
+			shouldWrite := api.And(tokenCountDecreases, isCorrectIndex)
+			placesWhereTokenCountDecreases[i] = api.Select(shouldWrite, placeId, placesWhereTokenCountDecreases[i])
+		}
+		for i := 0; i < domain.MaxBranchingFactor; i++ {
+			isCorrectIndex := equals(api, tokenCountIncreasesCount, i)
+			shouldWrite := api.And(tokenCountIncreases, isCorrectIndex)
+			placesWhereTokenCountIncreases[i] = api.Select(shouldWrite, placeId, placesWhereTokenCountIncreases[i])
+		}
+
 		tokenCountDecreasesCount = api.Add(tokenCountDecreasesCount, tokenCountDecreases)
 		tokenCountIncreasesCount = api.Add(tokenCountIncreasesCount, tokenCountIncreases)
-
-		tokenCountDecreasesPerPlaceId[placeId] = tokenCountDecreases
-		tokenCountIncreasesPerPlaceId[placeId] = tokenCountIncreases
 	}
-
-	// insert 1 at domain.MaxPlaceCount (default value of incomingPlaces and outgoingPlaces arrays)
-	tokenCountDecreasesPerPlaceId[domain.MaxPlaceCount] = 1
-	tokenCountIncreasesPerPlaceId[domain.MaxPlaceCount] = 1
 
 	api.AssertIsLessOrEqual(tokenCountDecreasesCount, domain.MaxBranchingFactor)
 	api.AssertIsLessOrEqual(tokenCountIncreasesCount, domain.MaxBranchingFactor)
@@ -82,7 +91,7 @@ func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCoun
 	noChanges := api.And(api.IsZero(tokenCountDecreasesCount), api.IsZero(tokenCountIncreasesCount))
 
 	return TokenCountChanges{
-		tokenCountDecreasesPerPlaceId, tokenCountIncreasesPerPlaceId, noChanges,
+		placesWhereTokenCountDecreases, placesWhereTokenCountIncreases, noChanges,
 	}
 }
 
@@ -97,7 +106,7 @@ func (circuit *TransitionCircuit) comparePublicKeys(api frontend.API) {
 
 func (circuit *TransitionCircuit) findMessageId(api frontend.API) frontend.Variable {
 	var messageHashesAddedCount frontend.Variable = 0
-	var addedMessageId frontend.Variable = domain.MaxMessageCount
+	var addedMessageId frontend.Variable = domain.EmptyMessageId
 
 	for messageId := range circuit.CurrentInstance.MessageHashes {
 		currentMessageHash := circuit.CurrentInstance.MessageHashes[messageId]
@@ -117,19 +126,24 @@ func (circuit *TransitionCircuit) findMessageId(api frontend.API) frontend.Varia
 }
 
 func (circuit *TransitionCircuit) findTransition(api frontend.API, tokenCountChanges TokenCountChanges, participantId frontend.Variable, messageId frontend.Variable) {
-
 	var transitionFound frontend.Variable = 0
 
 	for _, transition := range circuit.Model.Transitions {
-		participantMatches := api.Or(equals(api, transition.Participant, domain.MaxParticipantCount), equals(api, transition.Participant, participantId))
+		participantMatches := api.Or(equals(api, transition.Participant, domain.EmptyParticipantId), equals(api, transition.Participant, participantId))
 		messageMatches := equals(api, transition.Message, messageId)
 		var tokenCountChangesMatch frontend.Variable = 1
 		for _, incomingPlace := range transition.IncomingPlaces {
-			tokenCountDecreases := selector.Mux(api, incomingPlace, tokenCountChanges.tokenCountDecreasesPerPlaceId[:]...)
+			var tokenCountDecreases frontend.Variable = 0
+			for _, placeWhereTokenCountDecreases := range tokenCountChanges.placesWhereTokenCountDecreases {
+				tokenCountDecreases = api.Or(tokenCountDecreases, equals(api, incomingPlace, placeWhereTokenCountDecreases))
+			}
 			tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountDecreases)
 		}
 		for _, outgoingPlace := range transition.OutgoingPlaces {
-			tokenCountIncreases := selector.Mux(api, outgoingPlace, tokenCountChanges.tokenCountIncreasesPerPlaceId[:]...)
+			var tokenCountIncreases frontend.Variable = 0
+			for _, placeWhereTokenCountIncreases := range tokenCountChanges.placesWhereTokenCountIncreases {
+				tokenCountIncreases = api.Or(tokenCountIncreases, equals(api, outgoingPlace, placeWhereTokenCountIncreases))
+			}
 			tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountIncreases)
 		}
 		transitionMatches := api.And(api.And(tokenCountChangesMatch, participantMatches), messageMatches)
