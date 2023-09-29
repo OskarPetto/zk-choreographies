@@ -1,4 +1,4 @@
-package file
+package parameters
 
 import (
 	"execution-service/utils"
@@ -7,22 +7,22 @@ import (
 	"os"
 )
 
-func WritePrivateFile(writeable io.WriterTo, filename string) {
+func writePrivateFile(writeable io.WriterTo, filename string) {
 	path := getPrivatePath(filename)
 	writeFile(writeable, path)
 }
 
-func ReadPrivateFile(readable io.ReaderFrom, filename string) error {
+func readPrivateFile(readable io.ReaderFrom, filename string) error {
 	path := getPrivatePath(filename)
 	return readFile(readable, path)
 }
 
-func WritePublicFile(writeable io.WriterTo, filename string) {
+func writePublicFile(writeable io.WriterTo, filename string) {
 	path := getPublicPath(filename)
 	writeFile(writeable, path)
 }
 
-func ReadPublicFile(readable io.ReaderFrom, filename string) error {
+func readPublicFile(readable io.ReaderFrom, filename string) error {
 	path := getPublicPath(filename)
 	return readFile(readable, path)
 }

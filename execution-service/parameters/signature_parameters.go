@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"execution-service/domain"
-	"execution-service/file"
 	"execution-service/utils"
 	"fmt"
 
@@ -28,7 +27,7 @@ func NewSignatureParameters() SignatureParameters {
 func importSignaturePrivateKey(filename string) *eddsa.PrivateKey {
 	var pk eddsa.PrivateKey
 	byteBuffer := new(bytes.Buffer)
-	err := file.ReadPrivateFile(byteBuffer, filename)
+	err := readPrivateFile(byteBuffer, filename)
 	if err != nil {
 		pk = *generateSignaturePrivateKey(filename)
 	} else {
@@ -41,7 +40,7 @@ func generateSignaturePrivateKey(filename string) *eddsa.PrivateKey {
 	privateKey, err := eddsa.GenerateKey(rand.Reader)
 	utils.PanicOnError(err)
 	byteBuffer := bytes.NewBuffer(privateKey.Bytes())
-	file.WritePrivateFile(byteBuffer, filename)
+	writePrivateFile(byteBuffer, filename)
 	return privateKey
 }
 

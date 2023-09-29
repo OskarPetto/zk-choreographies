@@ -1,10 +1,10 @@
 package proof
 
 import (
+	"execution-service/circuit"
 	"execution-service/instance"
 	"execution-service/model"
 	"execution-service/parameters"
-	"execution-service/proof/circuit"
 
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/groth16"

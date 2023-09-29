@@ -1,8 +1,8 @@
 package circuit_test
 
 import (
+	"execution-service/circuit"
 	"execution-service/domain"
-	"execution-service/proof/circuit"
 	"testing"
 
 	"github.com/consensys/gnark-crypto/ecc"
