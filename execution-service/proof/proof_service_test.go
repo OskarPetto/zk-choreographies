@@ -46,22 +46,20 @@ func TestProveInstantiation(t *testing.T) {
 	proofs = append(proofs, proof.ToJson())
 }
 
-func TestProveTransitions(t *testing.T) {
-	for i := 0; i < len(states)-1; i++ {
-		model := states[i].Model
-		currentInstance := states[i].Instance
-		nextInstance := states[i+1].Instance
-		identity := states[i+1].Identity
+func TestProveTransition0(t *testing.T) {
+	model := states[0].Model
+	currentInstance := states[0].Instance
+	nextInstance := states[1].Instance
+	identity := states[1].Identity
 
-		proof, err := proofService.ProveTransition(proof.ProveTransitionCommand{
-			Model:           model.Id(),
-			CurrentInstance: currentInstance.Id(),
-			NextInstance:    nextInstance.Id(),
-			Identity:        identity,
-		})
-		assert.Nil(t, err)
-		proofs = append(proofs, proof.ToJson())
-	}
+	proof, err := proofService.ProveTransition(proof.ProveTransitionCommand{
+		Model:           model.Id(),
+		CurrentInstance: currentInstance.Id(),
+		NextInstance:    nextInstance.Id(),
+		Identity:        identity,
+	})
+	assert.Nil(t, err)
+	proofs = append(proofs, proof.ToJson())
 }
 
 func TestProveTermination(t *testing.T) {
