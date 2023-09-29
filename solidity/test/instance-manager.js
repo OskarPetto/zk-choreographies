@@ -4,7 +4,7 @@ const InstantiationVerifier = artifacts.require("InstantiationVerifier");
 const TransitionVerifier = artifacts.require("TransitionVerifier");
 const TerminationVerifier = artifacts.require("TerminationVerifier");
 
-const MockInstantiationVerifier = artifacts.require("MockInstantiationVerifier");
+const InstantiationVerifierMock = artifacts.require("InstantiationVerifierMock");
 
 const InstanceManager = artifacts.require("InstanceManager");
 
@@ -25,8 +25,8 @@ contract('InstanceManager', (accounts) => {
   });
 
   it('termination', async () => {
-    const mockInstantiationVerifier = await MockInstantiationVerifier.new();
-    const instanceManager = await InstanceManager.new(mockInstantiationVerifier.address, accounts[0], TerminationVerifier.address);
+    const instantiationVerifierMock = await InstantiationVerifierMock.new();
+    const instanceManager = await InstanceManager.new(instantiationVerifierMock.address, accounts[0], TerminationVerifier.address);
 
     const lastProof = proofs[proofs.length - 1];
     const terminationProof = lastProof.value;
@@ -42,8 +42,8 @@ contract('InstanceManager', (accounts) => {
   });
 
   it('transition', async () => {
-    const mockInstantiationVerifier = await MockInstantiationVerifier.new();
-    const instanceManager = await InstanceManager.new(mockInstantiationVerifier.address, TransitionVerifier.address, accounts[0]);
+    const instantiationVerifierMock = await InstantiationVerifierMock.new();
+    const instanceManager = await InstanceManager.new(instantiationVerifierMock.address, TransitionVerifier.address, accounts[0]);
 
     const secondProof = proofs[1];
     const transitionProof = secondProof.value;
