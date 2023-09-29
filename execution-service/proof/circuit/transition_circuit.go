@@ -4,12 +4,12 @@ import (
 	"execution-service/domain"
 
 	"github.com/consensys/gnark/frontend"
-	"github.com/consensys/gnark/std/lookup/logderivlookup"
+	"github.com/consensys/gnark/std/selector"
 )
 
 type TokenCountChanges struct {
-	tokenCountDecreasesPerPlaceId *logderivlookup.Table
-	tokenCountIncreasesPerPlaceId *logderivlookup.Table
+	tokenCountDecreasesPerPlaceId [domain.MaxPlaceCount + 1]frontend.Variable
+	tokenCountIncreasesPerPlaceId [domain.MaxPlaceCount + 1]frontend.Variable
 	noChanges                     frontend.Variable
 }
 
@@ -47,8 +47,8 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 }
 
 func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCountChanges {
-	tokenCountDecreasesPerPlaceId := logderivlookup.New(api)
-	tokenCountIncreasesPerPlaceId := logderivlookup.New(api)
+	var tokenCountDecreasesPerPlaceId [domain.MaxPlaceCount + 1]frontend.Variable
+	var tokenCountIncreasesPerPlaceId [domain.MaxPlaceCount + 1]frontend.Variable
 	var tokenCountDecreasesCount frontend.Variable = 0
 	var tokenCountIncreasesCount frontend.Variable = 0
 
@@ -68,13 +68,13 @@ func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCoun
 		tokenCountDecreasesCount = api.Add(tokenCountDecreasesCount, tokenCountDecreases)
 		tokenCountIncreasesCount = api.Add(tokenCountIncreasesCount, tokenCountIncreases)
 
-		tokenCountDecreasesPerPlaceId.Insert(tokenCountDecreases)
-		tokenCountIncreasesPerPlaceId.Insert(tokenCountIncreases)
+		tokenCountDecreasesPerPlaceId[placeId] = tokenCountDecreases
+		tokenCountIncreasesPerPlaceId[placeId] = tokenCountIncreases
 	}
 
 	// insert 1 at domain.MaxPlaceCount (default value of incomingPlaces and outgoingPlaces arrays)
-	tokenCountDecreasesPerPlaceId.Insert(1)
-	tokenCountIncreasesPerPlaceId.Insert(1)
+	tokenCountDecreasesPerPlaceId[domain.MaxPlaceCount] = 1
+	tokenCountIncreasesPerPlaceId[domain.MaxPlaceCount] = 1
 
 	api.AssertIsLessOrEqual(tokenCountDecreasesCount, domain.MaxBranchingFactor)
 	api.AssertIsLessOrEqual(tokenCountIncreasesCount, domain.MaxBranchingFactor)
@@ -124,13 +124,13 @@ func (circuit *TransitionCircuit) findTransition(api frontend.API, tokenCountCha
 		participantMatches := api.Or(equals(api, transition.Participant, domain.MaxParticipantCount), equals(api, transition.Participant, participantId))
 		messageMatches := equals(api, transition.Message, messageId)
 		var tokenCountChangesMatch frontend.Variable = 1
-		// returns 1 for default placeId (domain.MaxPlaceCount)
-		incomingTokenCountsDecrease := tokenCountChanges.tokenCountDecreasesPerPlaceId.Lookup(transition.IncomingPlaces[:]...)
-		// returns 1 for default placeId (domain.MaxPlaceCount)
-		outgoingTokenCountsIncrease := tokenCountChanges.tokenCountIncreasesPerPlaceId.Lookup(transition.OutgoingPlaces[:]...)
-		for j := range transition.IncomingPlaces {
-			tokenCountChangesMatch = api.And(tokenCountChangesMatch, incomingTokenCountsDecrease[j])
-			tokenCountChangesMatch = api.And(tokenCountChangesMatch, outgoingTokenCountsIncrease[j])
+		for _, incomingPlace := range transition.IncomingPlaces {
+			tokenCountDecreases := selector.Mux(api, incomingPlace, tokenCountChanges.tokenCountDecreasesPerPlaceId[:]...)
+			tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountDecreases)
+		}
+		for _, outgoingPlace := range transition.OutgoingPlaces {
+			tokenCountIncreases := selector.Mux(api, outgoingPlace, tokenCountChanges.tokenCountIncreasesPerPlaceId[:]...)
+			tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountIncreases)
 		}
 		transitionMatches := api.And(api.And(tokenCountChangesMatch, participantMatches), messageMatches)
 		transitionFound = api.Or(transitionFound, api.And(transition.IsValid, transitionMatches))

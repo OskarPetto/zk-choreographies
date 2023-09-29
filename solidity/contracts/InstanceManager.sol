@@ -1,14 +1,9 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "./InstantiationVerifier.sol";
 import "./TransitionVerifier.sol";
 import "./TerminationVerifier.sol";
-
-struct Proof {
-    uint256[2] a;
-    uint256[2][2] b;
-    uint256[2] c;
-}
 
 contract InstanceManager {
     mapping(uint => uint) public instancesPerModel;
@@ -17,48 +12,53 @@ contract InstanceManager {
     TransitionVerifier transitionVerifier;
     TerminationVerifier terminationVerifier;
 
-    function instantiate(uint model, uint instance, Proof memory proof) public {
+    event Instantiation(uint model);
+    event Transition(uint model);
+    event Termination(uint model);
+
+    constructor(
+        address _instantiationVerifier,
+        address _transitionVerifier,
+        address _terminationVerifier
+    ) {
+        instantiationVerifier = InstantiationVerifier(_instantiationVerifier);
+        transitionVerifier = TransitionVerifier(_transitionVerifier);
+        terminationVerifier = TerminationVerifier(_terminationVerifier);
+    }
+
+    function instantiate(
+        uint[8] memory proof,
+        uint model,
+        uint instance
+    ) public {
         require(instancesPerModel[model] == 0);
-        require(
-            instantiationVerifier.verifyProof(
-                proof.a,
-                proof.b,
-                proof.c,
-                [model, instance]
-            )
-        );
+        instantiationVerifier.verifyProof(proof, [model, instance]);
 
         instancesPerModel[model] = instance;
+        emit Instantiation(model);
     }
 
     function transition(
+        uint[8] memory proof,
         uint model,
         uint currentInstance,
-        uint nextInstance,
-        Proof memory proof
+        uint nextInstance
     ) public {
         require(instancesPerModel[model] == currentInstance);
-        require(
-            transitionVerifier.verifyProof(
-                proof.a,
-                proof.b,
-                proof.c,
-                [model, currentInstance, nextInstance, 0] // fourth value should not exist
-            )
+        transitionVerifier.verifyProof(
+            proof,
+            [model, currentInstance, nextInstance]
         );
+
         instancesPerModel[model] = nextInstance;
+        emit Transition(model);
     }
 
-    function termination(uint model, uint instance, Proof memory proof) public {
+    function terminate(uint[8] memory proof, uint model, uint instance) public {
         require(instancesPerModel[model] == instance);
-        require(
-            terminationVerifier.verifyProof(
-                proof.a,
-                proof.b,
-                proof.c,
-                [model, instance]
-            )
-        );
+        terminationVerifier.verifyProof(proof, [model, instance]);
+
         delete instancesPerModel[model];
+        emit Termination(model);
     }
 }

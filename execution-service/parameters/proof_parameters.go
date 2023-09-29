@@ -5,6 +5,7 @@ import (
 	"execution-service/file"
 	"execution-service/proof/circuit"
 	"execution-service/utils"
+	"fmt"
 
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/groth16"
@@ -71,6 +72,7 @@ func compileCircuit(circuit frontend.Circuit, filename string) constraint.Constr
 	cs, err := frontend.Compile(ecc.BN254.ScalarField(), r1cs.NewBuilder, circuit)
 	utils.PanicOnError(err)
 	file.WritePublicFile(cs, filename)
+	fmt.Printf("Created constraint-system with %d constraints\n", cs.GetNbConstraints())
 	return cs
 }
 

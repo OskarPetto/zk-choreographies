@@ -55,11 +55,11 @@ func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (
 	if err != nil {
 		return Proof{}, err
 	}
-	proof, err := groth16.Prove(service.proofParameters.CsInstantiation, service.proofParameters.PkInstantiation, witness)
+	groth16Proof, err := groth16.Prove(service.proofParameters.CsInstantiation, service.proofParameters.PkInstantiation, witness)
 	if err != nil {
 		return Proof{}, err
 	}
-	return newProof(proof, witness)
+	return toProof(groth16Proof, model.Hash, instance.Hash)
 }
 
 func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof, error) {
@@ -91,7 +91,8 @@ func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 	if err != nil {
 		return Proof{}, err
 	}
-	return newProof(proof, witness)
+
+	return toProof(proof, model.Hash, currentInstance.Hash, nextInstance.Hash)
 }
 
 func (service *ProofService) ProveTermination(cmd ProveTerminationCommand) (Proof, error) {
@@ -118,5 +119,5 @@ func (service *ProofService) ProveTermination(cmd ProveTerminationCommand) (Proo
 	if err != nil {
 		return Proof{}, err
 	}
-	return newProof(proof, witness)
+	return toProof(proof, model.Hash, instance.Hash)
 }

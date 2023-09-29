@@ -1,36 +1,26 @@
 package proof
 
 type ProofJson struct {
-	A           [2]string    `json:"a"`
-	B           [2][2]string `json:"b"`
-	C           [2]string    `json:"c"`
-	PublicInput []string     `json:"publicInput"`
+	Value [8]string `json:"value"`
+	Input []string  `json:"input"`
 }
 
 func (proof Proof) ToJson() ProofJson {
-	publicInputs := make([]string, len(proof.PublicInput))
-	for i, publicInput := range proof.PublicInput {
+	publicInputs := make([]string, len(proof.Input))
+	for i, publicInput := range proof.Input {
 		publicInputs[i] = publicInput.String()
 	}
 	return ProofJson{
-		A: [2]string{
-			proof.A[0].String(),
-			proof.A[1].String(),
+		Value: [8]string{
+			proof.Value[0].String(),
+			proof.Value[1].String(),
+			proof.Value[2].String(),
+			proof.Value[3].String(),
+			proof.Value[4].String(),
+			proof.Value[5].String(),
+			proof.Value[6].String(),
+			proof.Value[7].String(),
 		},
-		B: [2][2]string{
-			{
-				proof.B[0][0].String(),
-				proof.B[0][1].String(),
-			},
-			{
-				proof.B[1][0].String(),
-				proof.B[1][1].String(),
-			},
-		},
-		C: [2]string{
-			proof.C[0].String(),
-			proof.C[1].String(),
-		},
-		PublicInput: publicInputs,
+		Input: publicInputs,
 	}
 }
