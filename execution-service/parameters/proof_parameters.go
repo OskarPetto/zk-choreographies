@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"execution-service/circuit"
 	"execution-service/utils"
-	"fmt"
 
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/groth16"
@@ -55,7 +54,6 @@ func importConstraintSystem(circuit frontend.Circuit, filename string) constrain
 	if err != nil {
 		cs = compileCircuit(circuit, filename)
 	}
-	fmt.Printf("Created constraint-system with %d constraints\n", cs.GetNbConstraints())
 	return cs
 }
 

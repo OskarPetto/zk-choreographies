@@ -5,6 +5,7 @@ import (
 	"execution-service/instance"
 	"execution-service/model"
 	"execution-service/parameters"
+	"fmt"
 
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/groth16"
@@ -27,6 +28,9 @@ func InitializeProofService() ProofService {
 }
 
 func NewProofService(proofParameters parameters.ProofParameters, signatureParameters parameters.SignatureParameters, instanceService instance.InstanceService, modelService model.ModelService) ProofService {
+	fmt.Printf("Instantiation constraint system has %d constraints\n", proofParameters.CsInstantiation.GetNbConstraints())
+	fmt.Printf("Transition constraint system has %d constraints\n", proofParameters.CsTransition.GetNbConstraints())
+	fmt.Printf("Termination constraint system has %d constraints\n", proofParameters.CsTermination.GetNbConstraints())
 	return ProofService{
 		proofParameters:     proofParameters,
 		SignatureParameters: signatureParameters,
