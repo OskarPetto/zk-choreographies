@@ -21,11 +21,15 @@ type Hash struct {
 	Salt  [SaltSize]byte
 }
 
-func InvalidHash() Hash {
-	var defaultHash = Hash{}
-	defaultHash.Value[HashSize-1] = 1
-	defaultHash.Salt[SaltSize-1] = 1
-	return defaultHash
+func EmptyHash() Hash {
+	return Hash{}
+}
+
+func OutOfBoundsHash() Hash {
+	var hash = Hash{}
+	hash.Value[HashSize-1] = 1
+	hash.Salt[SaltSize-1] = 1
+	return hash
 }
 
 func HashMessage(message []byte) Hash {

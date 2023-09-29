@@ -1,28 +1,26 @@
 package domain_test
 
 import (
-	"execution-service/testdata"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInstantiateModel(t *testing.T) {
-	model := testdata.GetModel2()
-	publicKeys := testdata.GetPublicKeys(signatureService, 2)
-	expected := testdata.GetModel2Instance1(publicKeys)
-	instance, err := model.Instantiate(publicKeys)
+	publicKeys := signatureParameters.GetPublicKeys(2)
+	state0 := states[0]
+	result, err := state0.Model.Instantiate(publicKeys)
 	assert.Nil(t, err)
-	assert.Equal(t, expected.TokenCounts, instance.TokenCounts)
-	assert.Equal(t, expected.PublicKeys, instance.PublicKeys)
-	assert.Equal(t, expected.MessageHashes, instance.MessageHashes)
-	assert.Equal(t, model.Id(), instance.Model)
-	assert.NotEqual(t, expected.Hash, instance.Hash)
+	assert.Equal(t, state0.Instance.TokenCounts, result.TokenCounts)
+	assert.Equal(t, state0.Instance.PublicKeys, result.PublicKeys)
+	assert.Equal(t, state0.Instance.MessageHashes, result.MessageHashes)
+	assert.Equal(t, state0.Model.Id(), result.Model)
+	assert.NotEqual(t, state0.Instance.Hash, result.Hash)
 }
 
 func TestFindTransitionById(t *testing.T) {
 	id := "ChoreographyTask_0kp4flv_Participant_0x6v44d"
-	model := testdata.GetModel2()
+	model := states[0].Model
 	transition, err := model.FindTransitionById(id)
 	assert.Nil(t, err)
 	assert.Equal(t, id, transition.Id)

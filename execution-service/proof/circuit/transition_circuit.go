@@ -14,10 +14,10 @@ type TokenCountChanges struct {
 }
 
 type TransitionCircuit struct {
-	Model                 Model
-	CurrentInstance       Instance
-	NextInstance          Instance
-	NextInstanceSignature Signature
+	Model           Model
+	CurrentInstance Instance
+	NextInstance    Instance
+	NextSignature   Signature
 }
 
 func (circuit *TransitionCircuit) Define(api frontend.API) error {
@@ -33,14 +33,14 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	err = checkSignature(api, circuit.NextInstanceSignature, circuit.NextInstance)
+	err = checkSignature(api, circuit.NextSignature, circuit.NextInstance)
 	if err != nil {
 		return err
 	}
 	api.AssertIsLessOrEqual(circuit.CurrentInstance.CreatedAt, circuit.NextInstance.CreatedAt)
 	tokenCountChanges := circuit.compareTokenCounts(api)
 	circuit.comparePublicKeys(api)
-	participantId := findParticipantId(api, circuit.NextInstanceSignature, circuit.NextInstance)
+	participantId := findParticipantId(api, circuit.NextSignature, circuit.NextInstance)
 	messageId := circuit.findMessageId(api)
 	circuit.findTransition(api, tokenCountChanges, participantId, messageId)
 	return nil
@@ -56,14 +56,14 @@ func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCoun
 		currentTokenCount := circuit.CurrentInstance.TokenCounts[placeId]
 		nextTokenCount := circuit.NextInstance.TokenCounts[placeId]
 
+		isTokenCount := api.Or(equals(api, nextTokenCount, 0), equals(api, nextTokenCount, 1))
 		tokenChange := api.Sub(nextTokenCount, currentTokenCount)
 		tokenCountStaysTheSame := api.IsZero(tokenChange)
+		api.AssertIsEqual(1, api.Or(isTokenCount, tokenCountStaysTheSame))
+
 		tokenCountDecreases := equals(api, tokenChange, -1)
 		tokenCountIncreases := equals(api, tokenChange, 1)
 		api.AssertIsEqual(1, api.Or(api.Or(tokenCountStaysTheSame, tokenCountDecreases), tokenCountIncreases))
-
-		nextTokenCountIsValid := api.Or(equals(api, nextTokenCount, 0), equals(api, nextTokenCount, 1))
-		api.AssertIsEqual(1, api.Or(nextTokenCountIsValid, tokenCountStaysTheSame))
 
 		tokenCountDecreasesCount = api.Add(tokenCountDecreasesCount, tokenCountDecreases)
 		tokenCountIncreasesCount = api.Add(tokenCountIncreasesCount, tokenCountIncreases)
@@ -102,9 +102,9 @@ func (circuit *TransitionCircuit) findMessageId(api frontend.API) frontend.Varia
 	for messageId := range circuit.CurrentInstance.MessageHashes {
 		currentMessageHash := circuit.CurrentInstance.MessageHashes[messageId]
 		nextMessageHash := circuit.NextInstance.MessageHashes[messageId]
-		var currentMessageHashIsDefault frontend.Variable = equals(api, currentMessageHash, defaultMessageHash)
+		var wasMessageHashEmpty frontend.Variable = equals(api, currentMessageHash, emptyMessageHash)
 		var messageHashesMatch frontend.Variable = equals(api, currentMessageHash, nextMessageHash)
-		api.AssertIsEqual(1, api.Or(currentMessageHashIsDefault, messageHashesMatch))
+		api.AssertIsEqual(1, api.Or(wasMessageHashEmpty, messageHashesMatch))
 
 		messageHashAdded := api.IsZero(messageHashesMatch)
 		addedMessageId = api.Select(messageHashAdded, messageId, addedMessageId)

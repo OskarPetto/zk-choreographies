@@ -1,37 +1,34 @@
 package domain_test
 
 import (
-	"execution-service/signature"
+	"execution-service/parameters"
 	"execution-service/testdata"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var signatureService signature.SignatureService = signature.InitializeSignatureService()
+var signatureParameters parameters.SignatureParameters = parameters.NewSignatureParameters()
+var states = testdata.GetModel2States(signatureParameters)
 
 func TestExecuteTransition0(t *testing.T) {
-	model := testdata.GetModel2()
-	publicKeys := testdata.GetPublicKeys(signatureService, 2)
-	instance1 := testdata.GetModel2Instance1(publicKeys)
-	expected := testdata.GetModel2Instance2(publicKeys)
-	instance2, err := instance1.ExecuteTransition(model.Transitions[0])
+	state0 := states[0]
+	state1 := states[1]
+	result, err := state0.Instance.ExecuteTransition(state0.Model.Transitions[0], []byte{})
 	assert.Nil(t, err)
-	assert.Equal(t, expected.TokenCounts, instance2.TokenCounts)
-	assert.Equal(t, expected.PublicKeys, instance2.PublicKeys)
-	assert.Equal(t, instance1.MessageHashes, instance2.MessageHashes)
-	assert.NotEqual(t, instance1.Hash, instance2.Hash)
+	assert.Equal(t, state1.Instance.TokenCounts, result.TokenCounts)
+	assert.Equal(t, state1.Instance.PublicKeys, result.PublicKeys)
+	assert.Equal(t, state1.Instance.MessageHashes, result.MessageHashes)
+	assert.NotEqual(t, state0.Instance.Hash, result.Hash)
 }
 
-func TestExecuteTransition1(t *testing.T) {
-	model := testdata.GetModel2()
-	publicKeys := testdata.GetPublicKeys(signatureService, 2)
-	instance1 := testdata.GetModel2Instance2(publicKeys)
-	expected := testdata.GetModel2Instance3(publicKeys)
-	instance2, err := instance1.ExecuteTransitionWithMessage(model.Transitions[2], []byte("hello"))
+func TestExecuteTransition2(t *testing.T) {
+	state1 := states[1]
+	state2 := states[2]
+	result, err := state1.Instance.ExecuteTransition(state1.Model.Transitions[2], []byte("Purchase order"))
 	assert.Nil(t, err)
-	assert.Equal(t, expected.TokenCounts, instance2.TokenCounts)
-	assert.Equal(t, expected.PublicKeys, instance2.PublicKeys)
-	assert.NotEqual(t, instance1.MessageHashes, instance2.MessageHashes)
-	assert.NotEqual(t, instance1.Hash, instance2.Hash)
+	assert.Equal(t, state2.Instance.TokenCounts, result.TokenCounts)
+	assert.Equal(t, state2.Instance.PublicKeys, result.PublicKeys)
+	assert.NotEqual(t, state1.Instance.MessageHashes, result.MessageHashes)
+	assert.NotEqual(t, state1.Instance.Hash, result.Hash)
 }

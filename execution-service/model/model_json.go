@@ -47,12 +47,12 @@ func (transition *TransitionJson) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if tmp.Participant == nil {
-		transition.Participant = domain.InvalidParticipantId
+		transition.Participant = domain.OutOfBoundsParticipantId
 	} else {
 		transition.Participant = *(tmp.Participant)
 	}
 	if tmp.Message == nil {
-		transition.Message = domain.InvalidMessageId
+		transition.Message = domain.OutOfBoundsMessageId
 	} else {
 		transition.Message = *(tmp.Message)
 	}
@@ -90,7 +90,7 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 		startPlaces[i] = domain.PlaceId(startPlace)
 	}
 	for i := startPlaceCount; i < domain.MaxStartPlaceCount; i++ {
-		startPlaces[i] = domain.InvalidPlaceId
+		startPlaces[i] = domain.OutOfBoundsPlaceId
 	}
 	endPlaceCount := len(model.EndPlaces)
 	if endPlaceCount > domain.MaxEndPlaceCount || endPlaceCount < 1 {
@@ -104,7 +104,7 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 		endPlaces[i] = domain.PlaceId(endPlace)
 	}
 	for i := endPlaceCount; i < domain.MaxEndPlaceCount; i++ {
-		endPlaces[i] = domain.InvalidPlaceId
+		endPlaces[i] = domain.OutOfBoundsPlaceId
 	}
 	transitionCount := len(model.Transitions)
 	if transitionCount > domain.MaxTransitionCount {
@@ -150,13 +150,13 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 		incomingPlaces[i] = domain.PlaceId(transition.IncomingPlaces[i])
 	}
 	for i := incomingPlaceCount; i < domain.MaxBranchingFactor; i++ {
-		incomingPlaces[i] = domain.InvalidPlaceId
+		incomingPlaces[i] = domain.OutOfBoundsPlaceId
 	}
 	for i := 0; i < outgoingPlaceCount; i++ {
 		outgoingPlaces[i] = domain.PlaceId(transition.OutgoingPlaces[i])
 	}
 	for i := outgoingPlaceCount; i < domain.MaxBranchingFactor; i++ {
-		outgoingPlaces[i] = domain.InvalidPlaceId
+		outgoingPlaces[i] = domain.OutOfBoundsPlaceId
 	}
 	if transition.Participant > domain.MaxParticipantCount {
 		return domain.Transition{}, fmt.Errorf("transition %s has invalid participant", transition.Id)
@@ -179,14 +179,14 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 func ToJson(model domain.Model) ModelJson {
 	startPlaces := make([]uint, 0)
 	for _, startPlace := range model.StartPlaces {
-		if startPlace != domain.InvalidPlaceId {
+		if startPlace != domain.OutOfBoundsPlaceId {
 			break
 		}
 		startPlaces = append(startPlaces, uint(startPlace))
 	}
 	endPlaces := make([]uint, 0)
 	for _, endPlace := range model.EndPlaces {
-		if endPlace == domain.InvalidPlaceId {
+		if endPlace == domain.OutOfBoundsPlaceId {
 			break
 		}
 		endPlaces = append(endPlaces, uint(endPlace))
@@ -214,14 +214,14 @@ func ToJson(model domain.Model) ModelJson {
 func transitionToJson(transition domain.Transition) TransitionJson {
 	incomingPlaces := make([]uint, 0)
 	for _, incomingPlace := range transition.IncomingPlaces {
-		if incomingPlace == domain.InvalidPlaceId {
+		if incomingPlace == domain.OutOfBoundsPlaceId {
 			break
 		}
 		incomingPlaces = append(incomingPlaces, uint(incomingPlace))
 	}
 	outgoingPlaces := make([]uint, 0)
 	for _, outgoingPlace := range transition.OutgoingPlaces {
-		if outgoingPlace == domain.InvalidPlaceId {
+		if outgoingPlace == domain.OutOfBoundsPlaceId {
 			break
 		}
 		outgoingPlaces = append(outgoingPlaces, uint(outgoingPlace))
@@ -232,10 +232,10 @@ func transitionToJson(transition domain.Transition) TransitionJson {
 		IncomingPlaces: incomingPlaces,
 		OutgoingPlaces: outgoingPlaces,
 	}
-	if transition.Participant != domain.InvalidParticipantId {
+	if transition.Participant != domain.OutOfBoundsParticipantId {
 		jsonTransition.Participant = uint(transition.Participant)
 	}
-	if transition.Message != domain.InvalidMessageId {
+	if transition.Message != domain.OutOfBoundsMessageId {
 		jsonTransition.Message = uint(transition.Message)
 	}
 	return jsonTransition

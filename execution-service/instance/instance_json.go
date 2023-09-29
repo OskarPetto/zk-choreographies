@@ -22,21 +22,21 @@ type InstanceJson struct {
 func ToJson(instance domain.Instance) InstanceJson {
 	tokenCounts := make([]int, 0)
 	for _, tokenCount := range instance.TokenCounts {
-		if tokenCount == domain.InvalidTokenCount {
+		if tokenCount == domain.OutOfBoundsTokenCount {
 			break
 		}
 		tokenCounts = append(tokenCounts, int(tokenCount))
 	}
 	publicKeys := make([]string, 0)
 	for _, publicKey := range instance.PublicKeys {
-		if bytes.Equal(domain.InvalidPublicKey().Value, publicKey.Value) {
+		if bytes.Equal(domain.OutOfBoundsPublicKey().Value, publicKey.Value) {
 			break
 		}
 		publicKeys = append(publicKeys, utils.BytesToString(publicKey.Value))
 	}
 	messageHashes := make([]hash.HashJson, 0)
 	for _, messageHash := range instance.MessageHashes {
-		invalidHash := domain.InvalidHash()
+		invalidHash := domain.EmptyHash()
 		if bytes.Equal(invalidHash.Value[:], messageHash.Value[:]) && bytes.Equal(invalidHash.Salt[:], messageHash.Salt[:]) {
 			break
 		}
@@ -62,7 +62,7 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 		tokenCounts[i] = int8(tokenCount)
 	}
 	for i := len(json.TokenCounts); i < domain.MaxPlaceCount; i++ {
-		tokenCounts[i] = domain.InvalidTokenCount
+		tokenCounts[i] = domain.OutOfBoundsTokenCount
 	}
 
 	var publicKeys [domain.MaxParticipantCount]domain.PublicKey
@@ -76,7 +76,7 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 		}
 	}
 	for i := len(json.PublicKeys); i < domain.MaxParticipantCount; i++ {
-		publicKeys[i] = domain.InvalidPublicKey()
+		publicKeys[i] = domain.OutOfBoundsPublicKey()
 	}
 
 	var messageHashes [domain.MaxMessageCount]domain.Hash
@@ -88,7 +88,7 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 		messageHashes[i] = hash
 	}
 	for i := len(json.MessageHashes); i < domain.MaxMessageCount; i++ {
-		messageHashes[i] = domain.InvalidHash()
+		messageHashes[i] = domain.EmptyHash()
 	}
 	hash, err := json.Hash.ToHash()
 	if err != nil {

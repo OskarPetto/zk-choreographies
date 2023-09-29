@@ -3,7 +3,6 @@ package circuit_test
 import (
 	"execution-service/domain"
 	"execution-service/proof/circuit"
-	"execution-service/testdata"
 	"testing"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -14,11 +13,9 @@ import (
 var terminationCircuit circuit.TerminationCircuit
 
 func TestTermination(t *testing.T) {
-	publicKeys := testdata.GetPublicKeys(signatureService, 2)
-	instance := testdata.GetModel2Instance4(publicKeys)
-	signature := signatureService.Sign(instance)
-
-	model := testdata.GetModel2()
+	model := states[len(states)-1].Model
+	instance := states[len(states)-1].Instance
+	signature := states[len(states)-1].Signature
 
 	witness := circuit.TerminationCircuit{
 		Instance:  circuit.FromInstance(instance),
@@ -33,12 +30,11 @@ func TestTermination(t *testing.T) {
 }
 
 func TestTermination_InvalidModelHash(t *testing.T) {
-	publicKeys := testdata.GetPublicKeys(signatureService, 2)
-	instance := testdata.GetModel2Instance4(publicKeys)
-	signature := signatureService.Sign(instance)
+	model := states[len(states)-1].Model
+	instance := states[len(states)-1].Instance
+	signature := states[len(states)-1].Signature
 
-	model := testdata.GetModel2()
-	model.Hash = domain.InvalidHash()
+	model.Hash = domain.EmptyHash()
 
 	witness := circuit.TerminationCircuit{
 		Instance:  circuit.FromInstance(instance),
@@ -51,12 +47,11 @@ func TestTermination_InvalidModelHash(t *testing.T) {
 }
 
 func TestTermination_InvalidInstanceHash(t *testing.T) {
-	publicKeys := testdata.GetPublicKeys(signatureService, 2)
-	instance := testdata.GetModel2Instance4(publicKeys)
-	instance.Hash = domain.InvalidHash()
-	signature := signatureService.Sign(instance)
+	model := states[len(states)-1].Model
+	instance := states[len(states)-1].Instance
 
-	model := testdata.GetModel2()
+	instance.Hash = domain.EmptyHash()
+	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 
 	witness := circuit.TerminationCircuit{
 		Instance:  circuit.FromInstance(instance),
@@ -69,11 +64,9 @@ func TestTermination_InvalidInstanceHash(t *testing.T) {
 }
 
 func TestTermination_InvalidTokenCounts(t *testing.T) {
-	publicKeys := testdata.GetPublicKeys(signatureService, 2)
-	instance := testdata.GetModel2Instance3(publicKeys)
-	signature := signatureService.Sign(instance)
-
-	model := testdata.GetModel2()
+	model := states[len(states)-2].Model
+	instance := states[len(states)-2].Instance
+	signature := states[len(states)-2].Signature
 
 	witness := circuit.TerminationCircuit{
 		Instance:  circuit.FromInstance(instance),
@@ -86,12 +79,9 @@ func TestTermination_InvalidTokenCounts(t *testing.T) {
 }
 
 func TestTermination_InvalidSignature(t *testing.T) {
-	publicKeys := testdata.GetPublicKeys(signatureService, 2)
-	instance := testdata.GetModel2Instance4(publicKeys)
-	instance2 := testdata.GetModel2Instance2(publicKeys)
-	signature := signatureService.Sign(instance2)
-
-	model := testdata.GetModel2()
+	model := states[len(states)-1].Model
+	instance := states[len(states)-1].Instance
+	signature := states[len(states)-2].Signature
 
 	witness := circuit.TerminationCircuit{
 		Instance:  circuit.FromInstance(instance),
@@ -103,12 +93,11 @@ func TestTermination_InvalidSignature(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestTermination_InvalidAuthorization(t *testing.T) {
-	publicKeys := testdata.GetPublicKeys(signatureService, 3)
-	instance := testdata.GetModel2Instance3([]domain.PublicKey{publicKeys[1], publicKeys[2]})
-	signature := signatureService.Sign(instance)
+func TestTermination_NotAParticipant(t *testing.T) {
+	model := states[len(states)-1].Model
+	instance := states[len(states)-1].Instance
 
-	model := testdata.GetModel2()
+	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(2))
 
 	witness := circuit.TerminationCircuit{
 		Instance:  circuit.FromInstance(instance),

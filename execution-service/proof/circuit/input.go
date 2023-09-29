@@ -2,7 +2,6 @@ package circuit
 
 import (
 	"execution-service/domain"
-	"execution-service/signature"
 	"execution-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
@@ -48,7 +47,7 @@ type Model struct {
 	CreatedAt        frontend.Variable
 }
 
-func FromSignature(signature signature.Signature) Signature {
+func FromSignature(signature domain.Signature) Signature {
 	var value eddsa.Signature
 	value.Assign(twistededwards.BN254, signature.Value)
 	var publicKey eddsa.PublicKey

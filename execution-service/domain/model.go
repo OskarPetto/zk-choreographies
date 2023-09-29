@@ -18,9 +18,9 @@ type PlaceId = uint8
 type ParticipantId = uint8
 type MessageId = uint8
 
-const InvalidPlaceId = MaxPlaceCount
-const InvalidParticipantId = MaxParticipantCount
-const InvalidMessageId = MaxMessageCount
+const OutOfBoundsPlaceId = MaxPlaceCount
+const OutOfBoundsParticipantId = MaxParticipantCount
+const OutOfBoundsMessageId = MaxMessageCount
 
 type TransitionId = string
 
@@ -37,10 +37,10 @@ type Transition struct {
 func InvalidTransition() Transition {
 	return Transition{
 		IsValid:        false,
-		IncomingPlaces: [MaxBranchingFactor]PlaceId{InvalidPlaceId, InvalidPlaceId},
-		OutgoingPlaces: [MaxBranchingFactor]PlaceId{InvalidPlaceId, InvalidPlaceId},
-		Participant:    InvalidParticipantId,
-		Message:        InvalidMessageId,
+		IncomingPlaces: [MaxBranchingFactor]PlaceId{OutOfBoundsPlaceId, OutOfBoundsPlaceId},
+		OutgoingPlaces: [MaxBranchingFactor]PlaceId{OutOfBoundsPlaceId, OutOfBoundsPlaceId},
+		Participant:    OutOfBoundsParticipantId,
+		Message:        OutOfBoundsMessageId,
 	}
 }
 
@@ -63,26 +63,32 @@ func (model *Model) Id() ModelId {
 }
 
 func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
+	if len(publicKeys) > MaxParticipantCount {
+		return Instance{}, fmt.Errorf("there are too many public keys")
+	}
 	if int(model.ParticipantCount) != len(publicKeys) {
 		return Instance{}, fmt.Errorf("the number of public keys must match the number of participants in the model %s", model.Id())
 	}
 	var tokenCounts [MaxPlaceCount]int8
 	for i := model.PlaceCount; i < MaxPlaceCount; i++ {
-		tokenCounts[i] = InvalidTokenCount
+		tokenCounts[i] = OutOfBoundsTokenCount
 	}
 	for _, startPlace := range model.StartPlaces {
-		if startPlace != InvalidPlaceId {
+		if startPlace != OutOfBoundsPlaceId {
 			tokenCounts[startPlace] = 1
 		}
 	}
 	var messageHashes [MaxMessageCount]Hash
+	for i := 0; i < int(model.MessageCount); i++ {
+		messageHashes[i] = EmptyHash()
+	}
 	for i := model.MessageCount; i < MaxMessageCount; i++ {
-		messageHashes[i] = InvalidHash()
+		messageHashes[i] = OutOfBoundsHash()
 	}
 	var publicKeysFixedSize [MaxParticipantCount]PublicKey
 	copy(publicKeysFixedSize[:], publicKeys)
 	for i := model.ParticipantCount; i < MaxParticipantCount; i++ {
-		publicKeysFixedSize[i] = InvalidPublicKey()
+		publicKeysFixedSize[i] = OutOfBoundsPublicKey()
 	}
 	instance := Instance{
 		Model:         model.Id(),

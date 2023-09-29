@@ -1,80 +1,82 @@
 package proof_test
 
 import (
-	"execution-service/domain"
+	"encoding/json"
 	"execution-service/instance"
 	"execution-service/model"
+	"execution-service/parameters"
 	"execution-service/proof"
-	"execution-service/signature"
 	"execution-service/testdata"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-type ModelServiceMock struct {
-}
-
-func (service ModelServiceMock) FindModelById(id domain.ModelId) (domain.Model, error) {
-	return testdata.GetModel2(), nil
-}
-
-var signatureService signature.SignatureService
 var proofService proof.ProofService
 var instanceService instance.InstanceService
 var modelService model.ModelService
+var signatureParameters parameters.SignatureParameters
+var states []testdata.State
+var proofs []proof.ProofJson
 
 func TestInitializeProofService(t *testing.T) {
 	proofService = proof.InitializeProofService()
 	instanceService = proofService.InstanceService
 	modelService = proofService.ModelService
-	signatureService = proofService.SignatureService
+	signatureParameters = proofService.SignatureParameters
+	states = testdata.GetModel2States(signatureParameters)
+	for _, state := range states {
+		modelService.ImportModel(state.Model)
+		instanceService.ImportInstance(state.Instance)
+	}
 }
 
 func TestProveInstantiation(t *testing.T) {
-	model := testdata.GetModel2()
-	modelService.ImportModel(model)
-	publicKeys := testdata.GetPublicKeys(signatureService, 2)
-	instance := testdata.GetModel2Instance1(publicKeys)
-	instanceService.ImportInstance(instance)
+	instance := states[0].Instance
+	model := states[0].Model
+	identity := states[0].Identity
 
 	proof, err := proofService.ProveInstantiation(proof.ProveInstantiationCommand{
 		Model:    model.Id(),
 		Instance: instance.Id(),
+		Identity: identity,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 2, len(proof.PublicInput))
+	proofs = append(proofs, proof.ToJson())
 }
 
-func TestProveTransition1(t *testing.T) {
-	model := testdata.GetModel2()
-	modelService.ImportModel(model)
-	publicKeys := testdata.GetPublicKeys(signatureService, 2)
-	currentInstance := testdata.GetModel2Instance2(publicKeys)
-	nextInstance := testdata.GetModel2Instance3(publicKeys)
-	instanceService.ImportInstance(currentInstance)
-	instanceService.ImportInstance(nextInstance)
+func TestProveTransitions(t *testing.T) {
+	for i := 0; i < len(states)-1; i++ {
+		model := states[i].Model
+		currentInstance := states[i].Instance
+		nextInstance := states[i+1].Instance
+		identity := states[i+1].Identity
 
-	proof, err := proofService.ProveTransition(proof.ProveTransitionCommand{
-		Model:           model.Id(),
-		CurrentInstance: currentInstance.Id(),
-		NextInstance:    nextInstance.Id(),
-	})
-	assert.Nil(t, err)
-	assert.Equal(t, 3, len(proof.PublicInput))
+		proof, err := proofService.ProveTransition(proof.ProveTransitionCommand{
+			Model:           model.Id(),
+			CurrentInstance: currentInstance.Id(),
+			NextInstance:    nextInstance.Id(),
+			Identity:        identity,
+		})
+		assert.Nil(t, err)
+		proofs = append(proofs, proof.ToJson())
+	}
 }
 
 func TestProveTermination(t *testing.T) {
-	model := testdata.GetModel2()
-	modelService.ImportModel(model)
-	publicKeys := testdata.GetPublicKeys(signatureService, 2)
-	instance := testdata.GetModel2Instance4(publicKeys)
-	instanceService.ImportInstance(instance)
+	instance := states[len(states)-1].Instance
+	model := states[len(states)-1].Model
+	identity := states[len(states)-1].Identity
 
 	proof, err := proofService.ProveTermination(proof.ProveTerminationCommand{
 		Model:    model.Id(),
 		Instance: instance.Id(),
+		Identity: identity,
 	})
 	assert.Nil(t, err)
-	assert.Equal(t, 2, len(proof.PublicInput))
+	proofs = append(proofs, proof.ToJson())
+
+	bytes, _ := json.Marshal(proofs)
+	fmt.Println(string(bytes))
 }

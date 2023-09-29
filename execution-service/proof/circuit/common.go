@@ -8,6 +8,9 @@ import (
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
+const emptyMessageHash = 0
+const outOfBoundsMessageHash = 1
+
 func checkModelHash(api frontend.API, model Model) error {
 	mimc, err := mimc.NewMiMC(api)
 	if err != nil {

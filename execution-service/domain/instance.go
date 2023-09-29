@@ -12,9 +12,9 @@ type PublicKey struct {
 	Value []byte
 }
 
-const InvalidTokenCount = -100
+const OutOfBoundsTokenCount = -100
 
-func InvalidPublicKey() PublicKey {
+func OutOfBoundsPublicKey() PublicKey {
 	return PublicKey{
 		Value: make([]byte, PublicKeySize),
 	}
@@ -35,12 +35,8 @@ func (instance *Instance) Id() InstanceId {
 	return utils.BytesToString(instance.Hash.Value[:])
 }
 
-func (instance Instance) ExecuteTransitionWithMessage(transition Transition, message []byte) (Instance, error) {
+func (instance Instance) ExecuteTransition(transition Transition, message []byte) (Instance, error) {
 	instance.updateMessageHash(transition.Message, message)
-	return instance.ExecuteTransition(transition)
-}
-
-func (instance Instance) ExecuteTransition(transition Transition) (Instance, error) {
 	err := instance.updateTokenCounts(transition)
 	if err != nil {
 		return Instance{}, err
@@ -51,8 +47,8 @@ func (instance Instance) ExecuteTransition(transition Transition) (Instance, err
 }
 
 func (instance *Instance) updateMessageHash(messageId MessageId, message []byte) {
-	messageHash := HashMessage(message)
-	if messageId != InvalidMessageId {
+	if messageId != OutOfBoundsMessageId && len(message) > 0 {
+		messageHash := HashMessage(message)
 		instance.MessageHashes[messageId] = messageHash
 	}
 }
@@ -64,12 +60,12 @@ func (instance *Instance) updateTokenCounts(transition Transition) error {
 	var tokenCounts [MaxPlaceCount]int8
 	copy(tokenCounts[:], instance.TokenCounts[:])
 	for _, incomingPlaceId := range transition.IncomingPlaces {
-		if incomingPlaceId != InvalidPlaceId {
+		if incomingPlaceId != OutOfBoundsPlaceId {
 			tokenCounts[incomingPlaceId] -= 1
 		}
 	}
 	for _, outgoingPlaceId := range transition.OutgoingPlaces {
-		if outgoingPlaceId != InvalidPlaceId {
+		if outgoingPlaceId != OutOfBoundsPlaceId {
 			tokenCounts[outgoingPlaceId] += 1
 		}
 	}
@@ -79,7 +75,7 @@ func (instance *Instance) updateTokenCounts(transition Transition) error {
 
 func isTransitionExecutable(instance *Instance, transition Transition) bool {
 	for _, incomingPlaceId := range transition.IncomingPlaces {
-		if incomingPlaceId == InvalidPlaceId {
+		if incomingPlaceId == OutOfBoundsPlaceId {
 			break
 		}
 		if int(incomingPlaceId) > len(instance.TokenCounts) {

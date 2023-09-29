@@ -3,8 +3,8 @@ package proof
 import (
 	"execution-service/instance"
 	"execution-service/model"
+	"execution-service/parameters"
 	"execution-service/proof/circuit"
-	"execution-service/signature"
 
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/groth16"
@@ -12,26 +12,26 @@ import (
 )
 
 type ProofService struct {
-	proofParameters  ProofParameters
-	InstanceService  instance.InstanceService
-	ModelService     model.ModelService
-	SignatureService signature.SignatureService
+	proofParameters     parameters.ProofParameters
+	SignatureParameters parameters.SignatureParameters
+	InstanceService     instance.InstanceService
+	ModelService        model.ModelService
 }
 
 func InitializeProofService() ProofService {
-	proofParameters := NewProofParameters()
+	proofParameters := parameters.NewProofParameters()
+	signatureParameters := parameters.NewSignatureParameters()
 	instanceService := instance.NewInstanceService()
 	modelService := model.NewModelService()
-	signatureService := signature.InitializeSignatureService()
-	return NewProofService(proofParameters, instanceService, modelService, signatureService)
+	return NewProofService(proofParameters, signatureParameters, instanceService, modelService)
 }
 
-func NewProofService(proofParameters ProofParameters, instanceService instance.InstanceService, modelService model.ModelService, signatureService signature.SignatureService) ProofService {
+func NewProofService(proofParameters parameters.ProofParameters, signatureParameters parameters.SignatureParameters, instanceService instance.InstanceService, modelService model.ModelService) ProofService {
 	return ProofService{
-		proofParameters:  proofParameters,
-		InstanceService:  instanceService,
-		ModelService:     modelService,
-		SignatureService: signatureService,
+		proofParameters:     proofParameters,
+		SignatureParameters: signatureParameters,
+		InstanceService:     instanceService,
+		ModelService:        modelService,
 	}
 }
 
@@ -44,7 +44,8 @@ func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (
 	if err != nil {
 		return Proof{}, err
 	}
-	signature := service.SignatureService.Sign(instance)
+	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	signature := instance.Sign(privateKey)
 	assignment := &circuit.InstantiationCircuit{
 		Model:     circuit.FromModel(model),
 		Instance:  circuit.FromInstance(instance),
@@ -74,12 +75,13 @@ func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 	if err != nil {
 		return Proof{}, err
 	}
-	signature := service.SignatureService.Sign(nextInstance)
+	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	nextSignature := nextInstance.Sign(privateKey)
 	assignment := &circuit.TransitionCircuit{
-		Model:                 circuit.FromModel(model),
-		CurrentInstance:       circuit.FromInstance(currentInstance),
-		NextInstance:          circuit.FromInstance(nextInstance),
-		NextInstanceSignature: circuit.FromSignature(signature),
+		Model:           circuit.FromModel(model),
+		CurrentInstance: circuit.FromInstance(currentInstance),
+		NextInstance:    circuit.FromInstance(nextInstance),
+		NextSignature:   circuit.FromSignature(nextSignature),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -101,7 +103,8 @@ func (service *ProofService) ProveTermination(cmd ProveTerminationCommand) (Proo
 	if err != nil {
 		return Proof{}, err
 	}
-	signature := service.SignatureService.Sign(instance)
+	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	signature := instance.Sign(privateKey)
 	assignment := &circuit.TerminationCircuit{
 		Model:     circuit.FromModel(model),
 		Instance:  circuit.FromInstance(instance),

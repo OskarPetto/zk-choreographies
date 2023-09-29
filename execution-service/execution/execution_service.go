@@ -51,11 +51,7 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 		return domain.Instance{}, err
 	}
 	var nextInstance domain.Instance
-	if len(cmd.Message) == 0 {
-		nextInstance, err = currentInstance.ExecuteTransition(transition)
-	} else {
-		nextInstance, err = currentInstance.ExecuteTransitionWithMessage(transition, cmd.Message)
-	}
+	nextInstance, err = currentInstance.ExecuteTransition(transition, cmd.Message)
 	if err != nil {
 		return domain.Instance{}, err
 	}

@@ -1,24 +1,27 @@
-package signature
+package parameters
 
 import (
 	"bytes"
 	"crypto/rand"
+	"execution-service/domain"
 	"execution-service/file"
 	"execution-service/utils"
+	"fmt"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )
 
-const signaturePrivateKeyFilename = "signature.private_key"
-
 type SignatureParameters struct {
-	SignaturePrivateKey *eddsa.PrivateKey
+	privateKeys []*eddsa.PrivateKey
 }
 
 func NewSignatureParameters() SignatureParameters {
-	signaturePrivateKey := importSignaturePrivateKey(signaturePrivateKeyFilename)
+	signaturePrivateKeys := make([]*eddsa.PrivateKey, domain.IdentityCount)
+	for i := 0; i < domain.IdentityCount; i++ {
+		signaturePrivateKeys[i] = importSignaturePrivateKey(fmt.Sprintf("identity%d.private_key", i))
+	}
 	return SignatureParameters{
-		signaturePrivateKey,
+		signaturePrivateKeys,
 	}
 }
 
@@ -40,4 +43,18 @@ func generateSignaturePrivateKey(filename string) *eddsa.PrivateKey {
 	byteBuffer := bytes.NewBuffer(privateKey.Bytes())
 	file.WritePrivateFile(byteBuffer, filename)
 	return privateKey
+}
+
+func (service *SignatureParameters) GetPrivateKeyForIdentity(identityId domain.IdentityId) *eddsa.PrivateKey {
+	return service.privateKeys[identityId]
+}
+
+func (service *SignatureParameters) GetPublicKeys(count int) []domain.PublicKey {
+	publicKeys := make([]domain.PublicKey, count)
+	for i := 0; i < count; i++ {
+		publicKeys[i] = domain.PublicKey{
+			Value: service.GetPrivateKeyForIdentity(uint(i)).PublicKey.Bytes(),
+		}
+	}
+	return publicKeys
 }

@@ -19,7 +19,7 @@ func HashToJson(hash domain.Hash) HashJson {
 
 func (hash *HashJson) ToHash() (domain.Hash, error) {
 	if hash.Value == "" && hash.Salt == "" {
-		return domain.InvalidHash(), nil
+		return domain.EmptyHash(), nil
 	}
 	value, err := utils.StringToBytes(hash.Value)
 	if err != nil {
