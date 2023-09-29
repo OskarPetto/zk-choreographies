@@ -41,8 +41,6 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	circuit.comparePublicKeys(api)
 	participantId := findParticipantId(api, circuit.NextSignature, circuit.NextInstance)
 	messageId := circuit.findMessageId(api)
-	api.Println(tokenCountChanges.placesWhereTokenCountDecreases[:]...)
-	api.Println(tokenCountChanges.placesWhereTokenCountIncreases[:]...)
 	circuit.findTransition(api, tokenCountChanges, participantId, messageId)
 	return nil
 }
@@ -133,24 +131,24 @@ func (circuit *TransitionCircuit) findTransition(api frontend.API, tokenCountCha
 		messageMatches := equals(api, transition.Message, messageId)
 		var tokenCountChangesMatch frontend.Variable = 1
 		for _, incomingPlace := range transition.IncomingPlaces {
-			var tokenCountDecreases frontend.Variable = 0
+			var tokenCountDecreasesAtIncomingPlace frontend.Variable = 0
 			for _, placeWhereTokenCountDecreases := range tokenCountChanges.placesWhereTokenCountDecreases {
-				tokenCountDecreases = api.Or(tokenCountDecreases, equals(api, incomingPlace, placeWhereTokenCountDecreases))
+				tokenCountDecreasesAtIncomingPlace = api.Or(tokenCountDecreasesAtIncomingPlace, equals(api, incomingPlace, placeWhereTokenCountDecreases))
 			}
-			tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountDecreases)
+			tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountDecreasesAtIncomingPlace)
 		}
 		for _, outgoingPlace := range transition.OutgoingPlaces {
-			var tokenCountIncreases frontend.Variable = 0
+			var tokenCountIncreasesAtOutgoingPlace frontend.Variable = 0
 			for _, placeWhereTokenCountIncreases := range tokenCountChanges.placesWhereTokenCountIncreases {
-				tokenCountIncreases = api.Or(tokenCountIncreases, equals(api, outgoingPlace, placeWhereTokenCountIncreases))
+				tokenCountIncreasesAtOutgoingPlace = api.Or(tokenCountIncreasesAtOutgoingPlace, equals(api, outgoingPlace, placeWhereTokenCountIncreases))
 			}
-			tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountIncreases)
+			tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountIncreasesAtOutgoingPlace)
 		}
 		transitionMatches := api.And(api.And(tokenCountChangesMatch, participantMatches), messageMatches)
 		transitionFound = api.Or(transitionFound, api.And(transition.IsValid, transitionMatches))
 	}
 
-	noMessageHashesAdded := equals(api, messageId, domain.MaxMessageCount)
+	noMessageHashesAdded := equals(api, messageId, domain.EmptyMessageId)
 	noChanges := api.And(tokenCountChanges.noChanges, noMessageHashesAdded)
 	api.AssertIsEqual(1, api.Or(transitionFound, noChanges))
 }
