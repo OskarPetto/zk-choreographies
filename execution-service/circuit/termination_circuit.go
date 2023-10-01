@@ -32,10 +32,11 @@ func (circuit *TerminationCircuit) checkTokenCounts(api frontend.API) {
 	var atLeastOneEndPlaceHasTokenCountOne frontend.Variable = 0
 	for placeId, tokenCount := range circuit.Instance.TokenCounts {
 		tokenCountIsOne := equals(api, tokenCount, 1)
+		var isEndPlace frontend.Variable = 0
 		for _, endPlaceId := range circuit.Model.EndPlaces {
-			isEndPlace := equals(api, endPlaceId, placeId)
-			atLeastOneEndPlaceHasTokenCountOne = api.Or(atLeastOneEndPlaceHasTokenCountOne, api.And(isEndPlace, tokenCountIsOne))
+			isEndPlace = api.Or(isEndPlace, equals(api, endPlaceId, placeId))
 		}
+		atLeastOneEndPlaceHasTokenCountOne = api.Or(atLeastOneEndPlaceHasTokenCountOne, api.And(isEndPlace, tokenCountIsOne))
 	}
 	api.AssertIsEqual(1, atLeastOneEndPlaceHasTokenCountOne)
 }
