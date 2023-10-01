@@ -27,4 +27,5 @@ export interface Model {
   startPlaces: PlaceId[];
   endPlaces: PlaceId[];
   transitions: Transition[];
+  hash?: { value: string, salt: string }
 }

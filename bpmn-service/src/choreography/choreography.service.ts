@@ -14,14 +14,15 @@ export class ChoreographyService {
     private bpmnMapper: ChoreographyMapper,
     private modelReducer: ModelReducer,
     private modelGateway: ModelGateway,
-  ) {}
+  ) { }
 
-  importChoreography(bpmnString: string) {
+  async importChoreography(bpmnString: string): Promise<string> {
     const definitions = this.bpmnParser.parseBpmn(bpmnString);
     const choreography = definitions.choreographies[0];
     const model = this.bpmnMapper.toModel(choreography);
     const reducedModel = this.modelReducer.reduceModel(model);
-    this.modelGateway.createModel(reducedModel);
+    const createdModel = await this.modelGateway.createModel(reducedModel);
     this.choreographies.set(choreography.id, choreography);
+    return createdModel.hash?.value!;
   }
 }

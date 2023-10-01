@@ -7,9 +7,9 @@ export class ImportChoreographyCommand {
 
 @Controller('choreographies')
 export class ChoreographyController {
-  constructor(private choreographyService: ChoreographyService) {}
+  constructor(private choreographyService: ChoreographyService) { }
   @Post()
-  importChoreography(@Body() cmd: ImportChoreographyCommand) {
-    this.choreographyService.importChoreography(cmd.bpmnString);
+  async importChoreography(@Body() cmd: ImportChoreographyCommand): Promise<string> {
+    return this.choreographyService.importChoreography(cmd.bpmnString);
   }
 }

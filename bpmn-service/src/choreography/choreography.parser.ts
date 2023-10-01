@@ -151,6 +151,9 @@ export class ChoreographyParser {
 
   private parseExclusiveGateways(choreography: any): ExclusiveGateway[] {
     const exclusiveGateways = choreography[this.exclusiveGatewayTag];
+    if (!exclusiveGateways) {
+      return [];
+    }
     return exclusiveGateways.map((exclusiveGateway: any) => {
       const incoming: any[] = exclusiveGateway[this.incomingTag];
       const outgoing: any[] = exclusiveGateway[this.outgoingTag];
@@ -165,6 +168,9 @@ export class ChoreographyParser {
   }
   private parseParallelGateways(choreography: any): ParallelGateway[] {
     const parallelGateways = choreography[this.parallelGatewayTag];
+    if (!parallelGateways) {
+      return [];
+    }
     return parallelGateways.map((parallelGateway: any) => {
       const incoming: any[] = parallelGateway[this.incomingTag];
       const outgoing: any[] = parallelGateway[this.outgoingTag];
