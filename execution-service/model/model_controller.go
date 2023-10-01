@@ -20,6 +20,7 @@ func (controller *ModelController) FindModelById(c *gin.Context) {
 	modelId := c.Param("modelId")
 	model, err := controller.modelService.FindModelById(modelId)
 	if err != nil {
+		c.Status(http.StatusNotFound)
 		return
 	}
 	c.IndentedJSON(http.StatusOK, ToJson(model))
@@ -28,10 +29,12 @@ func (controller *ModelController) FindModelById(c *gin.Context) {
 func (controller *ModelController) CreateModel(c *gin.Context) {
 	var modelJson ModelJson
 	if err := c.BindJSON(&modelJson); err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	model, err := modelJson.ToModel()
 	if err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	result := controller.modelService.CreateModel(model)
@@ -41,10 +44,12 @@ func (controller *ModelController) CreateModel(c *gin.Context) {
 func (controller *ModelController) ImportModel(c *gin.Context) {
 	var modelJson ModelJson
 	if err := c.BindJSON(&modelJson); err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	model, err := modelJson.ToModel()
 	if err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	controller.modelService.ImportModel(model)

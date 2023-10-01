@@ -1,49 +1,29 @@
-//go:build wireinject
-// +build wireinject
-
 package main
 
 import (
 	"execution-service/execution"
 	"execution-service/instance"
 	"execution-service/model"
+	"execution-service/parameters"
 	"execution-service/proof"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/wire"
 )
 
-var instanceProviders = wire.NewSet(instance.NewInstanceController, instance.NewInstanceService)
-var modelProviders = wire.NewSet(model.NewModelController, model.NewModelService)
-var executionProviders = wire.NewSet(execution.NewExecutionController, execution.InitializeExecutionService)
-var proofProviders = wire.NewSet(proof.NewProofController, proof.InitializeProofService)
+var instanceService = instance.NewInstanceService()
+var instanceController = instance.NewInstanceController(instanceService)
+var modelService = model.NewModelService()
+var modelController = model.NewModelController(modelService)
 
-func InitializeInstanceController() instance.InstanceController {
-	wire.Build(instanceProviders)
-	return instance.InstanceController{}
-}
+var executionService = execution.NewExecutionService(instanceService, modelService)
+var executionController = execution.NewExecutionController(executionService)
 
-func InitializeModelController() model.ModelController {
-	wire.Build(modelProviders)
-	return model.ModelController{}
-}
-
-func InitializeExecutionController() execution.ExecutionController {
-	wire.Build(executionProviders)
-	return execution.ExecutionController{}
-}
-
-func InitializeProofController() proof.ProofController {
-	wire.Build(proofProviders)
-	return proof.ProofController{}
-}
+var signatureParameters = parameters.NewSignatureParameters()
+var proofParameters = parameters.NewProofParameters()
+var proofService = proof.NewProofService(proofParameters, signatureParameters, instanceService, modelService)
+var proofController = proof.NewProofController(proofService)
 
 func main() {
-
-	instanceController := InitializeInstanceController()
-	modelController := InitializeModelController()
-	executionController := InitializeExecutionController()
-	proofController := InitializeProofController()
 
 	router := gin.Default()
 	router.POST("/models", modelController.CreateModel)

@@ -20,6 +20,7 @@ func (controller *InstanceController) FindInstanceById(c *gin.Context) {
 	instanceId := c.Param("instanceId")
 	instance, err := controller.instanceService.FindInstanceById(instanceId)
 	if err != nil {
+		c.Status(http.StatusNotFound)
 		return
 	}
 	c.IndentedJSON(http.StatusOK, ToJson(instance))
@@ -28,10 +29,12 @@ func (controller *InstanceController) FindInstanceById(c *gin.Context) {
 func (controller *InstanceController) ImportInstance(c *gin.Context) {
 	var instanceJson InstanceJson
 	if err := c.BindJSON(&instanceJson); err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	instance, err := instanceJson.ToInstance()
 	if err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	controller.instanceService.ImportInstance(instance)

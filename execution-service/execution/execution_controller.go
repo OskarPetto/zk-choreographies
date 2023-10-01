@@ -20,14 +20,17 @@ func NewExecutionController(executionService ExecutionService) ExecutionControll
 func (controller *ExecutionController) InstantiateModel(c *gin.Context) {
 	var jsonCmd InstantiateModelCommandJson
 	if err := c.BindJSON(&jsonCmd); err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	cmd, err := jsonCmd.ToExecutionCommand()
 	if err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	result, err := controller.executionService.InstantiateModel(cmd)
 	if err != nil {
+		c.Status(http.StatusForbidden)
 		return
 	}
 	jsonResult := instance.ToJson(result)
@@ -37,14 +40,17 @@ func (controller *ExecutionController) InstantiateModel(c *gin.Context) {
 func (controller *ExecutionController) ExecuteTransition(c *gin.Context) {
 	var jsonCmd ExecuteTransitionCommandJson
 	if err := c.BindJSON(&jsonCmd); err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	cmd, err := jsonCmd.ToExecutionCommand()
 	if err != nil {
+		c.Status(http.StatusBadRequest)
 		return
 	}
 	result, err := controller.executionService.ExecuteTransition(cmd)
 	if err != nil {
+		c.Status(http.StatusForbidden)
 		return
 	}
 	jsonResult := instance.ToJson(result)
