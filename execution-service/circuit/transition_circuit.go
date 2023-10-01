@@ -108,10 +108,8 @@ func (circuit *TransitionCircuit) findMessageId(api frontend.API) frontend.Varia
 	for messageId := range circuit.CurrentInstance.MessageHashes {
 		currentMessageHash := circuit.CurrentInstance.MessageHashes[messageId]
 		nextMessageHash := circuit.NextInstance.MessageHashes[messageId]
-		var wasMessageHashEmpty frontend.Variable = equals(api, currentMessageHash, emptyMessageHash)
-		var messageHashesMatch frontend.Variable = equals(api, currentMessageHash, nextMessageHash)
-		api.AssertIsEqual(1, api.Or(wasMessageHashEmpty, messageHashesMatch))
 
+		messageHashesMatch := equals(api, currentMessageHash, nextMessageHash)
 		messageHashAdded := api.IsZero(messageHashesMatch)
 		addedMessageId = api.Select(messageHashAdded, messageId, addedMessageId)
 		messageHashesAddedCount = api.Add(messageHashesAddedCount, messageHashAdded)

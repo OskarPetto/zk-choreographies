@@ -26,8 +26,6 @@ import {
 
 @Injectable()
 export class ChoreographyMapper {
-  maxLoopCount = 4;
-
   toModel(choreography: Choreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
@@ -304,7 +302,7 @@ export class ChoreographyMapper {
     } else if (
       choreographyTask.loopType === LoopType.MULTI_INSTANCE_SEQUENTIAL
     ) {
-      const transitions = [
+      return [
         {
           id: `${choreographyTask.id}_0`,
           type: TransitionType.REQUIRED,
@@ -314,23 +312,16 @@ export class ChoreographyMapper {
           participant: initiatingParticipantId,
           message: initialMessage,
         },
-      ];
-      for (let index = 1; index < this.maxLoopCount; index++) {
-        const additionalMessageId =
-          messageIds.size + additionalMessageIds.length;
-        additionalMessageIds.push(additionalMessageId);
-        const transition = {
-          id: `${choreographyTask.id}_${index}`,
+        {
+          id: `${choreographyTask.id}_loop`,
           type: TransitionType.REQUIRED,
           name: choreographyTask.name,
           incomingPlaces: [outgoingPlaceId],
           outgoingPlaces: [outgoingPlaceId],
           participant: initiatingParticipantId,
-          message: additionalMessageId,
-        };
-        transitions.push(transition);
-      }
-      return transitions;
+          message: initialMessage,
+        }
+      ];
     } else {
       throw Error('not supported');
     }
