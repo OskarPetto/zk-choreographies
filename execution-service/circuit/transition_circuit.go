@@ -36,8 +36,8 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	tokenCountChanges := circuit.compareTokenCounts(api)
 	circuit.comparePublicKeys(api)
+	tokenCountChanges := circuit.compareTokenCounts(api)
 	participantId := findParticipantId(api, circuit.NextSignature, circuit.NextInstance)
 	messageId := circuit.findMessageId(api)
 	circuit.findTransition(api, tokenCountChanges, participantId, messageId)
@@ -124,8 +124,6 @@ func (circuit *TransitionCircuit) findTransition(api frontend.API, tokenCountCha
 	var transitionFound frontend.Variable = 0
 
 	for _, transition := range circuit.Model.Transitions {
-		participantMatches := api.Or(equals(api, transition.Participant, domain.EmptyParticipantId), equals(api, transition.Participant, participantId))
-		messageMatches := equals(api, transition.Message, messageId)
 		var tokenCountChangesMatch frontend.Variable = 1
 		for _, incomingPlace := range transition.IncomingPlaces {
 			var tokenCountDecreasesAtIncomingPlace frontend.Variable = 0
@@ -141,8 +139,10 @@ func (circuit *TransitionCircuit) findTransition(api frontend.API, tokenCountCha
 			}
 			tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountIncreasesAtOutgoingPlace)
 		}
-		transitionMatches := api.And(api.And(tokenCountChangesMatch, participantMatches), messageMatches)
-		transitionFound = api.Or(transitionFound, api.And(transition.IsValid, transitionMatches))
+		participantMatches := api.Or(equals(api, transition.Participant, domain.EmptyParticipantId), equals(api, transition.Participant, participantId))
+		messageMatches := equals(api, transition.Message, messageId)
+		transitionMatches := api.And(transition.IsValid, api.And(api.And(tokenCountChangesMatch, participantMatches), messageMatches))
+		transitionFound = api.Or(transitionFound, transitionMatches)
 	}
 
 	noMessageHashesAdded := equals(api, messageId, domain.EmptyMessageId)
