@@ -11,7 +11,7 @@ export function findTransitions(
   return transitionIds.map((transitionId) => {
     const transition = model.transitions.find((t) => t.id === transitionId);
     if (!transition) {
-      throw Error(`Transition ${transitionId} in model ${model.id} not found`);
+      throw Error(`Transition ${transitionId} in model ${model.hash.value} not found`);
     }
     return transition;
   });

@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Model, TransitionType } from '../../src/model/model';
+import { Model, TransitionType, defaultHash } from '../../src/model/model';
 import {
   Definitions,
   GatewayType,
@@ -163,7 +163,7 @@ export class TestdataProvider {
             },
             {
               id: 'Flow_1k5cri3',
-              name: 'stock < ordered',
+              name: 'Order > 5',
             },
             {
               id: 'Flow_1iwbmcz',
@@ -185,7 +185,6 @@ export class TestdataProvider {
             },
             {
               id: 'Flow_1stf9mf',
-              name: 'stock >= ordered',
             },
             {
               id: 'Flow_0c5yqsz',
@@ -232,7 +231,7 @@ export class TestdataProvider {
             },
             {
               id: 'Message_1376fyb',
-              name: 'Purchase order',
+              name: 'Order',
             },
           ],
         },
@@ -242,7 +241,7 @@ export class TestdataProvider {
 
   static getModel2(): Model {
     return {
-      hash: { value: '', salt: '' },
+      hash: defaultHash(),
       choreography: 'Choreography_07n6r3q',
       placeCount: 20,
       participantCount: 2,
@@ -268,6 +267,12 @@ export class TestdataProvider {
           type: TransitionType.OPTIONAL_OUTGOING,
           incomingPlaces: [1],
           outgoingPlaces: [2],
+          constraint: {
+            coefficients: [1, 0],
+            messageIds: [8, 0],
+            offset: -5,
+            comparisonOperator: 1,
+          }
         },
         {
           id: 'Gateway_10fv7g5_Flow_1stf9mf',
@@ -410,7 +415,7 @@ export class TestdataProvider {
 
   static getModel2Reduced(): Model {
     return {
-      hash: { value: '', salt: '' },
+      hash: defaultHash(),
       choreography: 'Choreography_07n6r3q',
       placeCount: 14,
       participantCount: 2,

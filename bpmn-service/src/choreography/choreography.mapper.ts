@@ -23,9 +23,16 @@ import {
   Transition,
   TransitionType,
 } from '../model/model';
+import { ConstraintParser } from 'src/constraint/constraint.parser';
+
+interface ConstraintMapping {
+  sequenceFlowNames: Map<SequenceFlowId, string | undefined>
+  messageIdPerMessageName: Map<string, MessageId>
+}
 
 @Injectable()
 export class ChoreographyMapper {
+  constructor(private constraintParser: ConstraintParser) { }
   toModel(choreography: Choreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
@@ -34,6 +41,12 @@ export class ChoreographyMapper {
       choreography.participants,
     );
     const messageIds = this.createMessageMapping(choreography.messages);
+    const constraintMapping = this.createConstraintMapping(
+      choreography.sequenceFlows,
+      choreography.messages,
+      messageIds,
+    );
+
     const additionalPlaceIds: PlaceId[] = [];
     const choreographyTaskTransitions = choreography.choreographyTasks.flatMap(
       (choreographyTask) =>
@@ -65,6 +78,7 @@ export class ChoreographyMapper {
         this.exclusiveGatewayToTransitions(
           exclusiveGateway,
           sequenceFlowPlaceIds,
+          constraintMapping
         ),
     );
     const parallelGatewayTransitions = choreography.parallelGateways.flatMap(
@@ -114,6 +128,25 @@ export class ChoreographyMapper {
       map.set(sequenceFlow.id, index++);
     }
     return map;
+  }
+
+  private createConstraintMapping(
+    sequenceFlows: SequenceFlow[],
+    messages: Message[],
+    messageIds: Map<BpmnMessageId, MessageId>
+  ): ConstraintMapping {
+    const constraintMapping: ConstraintMapping = {
+      sequenceFlowNames: new Map(),
+      messageIdPerMessageName: new Map()
+    }
+    for (const sequenceFlow of sequenceFlows) {
+      constraintMapping.sequenceFlowNames.set(sequenceFlow.id, sequenceFlow.name);
+    }
+    for (const message of messages) {
+      const messageId = messageIds.get(message.id)!;
+      constraintMapping.messageIdPerMessageName.set(message.name, messageId);
+    }
+    return constraintMapping;
   }
 
   private createParticipantMapping(
@@ -198,6 +231,7 @@ export class ChoreographyMapper {
   private exclusiveGatewayToTransitions(
     exclusiveGateway: ExclusiveGateway,
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
+    constraintMapping: ConstraintMapping
   ): Transition[] {
     if (exclusiveGateway.type === GatewayType.JOIN) {
       return this.exclusiveJoinGatewayToTransitions(
@@ -208,6 +242,7 @@ export class ChoreographyMapper {
       return this.exclusiveSplitGatewayToTransitions(
         exclusiveGateway,
         sequenceFlowPlaceIds,
+        constraintMapping
       );
     }
   }
@@ -231,17 +266,24 @@ export class ChoreographyMapper {
   private exclusiveSplitGatewayToTransitions(
     exclusiveGateway: ExclusiveGateway,
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
+    constraintMapping: ConstraintMapping
   ): Transition[] {
     const incomingPlaceId = sequenceFlowPlaceIds.get(
       exclusiveGateway.incoming[0],
     )!;
 
-    return exclusiveGateway.outgoing.map((outgoingSequenceFlowId) => ({
-      id: `${exclusiveGateway.id}_${outgoingSequenceFlowId}`,
-      type: TransitionType.OPTIONAL_OUTGOING,
-      incomingPlaces: [incomingPlaceId],
-      outgoingPlaces: [sequenceFlowPlaceIds.get(outgoingSequenceFlowId)!],
-    }));
+    return exclusiveGateway.outgoing.map((outgoingSequenceFlowId) => {
+      const constraintString = constraintMapping.sequenceFlowNames.get(outgoingSequenceFlowId)
+      const messageIdPerMessageName = constraintMapping.messageIdPerMessageName
+      const constraint = this.constraintParser.parseConstraint(constraintString, messageIdPerMessageName)
+      return {
+        id: `${exclusiveGateway.id}_${outgoingSequenceFlowId}`,
+        type: TransitionType.OPTIONAL_OUTGOING,
+        incomingPlaces: [incomingPlaceId],
+        outgoingPlaces: [sequenceFlowPlaceIds.get(outgoingSequenceFlowId)!],
+        constraint
+      };
+    });
   }
 
   private choreographyTaskToTransitions(

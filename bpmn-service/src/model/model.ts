@@ -22,8 +22,10 @@ export interface Transition {
   constraint?: Constraint;
 }
 
+export interface Hash { value: string; salt: string }
+
 export interface Model {
-  hash: { value: string; salt: string };
+  hash: Hash;
   choreography: string;
   placeCount: number;
   participantCount: number;
@@ -31,4 +33,8 @@ export interface Model {
   startPlaces: PlaceId[];
   endPlaces: PlaceId[];
   transitions: Transition[];
+}
+
+export function defaultHash(): Hash {
+  return { value: '', salt: '' }
 }

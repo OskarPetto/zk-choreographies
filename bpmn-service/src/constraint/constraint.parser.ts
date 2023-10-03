@@ -1,45 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { Constraint, defaultConstraint } from './constraint';
-import { SequenceFlow, SequenceFlowId } from 'src/choreography/choreography';
+import { MessageId as BpmnMessageId } from 'src/choreography/choreography';
+import { MessageId } from 'src/model/model';
 /* eslint @typescript-eslint/no-var-requires: "off" */
 const esprima = require('esprima');
 
 interface ConstraintPart {
-  literal: number;
-  variable?: number;
+  constant: number;
+  messageId?: number;
 }
 
 @Injectable()
 export class ConstraintParser {
-  parseConstraints(
-    sequenceFlows: SequenceFlow[],
-  ): Map<SequenceFlowId, Constraint> {
-    const constraints = new Map();
-    const variables = new Map();
-    for (const sequenceFlow of sequenceFlows) {
-      if (!sequenceFlow.name) {
-        constraints.set(sequenceFlow.id, defaultConstraint());
-        continue;
-      }
-      try {
-        const script = esprima.parseScript(sequenceFlow.name);
-        if (script.body.length != 1) {
-          throw Error('not implemented');
-        }
-        const expression = script.body[0].expression;
-        const constraint = this.parseBooleanExpression(expression, variables);
-        constraints.set(sequenceFlow.id, constraint);
-      } catch (e) {
-        console.log('no valid constraint: ', sequenceFlow.name);
-        constraints.set(sequenceFlow.id, defaultConstraint());
-      }
+  parseConstraint(
+    constraint: string | undefined,
+    messageIds: Map<BpmnMessageId, MessageId>
+  ): Constraint | undefined {
+    if (constraint === undefined) {
+      return undefined
     }
-    return constraints;
+    try {
+      const script = esprima.parseScript(constraint);
+      if (script.body.length != 1) {
+        throw Error('not implemented');
+      }
+      const expression = script.body[0].expression;
+      return this.parseBooleanExpression(expression, messageIds);
+    } catch (e) {
+      console.log(`parsing constraint '${constraint}' resulted in error: ${e.message}`);
+    }
+    return undefined;
   }
 
   private parseBooleanExpression(
     expression: any,
-    variables: Map<string, number>,
+    messageIds: Map<BpmnMessageId, MessageId>,
   ): Constraint {
     if (expression.type !== 'BinaryExpression') {
       throw Error('not implemented');
@@ -49,68 +44,75 @@ export class ConstraintParser {
     );
     const leftParts: ConstraintPart[] = this.parseExpression(
       expression.left,
-      variables,
+      messageIds,
       1,
     );
     const rightParts: ConstraintPart[] = this.parseExpression(
       expression.right,
-      variables,
+      messageIds,
       -1,
     );
     const combinedParts = leftParts.concat(rightParts);
     const resultingParts: ConstraintPart[] = [];
     let c = 0;
     for (const part of combinedParts) {
-      if (part.variable !== undefined) {
+      if (part.messageId !== undefined) {
         resultingParts.push(part);
       } else {
-        c += part.literal;
+        c += part.constant;
       }
     }
-    resultingParts.push({ literal: c });
-    if (combinedParts.length > 3) {
+    resultingParts.push({ constant: c });
+    if (resultingParts.length > 3) {
       throw Error('not implemented');
     }
+
+    let offset = resultingParts[resultingParts.length - 1].constant
+    let coefficients = Array(2).fill(0)
+    let messages = Array(2).fill(0)
+
+    for (let i = 0; i < resultingParts.length - 1; i++) {
+      coefficients[i] = resultingParts[i].constant
+      messages[i] = resultingParts[i].messageId ?? 0
+    }
+
     return {
-      a: resultingParts[0].literal,
-      x: resultingParts[0].variable!,
-      b: resultingParts.length > 1 ? resultingParts[1].literal : 0,
-      y: resultingParts.length > 1 ? resultingParts[1].variable! : 0,
-      c: resultingParts.length > 2 ? resultingParts[2].literal : 0,
+      coefficients,
+      messageIds: messages,
+      offset,
       comparisonOperator: comparisonOperator,
     };
   }
 
   private parseExpression(
     expression: any,
-    variables: Map<string, number>,
+    messageIds: Map<BpmnMessageId, MessageId>,
     factor: number,
   ): ConstraintPart[] {
     if (expression.type == 'Literal') {
       return [
         {
-          literal: expression.value * factor,
+          constant: expression.value * factor,
         },
       ];
     } else if (expression.type == 'Identifier') {
-      let variable;
-      if (variables.has(expression.name)) {
-        variable = variables.get(expression.name);
+      let messageId;
+      if (!messageIds.has(expression.name)) {
+        throw Error(`message identifier '${expression.name}' not known`)
       } else {
-        variable = variables.size;
-        variables.set(expression.name, variable);
+        messageId = messageIds.get(expression.name)
       }
       return [
         {
-          literal: factor,
-          variable: variable,
+          constant: factor,
+          messageId: messageId,
         },
       ];
     } else if (expression.type == 'UnaryExpression') {
       if (expression.operator == '-') {
         return this.parseExpression(
           expression.argument,
-          variables,
+          messageIds,
           factor * -1,
         );
       } else {
@@ -120,64 +122,64 @@ export class ConstraintParser {
       if (expression.operator == '*') {
         const leftParts = this.parseExpression(
           expression.left,
-          variables,
+          messageIds,
           factor,
         );
         const rightParts = this.parseExpression(
           expression.right,
-          variables,
+          messageIds,
           factor,
         );
         if (leftParts.length > 1 || rightParts.length > 1) {
           throw Error('not implemented');
         }
         if (
-          leftParts[0].variable !== undefined &&
-          rightParts[0].variable !== undefined
+          leftParts[0].messageId !== undefined &&
+          rightParts[0].messageId !== undefined
         ) {
           throw Error('not implemented');
         }
         if (
-          leftParts[0].variable === undefined &&
-          rightParts[0].variable === undefined
+          leftParts[0].messageId === undefined &&
+          rightParts[0].messageId === undefined
         ) {
           throw Error('not implemented');
         }
         const literal =
-          leftParts[0].variable === undefined
-            ? leftParts[0].literal
-            : rightParts[0].literal;
+          leftParts[0].messageId === undefined
+            ? leftParts[0].constant
+            : rightParts[0].constant;
         const variable =
-          leftParts[0].variable !== undefined
-            ? leftParts[0].variable
-            : rightParts[0].variable;
+          leftParts[0].messageId !== undefined
+            ? leftParts[0].messageId
+            : rightParts[0].messageId;
         return [
           {
-            literal,
-            variable,
+            constant: literal,
+            messageId: variable,
           },
         ];
       } else if (expression.operator == '+') {
         const leftParts = this.parseExpression(
           expression.left,
-          variables,
+          messageIds,
           factor,
         );
         const rightParts = this.parseExpression(
           expression.right,
-          variables,
+          messageIds,
           factor,
         );
         return leftParts.concat(rightParts);
       } else if (expression.operator == '-') {
         const leftParts = this.parseExpression(
           expression.left,
-          variables,
+          messageIds,
           factor,
         );
         const rightParts = this.parseExpression(
           expression.right,
-          variables,
+          messageIds,
           -1 * factor,
         );
         return leftParts.concat(rightParts);

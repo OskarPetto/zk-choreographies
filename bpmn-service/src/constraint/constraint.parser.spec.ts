@@ -4,73 +4,64 @@ import { defaultConstraint } from './constraint';
 
 describe('ConstraintParser', () => {
   let constraintParser: ConstraintParser;
-  const sequenceFlows: SequenceFlow[] = [
-    {
-      id: 'Flow0',
-    },
-    {
-      id: 'Flow1',
-      name: 'product not in stock',
-    },
-    {
-      id: 'Flow2',
-      name: 'stock < ordered',
-    },
-    {
-      id: 'Flow3',
-      name: '5*a > 2*b - 2',
-    },
-    {
-      id: 'Flow4',
-      name: '1+3*y == -1*x',
-    },
-  ];
-  const expected = new Map([
-    ['Flow0', defaultConstraint()],
-    ['Flow1', defaultConstraint()],
-    [
-      'Flow2',
-      {
-        a: 1,
-        x: 0,
-        b: -1,
-        y: 1,
-        c: 0,
-        comparisonOperator: 2,
-      },
-    ],
-    [
-      'Flow3',
-      {
-        a: 5,
-        x: 0,
-        b: -2,
-        y: 1,
-        c: 2,
-        comparisonOperator: 1,
-      },
-    ],
-    [
-      'Flow4',
-      {
-        a: 3,
-        x: 0,
-        b: 1,
-        y: 1,
-        c: 1,
-        comparisonOperator: 0,
-      },
-    ],
-  ]);
+  const constraint1 = undefined
+  const constraint2 = 'product not in stock'
+  const constraint3 = 'stock < ordered'
+  const messages3 = new Map([['stock', 0], ['ordered', 1]])
+  const constraint4 = '5*a > 2*b - 2'
+  const messages4 = new Map([['a', 0], ['b', 1]])
+  const constraint5 = '1+3*y == -1*x'
+  const messages5 = new Map([['x', 0], ['y', 1]])
+
+  const result1 = undefined
+  const result2 = undefined
+  const result3 = {
+    coefficients: [1, -1],
+    messageIds: [0, 1],
+    offset: 0,
+    comparisonOperator: 2,
+  };
+  const result4 = {
+    coefficients: [5, -2],
+    messageIds: [0, 1],
+    offset: 2,
+    comparisonOperator: 1,
+  }
+  const result5 = {
+    coefficients: [3, 1],
+    messageIds: [1, 0],
+    offset: 1,
+    comparisonOperator: 0,
+  }
 
   beforeAll(() => {
     constraintParser = new ConstraintParser();
   });
 
   describe('parseConstraints', () => {
-    it('should parse sequenceFlow constraints', () => {
-      const result = constraintParser.parseConstraints(sequenceFlows);
-      expect(result).toEqual(expected);
+    it('should parse undefined', () => {
+      const result = constraintParser.parseConstraint(constraint1!, new Map());
+      expect(result).toEqual(result1);
+    });
+    it('should parse text', () => {
+      const result = constraintParser.parseConstraint(constraint2, new Map());
+      expect(result).toEqual(result2);
+    });
+    it('should parse constraint without messageIds', () => {
+      const result = constraintParser.parseConstraint(constraint3, new Map());
+      expect(result).toEqual(result2);
+    });
+    it('should parse constraint3', () => {
+      const result = constraintParser.parseConstraint(constraint3, messages3);
+      expect(result).toEqual(result3);
+    });
+    it('should parse constraint4', () => {
+      const result = constraintParser.parseConstraint(constraint4, messages4);
+      expect(result).toEqual(result4);
+    });
+    it('should parse constraint5', () => {
+      const result = constraintParser.parseConstraint(constraint5, messages5);
+      expect(result).toEqual(result5);
     });
   });
 });

@@ -8,6 +8,7 @@ import { ModelReducer } from '../model/model.reducer';
 import { ModelGateway } from '../model/model.gateway';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
+import { ConstraintModule } from 'src/constraint/constraint.module';
 
 describe('ChoreographyService', () => {
   let bpmnService: ChoreographyService;
@@ -30,7 +31,7 @@ describe('ChoreographyService', () => {
         ModelReducer,
         ModelGateway,
       ],
-      imports: [HttpModule, ConfigModule],
+      imports: [HttpModule, ConfigModule, ConstraintModule],
     }).compile();
 
     bpmnService = moduleRef.get<ChoreographyService>(ChoreographyService);
