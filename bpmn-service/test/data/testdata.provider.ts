@@ -461,6 +461,12 @@ export class TestdataProvider {
           outgoingPlaces: [6],
           participant: 1,
           message: 7,
+          constraint: {
+            coefficients: [1, 0],
+            messageIds: [8, 0],
+            offset: -5,
+            comparisonOperator: 1,
+          }
         },
         {
           id: 'ChoreographyTask_0nl2rhr_loop',

@@ -171,6 +171,7 @@ export class ModelReducer {
         outgoingPlaces: [...transition.outgoingPlaces],
         participant: transition.participant,
         message: transition.message,
+        constraint: transition.constraint ? { ...transition.constraint } : undefined
       }),
     );
 
