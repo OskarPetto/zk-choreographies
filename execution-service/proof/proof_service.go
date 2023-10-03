@@ -3,6 +3,7 @@ package proof
 import (
 	"execution-service/circuit"
 	"execution-service/instance"
+	"execution-service/message"
 	"execution-service/model"
 	"execution-service/parameters"
 	"fmt"
@@ -17,6 +18,7 @@ type ProofService struct {
 	SignatureParameters parameters.SignatureParameters
 	InstanceService     instance.InstanceService
 	ModelService        model.ModelService
+	MessageService      message.MessageService
 }
 
 func InitializeProofService() ProofService {
@@ -24,10 +26,11 @@ func InitializeProofService() ProofService {
 	signatureParameters := parameters.NewSignatureParameters()
 	instanceService := instance.NewInstanceService()
 	modelService := model.NewModelService()
-	return NewProofService(proofParameters, signatureParameters, instanceService, modelService)
+	messageService := message.NewMessageService()
+	return NewProofService(proofParameters, signatureParameters, instanceService, modelService, messageService)
 }
 
-func NewProofService(proofParameters parameters.ProofParameters, signatureParameters parameters.SignatureParameters, instanceService instance.InstanceService, modelService model.ModelService) ProofService {
+func NewProofService(proofParameters parameters.ProofParameters, signatureParameters parameters.SignatureParameters, instanceService instance.InstanceService, modelService model.ModelService, messageService message.MessageService) ProofService {
 	fmt.Printf("Instantiation constraint system has %d constraints\n", proofParameters.CsInstantiation.GetNbConstraints())
 	fmt.Printf("Transition constraint system has %d constraints\n", proofParameters.CsTransition.GetNbConstraints())
 	fmt.Printf("Termination constraint system has %d constraints\n", proofParameters.CsTermination.GetNbConstraints())
@@ -36,6 +39,7 @@ func NewProofService(proofParameters parameters.ProofParameters, signatureParame
 		SignatureParameters: signatureParameters,
 		InstanceService:     instanceService,
 		ModelService:        modelService,
+		MessageService:      messageService,
 	}
 }
 
@@ -79,6 +83,14 @@ func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 	if err != nil {
 		return Proof{}, err
 	}
+	transition, err := model.FindTransitionById(cmd.Transtition)
+	if err != nil {
+		return Proof{}, err
+	}
+	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
+	if err != nil {
+		return Proof{}, err
+	}
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	nextSignature := nextInstance.Sign(privateKey)
 	assignment := &circuit.TransitionCircuit{
@@ -86,6 +98,7 @@ func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 		CurrentInstance: circuit.FromInstance(currentInstance),
 		NextInstance:    circuit.FromInstance(nextInstance),
 		NextSignature:   circuit.FromSignature(nextSignature),
+		ConstraintInput: circuit.FromConstraintInput(constraintInput),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {

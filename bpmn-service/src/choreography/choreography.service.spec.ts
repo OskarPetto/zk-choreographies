@@ -30,7 +30,7 @@ describe('ChoreographyService', () => {
         ModelReducer,
         ModelGateway,
       ],
-      imports: [HttpModule, ConfigModule]
+      imports: [HttpModule, ConfigModule],
     }).compile();
 
     bpmnService = moduleRef.get<ChoreographyService>(ChoreographyService);
@@ -52,7 +52,9 @@ describe('ChoreographyService', () => {
         .calledWith(model2)
         .mockReturnValue(model2Reduced);
 
-      jest.spyOn(modelGateway, 'createModel');
+      jest
+        .spyOn(modelGateway, 'createModel')
+        .mockImplementation((model) => Promise.resolve(model));
 
       bpmnService.importChoreography(bpmnString);
 

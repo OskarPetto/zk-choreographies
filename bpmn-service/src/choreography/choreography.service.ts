@@ -14,7 +14,7 @@ export class ChoreographyService {
     private bpmnMapper: ChoreographyMapper,
     private modelReducer: ModelReducer,
     private modelGateway: ModelGateway,
-  ) { }
+  ) {}
 
   async importChoreography(bpmnString: string): Promise<string> {
     const definitions = this.bpmnParser.parseBpmn(bpmnString);
@@ -23,6 +23,6 @@ export class ChoreographyService {
     const reducedModel = this.modelReducer.reduceModel(model);
     const createdModel = await this.modelGateway.createModel(reducedModel);
     this.choreographies.set(choreography.id, choreography);
-    return createdModel.hash?.value!;
+    return createdModel.hash.value;
   }
 }

@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"execution-service/utils"
 	"fmt"
 	"time"
 )
@@ -13,30 +12,33 @@ const MaxStartPlaceCount = 1
 const MaxEndPlaceCount = 2
 const MaxTransitionCount = 64
 const MaxBranchingFactor = 2
+const MaxVariableCount = 16
 
 type PlaceId = uint8
 type ParticipantId = uint8
 type MessageId = uint8
+type VariableId = uint8
 
-const OutOfBoundsPlaceId = MaxPlaceCount
-const EmptyParticipantId = MaxParticipantCount
-const EmptyMessageId = MaxMessageCount
+const OutOfBoundsPlaceId = PlaceId(MaxPlaceCount)
+const EmptyParticipantId = ParticipantId(MaxParticipantCount)
+const EmptyMessageId = MessageId(MaxMessageCount)
 
 type TransitionId = string
 
 type Transition struct {
 	Id             TransitionId
 	Name           string
-	IsValid        bool
+	IsTransition   bool
 	IncomingPlaces [MaxBranchingFactor]PlaceId
 	OutgoingPlaces [MaxBranchingFactor]PlaceId
 	Participant    ParticipantId
 	Message        MessageId
+	Constraint     Constraint
 }
 
 func OutOfBoundsTransition() Transition {
 	return Transition{
-		IsValid:        false,
+		IsTransition:   false,
 		IncomingPlaces: [MaxBranchingFactor]PlaceId{OutOfBoundsPlaceId, OutOfBoundsPlaceId},
 		OutgoingPlaces: [MaxBranchingFactor]PlaceId{OutOfBoundsPlaceId, OutOfBoundsPlaceId},
 		Participant:    EmptyParticipantId,
@@ -52,6 +54,7 @@ type Model struct {
 	PlaceCount       uint8
 	ParticipantCount uint8
 	MessageCount     uint8
+	VariableCount    uint8
 	StartPlaces      [MaxStartPlaceCount]PlaceId
 	EndPlaces        [MaxEndPlaceCount]PlaceId
 	Transitions      [MaxTransitionCount]Transition
@@ -59,7 +62,7 @@ type Model struct {
 }
 
 func (model *Model) Id() ModelId {
-	return utils.BytesToString(model.Hash.Value[:])
+	return model.Hash.String()
 }
 
 func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
@@ -78,12 +81,12 @@ func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
 			tokenCounts[startPlace] = 1
 		}
 	}
-	var messageHashes [MaxMessageCount]Hash
+	var messageHashes [MaxMessageCount][HashSize]byte
 	for i := 0; i < int(model.MessageCount); i++ {
-		messageHashes[i] = EmptyHash()
+		messageHashes[i] = EmptyHash().Value
 	}
 	for i := model.MessageCount; i < MaxMessageCount; i++ {
-		messageHashes[i] = OutOfBoundsHash()
+		messageHashes[i] = OutOfBoundsHash().Value
 	}
 	var publicKeysFixedSize [MaxParticipantCount]PublicKey
 	copy(publicKeysFixedSize[:], publicKeys)

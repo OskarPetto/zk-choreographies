@@ -1,6 +1,9 @@
 package execution
 
-import "execution-service/domain"
+import (
+	"execution-service/domain"
+	"execution-service/message"
+)
 
 type InstantiateModelCommand struct {
 	Model      domain.ModelId
@@ -8,8 +11,8 @@ type InstantiateModelCommand struct {
 }
 
 type ExecuteTransitionCommand struct {
-	Model      domain.ModelId
-	Instance   domain.InstanceId
-	Transition domain.TransitionId
-	Message    []byte
+	Model                domain.ModelId
+	Instance             domain.InstanceId
+	Transition           domain.TransitionId
+	CreateMessageCommand message.CreateMessageCommand
 }

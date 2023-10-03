@@ -26,15 +26,15 @@ func checkModelHash(api frontend.API, model Model) error {
 		mimc.Write(endPlace)
 	}
 	for _, transition := range model.Transitions {
-		mimc.Write(transition.IsValid)
-		for _, incomingPlace := range transition.IncomingPlaces {
-			mimc.Write(incomingPlace)
-		}
-		for _, outgoingPlace := range transition.OutgoingPlaces {
-			mimc.Write(outgoingPlace)
-		}
+		mimc.Write(transition.IsTransition)
+		mimc.Write(transition.IncomingPlaces[:]...)
+		mimc.Write(transition.OutgoingPlaces[:]...)
 		mimc.Write(transition.Participant)
 		mimc.Write(transition.Message)
+		mimc.Write(transition.Constraint.Coefficients[:]...)
+		mimc.Write(transition.Constraint.MessageIds[:]...)
+		mimc.Write(transition.Constraint.Offset)
+		mimc.Write(transition.Constraint.ComparisonOperator)
 	}
 	mimc.Write(model.Hash.Salt)
 	result := mimc.Sum()

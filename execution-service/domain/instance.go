@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"execution-service/utils"
 	"fmt"
 	"time"
 )
@@ -27,36 +26,33 @@ type Instance struct {
 	Model         ModelId
 	TokenCounts   [MaxPlaceCount]int8
 	PublicKeys    [MaxParticipantCount]PublicKey
-	MessageHashes [MaxMessageCount]Hash
+	MessageHashes [MaxMessageCount][HashSize]byte
 	CreatedAt     int64
 }
 
 func (instance *Instance) Id() InstanceId {
-	return utils.BytesToString(instance.Hash.Value[:])
+	return instance.Hash.String()
 }
 
-func (instance Instance) ExecuteTransition(transition Transition, message []byte) (Instance, error) {
-	instance.updateMessageHash(transition.Message, message)
-	err := instance.updateTokenCounts(transition)
-	if err != nil {
-		return Instance{}, err
+func (instance Instance) SetMessageHash(messageId MessageId, messageHash Hash) Instance {
+	instance.MessageHashes[messageId] = messageHash.Value
+	instance.CreatedAt = time.Now().Unix()
+	instance.ComputeHash()
+	return instance
+}
+
+func (instance Instance) UpdateTokenCounts(transition Transition, input ConstraintInput) (Instance, error) {
+	if !isTransitionExecutable(instance, transition, input) {
+		return Instance{}, fmt.Errorf("transition %s is not executable", transition.Id)
 	}
+
+	instance.updateTokenCounts(transition)
 	instance.CreatedAt = time.Now().Unix()
 	instance.ComputeHash()
 	return instance, nil
 }
 
-func (instance *Instance) updateMessageHash(messageId MessageId, message []byte) {
-	if messageId != EmptyMessageId && len(message) > 0 {
-		messageHash := HashMessage(message)
-		instance.MessageHashes[messageId] = messageHash
-	}
-}
-
-func (instance *Instance) updateTokenCounts(transition Transition) error {
-	if !isTransitionExecutable(instance, transition) {
-		return fmt.Errorf("transition %s is not executable", transition.Id)
-	}
+func (instance *Instance) updateTokenCounts(transition Transition) {
 	var tokenCounts [MaxPlaceCount]int8
 	copy(tokenCounts[:], instance.TokenCounts[:])
 	for _, incomingPlaceId := range transition.IncomingPlaces {
@@ -70,10 +66,12 @@ func (instance *Instance) updateTokenCounts(transition Transition) error {
 		}
 	}
 	instance.TokenCounts = tokenCounts
-	return nil
 }
 
-func isTransitionExecutable(instance *Instance, transition Transition) bool {
+func isTransitionExecutable(instance Instance, transition Transition, input ConstraintInput) bool {
+	if !transition.IsTransition {
+		return false
+	}
 	for _, incomingPlaceId := range transition.IncomingPlaces {
 		if incomingPlaceId == OutOfBoundsPlaceId {
 			break
@@ -86,5 +84,5 @@ func isTransitionExecutable(instance *Instance, transition Transition) bool {
 			return false
 		}
 	}
-	return true
+	return instance.EvaluateConstraint(transition.Constraint, input)
 }

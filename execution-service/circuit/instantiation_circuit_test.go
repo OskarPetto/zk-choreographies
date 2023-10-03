@@ -133,7 +133,7 @@ func TestInstantiation_InvalidMessageHashes(t *testing.T) {
 	model := states[0].Model
 	instance := states[0].Instance
 
-	instance.MessageHashes[0] = domain.HashMessage([]byte("invalid"))
+	instance.MessageHashes[0] = domain.NewBytesMessage([]byte("invalid")).Hash.Value
 	instance.ComputeHash()
 	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 

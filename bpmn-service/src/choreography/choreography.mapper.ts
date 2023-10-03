@@ -35,7 +35,6 @@ export class ChoreographyMapper {
     );
     const messageIds = this.createMessageMapping(choreography.messages);
     const additionalPlaceIds: PlaceId[] = [];
-    const additionalMessageIds: MessageId[] = [];
     const choreographyTaskTransitions = choreography.choreographyTasks.flatMap(
       (choreographyTask) =>
         this.choreographyTaskToTransitions(
@@ -44,7 +43,6 @@ export class ChoreographyMapper {
           participantIds,
           messageIds,
           additionalPlaceIds,
-          additionalMessageIds,
         ),
     );
 
@@ -92,10 +90,11 @@ export class ChoreographyMapper {
     );
 
     return {
+      hash: { value: '', salt: '' },
       choreography: choreography.id,
       placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length + 2,
       participantCount: relevantParticipants.length,
-      messageCount: messageIds.size + additionalMessageIds.length,
+      messageCount: messageIds.size,
       startPlaces: startTransitions.flatMap(
         (startTransition) => startTransition.incomingPlaces,
       ),
@@ -251,7 +250,6 @@ export class ChoreographyMapper {
     participantIds: Map<BpmnParticipantId, ParticipantId>,
     messageIds: Map<BpmnMessageId, MessageId>,
     additionalPlaceIds: PlaceId[],
-    additionalMessageIds: MessageId[],
   ): Transition[] {
     const incomingPlaceId = sequenceFlowPlaceIds.get(
       choreographyTask.incoming,
@@ -320,7 +318,7 @@ export class ChoreographyMapper {
           outgoingPlaces: [outgoingPlaceId],
           participant: initiatingParticipantId,
           message: initialMessage,
-        }
+        },
       ];
     } else {
       throw Error('not supported');

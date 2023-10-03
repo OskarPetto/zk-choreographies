@@ -7,20 +7,21 @@ import (
 )
 
 type State struct {
-	Instance  domain.Instance
-	Model     domain.Model
-	Signature domain.Signature
-	Identity  domain.IdentityId
+	Instance        domain.Instance
+	Model           domain.Model
+	Signature       domain.Signature
+	Identity        domain.IdentityId
+	ConstraintInput domain.ConstraintInput
 }
 
 func GetModel2States(signatureParameters parameters.SignatureParameters) []State {
 	model2 := GetModel2()
-	purchaseOrderHash := domain.HashMessage([]byte("Purchase order"))
-	confirmHash := domain.HashMessage([]byte("Confirm"))
-	invoiceHash := domain.HashMessage([]byte("Invoice"))
-	shippingAddressHash := domain.HashMessage([]byte("Shipping address"))
-	productHash := domain.HashMessage([]byte("Product"))
-	paymentHash := domain.HashMessage([]byte("Payment"))
+	purchaseOrderHash := domain.NewBytesMessage([]byte("Purchase order")).Hash
+	confirmHash := domain.NewBytesMessage([]byte("Confirm")).Hash
+	invoiceHash := domain.NewBytesMessage([]byte("Invoice")).Hash
+	shippingAddressHash := domain.NewBytesMessage([]byte("Shipping address")).Hash
+	productHash := domain.NewBytesMessage([]byte("Product")).Hash
+	paymentHash := domain.NewBytesMessage([]byte("Payment")).Hash
 	return []State{
 		getModelState(
 			model2,
@@ -226,10 +227,12 @@ func getModelState(model domain.Model, activePlaces []domain.PlaceId, messageHas
 	for i := model.ParticipantCount; i < domain.MaxParticipantCount; i++ {
 		publicKeysFixedSize[i] = domain.OutOfBoundsPublicKey()
 	}
-	var messageHashesFixedSize [domain.MaxMessageCount]domain.Hash
-	copy(messageHashesFixedSize[:], messageHashes)
+	var messageHashesFixedSize [domain.MaxMessageCount][domain.HashSize]byte
+	for i, messageHash := range messageHashes {
+		messageHashesFixedSize[i] = messageHash.Value
+	}
 	for i := len(messageHashes); i < domain.MaxMessageCount; i++ {
-		messageHashesFixedSize[i] = domain.OutOfBoundsHash()
+		messageHashesFixedSize[i] = domain.OutOfBoundsHash().Value
 	}
 	instance := domain.Instance{
 		Model:         "modelHash",
@@ -242,9 +245,10 @@ func getModelState(model domain.Model, activePlaces []domain.PlaceId, messageHas
 	privateKey := signatureParameters.GetPrivateKeyForIdentity(uint(idendity))
 	signature := instance.Sign(privateKey)
 	return State{
-		Model:     model,
-		Instance:  instance,
-		Signature: signature,
-		Identity:  idendity,
+		Model:           model,
+		Instance:        instance,
+		Signature:       signature,
+		Identity:        idendity,
+		ConstraintInput: domain.EmptyConstraintInput(),
 	}
 }

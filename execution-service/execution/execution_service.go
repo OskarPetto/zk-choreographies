@@ -3,24 +3,28 @@ package execution
 import (
 	"execution-service/domain"
 	"execution-service/instance"
+	"execution-service/message"
 	"execution-service/model"
 )
 
 type ExecutionService struct {
 	InstanceService instance.InstanceService
 	ModelService    model.ModelService
+	MessageService  message.MessageService
 }
 
 func InitializeExecutionService() ExecutionService {
 	instanceService := instance.NewInstanceService()
 	modelService := model.NewModelService()
-	return NewExecutionService(instanceService, modelService)
+	messageService := message.NewMessageService()
+	return NewExecutionService(instanceService, modelService, messageService)
 }
 
-func NewExecutionService(instanceService instance.InstanceService, modelService model.ModelService) ExecutionService {
+func NewExecutionService(instanceService instance.InstanceService, modelService model.ModelService, messageService message.MessageService) ExecutionService {
 	return ExecutionService{
 		InstanceService: instanceService,
 		ModelService:    modelService,
+		MessageService:  messageService,
 	}
 }
 
@@ -50,10 +54,17 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return domain.Instance{}, err
 	}
-	var nextInstance domain.Instance
-	nextInstance, err = currentInstance.ExecuteTransition(transition, cmd.Message)
+	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
 	if err != nil {
 		return domain.Instance{}, err
+	}
+	nextInstance, err := currentInstance.UpdateTokenCounts(transition, constraintInput)
+	if err != nil {
+		return domain.Instance{}, err
+	}
+	if transition.Message != domain.EmptyMessageId {
+		message := service.MessageService.CreateMessage(cmd.CreateMessageCommand)
+		nextInstance = nextInstance.SetMessageHash(transition.Message, message.Hash)
 	}
 	service.InstanceService.ImportInstance(nextInstance)
 	return nextInstance, nil

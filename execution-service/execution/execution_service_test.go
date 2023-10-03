@@ -39,7 +39,6 @@ func TestExecuteTransition2(t *testing.T) {
 		Model:      model.Id(),
 		Instance:   instance.Id(),
 		Transition: model.Transitions[2].Id,
-		Message:    []byte("Purchase Order"),
 	})
 	assert.Nil(t, err)
 	_, err = instanceService.FindInstanceById(result.Id())

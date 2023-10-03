@@ -17,7 +17,7 @@ const SaltSize = 32
 type HashId = string
 
 type Hash struct {
-	Value [HashSize]byte // field element
+	Value [HashSize]byte
 	Salt  [SaltSize]byte
 }
 
@@ -28,18 +28,11 @@ func EmptyHash() Hash {
 func OutOfBoundsHash() Hash {
 	var hash = Hash{}
 	hash.Value[HashSize-1] = 1
-	hash.Salt[SaltSize-1] = 1
 	return hash
 }
 
-func HashMessage(message []byte) Hash {
-	salt := randomFrSizedBytes()
-	input := append(message, salt[:]...)
-	bytesHash := sha256.Sum256(input)
-	return Hash{
-		Value: hashToField(bytesHash),
-		Salt:  salt,
-	}
+func (hash *Hash) String() HashId {
+	return utils.BytesToString(hash.Value[:])
 }
 
 func (model *Model) ComputeHash() {
@@ -54,7 +47,7 @@ func (model *Model) ComputeHash() {
 		hashUint8(mimc, endPlace)
 	}
 	for _, transition := range model.Transitions {
-		hashUint8(mimc, boolToUint8(transition.IsValid))
+		hashUint8(mimc, boolToUint8(transition.IsTransition))
 		for _, incomingPlace := range transition.IncomingPlaces {
 			hashUint8(mimc, incomingPlace)
 		}
@@ -63,11 +56,19 @@ func (model *Model) ComputeHash() {
 		}
 		hashUint8(mimc, transition.Participant)
 		hashUint8(mimc, transition.Message)
+		for _, coefficient := range transition.Constraint.Coefficients {
+			hashInt64(mimc, int64(coefficient))
+		}
+		for _, messageId := range transition.Constraint.MessageIds {
+			hashUint8(mimc, messageId)
+		}
+		hashInt64(mimc, int64(transition.Constraint.Offset))
+		hashUint8(mimc, transition.Constraint.ComparisonOperator)
 	}
 	salt := randomFieldElement()
 	mimc.Write(salt[:])
 	model.Hash = Hash{
-		Value: [HashSize]byte(mimc.Sum([]byte{})),
+		Value: computeHash(mimc),
 		Salt:  salt,
 	}
 }
@@ -86,14 +87,49 @@ func (instance *Instance) ComputeHash() {
 		mimc.Write(yBytes[:])
 	}
 	for _, messageHash := range instance.MessageHashes {
-		mimc.Write(messageHash.Value[:])
+		mimc.Write(messageHash[:])
 	}
 	salt := randomFieldElement()
 	mimc.Write(salt[:])
 	instance.Hash = Hash{
-		Value: [HashSize]byte(mimc.Sum([]byte{})),
+		Value: computeHash(mimc),
 		Salt:  salt,
 	}
+}
+
+func (message *Message) ComputeHash() {
+	var hash Hash
+	if len(message.BytesMessage) > 0 {
+		hash = hashBytesMessage(message.BytesMessage)
+	} else {
+		hash = hashIntegerMessage(message.IntegerMessage)
+	}
+	message.Hash = hash
+}
+
+func hashBytesMessage(message []byte) Hash {
+	salt := randomFrSizedBytes()
+	input := append(message, salt[:]...)
+	bytesHash := sha256.Sum256(input)
+	return Hash{
+		Value: hashToField(bytesHash),
+		Salt:  salt,
+	}
+}
+
+func hashIntegerMessage(message IntegerType) Hash {
+	mimc := mimc.NewMiMC()
+	hashInt64(mimc, int64(message))
+	salt := randomFrSizedBytes()
+	mimc.Write(salt[:])
+	return Hash{
+		Value: computeHash(mimc),
+		Salt:  salt,
+	}
+}
+
+func computeHash(hasher hash.Hash) [HashSize]byte {
+	return [HashSize]byte(hasher.Sum([]byte{}))
 }
 
 func hashInt64(hasher hash.Hash, value int64) {

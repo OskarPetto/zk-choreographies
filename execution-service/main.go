@@ -3,6 +3,7 @@ package main
 import (
 	"execution-service/execution"
 	"execution-service/instance"
+	"execution-service/message"
 	"execution-service/model"
 	"execution-service/parameters"
 	"execution-service/proof"
@@ -15,12 +16,13 @@ var instanceController = instance.NewInstanceController(instanceService)
 var modelService = model.NewModelService()
 var modelController = model.NewModelController(modelService)
 
-var executionService = execution.NewExecutionService(instanceService, modelService)
+var messageService = message.NewMessageService()
+var executionService = execution.NewExecutionService(instanceService, modelService, messageService)
 var executionController = execution.NewExecutionController(executionService)
 
 var signatureParameters = parameters.NewSignatureParameters()
 var proofParameters = parameters.NewProofParameters()
-var proofService = proof.NewProofService(proofParameters, signatureParameters, instanceService, modelService)
+var proofService = proof.NewProofService(proofParameters, signatureParameters, instanceService, modelService, messageService)
 var proofController = proof.NewProofController(proofService)
 
 func main() {

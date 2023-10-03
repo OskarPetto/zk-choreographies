@@ -1,6 +1,7 @@
 package domain_test
 
 import (
+	"execution-service/domain"
 	"execution-service/parameters"
 	"execution-service/testdata"
 	"testing"
@@ -11,10 +12,12 @@ import (
 var signatureParameters parameters.SignatureParameters = parameters.NewSignatureParameters()
 var states = testdata.GetModel2States(signatureParameters)
 
-func TestExecuteTransition0(t *testing.T) {
+func TestUpdateTokenCounts0(t *testing.T) {
 	state0 := states[0]
 	state1 := states[1]
-	result, err := state0.Instance.ExecuteTransition(state0.Model.Transitions[0], []byte{})
+
+	constraintInput := domain.EmptyConstraintInput()
+	result, err := state0.Instance.UpdateTokenCounts(state0.Model.Transitions[0], constraintInput)
 	assert.Nil(t, err)
 	assert.Equal(t, state1.Instance.TokenCounts, result.TokenCounts)
 	assert.Equal(t, state1.Instance.PublicKeys, result.PublicKeys)
@@ -22,13 +25,25 @@ func TestExecuteTransition0(t *testing.T) {
 	assert.NotEqual(t, state0.Instance.Hash, result.Hash)
 }
 
-func TestExecuteTransition2(t *testing.T) {
+func TestUpdateTokenCounts2(t *testing.T) {
 	state1 := states[1]
 	state2 := states[2]
-	result, err := state1.Instance.ExecuteTransition(state1.Model.Transitions[2], []byte("Purchase order"))
+	constraintInput := domain.EmptyConstraintInput()
+	result, err := state1.Instance.UpdateTokenCounts(state1.Model.Transitions[2], constraintInput)
 	assert.Nil(t, err)
 	assert.Equal(t, state2.Instance.TokenCounts, result.TokenCounts)
 	assert.Equal(t, state2.Instance.PublicKeys, result.PublicKeys)
-	assert.NotEqual(t, state1.Instance.MessageHashes, result.MessageHashes)
+	assert.Equal(t, state1.Instance.MessageHashes, result.MessageHashes)
 	assert.NotEqual(t, state1.Instance.Hash, result.Hash)
+}
+
+func TestSetMessageHash(t *testing.T) {
+	state0 := states[2]
+
+	messageHash := domain.NewBytesMessage([]byte("test")).Hash
+	result := state0.Instance.SetMessageHash(8, messageHash)
+	assert.Equal(t, state0.Instance.TokenCounts, result.TokenCounts)
+	assert.Equal(t, state0.Instance.PublicKeys, result.PublicKeys)
+	assert.NotEqual(t, state0.Instance.MessageHashes, result.MessageHashes)
+	assert.NotEqual(t, state0.Instance.Hash, result.Hash)
 }

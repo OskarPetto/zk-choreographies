@@ -2,6 +2,7 @@ package execution
 
 import (
 	"execution-service/domain"
+	"execution-service/message"
 	"execution-service/utils"
 )
 
@@ -11,10 +12,10 @@ type InstantiateModelCommandJson struct {
 }
 
 type ExecuteTransitionCommandJson struct {
-	Model      string `json:"model"`
-	Instance   string `json:"instance"`
-	Transition string `json:"transition"`
-	Message    string `json:"message"`
+	Model                string                           `json:"model"`
+	Instance             string                           `json:"instance"`
+	Transition           string                           `json:"transition"`
+	CreateMessageCommand message.CreateMessageCommandJson `json:"createMessageCommand"`
 }
 
 func (cmd *InstantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCommand, error) {
@@ -35,14 +36,10 @@ func (cmd *InstantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCo
 }
 
 func (cmd *ExecuteTransitionCommandJson) ToExecutionCommand() (ExecuteTransitionCommand, error) {
-	message, err := utils.StringToBytes(cmd.Message)
-	if err != nil {
-		return ExecuteTransitionCommand{}, err
-	}
 	return ExecuteTransitionCommand{
-		Model:      cmd.Model,
-		Instance:   cmd.Instance,
-		Transition: cmd.Transition,
-		Message:    message,
+		Model:                cmd.Model,
+		Instance:             cmd.Instance,
+		Transition:           cmd.Transition,
+		CreateMessageCommand: cmd.CreateMessageCommand.ToMessageCommand(),
 	}, nil
 }

@@ -163,7 +163,7 @@ export class TestdataProvider {
             },
             {
               id: 'Flow_1k5cri3',
-              name: 'product not in stock',
+              name: 'stock < ordered',
             },
             {
               id: 'Flow_1iwbmcz',
@@ -185,7 +185,7 @@ export class TestdataProvider {
             },
             {
               id: 'Flow_1stf9mf',
-              name: 'product in stock',
+              name: 'stock >= ordered',
             },
             {
               id: 'Flow_0c5yqsz',
@@ -242,6 +242,7 @@ export class TestdataProvider {
 
   static getModel2(): Model {
     return {
+      hash: { value: '', salt: '' },
       choreography: 'Choreography_07n6r3q',
       placeCount: 20,
       participantCount: 2,
@@ -409,6 +410,7 @@ export class TestdataProvider {
 
   static getModel2Reduced(): Model {
     return {
+      hash: { value: '', salt: '' },
       choreography: 'Choreography_07n6r3q',
       placeCount: 14,
       participantCount: 2,

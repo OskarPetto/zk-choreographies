@@ -14,6 +14,7 @@ type ProveTransitionCommand struct {
 	Model           domain.ModelId
 	CurrentInstance domain.InstanceId
 	NextInstance    domain.InstanceId
+	Transtition     domain.TransitionId
 	Identity        domain.IdentityId
 }
 

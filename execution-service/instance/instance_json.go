@@ -10,13 +10,13 @@ import (
 )
 
 type InstanceJson struct {
-	Id            string          `json:"id"`
-	Hash          hash.HashJson   `json:"hash"`
-	Model         string          `json:"model"`
-	TokenCounts   []int           `json:"tokenCounts"`
-	PublicKeys    []string        `json:"publicKeys"`
-	MessageHashes []hash.HashJson `json:"messageHashes"`
-	CreatedAt     time.Time       `json:"updatedAt"`
+	Id            string        `json:"id"`
+	Hash          hash.HashJson `json:"hash"`
+	Model         string        `json:"model"`
+	TokenCounts   []int         `json:"tokenCounts"`
+	PublicKeys    []string      `json:"publicKeys"`
+	MessageHashes []string      `json:"messageHashes"`
+	CreatedAt     time.Time     `json:"updatedAt"`
 }
 
 func ToJson(instance domain.Instance) InstanceJson {
@@ -34,13 +34,13 @@ func ToJson(instance domain.Instance) InstanceJson {
 		}
 		publicKeys = append(publicKeys, utils.BytesToString(publicKey.Value))
 	}
-	messageHashes := make([]hash.HashJson, 0)
+	messageHashes := make([]string, 0)
 	for _, messageHash := range instance.MessageHashes {
-		invalidHash := domain.EmptyHash()
-		if bytes.Equal(invalidHash.Value[:], messageHash.Value[:]) && bytes.Equal(invalidHash.Salt[:], messageHash.Salt[:]) {
+		invalidHash := domain.OutOfBoundsHash()
+		if bytes.Equal(invalidHash.Value[:], messageHash[:]) {
 			break
 		}
-		messageHashes = append(messageHashes, hash.HashToJson(messageHash))
+		messageHashes = append(messageHashes, utils.BytesToString(messageHash[:]))
 	}
 	return InstanceJson{
 		Id:            instance.Id(),
@@ -79,16 +79,16 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 		publicKeys[i] = domain.OutOfBoundsPublicKey()
 	}
 
-	var messageHashes [domain.MaxMessageCount]domain.Hash
+	var messageHashes [domain.MaxMessageCount][domain.HashSize]byte
 	for i, messageHash := range json.MessageHashes {
-		hash, err := messageHash.ToHash()
+		hash, err := utils.StringToBytes(messageHash)
 		if err != nil {
 			return domain.Instance{}, fmt.Errorf("instance %s has invalid messageHash", json.Id)
 		}
-		messageHashes[i] = hash
+		messageHashes[i] = [domain.HashSize]byte(hash)
 	}
 	for i := len(json.MessageHashes); i < domain.MaxMessageCount; i++ {
-		messageHashes[i] = domain.EmptyHash()
+		messageHashes[i] = domain.OutOfBoundsHash().Value
 	}
 	hash, err := json.Hash.ToHash()
 	if err != nil {

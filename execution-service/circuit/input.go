@@ -27,12 +27,25 @@ type Instance struct {
 	MessageHashes [domain.MaxMessageCount]frontend.Variable
 }
 
+type ConstraintInput struct {
+	IntegerMessages [domain.MaxConstraintMessageCount]frontend.Variable
+	Salts           [domain.MaxConstraintMessageCount]frontend.Variable
+}
+
+type Constraint struct {
+	Coefficients       [domain.MaxConstraintMessageCount]frontend.Variable
+	MessageIds         [domain.MaxConstraintMessageCount]frontend.Variable
+	Offset             frontend.Variable
+	ComparisonOperator frontend.Variable
+}
+
 type Transition struct {
-	IsValid        frontend.Variable
+	IsTransition   frontend.Variable
 	IncomingPlaces [domain.MaxBranchingFactor]frontend.Variable
 	OutgoingPlaces [domain.MaxBranchingFactor]frontend.Variable
 	Participant    frontend.Variable
 	Message        frontend.Variable
+	Constraint     Constraint
 }
 
 type Model struct {
@@ -67,7 +80,7 @@ func FromInstance(instance domain.Instance) Instance {
 	}
 	var messageHashes [domain.MaxMessageCount]frontend.Variable
 	for i, messageHash := range instance.MessageHashes {
-		messageHashes[i] = fromBytes(messageHash.Value)
+		messageHashes[i] = fromBytes(messageHash)
 	}
 	return Instance{
 		Hash:          fromHash(instance.Hash),
@@ -116,16 +129,47 @@ func fromTransition(transition domain.Transition) Transition {
 	for i, outgoingPlace := range transition.OutgoingPlaces {
 		outgoingPlaces[i] = outgoingPlace
 	}
-	isInitialized := 0
-	if transition.IsValid {
-		isInitialized = 1
+	isTransition := 0
+	if transition.IsTransition {
+		isTransition = 1
 	}
 	return Transition{
-		IsValid:        isInitialized,
+		IsTransition:   isTransition,
 		IncomingPlaces: incomingPlaces,
 		OutgoingPlaces: outgoingPlaces,
 		Participant:    transition.Participant,
 		Message:        transition.Message,
+		Constraint:     fromConstraint(transition.Constraint),
+	}
+}
+
+func fromConstraint(constraint domain.Constraint) Constraint {
+	var coefficients [domain.MaxConstraintMessageCount]frontend.Variable
+	for i, coefficient := range constraint.Coefficients {
+		coefficients[i] = coefficient
+	}
+	var messageIds [domain.MaxConstraintMessageCount]frontend.Variable
+	for i, messageId := range constraint.MessageIds {
+		messageIds[i] = messageId
+	}
+	return Constraint{
+		Coefficients:       coefficients,
+		MessageIds:         messageIds,
+		Offset:             constraint.Offset,
+		ComparisonOperator: constraint.ComparisonOperator,
+	}
+}
+
+func FromConstraintInput(input domain.ConstraintInput) ConstraintInput {
+	var integerMessages [domain.MaxConstraintMessageCount]frontend.Variable
+	var salts [domain.MaxConstraintMessageCount]frontend.Variable
+	for i, message := range input.IntegerMessages {
+		integerMessages[i] = message.IntegerMessage
+		salts[i] = fromBytes(message.Hash.Salt)
+	}
+	return ConstraintInput{
+		IntegerMessages: integerMessages,
+		Salts:           salts,
 	}
 }
 

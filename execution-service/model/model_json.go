@@ -8,13 +8,21 @@ import (
 	"time"
 )
 
+type ConstraintJson struct {
+	Coefficients       []int  `json:"coefficients"`
+	MessageIds         []uint `json:"messageIds"`
+	Offset             int    `json:"offset"`
+	ComparisonOparator uint   `json:"comparisonOparator"`
+}
+
 type TransitionJson struct {
-	Id             string `json:"id"`
-	Name           string `json:"name"`
-	IncomingPlaces []uint `json:"incomingPlaces"`
-	OutgoingPlaces []uint `json:"outgoingPlaces"`
-	Participant    uint   `json:"participant,omitempty"`
-	Message        uint   `json:"message,omitempty"`
+	Id             string         `json:"id"`
+	Name           string         `json:"name"`
+	IncomingPlaces []uint         `json:"incomingPlaces"`
+	OutgoingPlaces []uint         `json:"outgoingPlaces"`
+	Participant    uint           `json:"participant,omitempty"`
+	Message        uint           `json:"message,omitempty"`
+	Contraint      ConstraintJson `json:"constraint,omitempty"`
 }
 
 type ModelJson struct {
@@ -47,12 +55,12 @@ func (transition *TransitionJson) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if tmp.Participant == nil {
-		transition.Participant = domain.EmptyParticipantId
+		transition.Participant = uint(domain.EmptyParticipantId)
 	} else {
 		transition.Participant = *(tmp.Participant)
 	}
 	if tmp.Message == nil {
-		transition.Message = domain.EmptyMessageId
+		transition.Message = uint(domain.EmptyMessageId)
 	} else {
 		transition.Message = *(tmp.Message)
 	}
@@ -164,15 +172,42 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 	if transition.Message > domain.MaxMessageCount {
 		return domain.Transition{}, fmt.Errorf("transition %s has invalid message", transition.Id)
 	}
-
+	constraint, err := transition.Contraint.toConstraint()
+	if err != nil {
+		return domain.Transition{}, err
+	}
 	return domain.Transition{
 		Id:             transition.Id,
 		Name:           transition.Name,
-		IsValid:        true,
+		IsTransition:   true,
 		IncomingPlaces: incomingPlaces,
 		OutgoingPlaces: outgoingPlaces,
 		Participant:    domain.ParticipantId(transition.Participant),
 		Message:        domain.MessageId(transition.Message),
+		Constraint:     constraint,
+	}, nil
+}
+
+func (constraint *ConstraintJson) toConstraint() (domain.Constraint, error) {
+	var coefficientsFixedSize [domain.MaxConstraintMessageCount]domain.IntegerType
+	for i, coefficient := range constraint.Coefficients {
+		coefficientsFixedSize[i] = int32(coefficient)
+	}
+	var messageIdsFixedSize [domain.MaxConstraintMessageCount]domain.MessageId
+	for i, messageId := range constraint.MessageIds {
+		if messageId > domain.MaxMessageCount {
+			return domain.Constraint{}, fmt.Errorf("constraint has invalid messageId")
+		}
+		messageIdsFixedSize[i] = uint8(messageId)
+	}
+	if !isValidOparator(constraint.ComparisonOparator) {
+		return domain.Constraint{}, fmt.Errorf("constraint has invalid oparator")
+	}
+	return domain.Constraint{
+		Coefficients:       coefficientsFixedSize,
+		MessageIds:         messageIdsFixedSize,
+		Offset:             int32(constraint.Offset),
+		ComparisonOperator: uint8(constraint.ComparisonOparator),
 	}, nil
 }
 
@@ -193,7 +228,7 @@ func ToJson(model domain.Model) ModelJson {
 	}
 	transitions := make([]TransitionJson, 0)
 	for _, transition := range model.Transitions {
-		if !transition.IsValid {
+		if !transition.IsTransition {
 			break
 		}
 		transitions = append(transitions, transitionToJson(transition))
@@ -239,4 +274,13 @@ func transitionToJson(transition domain.Transition) TransitionJson {
 		jsonTransition.Message = uint(transition.Message)
 	}
 	return jsonTransition
+}
+
+func isValidOparator(oparator uint) bool {
+	for _, comparisonOparator := range domain.ValidComparisonOperators {
+		if oparator == uint(comparisonOparator) {
+			return true
+		}
+	}
+	return false
 }

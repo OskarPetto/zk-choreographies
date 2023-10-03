@@ -1,3 +1,5 @@
+import { Constraint } from 'src/constraint/constraint';
+
 export type PlaceId = number;
 export type ParticipantId = number;
 export type MessageId = number;
@@ -17,9 +19,11 @@ export interface Transition {
   outgoingPlaces: PlaceId[];
   participant?: ParticipantId;
   message?: MessageId;
+  constraint?: Constraint;
 }
 
 export interface Model {
+  hash: { value: string; salt: string };
   choreography: string;
   placeCount: number;
   participantCount: number;
@@ -27,5 +31,4 @@ export interface Model {
   startPlaces: PlaceId[];
   endPlaces: PlaceId[];
   transitions: Transition[];
-  hash?: { value: string, salt: string }
 }
