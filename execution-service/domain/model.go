@@ -12,7 +12,6 @@ const MaxStartPlaceCount = 1
 const MaxEndPlaceCount = 2
 const MaxTransitionCount = 64
 const MaxBranchingFactor = 2
-const MaxVariableCount = 16
 
 type PlaceId = uint8
 type ParticipantId = uint8
