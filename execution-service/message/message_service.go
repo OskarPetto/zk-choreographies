@@ -46,9 +46,9 @@ func (service *MessageService) FindConstraintInput(constraint domain.Constraint,
 			if err != nil {
 				return domain.ConstraintInput{}, err
 			}
-			constraintInput.IntegerMessages[i] = message
+			constraintInput.Messages[i] = message
 		} else {
-			constraintInput.IntegerMessages[i] = domain.EmptyMessage()
+			constraintInput.Messages[i] = domain.EmptyMessage()
 		}
 	}
 	return constraintInput, nil

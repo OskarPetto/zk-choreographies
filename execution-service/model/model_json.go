@@ -12,17 +12,17 @@ type ConstraintJson struct {
 	Coefficients       []int  `json:"coefficients"`
 	MessageIds         []uint `json:"messageIds"`
 	Offset             int    `json:"offset"`
-	ComparisonOparator uint   `json:"comparisonOparator"`
+	ComparisonOperator uint   `json:"comparisonOperator"`
 }
 
 type TransitionJson struct {
-	Id             string         `json:"id"`
-	Name           string         `json:"name"`
-	IncomingPlaces []uint         `json:"incomingPlaces"`
-	OutgoingPlaces []uint         `json:"outgoingPlaces"`
-	Participant    uint           `json:"participant,omitempty"`
-	Message        uint           `json:"message,omitempty"`
-	Contraint      ConstraintJson `json:"constraint,omitempty"`
+	Id             string          `json:"id"`
+	Name           string          `json:"name"`
+	IncomingPlaces []uint          `json:"incomingPlaces"`
+	OutgoingPlaces []uint          `json:"outgoingPlaces"`
+	Participant    uint            `json:"participant,omitempty"`
+	Message        uint            `json:"message,omitempty"`
+	Contraint      *ConstraintJson `json:"constraint,omitempty"`
 }
 
 type ModelJson struct {
@@ -172,10 +172,17 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 	if transition.Message > domain.MaxMessageCount {
 		return domain.Transition{}, fmt.Errorf("transition %s has invalid message", transition.Id)
 	}
-	constraint, err := transition.Contraint.toConstraint()
-	if err != nil {
-		return domain.Transition{}, err
+	var constraint domain.Constraint
+	if transition.Contraint != nil {
+		var err error
+		constraint, err = transition.Contraint.toConstraint()
+		if err != nil {
+			return domain.Transition{}, err
+		}
+	} else {
+		constraint = domain.EmptyConstraint()
 	}
+
 	return domain.Transition{
 		Id:             transition.Id,
 		Name:           transition.Name,
@@ -200,14 +207,14 @@ func (constraint *ConstraintJson) toConstraint() (domain.Constraint, error) {
 		}
 		messageIdsFixedSize[i] = uint8(messageId)
 	}
-	if !isValidOparator(constraint.ComparisonOparator) {
+	if !isValidOparator(constraint.ComparisonOperator) {
 		return domain.Constraint{}, fmt.Errorf("constraint has invalid oparator")
 	}
 	return domain.Constraint{
 		Coefficients:       coefficientsFixedSize,
 		MessageIds:         messageIdsFixedSize,
 		Offset:             int32(constraint.Offset),
-		ComparisonOperator: uint8(constraint.ComparisonOparator),
+		ComparisonOperator: uint8(constraint.ComparisonOperator),
 	}, nil
 }
 

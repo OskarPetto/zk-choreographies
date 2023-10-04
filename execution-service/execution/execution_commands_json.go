@@ -12,10 +12,10 @@ type InstantiateModelCommandJson struct {
 }
 
 type ExecuteTransitionCommandJson struct {
-	Model                string                           `json:"model"`
-	Instance             string                           `json:"instance"`
-	Transition           string                           `json:"transition"`
-	CreateMessageCommand message.CreateMessageCommandJson `json:"createMessageCommand"`
+	Model                string                            `json:"model"`
+	Instance             string                            `json:"instance"`
+	Transition           string                            `json:"transition"`
+	CreateMessageCommand *message.CreateMessageCommandJson `json:"createMessageCommand,omitempty"`
 }
 
 func (cmd *InstantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCommand, error) {
@@ -36,10 +36,15 @@ func (cmd *InstantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCo
 }
 
 func (cmd *ExecuteTransitionCommandJson) ToExecutionCommand() (ExecuteTransitionCommand, error) {
+	var createMessageCommand *message.CreateMessageCommand = nil
+	if cmd.CreateMessageCommand != nil {
+		result := cmd.CreateMessageCommand.ToMessageCommand()
+		createMessageCommand = &result
+	}
 	return ExecuteTransitionCommand{
 		Model:                cmd.Model,
 		Instance:             cmd.Instance,
 		Transition:           cmd.Transition,
-		CreateMessageCommand: cmd.CreateMessageCommand.ToMessageCommand(),
+		CreateMessageCommand: createMessageCommand,
 	}, nil
 }

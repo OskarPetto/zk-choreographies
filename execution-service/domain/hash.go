@@ -120,7 +120,7 @@ func hashBytesMessage(message []byte) Hash {
 func hashIntegerMessage(message IntegerType) Hash {
 	mimc := mimc.NewMiMC()
 	hashInt64(mimc, int64(message))
-	salt := randomFrSizedBytes()
+	salt := randomFieldElement()
 	mimc.Write(salt[:])
 	return Hash{
 		Value: computeHash(mimc),

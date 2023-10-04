@@ -163,7 +163,7 @@ func fromConstraint(constraint domain.Constraint) Constraint {
 func FromConstraintInput(input domain.ConstraintInput) ConstraintInput {
 	var integerMessages [domain.MaxConstraintMessageCount]frontend.Variable
 	var salts [domain.MaxConstraintMessageCount]frontend.Variable
-	for i, message := range input.IntegerMessages {
+	for i, message := range input.Messages {
 		integerMessages[i] = message.IntegerMessage
 		salts[i] = fromBytes(message.Hash.Salt)
 	}

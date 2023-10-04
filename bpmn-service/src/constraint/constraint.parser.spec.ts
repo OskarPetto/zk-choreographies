@@ -1,6 +1,7 @@
 import { SequenceFlow } from 'src/choreography/choreography';
 import { ConstraintParser } from './constraint.parser';
 import { defaultConstraint } from './constraint';
+import { TestdataProvider } from 'test/data/testdata.provider';
 
 describe('ConstraintParser', () => {
   let constraintParser: ConstraintParser;

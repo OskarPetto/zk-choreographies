@@ -34,18 +34,13 @@ func (instance *Instance) Id() InstanceId {
 	return instance.Hash.String()
 }
 
-func (instance Instance) SetMessageHash(messageId MessageId, messageHash Hash) Instance {
-	instance.MessageHashes[messageId] = messageHash.Value
-	instance.CreatedAt = time.Now().Unix()
-	instance.ComputeHash()
-	return instance
-}
-
-func (instance Instance) UpdateTokenCounts(transition Transition, input ConstraintInput) (Instance, error) {
+func (instance Instance) ExecuteTransition(transition Transition, input ConstraintInput, messageHash Hash) (Instance, error) {
 	if !isTransitionExecutable(instance, transition, input) {
 		return Instance{}, fmt.Errorf("transition %s is not executable", transition.Id)
 	}
-
+	if transition.Message != EmptyMessageId {
+		instance.MessageHashes[transition.Message] = messageHash.Value
+	}
 	instance.updateTokenCounts(transition)
 	instance.CreatedAt = time.Now().Unix()
 	instance.ComputeHash()

@@ -188,7 +188,19 @@
         11
       ],
       "participant": 1,
-      "message": 0
+      "message": 0,
+      "constraint": {
+        "coefficients": [
+          1,
+          0
+        ],
+        "messageIds": [
+          8,
+          0
+        ],
+        "offset": -5,
+        "comparisonOperator": 4
+      }
     },
     {
       "id": "ChoreographyTask_1e51o0k_Participant_0x6v44d",

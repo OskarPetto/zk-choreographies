@@ -37,17 +37,19 @@ func EmptyConstraint() Constraint {
 }
 
 type ConstraintInput struct {
-	IntegerMessages [MaxConstraintMessageCount]Message
+	Messages [MaxConstraintMessageCount]Message
 }
 
 func EmptyConstraintInput() ConstraintInput {
-	return ConstraintInput{}
+	return ConstraintInput{
+		Messages: [MaxConstraintMessageCount]Message{EmptyMessage(), EmptyMessage()},
+	}
 }
 
 func (instance *Instance) EvaluateConstraint(constraint Constraint, input ConstraintInput) bool {
 	lhs := constraint.Offset
 	for i := 0; i < MaxConstraintMessageCount; i++ {
-		hash := input.IntegerMessages[i].Hash.Value
+		hash := input.Messages[i].Hash.Value
 		messageId := EmptyMessageId
 		for i, messageHash := range instance.MessageHashes {
 			if bytes.Equal(hash[:], messageHash[:]) {
@@ -55,10 +57,10 @@ func (instance *Instance) EvaluateConstraint(constraint Constraint, input Constr
 				break
 			}
 		}
-		if messageId != constraint.MessageIds[i] {
+		if constraint.Coefficients[i] != 0 && messageId != constraint.MessageIds[i] {
 			return false
 		}
-		lhs += constraint.Coefficients[i] * input.IntegerMessages[i].IntegerMessage
+		lhs += constraint.Coefficients[i] * input.Messages[i].IntegerMessage
 	}
 
 	switch constraint.ComparisonOperator {

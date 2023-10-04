@@ -14,5 +14,5 @@ type ExecuteTransitionCommand struct {
 	Model                domain.ModelId
 	Instance             domain.InstanceId
 	Transition           domain.TransitionId
-	CreateMessageCommand message.CreateMessageCommand
+	CreateMessageCommand *message.CreateMessageCommand
 }

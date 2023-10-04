@@ -185,6 +185,7 @@ export class TestdataProvider {
             },
             {
               id: 'Flow_1stf9mf',
+              name: 'Order <= 5'
             },
             {
               id: 'Flow_0c5yqsz',
@@ -279,6 +280,12 @@ export class TestdataProvider {
           type: TransitionType.OPTIONAL_OUTGOING,
           incomingPlaces: [1],
           outgoingPlaces: [9],
+          constraint: {
+            coefficients: [1, 0],
+            messageIds: [8, 0],
+            offset: -5,
+            comparisonOperator: 4,
+          }
         },
         {
           id: 'Gateway_1ofchbb_Flow_1iwbmcz',
@@ -538,6 +545,12 @@ export class TestdataProvider {
           outgoingPlaces: [11],
           participant: 1,
           message: 0,
+          constraint: {
+            coefficients: [1, 0],
+            messageIds: [8, 0],
+            offset: -5,
+            comparisonOperator: 4,
+          }
         },
         {
           id: 'ChoreographyTask_1e51o0k_Participant_0x6v44d',

@@ -58,13 +58,15 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return domain.Instance{}, err
 	}
-	nextInstance, err := currentInstance.UpdateTokenCounts(transition, constraintInput)
+	var nextInstance domain.Instance
+	if cmd.CreateMessageCommand != nil {
+		message := service.MessageService.CreateMessage(*cmd.CreateMessageCommand)
+		nextInstance, err = currentInstance.ExecuteTransition(transition, constraintInput, message.Hash)
+	} else {
+		nextInstance, err = currentInstance.ExecuteTransition(transition, constraintInput, domain.EmptyHash())
+	}
 	if err != nil {
 		return domain.Instance{}, err
-	}
-	if transition.Message != domain.EmptyMessageId {
-		message := service.MessageService.CreateMessage(cmd.CreateMessageCommand)
-		nextInstance = nextInstance.SetMessageHash(transition.Message, message.Hash)
 	}
 	service.InstanceService.ImportInstance(nextInstance)
 	return nextInstance, nil

@@ -36,7 +36,7 @@
       <bpmn2:messageFlowRef>MessageFlow_1rw4usq</bpmn2:messageFlowRef>
     </bpmn2:choreographyTask>
     <bpmn2:sequenceFlow id="Flow_1f6eaf2" sourceRef="Event_1525yky" targetRef="ChoreographyTask_0kp4flv" />
-    <bpmn2:exclusiveGateway id="Gateway_10fv7g5" default="Flow_1stf9mf">
+    <bpmn2:exclusiveGateway id="Gateway_10fv7g5">
       <bpmn2:incoming>Flow_0kyymfy</bpmn2:incoming>
       <bpmn2:outgoing>Flow_1k5cri3</bpmn2:outgoing>
       <bpmn2:outgoing>Flow_1stf9mf</bpmn2:outgoing>
@@ -100,7 +100,7 @@
       <bpmn2:participantRef>Participant_0x6v44d</bpmn2:participantRef>
       <bpmn2:messageFlowRef>MessageFlow_1nrprkj</bpmn2:messageFlowRef>
     </bpmn2:choreographyTask>
-    <bpmn2:sequenceFlow id="Flow_1stf9mf" sourceRef="Gateway_10fv7g5" targetRef="ChoreographyTask_1e51o0k" />
+    <bpmn2:sequenceFlow id="Flow_1stf9mf" name="Order &#60;= 5" sourceRef="Gateway_10fv7g5" targetRef="ChoreographyTask_1e51o0k" />
     <bpmn2:sequenceFlow id="Flow_0c5yqsz" sourceRef="ChoreographyTask_0nl2rhr" targetRef="ChoreographyTask_1uie9z3" />
     <bpmn2:exclusiveGateway id="Gateway_1ofchbb">
       <bpmn2:incoming>Flow_1iwbmcz</bpmn2:incoming>
@@ -234,7 +234,7 @@
         <di:waypoint x="940" y="470" />
         <di:waypoint x="1049" y="470" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="872" y="452" width="36" height="14" />
+          <dc:Bounds x="873" y="443" width="54" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0c5yqsz_di" bpmnElement="Flow_0c5yqsz">
