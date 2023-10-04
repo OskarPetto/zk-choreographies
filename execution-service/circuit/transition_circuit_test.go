@@ -220,3 +220,50 @@ func TestTransition_OtherParticipant(t *testing.T) {
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
 	assert.NotNil(t, err)
 }
+
+func TestTransition_InvalidConstraintInputHash(t *testing.T) {
+	model := states[3].Model
+	currentInstance := states[3].Instance
+	nextInstance := states[4].Instance
+	nextSignature := states[4].Signature
+
+	constraintInput := states[4].ConstraintInput
+	constraintInput.Messages[0].IntegerMessage = 1
+
+	witness := circuit.TransitionCircuit{
+		Model:           circuit.FromModel(model),
+		CurrentInstance: circuit.FromInstance(currentInstance),
+		NextInstance:    circuit.FromInstance(nextInstance),
+		NextSignature:   circuit.FromSignature(nextSignature),
+		ConstraintInput: circuit.FromConstraintInput(constraintInput),
+	}
+
+	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
+
+func TestTransition_InvalidConstraintInputValue(t *testing.T) {
+	model := states[3].Model
+	currentInstance := states[3].Instance
+	message := domain.NewIntegerMessage(6)
+	currentInstance.MessageHashes[8] = message.Hash.Value
+	currentInstance.ComputeHash()
+	nextInstance := states[4].Instance
+	nextInstance.MessageHashes[8] = message.Hash.Value
+	nextInstance.ComputeHash()
+	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(1))
+
+	constraintInput := states[4].ConstraintInput
+	constraintInput.Messages[0] = message
+
+	witness := circuit.TransitionCircuit{
+		Model:           circuit.FromModel(model),
+		CurrentInstance: circuit.FromInstance(currentInstance),
+		NextInstance:    circuit.FromInstance(nextInstance),
+		NextSignature:   circuit.FromSignature(nextSignature),
+		ConstraintInput: circuit.FromConstraintInput(constraintInput),
+	}
+
+	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
+	assert.NotNil(t, err)
+}
