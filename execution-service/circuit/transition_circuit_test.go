@@ -221,7 +221,7 @@ func TestTransition_OtherParticipant(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestTransition_InvalidConstraintInputHash(t *testing.T) {
+func TestTransition_InvalidConstraintInput(t *testing.T) {
 	model := states[3].Model
 	currentInstance := states[3].Instance
 	nextInstance := states[4].Instance
@@ -242,7 +242,7 @@ func TestTransition_InvalidConstraintInputHash(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func TestTransition_InvalidConstraintInputValue(t *testing.T) {
+func TestTransition_InvalidMessageForConstraint(t *testing.T) {
 	model := states[3].Model
 	currentInstance := states[3].Instance
 	message := domain.NewIntegerMessage(6)
