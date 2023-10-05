@@ -61,11 +61,9 @@ type Model struct {
 func FromSignature(signature domain.Signature) Signature {
 	var value eddsa.Signature
 	value.Assign(twistededwards.BN254, signature.Value)
-	var publicKey eddsa.PublicKey
-	publicKey.Assign(twistededwards.BN254, signature.PublicKey.Value[:])
 	return Signature{
 		Value:     value,
-		PublicKey: publicKey,
+		PublicKey: fromPublicKey(signature.PublicKey),
 	}
 }
 
