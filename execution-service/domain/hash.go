@@ -99,7 +99,7 @@ func (instance *Instance) ComputeHash() {
 
 func (message *Message) ComputeHash() {
 	var hash Hash
-	if len(message.BytesMessage) > 0 {
+	if message.IsBytesMessage() {
 		hash = hashBytesMessage(message.BytesMessage)
 	} else {
 		hash = hashIntegerMessage(message.IntegerMessage)

@@ -25,3 +25,7 @@ func NewIntegerMessage(integerMessage IntegerType) Message {
 	message.ComputeHash()
 	return message
 }
+
+func (message *Message) IsBytesMessage() bool {
+	return len(message.BytesMessage) > 0
+}
