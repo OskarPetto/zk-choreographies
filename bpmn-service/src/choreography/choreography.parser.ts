@@ -160,7 +160,6 @@ export class ChoreographyParser {
       return {
         id: exclusiveGateway.id,
         type: incoming.length > 1 ? GatewayType.JOIN : GatewayType.SPLIT,
-        default: exclusiveGateway.default,
         incoming,
         outgoing,
       };

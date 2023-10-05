@@ -68,7 +68,6 @@ export class TestdataProvider {
           exclusiveGateways: [
             {
               id: 'Gateway_10fv7g5',
-              default: 'Flow_1stf9mf',
               type: GatewayType.SPLIT,
               incoming: ['Flow_0kyymfy'],
               outgoing: ['Flow_1k5cri3', 'Flow_1stf9mf'],

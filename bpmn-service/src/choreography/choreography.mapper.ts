@@ -26,7 +26,7 @@ import {
 import { ConstraintParser } from 'src/constraint/constraint.parser';
 
 interface ConstraintMapping {
-  sequenceFlowNames: Map<SequenceFlowId, string | undefined>
+  sequenceFlowNames: Map<PlaceId, string | undefined>
   messageIdPerMessageName: Map<string, MessageId>
 }
 
@@ -41,11 +41,6 @@ export class ChoreographyMapper {
       choreography.participants,
     );
     const messageIds = this.createMessageMapping(choreography.messages);
-    const constraintMapping = this.createConstraintMapping(
-      choreography.sequenceFlows,
-      choreography.messages,
-      messageIds,
-    );
 
     const additionalPlaceIds: PlaceId[] = [];
     const choreographyTaskTransitions = choreography.choreographyTasks.flatMap(
@@ -78,7 +73,6 @@ export class ChoreographyMapper {
         this.exclusiveGatewayToTransitions(
           exclusiveGateway,
           sequenceFlowPlaceIds,
-          constraintMapping
         ),
     );
     const parallelGatewayTransitions = choreography.parallelGateways.flatMap(
@@ -102,6 +96,14 @@ export class ChoreographyMapper {
           (choreographyTask) => choreographyTask.participant === participantId,
         ),
     );
+
+    const constraintMapping = this.createConstraintMapping(
+      choreography.sequenceFlows,
+      sequenceFlowPlaceIds,
+      choreography.messages,
+      messageIds,
+    );
+    this.addConstraints(transitions, constraintMapping);
 
     return {
       hash: { value: '', salt: '' },
@@ -132,6 +134,7 @@ export class ChoreographyMapper {
 
   private createConstraintMapping(
     sequenceFlows: SequenceFlow[],
+    sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
     messages: Message[],
     messageIds: Map<BpmnMessageId, MessageId>
   ): ConstraintMapping {
@@ -140,7 +143,8 @@ export class ChoreographyMapper {
       messageIdPerMessageName: new Map()
     }
     for (const sequenceFlow of sequenceFlows) {
-      constraintMapping.sequenceFlowNames.set(sequenceFlow.id, sequenceFlow.name);
+      const placeId = sequenceFlowPlaceIds.get(sequenceFlow.id)!;
+      constraintMapping.sequenceFlowNames.set(placeId, sequenceFlow.name);
     }
     for (const message of messages) {
       const messageId = messageIds.get(message.id)!;
@@ -231,7 +235,6 @@ export class ChoreographyMapper {
   private exclusiveGatewayToTransitions(
     exclusiveGateway: ExclusiveGateway,
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
-    constraintMapping: ConstraintMapping
   ): Transition[] {
     if (exclusiveGateway.type === GatewayType.JOIN) {
       return this.exclusiveJoinGatewayToTransitions(
@@ -242,7 +245,6 @@ export class ChoreographyMapper {
       return this.exclusiveSplitGatewayToTransitions(
         exclusiveGateway,
         sequenceFlowPlaceIds,
-        constraintMapping
       );
     }
   }
@@ -266,22 +268,17 @@ export class ChoreographyMapper {
   private exclusiveSplitGatewayToTransitions(
     exclusiveGateway: ExclusiveGateway,
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
-    constraintMapping: ConstraintMapping
   ): Transition[] {
     const incomingPlaceId = sequenceFlowPlaceIds.get(
       exclusiveGateway.incoming[0],
     )!;
 
     return exclusiveGateway.outgoing.map((outgoingSequenceFlowId) => {
-      const constraintString = constraintMapping.sequenceFlowNames.get(outgoingSequenceFlowId)
-      const messageIdPerMessageName = constraintMapping.messageIdPerMessageName
-      const constraint = this.constraintParser.parseConstraint(constraintString, messageIdPerMessageName)
       return {
         id: `${exclusiveGateway.id}_${outgoingSequenceFlowId}`,
         type: TransitionType.OPTIONAL_OUTGOING,
         incomingPlaces: [incomingPlaceId],
         outgoingPlaces: [sequenceFlowPlaceIds.get(outgoingSequenceFlowId)!],
-        constraint
       };
     });
   }
@@ -365,5 +362,19 @@ export class ChoreographyMapper {
     } else {
       throw Error('not supported');
     }
+  }
+
+  addConstraints(transitions: Transition[], constraintMapping: ConstraintMapping) {
+    transitions.forEach(transition => {
+      for (const outgoingPlace of transition.outgoingPlaces) {
+        const constraintString = constraintMapping.sequenceFlowNames.get(outgoingPlace)
+        if (constraintString !== undefined) {
+          const messageIdPerMessageName = constraintMapping.messageIdPerMessageName
+          const constraint = this.constraintParser.parseConstraint(constraintString, messageIdPerMessageName)
+          transition.constraint = constraint;
+          break;
+        }
+      }
+    })
   }
 }

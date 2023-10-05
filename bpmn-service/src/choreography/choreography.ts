@@ -25,7 +25,6 @@ export enum GatewayType {
 export interface ExclusiveGateway {
   id: string;
   type: GatewayType;
-  default?: SequenceFlowId;
   incoming: SequenceFlowId[];
   outgoing: SequenceFlowId[];
 }
