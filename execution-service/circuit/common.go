@@ -49,9 +49,9 @@ func checkAuthentication(api frontend.API, authentication Authentication, instan
 	if err != nil {
 		return err
 	}
-	api.AssertIsEqual(authentication.MerkleProof.RootHash, instance.PublicKeyRoot)
-	authentication.MerkleProof.VerifyProof(api, &mimc, authentication.Participant)
-	checkPublicKeyHash(api, authentication.MerkleProof.Path[0], authentication.PublicKey)
+	authentication.MerkleProof.CheckRootHash(api, instance.PublicKeyRoot)
+	authentication.MerkleProof.VerifyProof(api, mimc)
+	checkPublicKeyHash(api, authentication.MerkleProof.MerkleProof.Path[0], authentication.PublicKey)
 	return checkSignature(api, authentication, instance)
 }
 

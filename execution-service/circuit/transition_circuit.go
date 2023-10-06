@@ -33,13 +33,17 @@ type TransitionCircuit struct {
 func NewTransitionCircuit() TransitionCircuit {
 	return TransitionCircuit{
 		Authentication: Authentication{
-			MerkleProof: merkle.MerkleProof{
-				Path: make([]frontend.Variable, domain.MaxParticipantDepth+1),
+			MerkleProof: MerkleProof{
+				MerkleProof: merkle.MerkleProof{
+					Path: make([]frontend.Variable, domain.MaxParticipantDepth+1),
+				},
 			},
 		},
 		Transition: Transition{
-			MerkleProof: merkle.MerkleProof{
-				Path: make([]frontend.Variable, domain.MaxTransitionDepth+1),
+			MerkleProof: MerkleProof{
+				MerkleProof: merkle.MerkleProof{
+					Path: make([]frontend.Variable, domain.MaxTransitionDepth+1),
+				},
 			},
 		},
 	}
@@ -177,12 +181,12 @@ func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountCh
 	if err != nil {
 		return err
 	}
-	api.AssertIsEqual(circuit.Transition.MerkleProof.RootHash, circuit.Model.TransitionRoot)
-	circuit.Transition.MerkleProof.VerifyProof(api, &mimc, circuit.Transition.Index)
-	checkTransitionHash(api, circuit.Transition.MerkleProof.Path[0], circuit.Transition)
+	circuit.Transition.MerkleProof.CheckRootHash(api, circuit.Model.TransitionRoot)
+	circuit.Transition.MerkleProof.VerifyProof(api, mimc)
+	checkTransitionHash(api, circuit.Transition.MerkleProof.MerkleProof.Path[0], circuit.Transition)
 
 	transition := circuit.Transition
-	participantId := circuit.Authentication.Participant
+	participantId := circuit.Authentication.MerkleProof.Index
 
 	var tokenCountChangesMatch frontend.Variable = 1
 	for _, incomingPlace := range transition.IncomingPlaces {

@@ -11,6 +11,7 @@ import (
 	"github.com/consensys/gnark-crypto/hash"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/accumulator/merkle"
+	"github.com/consensys/gnark/std/hash/mimc"
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
@@ -19,11 +20,15 @@ type Hash struct {
 	Salt  frontend.Variable
 }
 
+type MerkleProof struct {
+	MerkleProof merkle.MerkleProof
+	Index       frontend.Variable
+}
+
 type Authentication struct {
 	Signature   eddsa.Signature
 	PublicKey   eddsa.PublicKey
-	MerkleProof merkle.MerkleProof
-	Participant frontend.Variable
+	MerkleProof MerkleProof
 }
 
 type Instance struct {
@@ -51,13 +56,7 @@ type Transition struct {
 	Participant    frontend.Variable
 	Message        frontend.Variable
 	Constraint     Constraint
-	MerkleProof    merkle.MerkleProof
-	Index          frontend.Variable
-}
-
-type EndPlace struct {
-	MerkleProof merkle.MerkleProof
-	Index       frontend.Variable
+	MerkleProof    MerkleProof
 }
 
 type Model struct {
@@ -88,10 +87,12 @@ func ToAuthentication(instance domain.Instance, signature domain.Signature) Auth
 		merkeProof.Path[i] = proofPath[i]
 	}
 	return Authentication{
-		Signature:   signatureValue,
-		PublicKey:   fromPublicKey(signature.PublicKey),
-		MerkleProof: merkeProof,
-		Participant: signature.Participant,
+		Signature: signatureValue,
+		PublicKey: fromPublicKey(signature.PublicKey),
+		MerkleProof: MerkleProof{
+			MerkleProof: merkeProof,
+			Index:       signature.Participant,
+		},
 	}
 }
 
@@ -149,7 +150,7 @@ func FromModel(model domain.Model) Model {
 	}
 }
 
-func ToEndPlace(model domain.Model, place domain.PlaceId) EndPlace {
+func ToEndPlace(model domain.Model, place domain.PlaceId) MerkleProof {
 	var buf bytes.Buffer
 	index := domain.MaxEndPlaceCount
 	for i, endPlace := range model.EndPlaces {
@@ -167,7 +168,7 @@ func ToEndPlace(model domain.Model, place domain.PlaceId) EndPlace {
 	for i := 0; i < domain.MaxEndPlaceDepth+1; i++ {
 		merkeProof.Path[i] = proofPath[i]
 	}
-	return EndPlace{
+	return MerkleProof{
 		MerkleProof: merkeProof,
 		Index:       index,
 	}
@@ -205,8 +206,10 @@ func ToTransition(model domain.Model, transition domain.Transition) Transition {
 		Participant:    transition.Participant,
 		Message:        transition.Message,
 		Constraint:     fromConstraint(transition.Constraint),
-		MerkleProof:    merkeProof,
-		Index:          index,
+		MerkleProof: MerkleProof{
+			MerkleProof: merkeProof,
+			Index:       index,
+		},
 	}
 }
 
@@ -251,4 +254,12 @@ func fromBytes(data [fr.Bytes]byte) frontend.Variable {
 	fieldElement, err := fr.BigEndian.Element(&data)
 	utils.PanicOnError(err)
 	return fieldElement
+}
+
+func (merkleProof *MerkleProof) CheckRootHash(api frontend.API, hash frontend.Variable) {
+	api.AssertIsEqual(merkleProof.MerkleProof.RootHash, hash)
+}
+
+func (merkleProof *MerkleProof) VerifyProof(api frontend.API, m mimc.MiMC) {
+	merkleProof.MerkleProof.VerifyProof(api, &m, merkleProof.Index)
 }

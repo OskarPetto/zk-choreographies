@@ -16,8 +16,10 @@ type InstantiationCircuit struct {
 func NewInstantiationCircuit() InstantiationCircuit {
 	return InstantiationCircuit{
 		Authentication: Authentication{
-			MerkleProof: merkle.MerkleProof{
-				Path: make([]frontend.Variable, domain.MaxParticipantDepth+1),
+			MerkleProof: MerkleProof{
+				MerkleProof: merkle.MerkleProof{
+					Path: make([]frontend.Variable, domain.MaxParticipantDepth+1),
+				},
 			},
 		},
 	}

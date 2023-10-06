@@ -12,17 +12,19 @@ type TerminationCircuit struct {
 	Model          Model
 	Instance       Instance
 	Authentication Authentication
-	EndPlace       EndPlace
+	EndPlace       MerkleProof
 }
 
 func NewTerminationCircuit() TerminationCircuit {
 	return TerminationCircuit{
 		Authentication: Authentication{
-			MerkleProof: merkle.MerkleProof{
-				Path: make([]frontend.Variable, domain.MaxParticipantDepth+1),
+			MerkleProof: MerkleProof{
+				MerkleProof: merkle.MerkleProof{
+					Path: make([]frontend.Variable, domain.MaxParticipantDepth+1),
+				},
 			},
 		},
-		EndPlace: EndPlace{
+		EndPlace: MerkleProof{
 			MerkleProof: merkle.MerkleProof{
 				Path: make([]frontend.Variable, domain.MaxEndPlaceDepth+1),
 			},
