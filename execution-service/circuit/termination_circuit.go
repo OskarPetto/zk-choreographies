@@ -50,8 +50,8 @@ func (circuit *TerminationCircuit) checkTokenCounts(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	api.AssertIsEqual(circuit.EndPlaceProof.MerkleProof.RootHash, circuit.Model.EndPlaceRoot)
-	circuit.EndPlaceProof.MerkleProof.VerifyProof(api, &mimc, circuit.EndPlaceProof.Index)
+	circuit.EndPlaceProof.CheckRootHash(api, circuit.Model.EndPlaceRoot)
+	circuit.EndPlaceProof.VerifyProof(api, mimc)
 	endPlace := circuit.EndPlaceProof.MerkleProof.Path[0]
 
 	var atLeastOneEndPlaceHasTokenCountOne frontend.Variable = 0

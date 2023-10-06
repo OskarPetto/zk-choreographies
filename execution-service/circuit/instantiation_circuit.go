@@ -36,7 +36,6 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 	}
 	checkAuthentication(api, circuit.Authentication, circuit.Instance)
 	circuit.checkTokenCounts(api)
-	// circuit.checkPublicKeys(api)
 	circuit.checkMessageHashes(api)
 	return nil
 }
@@ -60,22 +59,6 @@ func (circuit *InstantiationCircuit) checkTokenCounts(api frontend.API) {
 	}
 	api.AssertIsEqual(numberOfTokenCounts, circuit.Model.PlaceCount)
 }
-
-// func (circuit *InstantiationCircuit) checkPublicKeys(api frontend.API) {
-// 	var outOfBoundsOccurred frontend.Variable = 0
-// 	var numberOfPublicKeys frontend.Variable = 0
-// 	outOfBoundsPublicKey := fromPublicKey(domain.OutOfBoundsPublicKey())
-// 	for _, publicKey := range circuit.Instance.PublicKeys {
-// 		isOutOfBounds := publicKeyEquals(api, publicKey, outOfBoundsPublicKey)
-// 		isPublicKey := api.IsZero(isOutOfBounds)
-
-// 		numberOfPublicKeys = api.Add(numberOfPublicKeys, isPublicKey)
-
-// 		outOfBoundsOccurred = api.Or(outOfBoundsOccurred, isOutOfBounds)
-// 		api.AssertIsEqual(outOfBoundsOccurred, isOutOfBounds)
-// 	}
-// 	api.AssertIsEqual(numberOfPublicKeys, circuit.Model.ParticipantCount)
-// }
 
 func (circuit *InstantiationCircuit) checkMessageHashes(api frontend.API) {
 	var outOfBoundsOccurred frontend.Variable = 0
