@@ -27,7 +27,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 	return []State{
 		getModelState(
 			model2,
-			0,
+			domain.MaxTransitionCount,
 			[]domain.PlaceId{12},
 			[]domain.Hash{
 				domain.EmptyHash(),
@@ -117,9 +117,8 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 				orderHash,
 			},
 			domain.ConstraintInput{
-				Messages: [domain.MaxConstraintMessageCount]domain.Message{
+				Messages: []domain.Message{
 					order,
-					domain.EmptyMessage(),
 				},
 			},
 			signatureParameters,
@@ -242,41 +241,37 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 	}
 }
 
-func getModelState(model domain.Model, transitionIndex uint, activePlaces []domain.PlaceId, messageHashes []domain.Hash, constraintInput domain.ConstraintInput, signatureParameters parameters.SignatureParameters, idendity domain.IdentityId) State {
-	var tokenCountsFixedSize [domain.MaxPlaceCount]int8
+func getModelState(model domain.Model, transitionIndex uint, activePlaces []domain.PlaceId, hashes []domain.Hash, constraintInput domain.ConstraintInput, signatureParameters parameters.SignatureParameters, idendity domain.IdentityId) State {
+	tokenCounts := make([]int8, model.PlaceCount)
 	for _, placeId := range activePlaces {
-		tokenCountsFixedSize[placeId] = 1
-	}
-	for i := model.PlaceCount; i < domain.MaxPlaceCount; i++ {
-		tokenCountsFixedSize[i] = domain.OutOfBoundsTokenCount
+		tokenCounts[placeId] = 1
 	}
 	publicKeys := signatureParameters.GetPublicKeys(int(model.ParticipantCount))
-	var publicKeysFixedSize [domain.MaxParticipantCount]domain.PublicKey
-	copy(publicKeysFixedSize[:], publicKeys)
-	for i := model.ParticipantCount; i < domain.MaxParticipantCount; i++ {
-		publicKeysFixedSize[i] = domain.OutOfBoundsPublicKey()
-	}
-	var messageHashesFixedSize [domain.MaxMessageCount][domain.HashSize]byte
-	for i, messageHash := range messageHashes {
-		messageHashesFixedSize[i] = messageHash.Value
-	}
-	for i := len(messageHashes); i < domain.MaxMessageCount; i++ {
-		messageHashesFixedSize[i] = domain.OutOfBoundsHash().Value
+	messageHashes := make([][domain.HashSize]byte, model.MessageCount)
+	for i, messageHash := range hashes {
+		messageHashes[i] = messageHash.Value
 	}
 	instance := domain.Instance{
 		Model:         "modelHash",
-		TokenCounts:   tokenCountsFixedSize,
-		PublicKeys:    publicKeysFixedSize,
-		MessageHashes: messageHashesFixedSize,
+		TokenCounts:   tokenCounts,
+		PublicKeys:    publicKeys,
+		MessageHashes: messageHashes,
 		CreatedAt:     time.Now().Unix(),
 	}
 	instance.ComputeHash()
 	privateKey := signatureParameters.GetPrivateKeyForIdentity(uint(idendity))
 	signature := instance.Sign(privateKey)
+
+	var transition domain.Transition
+	if transitionIndex < domain.MaxTransitionCount {
+		transition = model.Transitions[transitionIndex]
+	} else {
+		transition = domain.OutOfBoundsTransition()
+	}
 	return State{
 		Model:           model,
 		Instance:        instance,
-		Transition:      model.Transitions[transitionIndex],
+		Transition:      transition,
 		Signature:       signature,
 		Identity:        idendity,
 		ConstraintInput: constraintInput,

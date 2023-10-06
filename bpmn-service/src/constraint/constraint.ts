@@ -9,8 +9,8 @@ export interface Constraint {
 
 export function defaultConstraint(): Constraint {
   return {
-    coefficients: [0, 0],
-    messageIds: [0, 0],
+    coefficients: [],
+    messageIds: [],
     offset: 0,
     comparisonOperator: 0,
   };

@@ -90,44 +90,35 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 	if startPlaceCount > domain.MaxStartPlaceCount || startPlaceCount < 1 {
 		return domain.Model{}, fmt.Errorf("model '%s' has invalid number of startPlaces", model.Id())
 	}
-	var startPlaces [domain.MaxStartPlaceCount]domain.PlaceId
+	startPlaces := make([]domain.PlaceId, startPlaceCount)
 	for i, startPlace := range model.StartPlaces {
 		if startPlace >= domain.MaxPlaceCount {
 			return domain.Model{}, fmt.Errorf("model '%s' has invalid startPlace", model.Id())
 		}
 		startPlaces[i] = domain.PlaceId(startPlace)
 	}
-	for i := startPlaceCount; i < domain.MaxStartPlaceCount; i++ {
-		startPlaces[i] = domain.OutOfBoundsPlaceId
-	}
 	endPlaceCount := len(model.EndPlaces)
 	if endPlaceCount > domain.MaxEndPlaceCount || endPlaceCount < 1 {
 		return domain.Model{}, fmt.Errorf("model '%s' has invalid number of endPlaces", model.Id())
 	}
-	var endPlaces [domain.MaxEndPlaceCount]domain.PlaceId
+	endPlaces := make([]domain.PlaceId, endPlaceCount)
 	for i, endPlace := range model.EndPlaces {
 		if endPlace >= domain.MaxPlaceCount {
 			return domain.Model{}, fmt.Errorf("model '%s' has invalid endPlace", model.Id())
 		}
 		endPlaces[i] = domain.PlaceId(endPlace)
 	}
-	for i := endPlaceCount; i < domain.MaxEndPlaceCount; i++ {
-		endPlaces[i] = domain.OutOfBoundsPlaceId
-	}
 	transitionCount := len(model.Transitions)
 	if transitionCount > domain.MaxTransitionCount {
 		return domain.Model{}, fmt.Errorf("model '%s' has too many transitions", model.Id())
 	}
-	var transitions [domain.MaxTransitionCount]domain.Transition
+	transitions := make([]domain.Transition, transitionCount)
 	for i, transition := range model.Transitions {
 		var err error
 		transitions[i], err = transition.toTransition()
 		if err != nil {
 			return domain.Model{}, err
 		}
-	}
-	for i := transitionCount; i < domain.MaxTransitionCount; i++ {
-		transitions[i] = domain.OutOfBoundsTransition()
 	}
 	hash, err := model.Hash.ToHash()
 	if err != nil {
@@ -152,19 +143,13 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 	if incomingPlaceCount > domain.MaxBranchingFactor || outgoingPlaceCount > domain.MaxBranchingFactor {
 		return domain.Transition{}, fmt.Errorf("transition '%s' branches too much", transition.Id)
 	}
-	var incomingPlaces [domain.MaxBranchingFactor]domain.PlaceId
-	var outgoingPlaces [domain.MaxBranchingFactor]domain.PlaceId
+	incomingPlaces := make([]domain.PlaceId, incomingPlaceCount)
+	outgoingPlaces := make([]domain.PlaceId, outgoingPlaceCount)
 	for i := 0; i < incomingPlaceCount; i++ {
 		incomingPlaces[i] = domain.PlaceId(transition.IncomingPlaces[i])
 	}
-	for i := incomingPlaceCount; i < domain.MaxBranchingFactor; i++ {
-		incomingPlaces[i] = domain.OutOfBoundsPlaceId
-	}
 	for i := 0; i < outgoingPlaceCount; i++ {
 		outgoingPlaces[i] = domain.PlaceId(transition.OutgoingPlaces[i])
-	}
-	for i := outgoingPlaceCount; i < domain.MaxBranchingFactor; i++ {
-		outgoingPlaces[i] = domain.OutOfBoundsPlaceId
 	}
 	if transition.Participant > domain.MaxParticipantCount {
 		return domain.Transition{}, fmt.Errorf("transition %s has invalid participant", transition.Id)
@@ -195,49 +180,49 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 }
 
 func (constraint *ConstraintJson) toConstraint() (domain.Constraint, error) {
-	var coefficientsFixedSize [domain.MaxConstraintMessageCount]domain.IntegerType
-	for i, coefficient := range constraint.Coefficients {
-		coefficientsFixedSize[i] = int32(coefficient)
+	if len(constraint.Coefficients) > domain.MaxConstraintMessageCount {
+		return domain.Constraint{}, fmt.Errorf("constraint has too many coefficients")
 	}
-	var messageIdsFixedSize [domain.MaxConstraintMessageCount]domain.MessageId
+	if len(constraint.MessageIds) > domain.MaxConstraintMessageCount {
+		return domain.Constraint{}, fmt.Errorf("constraint has too many messageIds")
+	}
+	if len(constraint.MessageIds) != len(constraint.Coefficients) {
+		return domain.Constraint{}, fmt.Errorf("number of coefficients differs from number of messageIds in constraint")
+	}
+	coefficients := make([]domain.IntegerType, len(constraint.Coefficients))
+	for i, coefficient := range constraint.Coefficients {
+		coefficients[i] = domain.IntegerType(coefficient)
+	}
+	messageIds := make([]domain.MessageId, len(constraint.MessageIds))
 	for i, messageId := range constraint.MessageIds {
 		if messageId > domain.MaxMessageCount {
 			return domain.Constraint{}, fmt.Errorf("constraint has invalid messageId")
 		}
-		messageIdsFixedSize[i] = uint8(messageId)
+		messageIds[i] = domain.MessageId(messageId)
 	}
 	if !isValidOparator(constraint.ComparisonOperator) {
 		return domain.Constraint{}, fmt.Errorf("constraint has invalid oparator")
 	}
 	return domain.Constraint{
-		Coefficients:       coefficientsFixedSize,
-		MessageIds:         messageIdsFixedSize,
+		Coefficients:       coefficients,
+		MessageIds:         messageIds,
 		Offset:             int32(constraint.Offset),
 		ComparisonOperator: uint8(constraint.ComparisonOperator),
 	}, nil
 }
 
 func ToJson(model domain.Model) ModelJson {
-	startPlaces := make([]uint, 0)
-	for _, startPlace := range model.StartPlaces {
-		if startPlace != domain.OutOfBoundsPlaceId {
-			break
-		}
-		startPlaces = append(startPlaces, uint(startPlace))
+	startPlaces := make([]uint, len(model.StartPlaces))
+	for i, startPlace := range model.StartPlaces {
+		startPlaces[i] = uint(startPlace)
 	}
-	endPlaces := make([]uint, 0)
-	for _, endPlace := range model.EndPlaces {
-		if endPlace == domain.OutOfBoundsPlaceId {
-			break
-		}
-		endPlaces = append(endPlaces, uint(endPlace))
+	endPlaces := make([]uint, len(model.EndPlaces))
+	for i, endPlace := range model.EndPlaces {
+		endPlaces[i] = uint(endPlace)
 	}
-	transitions := make([]TransitionJson, 0)
-	for _, transition := range model.Transitions {
-		if domain.IsOutOfBoundsTransition(transition) {
-			break
-		}
-		transitions = append(transitions, transitionToJson(transition))
+	transitions := make([]TransitionJson, len(model.Transitions))
+	for i, transition := range model.Transitions {
+		transitions[i] = transitionToJson(transition)
 	}
 	return ModelJson{
 		Hash:             hash.HashToJson(model.Hash),
@@ -253,19 +238,13 @@ func ToJson(model domain.Model) ModelJson {
 }
 
 func transitionToJson(transition domain.Transition) TransitionJson {
-	incomingPlaces := make([]uint, 0)
-	for _, incomingPlace := range transition.IncomingPlaces {
-		if incomingPlace == domain.OutOfBoundsPlaceId {
-			break
-		}
-		incomingPlaces = append(incomingPlaces, uint(incomingPlace))
+	incomingPlaces := make([]uint, len(transition.IncomingPlaces))
+	for i, incomingPlace := range transition.IncomingPlaces {
+		incomingPlaces[i] = uint(incomingPlace)
 	}
-	outgoingPlaces := make([]uint, 0)
-	for _, outgoingPlace := range transition.OutgoingPlaces {
-		if outgoingPlace == domain.OutOfBoundsPlaceId {
-			break
-		}
-		outgoingPlaces = append(outgoingPlaces, uint(outgoingPlace))
+	outgoingPlaces := make([]uint, len(transition.OutgoingPlaces))
+	for i, outgoingPlace := range transition.OutgoingPlaces {
+		outgoingPlaces[i] = uint(outgoingPlace)
 	}
 	jsonTransition := TransitionJson{
 		Id:             transition.Id,

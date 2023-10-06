@@ -78,6 +78,11 @@ func ToAuthentication(instance domain.Instance, signature domain.Signature) Auth
 		hash := publicKey.ComputeHash()
 		buf.Write(hash[:])
 	}
+	for i := len(instance.PublicKeys); i < domain.MaxParticipantCount; i++ {
+		publicKey := domain.OutOfBoundsPublicKey()
+		hash := publicKey.ComputeHash()
+		buf.Write(hash[:])
+	}
 	merkleRoot, proofPath, _, err := merkletree.BuildReaderProof(&buf, hash.MIMC_BN254.New(), fr.Bytes, uint64(signature.Participant))
 	utils.PanicOnError(err)
 	var merkeProof merkle.MerkleProof
@@ -101,14 +106,25 @@ func FromInstance(instance domain.Instance) Instance {
 	for i, tokenCount := range instance.TokenCounts {
 		tokenCounts[i] = tokenCount
 	}
+	for i := len(instance.TokenCounts); i < domain.MaxPlaceCount; i++ {
+		tokenCounts[i] = domain.OutOfBoundsTokenCount
+	}
 	tree := merkletree.New(hash.MIMC_BN254.New())
 	for _, publicKey := range instance.PublicKeys {
+		hash := publicKey.ComputeHash()
+		tree.Push(hash[:])
+	}
+	for i := len(instance.PublicKeys); i < domain.MaxParticipantCount; i++ {
+		publicKey := domain.OutOfBoundsPublicKey()
 		hash := publicKey.ComputeHash()
 		tree.Push(hash[:])
 	}
 	var messageHashes [domain.MaxMessageCount]frontend.Variable
 	for i, messageHash := range instance.MessageHashes {
 		messageHashes[i] = fromBytes(messageHash)
+	}
+	for i := len(instance.MessageHashes); i < domain.MaxMessageCount; i++ {
+		messageHashes[i] = fromBytes(domain.OutOfBoundsHash().Value)
 	}
 	return Instance{
 		Hash:          fromHash(instance.Hash),
@@ -129,13 +145,25 @@ func FromModel(model domain.Model) Model {
 	for i, startPlace := range model.StartPlaces {
 		startPlaces[i] = startPlace
 	}
+	for i := len(model.StartPlaces); i < domain.MaxStartPlaceCount; i++ {
+		startPlaces[i] = domain.OutOfBoundsPlaceId
+	}
 	endPlaceTree := merkletree.New(hash.MIMC_BN254.New())
 	for _, endPlace := range model.EndPlaces {
 		bytes := domain.Uint8ToBytes(endPlace)
 		endPlaceTree.Push(bytes[:])
 	}
+	for i := len(model.EndPlaces); i < domain.MaxEndPlaceCount; i++ {
+		bytes := domain.Uint8ToBytes(domain.OutOfBoundsPlaceId)
+		endPlaceTree.Push(bytes[:])
+	}
 	transitionTree := merkletree.New(hash.MIMC_BN254.New())
 	for _, transition := range model.Transitions {
+		hash := transition.ComputeHash()
+		transitionTree.Push(hash[:])
+	}
+	for i := len(model.Transitions); i < domain.MaxTransitionCount; i++ {
+		transition := domain.OutOfBoundsTransition()
 		hash := transition.ComputeHash()
 		transitionTree.Push(hash[:])
 	}
@@ -150,7 +178,7 @@ func FromModel(model domain.Model) Model {
 	}
 }
 
-func ToEndPlace(model domain.Model, place domain.PlaceId) MerkleProof {
+func ToEndPlaceProof(model domain.Model, place domain.PlaceId) MerkleProof {
 	var buf bytes.Buffer
 	index := domain.MaxEndPlaceCount
 	for i, endPlace := range model.EndPlaces {
@@ -158,6 +186,10 @@ func ToEndPlace(model domain.Model, place domain.PlaceId) MerkleProof {
 			index = i
 		}
 		bytes := domain.Uint8ToBytes(endPlace)
+		buf.Write(bytes[:])
+	}
+	for i := len(model.EndPlaces); i < domain.MaxEndPlaceCount; i++ {
+		bytes := domain.Uint8ToBytes(domain.OutOfBoundsPlaceId)
 		buf.Write(bytes[:])
 	}
 	merkleRoot, proofPath, _, err := merkletree.BuildReaderProof(&buf, hash.MIMC_BN254.New(), fr.Bytes, uint64(index))
@@ -179,9 +211,15 @@ func ToTransition(model domain.Model, transition domain.Transition) Transition {
 	for i, incomingPlace := range transition.IncomingPlaces {
 		incomingPlaces[i] = incomingPlace
 	}
+	for i := len(transition.IncomingPlaces); i < domain.MaxBranchingFactor; i++ {
+		incomingPlaces[i] = domain.OutOfBoundsPlaceId
+	}
 	var outgoingPlaces [domain.MaxBranchingFactor]frontend.Variable
 	for i, outgoingPlace := range transition.OutgoingPlaces {
 		outgoingPlaces[i] = outgoingPlace
+	}
+	for i := len(transition.OutgoingPlaces); i < domain.MaxBranchingFactor; i++ {
+		outgoingPlaces[i] = domain.OutOfBoundsPlaceId
 	}
 	index := domain.MaxTransitionCount
 	var buf bytes.Buffer
@@ -189,6 +227,11 @@ func ToTransition(model domain.Model, transition domain.Transition) Transition {
 		if modelTransition.Id == transition.Id {
 			index = i
 		}
+		hash := modelTransition.ComputeHash()
+		buf.Write(hash[:])
+	}
+	for i := len(model.Transitions); i < domain.MaxTransitionCount; i++ {
+		modelTransition := domain.OutOfBoundsTransition()
 		hash := modelTransition.ComputeHash()
 		buf.Write(hash[:])
 	}
@@ -218,9 +261,15 @@ func fromConstraint(constraint domain.Constraint) Constraint {
 	for i, coefficient := range constraint.Coefficients {
 		coefficients[i] = coefficient
 	}
+	for i := len(constraint.Coefficients); i < domain.MaxConstraintMessageCount; i++ {
+		coefficients[i] = 0
+	}
 	var messageIds [domain.MaxConstraintMessageCount]frontend.Variable
 	for i, messageId := range constraint.MessageIds {
 		messageIds[i] = messageId
+	}
+	for i := len(constraint.MessageIds); i < domain.MaxConstraintMessageCount; i++ {
+		messageIds[i] = domain.EmptyMessageId
 	}
 	return Constraint{
 		Coefficients:       coefficients,
@@ -236,6 +285,10 @@ func FromConstraintInput(input domain.ConstraintInput) ConstraintInput {
 	for i, message := range input.Messages {
 		integerMessages[i] = message.IntegerMessage
 		salts[i] = fromBytes(message.Hash.Salt)
+	}
+	for i := len(input.Messages); i < domain.MaxConstraintMessageCount; i++ {
+		integerMessages[i] = domain.EmptyIntegerMessage
+		salts[i] = 0
 	}
 	return ConstraintInput{
 		IntegerMessages: integerMessages,

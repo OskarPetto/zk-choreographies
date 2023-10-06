@@ -12,7 +12,7 @@ type TerminationCircuit struct {
 	Model          Model
 	Instance       Instance
 	Authentication Authentication
-	EndPlace       MerkleProof
+	EndPlaceProof  MerkleProof
 }
 
 func NewTerminationCircuit() TerminationCircuit {
@@ -24,7 +24,7 @@ func NewTerminationCircuit() TerminationCircuit {
 				},
 			},
 		},
-		EndPlace: MerkleProof{
+		EndPlaceProof: MerkleProof{
 			MerkleProof: merkle.MerkleProof{
 				Path: make([]frontend.Variable, domain.MaxEndPlaceDepth+1),
 			},
@@ -50,9 +50,9 @@ func (circuit *TerminationCircuit) checkTokenCounts(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	api.AssertIsEqual(circuit.EndPlace.MerkleProof.RootHash, circuit.Model.EndPlaceRoot)
-	circuit.EndPlace.MerkleProof.VerifyProof(api, &mimc, circuit.EndPlace.Index)
-	endPlace := circuit.EndPlace.MerkleProof.Path[0]
+	api.AssertIsEqual(circuit.EndPlaceProof.MerkleProof.RootHash, circuit.Model.EndPlaceRoot)
+	circuit.EndPlaceProof.MerkleProof.VerifyProof(api, &mimc, circuit.EndPlaceProof.Index)
+	endPlace := circuit.EndPlaceProof.MerkleProof.Path[0]
 
 	var atLeastOneEndPlaceHasTokenCountOne frontend.Variable = 0
 	for placeId, tokenCount := range circuit.Instance.TokenCounts {

@@ -56,6 +56,7 @@ func TestProveTransition0(t *testing.T) {
 		Model:           model.Id(),
 		CurrentInstance: currentInstance.Id(),
 		NextInstance:    nextInstance.Id(),
+		Transition:      model.Transitions[0].Id,
 		Identity:        identity,
 	})
 	assert.Nil(t, err)

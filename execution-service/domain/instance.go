@@ -24,9 +24,9 @@ type InstanceId = string
 type Instance struct {
 	Hash          Hash
 	Model         ModelId
-	TokenCounts   [MaxPlaceCount]int8
-	PublicKeys    [MaxParticipantCount]PublicKey
-	MessageHashes [MaxMessageCount][HashSize]byte
+	TokenCounts   []int8
+	PublicKeys    []PublicKey
+	MessageHashes [][HashSize]byte
 	CreatedAt     int64
 }
 
@@ -38,40 +38,36 @@ func (instance Instance) ExecuteTransition(transition Transition, input Constrai
 	if !isTransitionExecutable(instance, transition, input) {
 		return Instance{}, fmt.Errorf("transition %s is not executable", transition.Id)
 	}
-	if transition.Message != EmptyMessageId {
-		instance.MessageHashes[transition.Message] = messageHash.Value
-	}
+	instance.updateMessageHashes(transition, messageHash)
 	instance.updateTokenCounts(transition)
 	instance.CreatedAt = time.Now().Unix()
 	instance.ComputeHash()
 	return instance, nil
 }
 
+func (instance *Instance) updateMessageHashes(transition Transition, messageHash Hash) {
+	messageHashes := make([][HashSize]byte, len(instance.MessageHashes))
+	copy(messageHashes[:], instance.MessageHashes[:])
+	if transition.Message != EmptyMessageId {
+		messageHashes[transition.Message] = messageHash.Value
+	}
+	instance.MessageHashes = messageHashes
+}
+
 func (instance *Instance) updateTokenCounts(transition Transition) {
-	var tokenCounts [MaxPlaceCount]int8
+	tokenCounts := make([]int8, len(instance.TokenCounts))
 	copy(tokenCounts[:], instance.TokenCounts[:])
 	for _, incomingPlaceId := range transition.IncomingPlaces {
-		if incomingPlaceId != OutOfBoundsPlaceId {
-			tokenCounts[incomingPlaceId] -= 1
-		}
+		tokenCounts[incomingPlaceId] -= 1
 	}
 	for _, outgoingPlaceId := range transition.OutgoingPlaces {
-		if outgoingPlaceId != OutOfBoundsPlaceId {
-			tokenCounts[outgoingPlaceId] += 1
-		}
+		tokenCounts[outgoingPlaceId] += 1
 	}
 	instance.TokenCounts = tokenCounts
 }
 
 func isTransitionExecutable(instance Instance, transition Transition, input ConstraintInput) bool {
 	for _, incomingPlaceId := range transition.IncomingPlaces {
-		if incomingPlaceId == OutOfBoundsPlaceId {
-			break
-		}
-		if int(incomingPlaceId) > len(instance.TokenCounts) {
-			return false
-		}
-
 		if instance.TokenCounts[incomingPlaceId] < 1 {
 			return false
 		}

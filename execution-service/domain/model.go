@@ -32,50 +32,21 @@ type TransitionId = string
 type Transition struct {
 	Id             TransitionId
 	Name           string
-	IncomingPlaces [MaxBranchingFactor]PlaceId
-	OutgoingPlaces [MaxBranchingFactor]PlaceId
+	IncomingPlaces []PlaceId
+	OutgoingPlaces []PlaceId
 	Participant    ParticipantId
 	Message        MessageId
 	Constraint     Constraint
 }
 
 func OutOfBoundsTransition() Transition {
-	var incomingPlaces [MaxBranchingFactor]PlaceId
-	for i, _ := range incomingPlaces {
-		incomingPlaces[i] = OutOfBoundsPlaceId
-	}
-	var outgoingPlaces [MaxBranchingFactor]PlaceId
-	for i, _ := range outgoingPlaces {
-		outgoingPlaces[i] = OutOfBoundsPlaceId
-	}
 	return Transition{
-		IncomingPlaces: incomingPlaces,
-		OutgoingPlaces: outgoingPlaces,
+		IncomingPlaces: make([]uint8, 0),
+		OutgoingPlaces: make([]uint8, 0),
 		Participant:    EmptyParticipantId,
 		Message:        EmptyMessageId,
 		Constraint:     EmptyConstraint(),
 	}
-}
-
-func IsOutOfBoundsTransition(transition Transition) bool {
-	outOfBoundsTransition := OutOfBoundsTransition()
-	for i, incomingPlace := range transition.IncomingPlaces {
-		if outOfBoundsTransition.IncomingPlaces[i] != incomingPlace {
-			return false
-		}
-	}
-	for i, outgoingPlace := range transition.OutgoingPlaces {
-		if outOfBoundsTransition.OutgoingPlaces[i] != outgoingPlace {
-			return false
-		}
-	}
-	if transition.Participant != outOfBoundsTransition.Participant {
-		return false
-	}
-	if transition.Message != outOfBoundsTransition.Message {
-		return false
-	}
-	return IsEmptyConstraint(transition.Constraint)
 }
 
 type ModelId = string
@@ -87,9 +58,9 @@ type Model struct {
 	ParticipantCount uint8
 	MessageCount     uint8
 	VariableCount    uint8
-	StartPlaces      [MaxStartPlaceCount]PlaceId
-	EndPlaces        [MaxEndPlaceCount]PlaceId
-	Transitions      [MaxTransitionCount]Transition
+	StartPlaces      []PlaceId
+	EndPlaces        []PlaceId
+	Transitions      []Transition
 	CreatedAt        int64
 }
 
@@ -104,31 +75,18 @@ func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
 	if int(model.ParticipantCount) != len(publicKeys) {
 		return Instance{}, fmt.Errorf("the number of public keys must match the number of participants in the model %s", model.Id())
 	}
-	var tokenCounts [MaxPlaceCount]int8
-	for i := model.PlaceCount; i < MaxPlaceCount; i++ {
-		tokenCounts[i] = OutOfBoundsTokenCount
-	}
+	tokenCounts := make([]int8, model.PlaceCount)
 	for _, startPlace := range model.StartPlaces {
-		if startPlace != OutOfBoundsPlaceId {
-			tokenCounts[startPlace] = 1
-		}
+		tokenCounts[startPlace] = 1
 	}
-	var messageHashes [MaxMessageCount][HashSize]byte
+	messageHashes := make([][HashSize]byte, model.MessageCount)
 	for i := 0; i < int(model.MessageCount); i++ {
 		messageHashes[i] = EmptyHash().Value
-	}
-	for i := model.MessageCount; i < MaxMessageCount; i++ {
-		messageHashes[i] = OutOfBoundsHash().Value
-	}
-	var publicKeysFixedSize [MaxParticipantCount]PublicKey
-	copy(publicKeysFixedSize[:], publicKeys)
-	for i := model.ParticipantCount; i < MaxParticipantCount; i++ {
-		publicKeysFixedSize[i] = OutOfBoundsPublicKey()
 	}
 	instance := Instance{
 		Model:         model.Id(),
 		TokenCounts:   tokenCounts,
-		PublicKeys:    publicKeysFixedSize,
+		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
 		CreatedAt:     time.Now().Unix(),
 	}

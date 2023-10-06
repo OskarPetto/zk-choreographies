@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"bytes"
 	"execution-service/domain"
 	"execution-service/hash"
 	"execution-service/utils"
@@ -20,27 +19,17 @@ type InstanceJson struct {
 }
 
 func ToJson(instance domain.Instance) InstanceJson {
-	tokenCounts := make([]int, 0)
-	for _, tokenCount := range instance.TokenCounts {
-		if tokenCount == domain.OutOfBoundsTokenCount {
-			break
-		}
-		tokenCounts = append(tokenCounts, int(tokenCount))
+	tokenCounts := make([]int, len(instance.TokenCounts))
+	for i, tokenCount := range instance.TokenCounts {
+		tokenCounts[i] = int(tokenCount)
 	}
-	publicKeys := make([]string, 0)
-	for _, publicKey := range instance.PublicKeys {
-		if bytes.Equal(domain.OutOfBoundsPublicKey().Value, publicKey.Value) {
-			break
-		}
-		publicKeys = append(publicKeys, utils.BytesToString(publicKey.Value))
+	publicKeys := make([]string, len(instance.PublicKeys))
+	for i, publicKey := range instance.PublicKeys {
+		publicKeys[i] = utils.BytesToString(publicKey.Value)
 	}
-	messageHashes := make([]string, 0)
-	for _, messageHash := range instance.MessageHashes {
-		invalidHash := domain.OutOfBoundsHash()
-		if bytes.Equal(invalidHash.Value[:], messageHash[:]) {
-			break
-		}
-		messageHashes = append(messageHashes, utils.BytesToString(messageHash[:]))
+	messageHashes := make([]string, len(instance.MessageHashes))
+	for i, messageHash := range instance.MessageHashes {
+		messageHashes[i] = utils.BytesToString(messageHash[:])
 	}
 	return InstanceJson{
 		Id:            instance.Id(),
@@ -54,18 +43,23 @@ func ToJson(instance domain.Instance) InstanceJson {
 }
 
 func (json *InstanceJson) ToInstance() (domain.Instance, error) {
-	var tokenCounts [domain.MaxPlaceCount]int8
+	if len(json.TokenCounts) > domain.MaxPlaceCount {
+		return domain.Instance{}, fmt.Errorf("instance %s has too many places", json.Id)
+	}
+	if len(json.PublicKeys) > domain.MaxParticipantCount {
+		return domain.Instance{}, fmt.Errorf("instance %s has too many participants", json.Id)
+	}
+	if len(json.MessageHashes) > domain.MaxMessageCount {
+		return domain.Instance{}, fmt.Errorf("instance %s has too many messages", json.Id)
+	}
+	tokenCounts := make([]int8, len(json.TokenCounts))
 	for i, tokenCount := range json.TokenCounts {
 		if tokenCount != 0 && tokenCount != 1 {
 			return domain.Instance{}, fmt.Errorf("instance %s has invalid tokenCount", json.Id)
 		}
 		tokenCounts[i] = int8(tokenCount)
 	}
-	for i := len(json.TokenCounts); i < domain.MaxPlaceCount; i++ {
-		tokenCounts[i] = domain.OutOfBoundsTokenCount
-	}
-
-	var publicKeys [domain.MaxParticipantCount]domain.PublicKey
+	publicKeys := make([]domain.PublicKey, len(json.PublicKeys))
 	for i, publicKey := range json.PublicKeys {
 		publicKeyBytes, err := utils.StringToBytes(publicKey)
 		if err != nil {
@@ -75,20 +69,13 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 			Value: publicKeyBytes,
 		}
 	}
-	for i := len(json.PublicKeys); i < domain.MaxParticipantCount; i++ {
-		publicKeys[i] = domain.OutOfBoundsPublicKey()
-	}
-
-	var messageHashes [domain.MaxMessageCount][domain.HashSize]byte
+	messageHashes := make([][domain.HashSize]byte, len(json.MessageHashes))
 	for i, messageHash := range json.MessageHashes {
 		hash, err := utils.StringToBytes(messageHash)
 		if err != nil {
 			return domain.Instance{}, fmt.Errorf("instance %s has invalid messageHash", json.Id)
 		}
 		messageHashes[i] = [domain.HashSize]byte(hash)
-	}
-	for i := len(json.MessageHashes); i < domain.MaxMessageCount; i++ {
-		messageHashes[i] = domain.OutOfBoundsHash().Value
 	}
 	hash, err := json.Hash.ToHash()
 	if err != nil {

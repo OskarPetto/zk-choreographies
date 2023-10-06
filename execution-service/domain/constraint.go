@@ -24,42 +24,35 @@ var ValidComparisonOperators = []ComparisonOperator{OperatorEqual, OperatorGreat
 
 // ax + by + c = 0
 type Constraint struct {
-	Coefficients       [MaxConstraintMessageCount]IntegerType
-	MessageIds         [MaxConstraintMessageCount]MessageId
+	Coefficients       []IntegerType
+	MessageIds         []MessageId
 	Offset             IntegerType
 	ComparisonOperator ComparisonOperator
 }
 
 func EmptyConstraint() Constraint {
 	return Constraint{
-		MessageIds: [MaxConstraintMessageCount]MessageId{EmptyMessageId, EmptyMessageId},
+		MessageIds: make([]uint8, 0),
 	}
-}
-
-func IsEmptyConstraint(constraint Constraint) bool {
-	emptyConstraint := EmptyConstraint()
-	for i, messageId := range constraint.MessageIds {
-		if emptyConstraint.MessageIds[i] != messageId {
-			return false
-		}
-	}
-	return true
 }
 
 type ConstraintInput struct {
-	Messages [MaxConstraintMessageCount]Message
+	Messages []Message
 }
 
 func EmptyConstraintInput() ConstraintInput {
 	return ConstraintInput{
-		Messages: [MaxConstraintMessageCount]Message{EmptyMessage(), EmptyMessage()},
+		Messages: make([]Message, 0),
 	}
 }
 
 func (instance *Instance) EvaluateConstraint(constraint Constraint, input ConstraintInput) bool {
+	if len(constraint.MessageIds) != len(input.Messages) {
+		return false
+	}
 	lhs := constraint.Offset
-	for i := 0; i < MaxConstraintMessageCount; i++ {
-		hash := input.Messages[i].Hash.Value
+	for i, message := range input.Messages {
+		hash := message.Hash.Value
 		messageId := EmptyMessageId
 		for i, messageHash := range instance.MessageHashes {
 			if bytes.Equal(hash[:], messageHash[:]) {

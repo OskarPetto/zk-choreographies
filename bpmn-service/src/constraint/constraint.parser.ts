@@ -68,12 +68,12 @@ export class ConstraintParser {
     }
 
     let offset = resultingParts[resultingParts.length - 1].constant
-    let coefficients = Array(2).fill(0)
-    let messages = Array(2).fill(0)
+    let coefficients = []
+    let messages = []
 
     for (let i = 0; i < resultingParts.length - 1; i++) {
-      coefficients[i] = resultingParts[i].constant
-      messages[i] = resultingParts[i].messageId ?? 0
+      coefficients.push(resultingParts[i].constant)
+      messages.push(resultingParts[i].messageId ?? 0)
     }
 
     return {

@@ -15,12 +15,12 @@ import (
 var instantiationCircuit = circuit.NewInstantiationCircuit()
 
 var signatureParameters parameters.SignatureParameters = parameters.NewSignatureParameters()
-var states = testdata.GetModel2States(signatureParameters)
+var instantiationStates = testdata.GetModel2States(signatureParameters)
 
 func TestInstantiation(t *testing.T) {
-	model := states[0].Model
-	instance := states[0].Instance
-	signature := states[0].Signature
+	model := instantiationStates[0].Model
+	instance := instantiationStates[0].Instance
+	signature := instantiationStates[0].Signature
 
 	witness := circuit.InstantiationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -35,9 +35,9 @@ func TestInstantiation(t *testing.T) {
 }
 
 func TestInstantiation_InvalidModelHash(t *testing.T) {
-	model := states[0].Model
-	instance := states[0].Instance
-	signature := states[0].Signature
+	model := instantiationStates[0].Model
+	instance := instantiationStates[0].Instance
+	signature := instantiationStates[0].Signature
 
 	model.Hash = domain.EmptyHash()
 
@@ -52,8 +52,8 @@ func TestInstantiation_InvalidModelHash(t *testing.T) {
 }
 
 func TestInstantiation_InvalidInstanceHash(t *testing.T) {
-	model := states[0].Model
-	instance := states[0].Instance
+	model := instantiationStates[0].Model
+	instance := instantiationStates[0].Instance
 
 	instance.Hash = domain.EmptyHash()
 	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
@@ -69,9 +69,9 @@ func TestInstantiation_InvalidInstanceHash(t *testing.T) {
 }
 
 func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
-	model := states[1].Model
-	instance := states[1].Instance
-	signature := states[1].Signature
+	model := instantiationStates[1].Model
+	instance := instantiationStates[1].Instance
+	signature := instantiationStates[1].Signature
 
 	witness := circuit.InstantiationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -84,9 +84,9 @@ func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
 }
 
 func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
-	model := states[len(states)-1].Model
-	instance := states[len(states)-1].Instance
-	signature := states[len(states)-1].Signature
+	model := instantiationStates[len(instantiationStates)-1].Model
+	instance := instantiationStates[len(instantiationStates)-1].Instance
+	signature := instantiationStates[len(instantiationStates)-1].Signature
 
 	witness := circuit.InstantiationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -99,9 +99,9 @@ func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
 }
 
 func TestInstantiation_InvalidSignature(t *testing.T) {
-	model := states[0].Model
-	instance := states[0].Instance
-	signature := states[1].Signature
+	model := instantiationStates[0].Model
+	instance := instantiationStates[0].Instance
+	signature := instantiationStates[1].Signature
 
 	witness := circuit.InstantiationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -114,8 +114,8 @@ func TestInstantiation_InvalidSignature(t *testing.T) {
 }
 
 func TestInstantiation_NotAParticipant(t *testing.T) {
-	model := states[0].Model
-	instance := states[0].Instance
+	model := instantiationStates[0].Model
+	instance := instantiationStates[0].Instance
 
 	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(2))
 
@@ -130,8 +130,8 @@ func TestInstantiation_NotAParticipant(t *testing.T) {
 }
 
 func TestInstantiation_InvalidMessageHashes(t *testing.T) {
-	model := states[0].Model
-	instance := states[0].Instance
+	model := instantiationStates[0].Model
+	instance := instantiationStates[0].Instance
 
 	instance.MessageHashes[0] = domain.NewBytesMessage([]byte("invalid")).Hash.Value
 	instance.ComputeHash()

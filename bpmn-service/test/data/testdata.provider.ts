@@ -268,8 +268,8 @@ export class TestdataProvider {
           incomingPlaces: [1],
           outgoingPlaces: [2],
           constraint: {
-            coefficients: [1, 0],
-            messageIds: [8, 0],
+            coefficients: [1],
+            messageIds: [8],
             offset: -5,
             comparisonOperator: 1,
           }
@@ -280,8 +280,8 @@ export class TestdataProvider {
           incomingPlaces: [1],
           outgoingPlaces: [9],
           constraint: {
-            coefficients: [1, 0],
-            messageIds: [8, 0],
+            coefficients: [1],
+            messageIds: [8],
             offset: -5,
             comparisonOperator: 4,
           }
@@ -468,8 +468,8 @@ export class TestdataProvider {
           participant: 1,
           message: 7,
           constraint: {
-            coefficients: [1, 0],
-            messageIds: [8, 0],
+            coefficients: [1],
+            messageIds: [8],
             offset: -5,
             comparisonOperator: 1,
           }
@@ -545,8 +545,8 @@ export class TestdataProvider {
           participant: 1,
           message: 0,
           constraint: {
-            coefficients: [1, 0],
-            messageIds: [8, 0],
+            coefficients: [1],
+            messageIds: [8],
             offset: -5,
             comparisonOperator: 4,
           }

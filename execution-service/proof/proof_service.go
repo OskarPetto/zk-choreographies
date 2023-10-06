@@ -128,7 +128,7 @@ func (service *ProofService) ProveTermination(cmd ProveTerminationCommand) (Proo
 		Model:          circuit.FromModel(model),
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
-		EndPlace:       circuit.ToEndPlace(model, cmd.EndPlace),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, cmd.EndPlace),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {

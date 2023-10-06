@@ -3,6 +3,7 @@ package circuit_test
 import (
 	"execution-service/circuit"
 	"execution-service/domain"
+	"execution-service/testdata"
 	"testing"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -11,13 +12,14 @@ import (
 )
 
 var transitionCircuit = circuit.NewTransitionCircuit()
+var transitionStates = testdata.GetModel2States(signatureParameters)
 
 func TestTransition_NoChange(t *testing.T) {
-	model := states[4].Model
-	currentInstance := states[4].Instance
-	transition := states[4].Transition
-	signature := states[4].Signature
-	constraintInput := states[4].ConstraintInput
+	model := transitionStates[4].Model
+	currentInstance := transitionStates[4].Instance
+	transition := transitionStates[4].Transition
+	signature := transitionStates[4].Signature
+	constraintInput := transitionStates[4].ConstraintInput
 
 	witness := circuit.TransitionCircuit{
 		Model:           circuit.FromModel(model),
@@ -35,14 +37,13 @@ func TestTransition_NoChange(t *testing.T) {
 }
 
 func TestTransition_Transitions(t *testing.T) {
-	for i := 0; i < len(states)-1; i++ {
-		model := states[i].Model
-		currentInstance := states[i].Instance
-		nextInstance := states[i+1].Instance
-		transition := states[i+1].Transition
-		nextSignature := states[i+1].Signature
-		constraintInput := states[i+1].ConstraintInput
-
+	for i := 0; i < len(transitionStates)-1; i++ {
+		model := transitionStates[i].Model
+		currentInstance := transitionStates[i].Instance
+		nextInstance := transitionStates[i+1].Instance
+		transition := transitionStates[i+1].Transition
+		nextSignature := transitionStates[i+1].Signature
+		constraintInput := transitionStates[i+1].ConstraintInput
 		witness := circuit.TransitionCircuit{
 			Model:           circuit.FromModel(model),
 			CurrentInstance: circuit.FromInstance(currentInstance),
@@ -60,12 +61,12 @@ func TestTransition_Transitions(t *testing.T) {
 }
 
 func TestTransition_InvalidModelHash(t *testing.T) {
-	model := states[0].Model
-	currentInstance := states[0].Instance
-	nextInstance := states[1].Instance
-	transition := states[1].Transition
-	nextSignature := states[1].Signature
-	constraintInput := states[1].ConstraintInput
+	model := transitionStates[0].Model
+	currentInstance := transitionStates[0].Instance
+	nextInstance := transitionStates[1].Instance
+	transition := transitionStates[1].Transition
+	nextSignature := transitionStates[1].Signature
+	constraintInput := transitionStates[1].ConstraintInput
 
 	model.Hash = domain.EmptyHash()
 
@@ -83,11 +84,11 @@ func TestTransition_InvalidModelHash(t *testing.T) {
 }
 
 func TestTransition_InvalidInstanceHash(t *testing.T) {
-	model := states[0].Model
-	currentInstance := states[0].Instance
-	nextInstance := states[1].Instance
-	transition := states[1].Transition
-	constraintInput := states[1].ConstraintInput
+	model := transitionStates[0].Model
+	currentInstance := transitionStates[0].Instance
+	nextInstance := transitionStates[1].Instance
+	transition := transitionStates[1].Transition
+	constraintInput := transitionStates[1].ConstraintInput
 
 	nextInstance.Hash = domain.EmptyHash()
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
@@ -106,12 +107,12 @@ func TestTransition_InvalidInstanceHash(t *testing.T) {
 }
 
 func TestTransition_InvalidTokenCounts(t *testing.T) {
-	model := states[0].Model
-	currentInstance := states[0].Instance
-	nextInstance := states[2].Instance
-	transition := states[2].Transition
-	nextSignature := states[2].Signature
-	constraintInput := states[2].ConstraintInput
+	model := transitionStates[0].Model
+	currentInstance := transitionStates[0].Instance
+	nextInstance := transitionStates[2].Instance
+	transition := transitionStates[2].Transition
+	nextSignature := transitionStates[2].Signature
+	constraintInput := transitionStates[2].ConstraintInput
 
 	witness := circuit.TransitionCircuit{
 		Model:           circuit.FromModel(model),
@@ -127,12 +128,12 @@ func TestTransition_InvalidTokenCounts(t *testing.T) {
 }
 
 func TestTransition_InvalidSignature(t *testing.T) {
-	model := states[0].Model
-	currentInstance := states[0].Instance
-	nextInstance := states[1].Instance
-	transition := states[1].Transition
-	nextSignature := states[2].Signature
-	constraintInput := states[1].ConstraintInput
+	model := transitionStates[0].Model
+	currentInstance := transitionStates[0].Instance
+	nextInstance := transitionStates[1].Instance
+	transition := transitionStates[1].Transition
+	nextSignature := transitionStates[2].Signature
+	constraintInput := transitionStates[1].ConstraintInput
 
 	witness := circuit.TransitionCircuit{
 		Model:           circuit.FromModel(model),
@@ -148,11 +149,11 @@ func TestTransition_InvalidSignature(t *testing.T) {
 }
 
 func TestTransition_NotAParticipant(t *testing.T) {
-	model := states[0].Model
-	currentInstance := states[0].Instance
-	nextInstance := states[1].Instance
-	transition := states[1].Transition
-	constraintInput := states[1].ConstraintInput
+	model := transitionStates[0].Model
+	currentInstance := transitionStates[0].Instance
+	nextInstance := transitionStates[1].Instance
+	transition := transitionStates[1].Transition
+	constraintInput := transitionStates[1].ConstraintInput
 
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(2))
 
@@ -170,12 +171,12 @@ func TestTransition_NotAParticipant(t *testing.T) {
 }
 
 func TestTransition_AlteredPublicKeys(t *testing.T) {
-	model := states[0].Model
-	currentInstance := states[0].Instance
-	nextInstance := states[1].Instance
-	transition := states[1].Transition
-	nextSignature := states[1].Signature
-	constraintInput := states[1].ConstraintInput
+	model := transitionStates[0].Model
+	currentInstance := transitionStates[0].Instance
+	nextInstance := transitionStates[1].Instance
+	transition := transitionStates[1].Transition
+	nextSignature := transitionStates[1].Signature
+	constraintInput := transitionStates[1].ConstraintInput
 
 	otherPublicKeys := signatureParameters.GetPublicKeys(3)
 	currentInstance.PublicKeys[0] = otherPublicKeys[1]
@@ -196,11 +197,11 @@ func TestTransition_AlteredPublicKeys(t *testing.T) {
 }
 
 func TestTransition_OverwrittenMessageHash(t *testing.T) {
-	model := states[2].Model
-	currentInstance := states[2].Instance
-	nextInstance := states[3].Instance
-	transition := states[3].Transition
-	constraintInput := states[3].ConstraintInput
+	model := transitionStates[2].Model
+	currentInstance := transitionStates[2].Instance
+	nextInstance := transitionStates[3].Instance
+	transition := transitionStates[3].Transition
+	constraintInput := transitionStates[3].ConstraintInput
 
 	nextInstance.MessageHashes[8] = domain.NewBytesMessage([]byte("Not a purchase order")).Hash.Value
 	nextInstance.ComputeHash()
@@ -220,11 +221,11 @@ func TestTransition_OverwrittenMessageHash(t *testing.T) {
 }
 
 func TestTransition_OtherParticipant(t *testing.T) {
-	model := states[2].Model
-	currentInstance := states[2].Instance
-	nextInstance := states[3].Instance
-	transition := states[3].Transition
-	constraintInput := states[3].ConstraintInput
+	model := transitionStates[2].Model
+	currentInstance := transitionStates[2].Instance
+	nextInstance := transitionStates[3].Instance
+	transition := transitionStates[3].Transition
+	constraintInput := transitionStates[3].ConstraintInput
 
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 
@@ -242,13 +243,13 @@ func TestTransition_OtherParticipant(t *testing.T) {
 }
 
 func TestTransition_InvalidConstraintInput(t *testing.T) {
-	model := states[3].Model
-	currentInstance := states[3].Instance
-	nextInstance := states[4].Instance
-	transition := states[4].Transition
-	nextSignature := states[4].Signature
+	model := transitionStates[3].Model
+	currentInstance := transitionStates[3].Instance
+	nextInstance := transitionStates[4].Instance
+	transition := transitionStates[4].Transition
+	nextSignature := transitionStates[4].Signature
 
-	constraintInput := states[4].ConstraintInput
+	constraintInput := transitionStates[4].ConstraintInput
 	constraintInput.Messages[0].IntegerMessage = 1
 
 	witness := circuit.TransitionCircuit{
@@ -265,18 +266,18 @@ func TestTransition_InvalidConstraintInput(t *testing.T) {
 }
 
 func TestTransition_InvalidMessageForConstraint(t *testing.T) {
-	model := states[3].Model
-	currentInstance := states[3].Instance
+	model := transitionStates[3].Model
+	currentInstance := transitionStates[3].Instance
 	message := domain.NewIntegerMessage(6)
 	currentInstance.MessageHashes[8] = message.Hash.Value
 	currentInstance.ComputeHash()
-	nextInstance := states[4].Instance
+	nextInstance := transitionStates[4].Instance
 	nextInstance.MessageHashes[8] = message.Hash.Value
 	nextInstance.ComputeHash()
-	transition := states[4].Transition
+	transition := transitionStates[4].Transition
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(1))
 
-	constraintInput := states[4].ConstraintInput
+	constraintInput := transitionStates[4].ConstraintInput
 	constraintInput.Messages[0] = message
 
 	witness := circuit.TransitionCircuit{

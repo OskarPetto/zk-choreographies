@@ -3,6 +3,7 @@ package circuit_test
 import (
 	"execution-service/circuit"
 	"execution-service/domain"
+	"execution-service/testdata"
 	"testing"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -11,17 +12,18 @@ import (
 )
 
 var terminationCircuit = circuit.NewTerminationCircuit()
+var terminationStates = testdata.GetModel2States(signatureParameters)
 
 func TestTermination(t *testing.T) {
-	model := states[len(states)-1].Model
-	instance := states[len(states)-1].Instance
-	signature := states[len(states)-1].Signature
+	model := terminationStates[len(terminationStates)-1].Model
+	instance := terminationStates[len(terminationStates)-1].Instance
+	signature := terminationStates[len(terminationStates)-1].Signature
 
 	witness := circuit.TerminationCircuit{
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlace:       circuit.ToEndPlace(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -31,9 +33,9 @@ func TestTermination(t *testing.T) {
 }
 
 func TestTermination_InvalidModelHash(t *testing.T) {
-	model := states[len(states)-1].Model
-	instance := states[len(states)-1].Instance
-	signature := states[len(states)-1].Signature
+	model := terminationStates[len(terminationStates)-1].Model
+	instance := terminationStates[len(terminationStates)-1].Instance
+	signature := terminationStates[len(terminationStates)-1].Signature
 
 	model.Hash = domain.EmptyHash()
 
@@ -41,7 +43,7 @@ func TestTermination_InvalidModelHash(t *testing.T) {
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlace:       circuit.ToEndPlace(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -49,8 +51,8 @@ func TestTermination_InvalidModelHash(t *testing.T) {
 }
 
 func TestTermination_InvalidInstanceHash(t *testing.T) {
-	model := states[len(states)-1].Model
-	instance := states[len(states)-1].Instance
+	model := terminationStates[len(terminationStates)-1].Model
+	instance := terminationStates[len(terminationStates)-1].Instance
 
 	instance.Hash = domain.EmptyHash()
 	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
@@ -59,7 +61,7 @@ func TestTermination_InvalidInstanceHash(t *testing.T) {
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlace:       circuit.ToEndPlace(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -67,15 +69,15 @@ func TestTermination_InvalidInstanceHash(t *testing.T) {
 }
 
 func TestTermination_InvalidTokenCounts(t *testing.T) {
-	model := states[len(states)-2].Model
-	instance := states[len(states)-2].Instance
-	signature := states[len(states)-2].Signature
+	model := terminationStates[len(terminationStates)-2].Model
+	instance := terminationStates[len(terminationStates)-2].Instance
+	signature := terminationStates[len(terminationStates)-2].Signature
 
 	witness := circuit.TerminationCircuit{
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlace:       circuit.ToEndPlace(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -83,15 +85,15 @@ func TestTermination_InvalidTokenCounts(t *testing.T) {
 }
 
 func TestTermination_InvalidSignature(t *testing.T) {
-	model := states[len(states)-1].Model
-	instance := states[len(states)-1].Instance
-	signature := states[len(states)-2].Signature
+	model := terminationStates[len(terminationStates)-1].Model
+	instance := terminationStates[len(terminationStates)-1].Instance
+	signature := terminationStates[len(terminationStates)-2].Signature
 
 	witness := circuit.TerminationCircuit{
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlace:       circuit.ToEndPlace(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -99,8 +101,8 @@ func TestTermination_InvalidSignature(t *testing.T) {
 }
 
 func TestTermination_NotAParticipant(t *testing.T) {
-	model := states[len(states)-1].Model
-	instance := states[len(states)-1].Instance
+	model := terminationStates[len(terminationStates)-1].Model
+	instance := terminationStates[len(terminationStates)-1].Instance
 
 	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(2))
 
@@ -108,7 +110,7 @@ func TestTermination_NotAParticipant(t *testing.T) {
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlace:       circuit.ToEndPlace(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())

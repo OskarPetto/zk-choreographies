@@ -75,12 +75,10 @@
       "message": 7,
       "constraint": {
         "coefficients": [
-          1,
-          0
+          1
         ],
         "messageIds": [
-          8,
-          0
+          8
         ],
         "offset": -5,
         "comparisonOperator": 1
@@ -191,12 +189,10 @@
       "message": 0,
       "constraint": {
         "coefficients": [
-          1,
-          0
+          1
         ],
         "messageIds": [
-          8,
-          0
+          8
         ],
         "offset": -5,
         "comparisonOperator": 4

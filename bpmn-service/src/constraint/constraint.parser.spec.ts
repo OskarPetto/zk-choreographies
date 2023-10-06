@@ -13,6 +13,8 @@ describe('ConstraintParser', () => {
   const messages4 = new Map([['a', 0], ['b', 1]])
   const constraint5 = '1+3*y == -1*x'
   const messages5 = new Map([['x', 0], ['y', 1]])
+  const constraint6 = 'a > 3'
+  const messages6 = new Map([['a', 0]])
 
   const result1 = undefined
   const result2 = undefined
@@ -33,6 +35,12 @@ describe('ConstraintParser', () => {
     messageIds: [1, 0],
     offset: 1,
     comparisonOperator: 0,
+  }
+  const result6 = {
+    coefficients: [1],
+    messageIds: [0],
+    offset: -3,
+    comparisonOperator: 1,
   }
 
   beforeAll(() => {
@@ -63,6 +71,10 @@ describe('ConstraintParser', () => {
     it('should parse constraint5', () => {
       const result = constraintParser.parseConstraint(constraint5, messages5);
       expect(result).toEqual(result5);
+    });
+    it('should parse constraint6', () => {
+      const result = constraintParser.parseConstraint(constraint6, messages6);
+      expect(result).toEqual(result6);
     });
   });
 });
