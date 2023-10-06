@@ -12,7 +12,7 @@ const MaxMessageCount = 128
 const MaxParticipantCount = 32
 const MaxStartPlaceCount = 1
 const MaxEndPlaceCount = 8
-const MaxBranchingFactor = 4
+const MaxBranchingFactor = 2
 
 var MaxParticipantDepth = int(math.Log2(MaxParticipantCount))
 var MaxTransitionDepth = int(math.Log2(MaxTransitionCount))
