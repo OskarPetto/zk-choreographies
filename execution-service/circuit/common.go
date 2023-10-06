@@ -22,20 +22,8 @@ func checkModelHash(api frontend.API, model Model) error {
 	for _, startPlace := range model.StartPlaces {
 		mimc.Write(startPlace)
 	}
-	for _, endPlace := range model.EndPlaces {
-		mimc.Write(endPlace)
-	}
-	for _, transition := range model.Transitions {
-		mimc.Write(transition.IsTransition)
-		mimc.Write(transition.IncomingPlaces[:]...)
-		mimc.Write(transition.OutgoingPlaces[:]...)
-		mimc.Write(transition.Participant)
-		mimc.Write(transition.Message)
-		mimc.Write(transition.Constraint.Coefficients[:]...)
-		mimc.Write(transition.Constraint.MessageIds[:]...)
-		mimc.Write(transition.Constraint.Offset)
-		mimc.Write(transition.Constraint.ComparisonOperator)
-	}
+	mimc.Write(model.EndPlaceRoot)
+	mimc.Write(model.TransitionRoot)
 	mimc.Write(model.Hash.Salt)
 	result := mimc.Sum()
 	api.AssertIsEqual(result, model.Hash.Value)
@@ -48,10 +36,7 @@ func checkInstanceHash(api frontend.API, instance Instance) error {
 		return err
 	}
 	mimc.Write(instance.TokenCounts[:]...)
-	for _, publicKey := range instance.PublicKeys {
-		mimc.Write(publicKey.A.X)
-		mimc.Write(publicKey.A.Y)
-	}
+	mimc.Write(instance.PublicKeyRoot)
 	mimc.Write(instance.MessageHashes[:]...)
 	mimc.Write(instance.Hash.Salt)
 	hash := mimc.Sum()
@@ -59,7 +44,18 @@ func checkInstanceHash(api frontend.API, instance Instance) error {
 	return nil
 }
 
-func checkSignature(api frontend.API, signature Signature, instance Instance) error {
+func checkAuthentication(api frontend.API, authentication Authentication, instance Instance) error {
+	mimc, err := mimc.NewMiMC(api)
+	if err != nil {
+		return err
+	}
+	api.AssertIsEqual(authentication.MerkleProof.RootHash, instance.PublicKeyRoot)
+	authentication.MerkleProof.VerifyProof(api, &mimc, authentication.Participant)
+	checkPublicKeyHash(api, authentication.MerkleProof.Path[0], authentication.PublicKey)
+	return checkSignature(api, authentication, instance)
+}
+
+func checkSignature(api frontend.API, authentication Authentication, instance Instance) error {
 	mimc, err := mimc.NewMiMC(api)
 	if err != nil {
 		return err
@@ -69,20 +65,18 @@ func checkSignature(api frontend.API, signature Signature, instance Instance) er
 		return err
 	}
 
-	return eddsa.Verify(curve, signature.Value, instance.Hash.Value, signature.PublicKey, &mimc)
+	return eddsa.Verify(curve, authentication.Signature, instance.Hash.Value, authentication.PublicKey, &mimc)
 }
 
-func findParticipantId(api frontend.API, signature Signature, instance Instance) frontend.Variable {
-	var participantId frontend.Variable = -1
-	for i, publicKey := range instance.PublicKeys {
-		participantId = api.Select(publicKeyEquals(api, publicKey, signature.PublicKey), i, participantId)
+func checkPublicKeyHash(api frontend.API, hash frontend.Variable, publicKey eddsa.PublicKey) error {
+	mimc, err := mimc.NewMiMC(api)
+	if err != nil {
+		return err
 	}
-	api.AssertIsDifferent(participantId, -1)
-	return participantId
-}
-
-func publicKeyEquals(api frontend.API, a, b eddsa.PublicKey) frontend.Variable {
-	return api.And(equals(api, a.A.X, b.A.X), equals(api, a.A.Y, b.A.Y))
+	mimc.Write(publicKey.A.X)
+	mimc.Write(publicKey.A.Y)
+	api.AssertIsEqual(hash, mimc.Sum())
+	return nil
 }
 
 func equals(api frontend.API, a, b frontend.Variable) frontend.Variable {

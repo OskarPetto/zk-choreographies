@@ -71,6 +71,7 @@ func TestProveTermination(t *testing.T) {
 		Model:    model.Id(),
 		Instance: instance.Id(),
 		Identity: identity,
+		EndPlace: 13,
 	})
 	assert.Nil(t, err)
 	proofs = append(proofs, proof.ToJson())

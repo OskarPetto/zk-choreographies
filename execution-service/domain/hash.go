@@ -6,9 +6,11 @@ import (
 	"execution-service/utils"
 	"hash"
 
+	"github.com/consensys/gnark-crypto/accumulator/merkletree"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
+	ghash "github.com/consensys/gnark-crypto/hash"
 )
 
 const HashSize = 32
@@ -35,6 +37,38 @@ func (hash *Hash) String() HashId {
 	return utils.BytesToString(hash.Value[:])
 }
 
+func (publicKey *PublicKey) ComputeHash() [HashSize]byte {
+	var eddsaPublicKey eddsa.PublicKey
+	eddsaPublicKey.A.SetBytes(publicKey.Value)
+	xBytes := eddsaPublicKey.A.X.Bytes()
+	yBytes := eddsaPublicKey.A.Y.Bytes()
+	mimc := mimc.NewMiMC()
+	mimc.Write(xBytes[:])
+	mimc.Write(yBytes[:])
+	return computeHash(mimc)
+}
+
+func (transition *Transition) ComputeHash() [HashSize]byte {
+	mimc := mimc.NewMiMC()
+	for _, incomingPlace := range transition.IncomingPlaces {
+		hashUint8(mimc, incomingPlace)
+	}
+	for _, outgoingPlace := range transition.OutgoingPlaces {
+		hashUint8(mimc, outgoingPlace)
+	}
+	hashUint8(mimc, transition.Participant)
+	hashUint8(mimc, transition.Message)
+	for _, coefficient := range transition.Constraint.Coefficients {
+		hashInt64(mimc, int64(coefficient))
+	}
+	for _, messageId := range transition.Constraint.MessageIds {
+		hashUint8(mimc, messageId)
+	}
+	hashInt64(mimc, int64(transition.Constraint.Offset))
+	hashUint8(mimc, transition.Constraint.ComparisonOperator)
+	return computeHash(mimc)
+}
+
 func (model *Model) ComputeHash() {
 	mimc := mimc.NewMiMC()
 	hashUint8(mimc, model.PlaceCount)
@@ -43,28 +77,18 @@ func (model *Model) ComputeHash() {
 	for _, startPlace := range model.StartPlaces {
 		hashUint8(mimc, startPlace)
 	}
+	endPlaceTree := merkletree.New(ghash.MIMC_BN254.New())
 	for _, endPlace := range model.EndPlaces {
-		hashUint8(mimc, endPlace)
+		bytes := Uint8ToBytes(endPlace)
+		endPlaceTree.Push(bytes[:])
 	}
+	mimc.Write(endPlaceTree.Root())
+	transitionTree := merkletree.New(ghash.MIMC_BN254.New())
 	for _, transition := range model.Transitions {
-		hashUint8(mimc, boolToUint8(transition.IsTransition))
-		for _, incomingPlace := range transition.IncomingPlaces {
-			hashUint8(mimc, incomingPlace)
-		}
-		for _, outgoingPlace := range transition.OutgoingPlaces {
-			hashUint8(mimc, outgoingPlace)
-		}
-		hashUint8(mimc, transition.Participant)
-		hashUint8(mimc, transition.Message)
-		for _, coefficient := range transition.Constraint.Coefficients {
-			hashInt64(mimc, int64(coefficient))
-		}
-		for _, messageId := range transition.Constraint.MessageIds {
-			hashUint8(mimc, messageId)
-		}
-		hashInt64(mimc, int64(transition.Constraint.Offset))
-		hashUint8(mimc, transition.Constraint.ComparisonOperator)
+		hash := transition.ComputeHash()
+		transitionTree.Push(hash[:])
 	}
+	mimc.Write(transitionTree.Root())
 	salt := randomFieldElement()
 	mimc.Write(salt[:])
 	model.Hash = Hash{
@@ -78,14 +102,12 @@ func (instance *Instance) ComputeHash() {
 	for _, tokenCount := range instance.TokenCounts {
 		hashInt64(mimc, int64(tokenCount))
 	}
+	tree := merkletree.New(ghash.MIMC_BN254.New())
 	for _, publicKey := range instance.PublicKeys {
-		var eddsaPublicKey eddsa.PublicKey
-		eddsaPublicKey.A.SetBytes(publicKey.Value)
-		xBytes := eddsaPublicKey.A.X.Bytes()
-		yBytes := eddsaPublicKey.A.Y.Bytes()
-		mimc.Write(xBytes[:])
-		mimc.Write(yBytes[:])
+		hash := publicKey.ComputeHash()
+		tree.Push(hash[:])
 	}
+	mimc.Write(tree.Root())
 	for _, messageHash := range instance.MessageHashes {
 		mimc.Write(messageHash[:])
 	}
@@ -105,6 +127,12 @@ func (message *Message) ComputeHash() {
 		hash = hashIntegerMessage(message.IntegerMessage)
 	}
 	message.Hash = hash
+}
+
+func Uint8ToBytes(value uint8) [fr.Bytes]byte {
+	var bytes [fr.Bytes]byte
+	bytes[fr.Bytes-1] = value // big endian
+	return bytes
 }
 
 func hashBytesMessage(message []byte) Hash {
@@ -140,8 +168,7 @@ func hashInt64(hasher hash.Hash, value int64) {
 }
 
 func hashUint8(hasher hash.Hash, value uint8) {
-	var bytes [fr.Bytes]byte
-	bytes[fr.Bytes-1] = value // big endian
+	bytes := Uint8ToBytes(value)
 	hasher.Write(bytes[:])
 }
 

@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var instantiationCircuit circuit.InstantiationCircuit
+var instantiationCircuit = circuit.NewInstantiationCircuit()
 
 var signatureParameters parameters.SignatureParameters = parameters.NewSignatureParameters()
 var states = testdata.GetModel2States(signatureParameters)
@@ -23,9 +23,9 @@ func TestInstantiation(t *testing.T) {
 	signature := states[0].Signature
 
 	witness := circuit.InstantiationCircuit{
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(model),
+		Instance:       circuit.FromInstance(instance),
+		Authentication: circuit.ToAuthentication(instance, signature),
+		Model:          circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -42,9 +42,9 @@ func TestInstantiation_InvalidModelHash(t *testing.T) {
 	model.Hash = domain.EmptyHash()
 
 	witness := circuit.InstantiationCircuit{
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(model),
+		Instance:       circuit.FromInstance(instance),
+		Authentication: circuit.ToAuthentication(instance, signature),
+		Model:          circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -59,9 +59,9 @@ func TestInstantiation_InvalidInstanceHash(t *testing.T) {
 	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 
 	witness := circuit.InstantiationCircuit{
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(model),
+		Instance:       circuit.FromInstance(instance),
+		Authentication: circuit.ToAuthentication(instance, signature),
+		Model:          circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -74,9 +74,9 @@ func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
 	signature := states[1].Signature
 
 	witness := circuit.InstantiationCircuit{
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(model),
+		Instance:       circuit.FromInstance(instance),
+		Authentication: circuit.ToAuthentication(instance, signature),
+		Model:          circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -89,9 +89,9 @@ func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
 	signature := states[len(states)-1].Signature
 
 	witness := circuit.InstantiationCircuit{
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(model),
+		Instance:       circuit.FromInstance(instance),
+		Authentication: circuit.ToAuthentication(instance, signature),
+		Model:          circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -104,9 +104,9 @@ func TestInstantiation_InvalidSignature(t *testing.T) {
 	signature := states[1].Signature
 
 	witness := circuit.InstantiationCircuit{
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(model),
+		Instance:       circuit.FromInstance(instance),
+		Authentication: circuit.ToAuthentication(instance, signature),
+		Model:          circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -120,9 +120,9 @@ func TestInstantiation_NotAParticipant(t *testing.T) {
 	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(2))
 
 	witness := circuit.InstantiationCircuit{
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(model),
+		Instance:       circuit.FromInstance(instance),
+		Authentication: circuit.ToAuthentication(instance, signature),
+		Model:          circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())
@@ -138,9 +138,9 @@ func TestInstantiation_InvalidMessageHashes(t *testing.T) {
 	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 
 	witness := circuit.InstantiationCircuit{
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
-		Model:     circuit.FromModel(model),
+		Instance:       circuit.FromInstance(instance),
+		Authentication: circuit.ToAuthentication(instance, signature),
+		Model:          circuit.FromModel(model),
 	}
 
 	err := test.IsSolved(&instantiationCircuit, &witness, ecc.BN254.ScalarField())

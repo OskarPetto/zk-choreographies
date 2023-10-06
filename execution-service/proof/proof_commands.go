@@ -14,12 +14,13 @@ type ProveTransitionCommand struct {
 	Model           domain.ModelId
 	CurrentInstance domain.InstanceId
 	NextInstance    domain.InstanceId
-	Transtition     domain.TransitionId
+	Transition      domain.TransitionId
 	Identity        domain.IdentityId
 }
 
 type ProveTerminationCommand struct {
 	Model    domain.ModelId
 	Instance domain.InstanceId
+	EndPlace domain.PlaceId
 	Identity domain.IdentityId
 }

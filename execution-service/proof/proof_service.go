@@ -55,9 +55,9 @@ func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	signature := instance.Sign(privateKey)
 	assignment := &circuit.InstantiationCircuit{
-		Model:     circuit.FromModel(model),
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
+		Model:          circuit.FromModel(model),
+		Instance:       circuit.FromInstance(instance),
+		Authentication: circuit.ToAuthentication(instance, signature),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -83,7 +83,7 @@ func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 	if err != nil {
 		return Proof{}, err
 	}
-	transition, err := model.FindTransitionById(cmd.Transtition)
+	transition, err := model.FindTransitionById(cmd.Transition)
 	if err != nil {
 		return Proof{}, err
 	}
@@ -97,7 +97,8 @@ func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 		Model:           circuit.FromModel(model),
 		CurrentInstance: circuit.FromInstance(currentInstance),
 		NextInstance:    circuit.FromInstance(nextInstance),
-		NextSignature:   circuit.FromSignature(nextSignature),
+		Transition:      circuit.ToTransition(model, transition),
+		Authentication:  circuit.ToAuthentication(nextInstance, nextSignature),
 		ConstraintInput: circuit.FromConstraintInput(constraintInput),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
@@ -124,9 +125,10 @@ func (service *ProofService) ProveTermination(cmd ProveTerminationCommand) (Proo
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	signature := instance.Sign(privateKey)
 	assignment := &circuit.TerminationCircuit{
-		Model:     circuit.FromModel(model),
-		Instance:  circuit.FromInstance(instance),
-		Signature: circuit.FromSignature(signature),
+		Model:          circuit.FromModel(model),
+		Instance:       circuit.FromInstance(instance),
+		Authentication: circuit.ToAuthentication(instance, signature),
+		EndPlace:       circuit.ToEndPlace(model, cmd.EndPlace),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {

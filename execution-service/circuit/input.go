@@ -1,12 +1,16 @@
 package circuit
 
 import (
+	"bytes"
 	"execution-service/domain"
 	"execution-service/utils"
 
+	"github.com/consensys/gnark-crypto/accumulator/merkletree"
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
 	"github.com/consensys/gnark-crypto/ecc/twistededwards"
+	"github.com/consensys/gnark-crypto/hash"
 	"github.com/consensys/gnark/frontend"
+	"github.com/consensys/gnark/std/accumulator/merkle"
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
@@ -15,15 +19,17 @@ type Hash struct {
 	Salt  frontend.Variable
 }
 
-type Signature struct {
-	Value     eddsa.Signature
-	PublicKey eddsa.PublicKey
+type Authentication struct {
+	Signature   eddsa.Signature
+	PublicKey   eddsa.PublicKey
+	MerkleProof merkle.MerkleProof
+	Participant frontend.Variable
 }
 
 type Instance struct {
 	Hash          Hash
 	TokenCounts   [domain.MaxPlaceCount]frontend.Variable
-	PublicKeys    [domain.MaxParticipantCount]eddsa.PublicKey
+	PublicKeyRoot frontend.Variable
 	MessageHashes [domain.MaxMessageCount]frontend.Variable
 }
 
@@ -40,12 +46,18 @@ type Constraint struct {
 }
 
 type Transition struct {
-	IsTransition   frontend.Variable
 	IncomingPlaces [domain.MaxBranchingFactor]frontend.Variable
 	OutgoingPlaces [domain.MaxBranchingFactor]frontend.Variable
 	Participant    frontend.Variable
 	Message        frontend.Variable
 	Constraint     Constraint
+	MerkleProof    merkle.MerkleProof
+	Index          frontend.Variable
+}
+
+type EndPlace struct {
+	MerkleProof merkle.MerkleProof
+	Index       frontend.Variable
 }
 
 type Model struct {
@@ -54,16 +66,32 @@ type Model struct {
 	ParticipantCount frontend.Variable
 	MessageCount     frontend.Variable
 	StartPlaces      [domain.MaxStartPlaceCount]frontend.Variable
-	EndPlaces        [domain.MaxEndPlaceCount]frontend.Variable
-	Transitions      [domain.MaxTransitionCount]Transition
+	EndPlaceRoot     frontend.Variable
+	TransitionRoot   frontend.Variable
 }
 
-func FromSignature(signature domain.Signature) Signature {
-	var value eddsa.Signature
-	value.Assign(twistededwards.BN254, signature.Value)
-	return Signature{
-		Value:     value,
-		PublicKey: fromPublicKey(signature.PublicKey),
+func ToAuthentication(instance domain.Instance, signature domain.Signature) Authentication {
+	var signatureValue eddsa.Signature
+	signatureValue.Assign(twistededwards.BN254, signature.Value)
+
+	var buf bytes.Buffer
+	for _, publicKey := range instance.PublicKeys {
+		hash := publicKey.ComputeHash()
+		buf.Write(hash[:])
+	}
+	merkleRoot, proofPath, _, err := merkletree.BuildReaderProof(&buf, hash.MIMC_BN254.New(), fr.Bytes, uint64(signature.Participant))
+	utils.PanicOnError(err)
+	var merkeProof merkle.MerkleProof
+	merkeProof.RootHash = merkleRoot
+	merkeProof.Path = make([]frontend.Variable, domain.MaxParticipantDepth+1)
+	for i := 0; i < domain.MaxParticipantDepth+1; i++ {
+		merkeProof.Path[i] = proofPath[i]
+	}
+	return Authentication{
+		Signature:   signatureValue,
+		PublicKey:   fromPublicKey(signature.PublicKey),
+		MerkleProof: merkeProof,
+		Participant: signature.Participant,
 	}
 }
 
@@ -72,9 +100,10 @@ func FromInstance(instance domain.Instance) Instance {
 	for i, tokenCount := range instance.TokenCounts {
 		tokenCounts[i] = tokenCount
 	}
-	var publicKeys [domain.MaxParticipantCount]eddsa.PublicKey
-	for i, publicKey := range instance.PublicKeys {
-		publicKeys[i] = fromPublicKey(publicKey)
+	tree := merkletree.New(hash.MIMC_BN254.New())
+	for _, publicKey := range instance.PublicKeys {
+		hash := publicKey.ComputeHash()
+		tree.Push(hash[:])
 	}
 	var messageHashes [domain.MaxMessageCount]frontend.Variable
 	for i, messageHash := range instance.MessageHashes {
@@ -83,7 +112,7 @@ func FromInstance(instance domain.Instance) Instance {
 	return Instance{
 		Hash:          fromHash(instance.Hash),
 		TokenCounts:   tokenCounts,
-		PublicKeys:    publicKeys,
+		PublicKeyRoot: tree.Root(),
 		MessageHashes: messageHashes,
 	}
 }
@@ -99,13 +128,15 @@ func FromModel(model domain.Model) Model {
 	for i, startPlace := range model.StartPlaces {
 		startPlaces[i] = startPlace
 	}
-	var endPlaces [domain.MaxEndPlaceCount]frontend.Variable
-	for i, endPlace := range model.EndPlaces {
-		endPlaces[i] = endPlace
+	endPlaceTree := merkletree.New(hash.MIMC_BN254.New())
+	for _, endPlace := range model.EndPlaces {
+		bytes := domain.Uint8ToBytes(endPlace)
+		endPlaceTree.Push(bytes[:])
 	}
-	var transitions [domain.MaxTransitionCount]Transition
-	for i, transition := range model.Transitions {
-		transitions[i] = fromTransition(transition)
+	transitionTree := merkletree.New(hash.MIMC_BN254.New())
+	for _, transition := range model.Transitions {
+		hash := transition.ComputeHash()
+		transitionTree.Push(hash[:])
 	}
 	return Model{
 		Hash:             fromHash(model.Hash),
@@ -113,12 +144,36 @@ func FromModel(model domain.Model) Model {
 		ParticipantCount: model.ParticipantCount,
 		MessageCount:     model.MessageCount,
 		StartPlaces:      startPlaces,
-		EndPlaces:        endPlaces,
-		Transitions:      transitions,
+		EndPlaceRoot:     endPlaceTree.Root(),
+		TransitionRoot:   transitionTree.Root(),
 	}
 }
 
-func fromTransition(transition domain.Transition) Transition {
+func ToEndPlace(model domain.Model, place domain.PlaceId) EndPlace {
+	var buf bytes.Buffer
+	index := domain.MaxEndPlaceCount
+	for i, endPlace := range model.EndPlaces {
+		if endPlace == place {
+			index = i
+		}
+		bytes := domain.Uint8ToBytes(endPlace)
+		buf.Write(bytes[:])
+	}
+	merkleRoot, proofPath, _, err := merkletree.BuildReaderProof(&buf, hash.MIMC_BN254.New(), fr.Bytes, uint64(index))
+	utils.PanicOnError(err)
+	var merkeProof merkle.MerkleProof
+	merkeProof.RootHash = merkleRoot
+	merkeProof.Path = make([]frontend.Variable, domain.MaxEndPlaceDepth+1)
+	for i := 0; i < domain.MaxEndPlaceDepth+1; i++ {
+		merkeProof.Path[i] = proofPath[i]
+	}
+	return EndPlace{
+		MerkleProof: merkeProof,
+		Index:       index,
+	}
+}
+
+func ToTransition(model domain.Model, transition domain.Transition) Transition {
 	var incomingPlaces [domain.MaxBranchingFactor]frontend.Variable
 	for i, incomingPlace := range transition.IncomingPlaces {
 		incomingPlaces[i] = incomingPlace
@@ -127,17 +182,31 @@ func fromTransition(transition domain.Transition) Transition {
 	for i, outgoingPlace := range transition.OutgoingPlaces {
 		outgoingPlaces[i] = outgoingPlace
 	}
-	isTransition := 0
-	if transition.IsTransition {
-		isTransition = 1
+	index := domain.MaxTransitionCount
+	var buf bytes.Buffer
+	for i, modelTransition := range model.Transitions {
+		if modelTransition.Id == transition.Id {
+			index = i
+		}
+		hash := modelTransition.ComputeHash()
+		buf.Write(hash[:])
+	}
+	merkleRoot, proofPath, _, err := merkletree.BuildReaderProof(&buf, hash.MIMC_BN254.New(), fr.Bytes, uint64(index))
+	utils.PanicOnError(err)
+	var merkeProof merkle.MerkleProof
+	merkeProof.RootHash = merkleRoot
+	merkeProof.Path = make([]frontend.Variable, domain.MaxTransitionDepth+1)
+	for i := 0; i < domain.MaxTransitionDepth+1; i++ {
+		merkeProof.Path[i] = proofPath[i]
 	}
 	return Transition{
-		IsTransition:   isTransition,
 		IncomingPlaces: incomingPlaces,
 		OutgoingPlaces: outgoingPlaces,
 		Participant:    transition.Participant,
 		Message:        transition.Message,
 		Constraint:     fromConstraint(transition.Constraint),
+		MerkleProof:    merkeProof,
+		Index:          index,
 	}
 }
 

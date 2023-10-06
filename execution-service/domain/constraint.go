@@ -36,6 +36,16 @@ func EmptyConstraint() Constraint {
 	}
 }
 
+func IsEmptyConstraint(constraint Constraint) bool {
+	emptyConstraint := EmptyConstraint()
+	for i, messageId := range constraint.MessageIds {
+		if emptyConstraint.MessageIds[i] != messageId {
+			return false
+		}
+	}
+	return true
+}
+
 type ConstraintInput struct {
 	Messages [MaxConstraintMessageCount]Message
 }

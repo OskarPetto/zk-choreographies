@@ -2,16 +2,21 @@ package domain
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
 const MaxPlaceCount = 64
-const MaxParticipantCount = 8
+const MaxParticipantCount = 16
 const MaxMessageCount = 64
 const MaxStartPlaceCount = 1
-const MaxEndPlaceCount = 2
+const MaxEndPlaceCount = 16
 const MaxTransitionCount = 64
-const MaxBranchingFactor = 2
+const MaxBranchingFactor = 4
+
+var MaxParticipantDepth = int(math.Log2(MaxParticipantCount))
+var MaxTransitionDepth = int(math.Log2(MaxTransitionCount))
+var MaxEndPlaceDepth = int(math.Log2(MaxEndPlaceCount))
 
 type PlaceId = uint8
 type ParticipantId = uint8
@@ -27,7 +32,6 @@ type TransitionId = string
 type Transition struct {
 	Id             TransitionId
 	Name           string
-	IsTransition   bool
 	IncomingPlaces [MaxBranchingFactor]PlaceId
 	OutgoingPlaces [MaxBranchingFactor]PlaceId
 	Participant    ParticipantId
@@ -36,13 +40,42 @@ type Transition struct {
 }
 
 func OutOfBoundsTransition() Transition {
+	var incomingPlaces [MaxBranchingFactor]PlaceId
+	for i, _ := range incomingPlaces {
+		incomingPlaces[i] = OutOfBoundsPlaceId
+	}
+	var outgoingPlaces [MaxBranchingFactor]PlaceId
+	for i, _ := range outgoingPlaces {
+		outgoingPlaces[i] = OutOfBoundsPlaceId
+	}
 	return Transition{
-		IsTransition:   false,
-		IncomingPlaces: [MaxBranchingFactor]PlaceId{OutOfBoundsPlaceId, OutOfBoundsPlaceId},
-		OutgoingPlaces: [MaxBranchingFactor]PlaceId{OutOfBoundsPlaceId, OutOfBoundsPlaceId},
+		IncomingPlaces: incomingPlaces,
+		OutgoingPlaces: outgoingPlaces,
 		Participant:    EmptyParticipantId,
 		Message:        EmptyMessageId,
+		Constraint:     EmptyConstraint(),
 	}
+}
+
+func IsOutOfBoundsTransition(transition Transition) bool {
+	outOfBoundsTransition := OutOfBoundsTransition()
+	for i, incomingPlace := range transition.IncomingPlaces {
+		if outOfBoundsTransition.IncomingPlaces[i] != incomingPlace {
+			return false
+		}
+	}
+	for i, outgoingPlace := range transition.OutgoingPlaces {
+		if outOfBoundsTransition.OutgoingPlaces[i] != outgoingPlace {
+			return false
+		}
+	}
+	if transition.Participant != outOfBoundsTransition.Participant {
+		return false
+	}
+	if transition.Message != outOfBoundsTransition.Message {
+		return false
+	}
+	return IsEmptyConstraint(transition.Constraint)
 }
 
 type ModelId = string

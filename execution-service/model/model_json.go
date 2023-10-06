@@ -186,7 +186,6 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 	return domain.Transition{
 		Id:             transition.Id,
 		Name:           transition.Name,
-		IsTransition:   true,
 		IncomingPlaces: incomingPlaces,
 		OutgoingPlaces: outgoingPlaces,
 		Participant:    domain.ParticipantId(transition.Participant),
@@ -235,7 +234,7 @@ func ToJson(model domain.Model) ModelJson {
 	}
 	transitions := make([]TransitionJson, 0)
 	for _, transition := range model.Transitions {
-		if !transition.IsTransition {
+		if domain.IsOutOfBoundsTransition(transition) {
 			break
 		}
 		transitions = append(transitions, transitionToJson(transition))

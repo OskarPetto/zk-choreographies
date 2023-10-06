@@ -64,9 +64,6 @@ func (instance *Instance) updateTokenCounts(transition Transition) {
 }
 
 func isTransitionExecutable(instance Instance, transition Transition, input ConstraintInput) bool {
-	if !transition.IsTransition {
-		return false
-	}
 	for _, incomingPlaceId := range transition.IncomingPlaces {
 		if incomingPlaceId == OutOfBoundsPlaceId {
 			break

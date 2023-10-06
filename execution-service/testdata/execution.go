@@ -10,6 +10,7 @@ type State struct {
 	Instance        domain.Instance
 	Model           domain.Model
 	Signature       domain.Signature
+	Transition      domain.Transition
 	Identity        domain.IdentityId
 	ConstraintInput domain.ConstraintInput
 }
@@ -26,6 +27,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 	return []State{
 		getModelState(
 			model2,
+			0,
 			[]domain.PlaceId{12},
 			[]domain.Hash{
 				domain.EmptyHash(),
@@ -44,6 +46,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 		),
 		getModelState(
 			model2,
+			0,
 			[]domain.PlaceId{0},
 			[]domain.Hash{
 				domain.EmptyHash(),
@@ -62,6 +65,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 		),
 		getModelState(
 			model2,
+			2,
 			[]domain.PlaceId{7},
 			[]domain.Hash{
 				domain.EmptyHash(),
@@ -80,6 +84,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 		),
 		getModelState(
 			model2,
+			3,
 			[]domain.PlaceId{1},
 			[]domain.Hash{
 				domain.EmptyHash(),
@@ -98,6 +103,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 		),
 		getModelState(
 			model2,
+			12,
 			[]domain.PlaceId{11},
 			[]domain.Hash{
 				confirmHash,
@@ -121,6 +127,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 		),
 		getModelState(
 			model2,
+			13,
 			[]domain.PlaceId{2, 3},
 			[]domain.Hash{
 				confirmHash,
@@ -139,6 +146,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 		),
 		getModelState(
 			model2,
+			10,
 			[]domain.PlaceId{2, 10},
 			[]domain.Hash{
 				confirmHash,
@@ -157,6 +165,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 		),
 		getModelState(
 			model2,
+			8,
 			[]domain.PlaceId{9, 10},
 			[]domain.Hash{
 				confirmHash,
@@ -175,6 +184,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 		),
 		getModelState(
 			model2,
+			9,
 			[]domain.PlaceId{10, 4},
 			[]domain.Hash{
 				confirmHash,
@@ -193,6 +203,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 		),
 		getModelState(
 			model2,
+			11,
 			[]domain.PlaceId{4, 5},
 			[]domain.Hash{
 				confirmHash,
@@ -211,6 +222,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 		),
 		getModelState(
 			model2,
+			1,
 			[]domain.PlaceId{13},
 			[]domain.Hash{
 				confirmHash,
@@ -230,7 +242,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 	}
 }
 
-func getModelState(model domain.Model, activePlaces []domain.PlaceId, messageHashes []domain.Hash, constraintInput domain.ConstraintInput, signatureParameters parameters.SignatureParameters, idendity domain.IdentityId) State {
+func getModelState(model domain.Model, transitionIndex uint, activePlaces []domain.PlaceId, messageHashes []domain.Hash, constraintInput domain.ConstraintInput, signatureParameters parameters.SignatureParameters, idendity domain.IdentityId) State {
 	var tokenCountsFixedSize [domain.MaxPlaceCount]int8
 	for _, placeId := range activePlaces {
 		tokenCountsFixedSize[placeId] = 1
@@ -264,6 +276,7 @@ func getModelState(model domain.Model, activePlaces []domain.PlaceId, messageHas
 	return State{
 		Model:           model,
 		Instance:        instance,
+		Transition:      model.Transitions[transitionIndex],
 		Signature:       signature,
 		Identity:        idendity,
 		ConstraintInput: constraintInput,

@@ -12,6 +12,10 @@ import (
 	"github.com/consensys/gnark/frontend/cs/r1cs"
 )
 
+var instantiationCircuit = circuit.NewInstantiationCircuit()
+var transitionCircuit = circuit.NewTransitionCircuit()
+var terminationCircuit = circuit.NewTerminationCircuit()
+
 const instantiationCsFilename = "instantiation.constraint_system"
 const transitionCsFilename = "transition.constraint_system"
 const terminationCsFilename = "termination.constraint_system"
@@ -32,9 +36,9 @@ type ProofParameters struct {
 }
 
 func NewProofParameters() ProofParameters {
-	csInstantiation := importConstraintSystem(&circuit.InstantiationCircuit{}, instantiationCsFilename)
-	csTransition := importConstraintSystem(&circuit.TransitionCircuit{}, transitionCsFilename)
-	csTermination := importConstraintSystem(&circuit.TerminationCircuit{}, terminationCsFilename)
+	csInstantiation := importConstraintSystem(&instantiationCircuit, instantiationCsFilename)
+	csTransition := importConstraintSystem(&transitionCircuit, transitionCsFilename)
+	csTermination := importConstraintSystem(&terminationCircuit, terminationCsFilename)
 	pkInstantiation := importProvingKey(csInstantiation, instantiationPkFilename, instantiationVkFilename)
 	pkTransition := importProvingKey(csTransition, transitionPkFilename, transitionVkFilename)
 	pkTermination := importProvingKey(csTermination, terminationPkFilename, terminationVkFilename)

@@ -4,12 +4,23 @@ import (
 	"execution-service/domain"
 
 	"github.com/consensys/gnark/frontend"
+	"github.com/consensys/gnark/std/accumulator/merkle"
 )
 
 type InstantiationCircuit struct {
-	Model     Model
-	Instance  Instance
-	Signature Signature
+	Model          Model
+	Instance       Instance
+	Authentication Authentication
+}
+
+func NewInstantiationCircuit() InstantiationCircuit {
+	return InstantiationCircuit{
+		Authentication: Authentication{
+			MerkleProof: merkle.MerkleProof{
+				Path: make([]frontend.Variable, domain.MaxParticipantDepth+1),
+			},
+		},
+	}
 }
 
 func (circuit *InstantiationCircuit) Define(api frontend.API) error {
@@ -21,13 +32,9 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	err = checkSignature(api, circuit.Signature, circuit.Instance)
-	if err != nil {
-		return err
-	}
-	findParticipantId(api, circuit.Signature, circuit.Instance)
+	checkAuthentication(api, circuit.Authentication, circuit.Instance)
 	circuit.checkTokenCounts(api)
-	circuit.checkPublicKeys(api)
+	// circuit.checkPublicKeys(api)
 	circuit.checkMessageHashes(api)
 	return nil
 }
@@ -52,21 +59,21 @@ func (circuit *InstantiationCircuit) checkTokenCounts(api frontend.API) {
 	api.AssertIsEqual(numberOfTokenCounts, circuit.Model.PlaceCount)
 }
 
-func (circuit *InstantiationCircuit) checkPublicKeys(api frontend.API) {
-	var outOfBoundsOccurred frontend.Variable = 0
-	var numberOfPublicKeys frontend.Variable = 0
-	outOfBoundsPublicKey := fromPublicKey(domain.OutOfBoundsPublicKey())
-	for _, publicKey := range circuit.Instance.PublicKeys {
-		isOutOfBounds := publicKeyEquals(api, publicKey, outOfBoundsPublicKey)
-		isPublicKey := api.IsZero(isOutOfBounds)
+// func (circuit *InstantiationCircuit) checkPublicKeys(api frontend.API) {
+// 	var outOfBoundsOccurred frontend.Variable = 0
+// 	var numberOfPublicKeys frontend.Variable = 0
+// 	outOfBoundsPublicKey := fromPublicKey(domain.OutOfBoundsPublicKey())
+// 	for _, publicKey := range circuit.Instance.PublicKeys {
+// 		isOutOfBounds := publicKeyEquals(api, publicKey, outOfBoundsPublicKey)
+// 		isPublicKey := api.IsZero(isOutOfBounds)
 
-		numberOfPublicKeys = api.Add(numberOfPublicKeys, isPublicKey)
+// 		numberOfPublicKeys = api.Add(numberOfPublicKeys, isPublicKey)
 
-		outOfBoundsOccurred = api.Or(outOfBoundsOccurred, isOutOfBounds)
-		api.AssertIsEqual(outOfBoundsOccurred, isOutOfBounds)
-	}
-	api.AssertIsEqual(numberOfPublicKeys, circuit.Model.ParticipantCount)
-}
+// 		outOfBoundsOccurred = api.Or(outOfBoundsOccurred, isOutOfBounds)
+// 		api.AssertIsEqual(outOfBoundsOccurred, isOutOfBounds)
+// 	}
+// 	api.AssertIsEqual(numberOfPublicKeys, circuit.Model.ParticipantCount)
+// }
 
 func (circuit *InstantiationCircuit) checkMessageHashes(api frontend.API) {
 	var outOfBoundsOccurred frontend.Variable = 0

@@ -1,13 +1,33 @@
 package circuit
 
 import (
+	"execution-service/domain"
+
 	"github.com/consensys/gnark/frontend"
+	"github.com/consensys/gnark/std/accumulator/merkle"
+	"github.com/consensys/gnark/std/hash/mimc"
 )
 
 type TerminationCircuit struct {
-	Model     Model
-	Instance  Instance
-	Signature Signature
+	Model          Model
+	Instance       Instance
+	Authentication Authentication
+	EndPlace       EndPlace
+}
+
+func NewTerminationCircuit() TerminationCircuit {
+	return TerminationCircuit{
+		Authentication: Authentication{
+			MerkleProof: merkle.MerkleProof{
+				Path: make([]frontend.Variable, domain.MaxParticipantDepth+1),
+			},
+		},
+		EndPlace: EndPlace{
+			MerkleProof: merkle.MerkleProof{
+				Path: make([]frontend.Variable, domain.MaxEndPlaceDepth+1),
+			},
+		},
+	}
 }
 
 func (circuit *TerminationCircuit) Define(api frontend.API) error {
@@ -19,24 +39,25 @@ func (circuit *TerminationCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	err = checkSignature(api, circuit.Signature, circuit.Instance)
+	checkAuthentication(api, circuit.Authentication, circuit.Instance)
+	return circuit.checkTokenCounts(api)
+}
+
+func (circuit *TerminationCircuit) checkTokenCounts(api frontend.API) error {
+	mimc, err := mimc.NewMiMC(api)
 	if err != nil {
 		return err
 	}
-	findParticipantId(api, circuit.Signature, circuit.Instance)
-	circuit.checkTokenCounts(api)
-	return nil
-}
+	api.AssertIsEqual(circuit.EndPlace.MerkleProof.RootHash, circuit.Model.EndPlaceRoot)
+	circuit.EndPlace.MerkleProof.VerifyProof(api, &mimc, circuit.EndPlace.Index)
+	endPlace := circuit.EndPlace.MerkleProof.Path[0]
 
-func (circuit *TerminationCircuit) checkTokenCounts(api frontend.API) {
 	var atLeastOneEndPlaceHasTokenCountOne frontend.Variable = 0
 	for placeId, tokenCount := range circuit.Instance.TokenCounts {
 		tokenCountIsOne := equals(api, tokenCount, 1)
-		var isEndPlace frontend.Variable = 0
-		for _, endPlaceId := range circuit.Model.EndPlaces {
-			isEndPlace = api.Or(isEndPlace, equals(api, endPlaceId, placeId))
-		}
+		isEndPlace := equals(api, placeId, endPlace)
 		atLeastOneEndPlaceHasTokenCountOne = api.Or(atLeastOneEndPlaceHasTokenCountOne, api.And(isEndPlace, tokenCountIsOne))
 	}
 	api.AssertIsEqual(1, atLeastOneEndPlaceHasTokenCountOne)
+	return nil
 }

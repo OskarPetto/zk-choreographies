@@ -10,12 +10,14 @@ type ProveTransitionCommandJson struct {
 	Model           string `json:"model"`
 	CurrentInstance string `json:"currentInstance"`
 	NextInstance    string `json:"nextInstance"`
+	Transition      string `json:"transition"`
 	Identity        uint   `json:"identity"`
 }
 
 type ProveTerminationCommandJson struct {
 	Model    string `json:"model"`
 	Instance string `json:"instance"`
+	EndPlace uint   `json:"endPlace"`
 	Identity uint   `json:"identity"`
 }
 
@@ -32,6 +34,7 @@ func (cmd *ProveTransitionCommandJson) ToProofCommand() (ProveTransitionCommand,
 		Model:           cmd.Model,
 		CurrentInstance: cmd.CurrentInstance,
 		NextInstance:    cmd.NextInstance,
+		Transition:      cmd.Transition,
 		Identity:        cmd.Identity,
 	}, nil
 }
@@ -40,6 +43,7 @@ func (cmd *ProveTerminationCommandJson) ToProofCommand() (ProveTerminationComman
 	return ProveTerminationCommand{
 		Model:    cmd.Model,
 		Instance: cmd.Instance,
+		EndPlace: uint8(cmd.EndPlace),
 		Identity: cmd.Identity,
 	}, nil
 }

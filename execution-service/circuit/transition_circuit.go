@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/consensys/gnark/frontend"
+	"github.com/consensys/gnark/std/accumulator/merkle"
 	"github.com/consensys/gnark/std/hash/mimc"
 	"github.com/consensys/gnark/std/math/cmp"
 	"github.com/consensys/gnark/std/selector"
@@ -24,8 +25,24 @@ type TransitionCircuit struct {
 	Model           Model
 	CurrentInstance Instance
 	NextInstance    Instance
-	NextSignature   Signature
+	Transition      Transition
+	Authentication  Authentication
 	ConstraintInput ConstraintInput
+}
+
+func NewTransitionCircuit() TransitionCircuit {
+	return TransitionCircuit{
+		Authentication: Authentication{
+			MerkleProof: merkle.MerkleProof{
+				Path: make([]frontend.Variable, domain.MaxParticipantDepth+1),
+			},
+		},
+		Transition: Transition{
+			MerkleProof: merkle.MerkleProof{
+				Path: make([]frontend.Variable, domain.MaxTransitionDepth+1),
+			},
+		},
+	}
 }
 
 func (circuit *TransitionCircuit) Define(api frontend.API) error {
@@ -41,20 +58,15 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	err = checkSignature(api, circuit.NextSignature, circuit.NextInstance)
-	if err != nil {
-		return err
-	}
 	circuit.comparePublicKeys(api)
+	checkAuthentication(api, circuit.Authentication, circuit.NextInstance)
 	tokenCountChanges := circuit.compareTokenCounts(api)
-	participantId := findParticipantId(api, circuit.NextSignature, circuit.NextInstance)
 	addedMessageId := circuit.findAddedMessageId(api)
 	constraintInputMessageIds, err := circuit.findConstraintInputMessageIds(api)
 	if err != nil {
 		return err
 	}
-	circuit.findTransition(api, tokenCountChanges, participantId, addedMessageId, constraintInputMessageIds)
-	return nil
+	return circuit.checkTransition(api, tokenCountChanges, addedMessageId, constraintInputMessageIds)
 }
 
 func (circuit *TransitionCircuit) findConstraintInputMessageIds(api frontend.API) (ConstraintMessageIds, error) {
@@ -90,12 +102,7 @@ func (circuit *TransitionCircuit) findConstraintInputMessageIds(api frontend.API
 }
 
 func (circuit *TransitionCircuit) comparePublicKeys(api frontend.API) {
-	for i := range circuit.CurrentInstance.PublicKeys {
-		currentPublicKey := circuit.CurrentInstance.PublicKeys[i]
-		nextPublicKey := circuit.NextInstance.PublicKeys[i]
-		api.AssertIsEqual(currentPublicKey.A.X, nextPublicKey.A.X)
-		api.AssertIsEqual(currentPublicKey.A.Y, nextPublicKey.A.Y)
-	}
+	api.AssertIsEqual(circuit.CurrentInstance.PublicKeyRoot, circuit.NextInstance.PublicKeyRoot)
 }
 
 func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCountChanges {
@@ -165,38 +172,44 @@ func (circuit *TransitionCircuit) findAddedMessageId(api frontend.API) frontend.
 	return addedMessageId
 }
 
-func (circuit *TransitionCircuit) findTransition(api frontend.API, tokenCountChanges TokenCountChanges, participantId frontend.Variable, addedMessageId frontend.Variable, constraintMessageIds ConstraintMessageIds) {
-	var transitionFound frontend.Variable = 0
-
-	for _, transition := range circuit.Model.Transitions {
-		var tokenCountChangesMatch frontend.Variable = 1
-		for _, incomingPlace := range transition.IncomingPlaces {
-			var tokenCountDecreasesAtIncomingPlace frontend.Variable = 0
-			for _, placeWhereTokenCountDecreases := range tokenCountChanges.placesWhereTokenCountDecreases {
-				tokenCountDecreasesAtIncomingPlace = api.Or(tokenCountDecreasesAtIncomingPlace, equals(api, incomingPlace, placeWhereTokenCountDecreases))
-			}
-			tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountDecreasesAtIncomingPlace)
-		}
-		for _, outgoingPlace := range transition.OutgoingPlaces {
-			var tokenCountIncreasesAtOutgoingPlace frontend.Variable = 0
-			for _, placeWhereTokenCountIncreases := range tokenCountChanges.placesWhereTokenCountIncreases {
-				tokenCountIncreasesAtOutgoingPlace = api.Or(tokenCountIncreasesAtOutgoingPlace, equals(api, outgoingPlace, placeWhereTokenCountIncreases))
-			}
-			tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountIncreasesAtOutgoingPlace)
-		}
-		participantMatches := api.Or(equals(api, transition.Participant, domain.EmptyParticipantId), equals(api, transition.Participant, participantId))
-		messageMatches := equals(api, transition.Message, addedMessageId)
-		constraintSatisfied := evaluateConstraint(api, transition.Constraint, circuit.ConstraintInput, constraintMessageIds)
-		transitionMatches1 := api.And(tokenCountChangesMatch, participantMatches)
-		transitionMatches2 := api.And(messageMatches, constraintSatisfied)
-		transitionMatches3 := api.And(transitionMatches1, transitionMatches2)
-		transitionMatches := api.And(transitionMatches3, transition.IsTransition)
-		transitionFound = api.Or(transitionFound, transitionMatches)
+func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountChanges TokenCountChanges, addedMessageId frontend.Variable, constraintMessageIds ConstraintMessageIds) error {
+	mimc, err := mimc.NewMiMC(api)
+	if err != nil {
+		return err
 	}
+	api.AssertIsEqual(circuit.Transition.MerkleProof.RootHash, circuit.Model.TransitionRoot)
+	circuit.Transition.MerkleProof.VerifyProof(api, &mimc, circuit.Transition.Index)
+	checkTransitionHash(api, circuit.Transition.MerkleProof.Path[0], circuit.Transition)
+
+	transition := circuit.Transition
+	participantId := circuit.Authentication.Participant
+
+	var tokenCountChangesMatch frontend.Variable = 1
+	for _, incomingPlace := range transition.IncomingPlaces {
+		var tokenCountDecreasesAtIncomingPlace frontend.Variable = 0
+		for _, placeWhereTokenCountDecreases := range tokenCountChanges.placesWhereTokenCountDecreases {
+			tokenCountDecreasesAtIncomingPlace = api.Or(tokenCountDecreasesAtIncomingPlace, equals(api, incomingPlace, placeWhereTokenCountDecreases))
+		}
+		tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountDecreasesAtIncomingPlace)
+	}
+	for _, outgoingPlace := range transition.OutgoingPlaces {
+		var tokenCountIncreasesAtOutgoingPlace frontend.Variable = 0
+		for _, placeWhereTokenCountIncreases := range tokenCountChanges.placesWhereTokenCountIncreases {
+			tokenCountIncreasesAtOutgoingPlace = api.Or(tokenCountIncreasesAtOutgoingPlace, equals(api, outgoingPlace, placeWhereTokenCountIncreases))
+		}
+		tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountIncreasesAtOutgoingPlace)
+	}
+	participantMatches := api.Or(equals(api, transition.Participant, domain.EmptyParticipantId), equals(api, transition.Participant, participantId))
+	messageMatches := equals(api, transition.Message, addedMessageId)
+	constraintSatisfied := evaluateConstraint(api, transition.Constraint, circuit.ConstraintInput, constraintMessageIds)
+	transitionMatches1 := api.And(tokenCountChangesMatch, participantMatches)
+	transitionMatches2 := api.And(messageMatches, constraintSatisfied)
+	transitionMatches := api.And(transitionMatches1, transitionMatches2)
 
 	noMessageHashesAdded := equals(api, addedMessageId, domain.EmptyMessageId)
 	noChanges := api.And(tokenCountChanges.noChanges, noMessageHashesAdded)
-	api.AssertIsEqual(1, api.Or(transitionFound, noChanges))
+	api.AssertIsEqual(1, api.Or(transitionMatches, noChanges))
+	return nil
 }
 
 func evaluateConstraint(api frontend.API, constraint Constraint, input ConstraintInput, constraintMessageIds ConstraintMessageIds) frontend.Variable {
@@ -223,4 +236,21 @@ func evaluateConstraint(api frontend.API, constraint Constraint, input Constrain
 	comparisons[4] = api.Or(comparisons[0], comparisons[2])             // lte
 	result := selector.Mux(api, constraint.ComparisonOperator, comparisons[:]...)
 	return api.And(allMessageIdsMatch, result)
+}
+
+func checkTransitionHash(api frontend.API, hash frontend.Variable, transition Transition) error {
+	mimc, err := mimc.NewMiMC(api)
+	if err != nil {
+		return err
+	}
+	mimc.Write(transition.IncomingPlaces[:]...)
+	mimc.Write(transition.OutgoingPlaces[:]...)
+	mimc.Write(transition.Participant)
+	mimc.Write(transition.Message)
+	mimc.Write(transition.Constraint.Coefficients[:]...)
+	mimc.Write(transition.Constraint.MessageIds[:]...)
+	mimc.Write(transition.Constraint.Offset)
+	mimc.Write(transition.Constraint.ComparisonOperator)
+	api.AssertIsEqual(hash, mimc.Sum())
+	return nil
 }
