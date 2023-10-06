@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-const MaxPlaceCount = 64
-const MaxParticipantCount = 16
-const MaxMessageCount = 64
+const MaxPlaceCount = 128
+const MaxTransitionCount = 128
+const MaxMessageCount = 128
+const MaxParticipantCount = 32
 const MaxStartPlaceCount = 1
-const MaxEndPlaceCount = 16
-const MaxTransitionCount = 64
+const MaxEndPlaceCount = 8
 const MaxBranchingFactor = 4
 
 var MaxParticipantDepth = int(math.Log2(MaxParticipantCount))
