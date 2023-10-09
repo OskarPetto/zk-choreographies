@@ -102,6 +102,7 @@ export class TestdataProvider {
               initiatingParticipant: 'Participant_0x6v44d',
               respondingParticipant: 'Participant_0n7kwiu',
               initialMessage: 'Message_1376fyb',
+              responseMessage: 'Message_0zzvac5',
             },
             {
               id: 'ChoreographyTask_0nl2rhr',
@@ -162,7 +163,7 @@ export class TestdataProvider {
             },
             {
               id: 'Flow_1k5cri3',
-              name: 'Order > 5',
+              name: 'order > stock',
             },
             {
               id: 'Flow_1iwbmcz',
@@ -184,7 +185,7 @@ export class TestdataProvider {
             },
             {
               id: 'Flow_1stf9mf',
-              name: 'Order <= 5'
+              name: 'order <= stock'
             },
             {
               id: 'Flow_0c5yqsz',
@@ -198,41 +199,45 @@ export class TestdataProvider {
           ],
           messages: [
             {
+              id: 'Message_0zzvac5',
+              name: 'stock',
+            },
+            {
               id: 'Message_0gdct3r',
-              name: 'Confirm',
+              name: 'confirm',
             },
             {
               id: 'Message_05ebl37',
-              name: 'Payment',
+              name: 'payment',
             },
             {
               id: 'Message_01cp9ki',
-              name: 'Product',
+              name: 'product',
             },
             {
               id: 'Message_1p1ke3y',
-              name: 'Raw materials',
+              name: 'raw_materials',
             },
             {
               id: 'Message_0annsni',
-              name: 'Invoice',
+              name: 'invoice',
             },
             {
               id: 'Message_1858jqq',
-              name: 'Shipping address',
+              name: 'shipping_address',
             },
             {
               id: 'Message_1dd2uoz',
-              name: 'Confirm',
+              name: 'confirm',
             },
             {
               id: 'Message_0xe03aa',
-              name: 'Raw materials request',
+              name: 'rm_order',
             },
             {
               id: 'Message_1376fyb',
-              name: 'Order',
-            },
+              name: 'order',
+            }
           ],
         },
       ],
@@ -245,7 +250,7 @@ export class TestdataProvider {
       choreography: 'Choreography_07n6r3q',
       placeCount: 20,
       participantCount: 2,
-      messageCount: 9,
+      messageCount: 10,
       startPlaces: [18],
       endPlaces: [19],
       transitions: [
@@ -268,9 +273,9 @@ export class TestdataProvider {
           incomingPlaces: [1],
           outgoingPlaces: [2],
           constraint: {
-            coefficients: [1],
-            messageIds: [8],
-            offset: -5,
+            coefficients: [1, -1],
+            messageIds: [9, 0],
+            offset: 0,
             comparisonOperator: 1,
           }
         },
@@ -280,9 +285,9 @@ export class TestdataProvider {
           incomingPlaces: [1],
           outgoingPlaces: [9],
           constraint: {
-            coefficients: [1],
-            messageIds: [8],
-            offset: -5,
+            coefficients: [1, -1],
+            messageIds: [9, 0],
+            offset: 0,
             comparisonOperator: 4,
           }
         },
@@ -317,7 +322,7 @@ export class TestdataProvider {
           incomingPlaces: [0],
           outgoingPlaces: [13],
           participant: 0,
-          message: 8,
+          message: 9,
         },
         {
           id: 'ChoreographyTask_0kp4flv_Participant_0n7kwiu',
@@ -326,6 +331,7 @@ export class TestdataProvider {
           incomingPlaces: [13],
           outgoingPlaces: [1],
           participant: 1,
+          message: 0,
         },
         {
           id: 'ChoreographyTask_0nl2rhr_0',
@@ -334,7 +340,7 @@ export class TestdataProvider {
           incomingPlaces: [2],
           outgoingPlaces: [10],
           participant: 1,
-          message: 7,
+          message: 8,
         },
         {
           id: 'ChoreographyTask_0nl2rhr_loop',
@@ -343,7 +349,7 @@ export class TestdataProvider {
           incomingPlaces: [10],
           outgoingPlaces: [10],
           participant: 1,
-          message: 7,
+          message: 8,
         },
         {
           id: 'ChoreographyTask_1uie9z3_Participant_0n7kwiu',
@@ -352,7 +358,7 @@ export class TestdataProvider {
           incomingPlaces: [10],
           outgoingPlaces: [14],
           participant: 1,
-          message: 6,
+          message: 7,
         },
         {
           id: 'ChoreographyTask_1uie9z3_Participant_0x6v44d',
@@ -369,7 +375,7 @@ export class TestdataProvider {
           incomingPlaces: [4],
           outgoingPlaces: [15],
           participant: 0,
-          message: 5,
+          message: 6,
         },
         {
           id: 'ChoreographyTask_1dsovf5_Participant_0n7kwiu',
@@ -378,7 +384,7 @@ export class TestdataProvider {
           incomingPlaces: [15],
           outgoingPlaces: [6],
           participant: 1,
-          message: 2,
+          message: 3,
         },
         {
           id: 'ChoreographyTask_1htg6wy_Participant_0n7kwiu',
@@ -387,7 +393,7 @@ export class TestdataProvider {
           incomingPlaces: [5],
           outgoingPlaces: [16],
           participant: 1,
-          message: 4,
+          message: 5,
         },
         {
           id: 'ChoreographyTask_1htg6wy_Participant_0x6v44d',
@@ -396,7 +402,7 @@ export class TestdataProvider {
           incomingPlaces: [16],
           outgoingPlaces: [7],
           participant: 0,
-          message: 1,
+          message: 2,
         },
         {
           id: 'ChoreographyTask_1e51o0k_Participant_0n7kwiu',
@@ -405,7 +411,7 @@ export class TestdataProvider {
           incomingPlaces: [9],
           outgoingPlaces: [17],
           participant: 1,
-          message: 0,
+          message: 1,
         },
         {
           id: 'ChoreographyTask_1e51o0k_Participant_0x6v44d',
@@ -425,7 +431,7 @@ export class TestdataProvider {
       choreography: 'Choreography_07n6r3q',
       placeCount: 14,
       participantCount: 2,
-      messageCount: 9,
+      messageCount: 10,
       startPlaces: [12],
       endPlaces: [13],
       transitions: [
@@ -449,7 +455,7 @@ export class TestdataProvider {
           incomingPlaces: [0],
           outgoingPlaces: [7],
           participant: 0,
-          message: 8,
+          message: 9,
         },
         {
           id: 'ChoreographyTask_0kp4flv_Participant_0n7kwiu',
@@ -458,6 +464,7 @@ export class TestdataProvider {
           incomingPlaces: [7],
           outgoingPlaces: [1],
           participant: 1,
+          message: 0,
         },
         {
           id: 'ChoreographyTask_0nl2rhr_0',
@@ -466,11 +473,11 @@ export class TestdataProvider {
           incomingPlaces: [1],
           outgoingPlaces: [6],
           participant: 1,
-          message: 7,
+          message: 8,
           constraint: {
-            coefficients: [1],
-            messageIds: [8],
-            offset: -5,
+            coefficients: [1, -1],
+            messageIds: [9, 0],
+            offset: 0,
             comparisonOperator: 1,
           }
         },
@@ -481,7 +488,7 @@ export class TestdataProvider {
           incomingPlaces: [6],
           outgoingPlaces: [6],
           participant: 1,
-          message: 7,
+          message: 8,
         },
         {
           id: 'ChoreographyTask_1uie9z3_Participant_0n7kwiu',
@@ -490,7 +497,7 @@ export class TestdataProvider {
           incomingPlaces: [6],
           outgoingPlaces: [8],
           participant: 1,
-          message: 6,
+          message: 7,
         },
         {
           id: 'ChoreographyTask_1uie9z3_Participant_0x6v44d',
@@ -507,7 +514,7 @@ export class TestdataProvider {
           incomingPlaces: [2],
           outgoingPlaces: [9],
           participant: 0,
-          message: 5,
+          message: 6,
         },
         {
           id: 'ChoreographyTask_1dsovf5_Participant_0n7kwiu',
@@ -516,7 +523,7 @@ export class TestdataProvider {
           incomingPlaces: [9],
           outgoingPlaces: [4],
           participant: 1,
-          message: 2,
+          message: 3,
         },
         {
           id: 'ChoreographyTask_1htg6wy_Participant_0n7kwiu',
@@ -525,7 +532,7 @@ export class TestdataProvider {
           incomingPlaces: [3],
           outgoingPlaces: [10],
           participant: 1,
-          message: 4,
+          message: 5,
         },
         {
           id: 'ChoreographyTask_1htg6wy_Participant_0x6v44d',
@@ -534,7 +541,7 @@ export class TestdataProvider {
           incomingPlaces: [10],
           outgoingPlaces: [5],
           participant: 0,
-          message: 1,
+          message: 2,
         },
         {
           id: 'ChoreographyTask_1e51o0k_Participant_0n7kwiu',
@@ -543,11 +550,11 @@ export class TestdataProvider {
           incomingPlaces: [1],
           outgoingPlaces: [11],
           participant: 1,
-          message: 0,
+          message: 1,
           constraint: {
-            coefficients: [1],
-            messageIds: [8],
-            offset: -5,
+            coefficients: [1, -1],
+            messageIds: [9, 0],
+            offset: 0,
             comparisonOperator: 4,
           }
         },

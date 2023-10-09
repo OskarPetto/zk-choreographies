@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xs="http://www.w3.org/2001/XMLSchema" id="_tTv5YOycEeiHGOQ2NkJZNQ" targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn2:message id="Message_0gdct3r" name="Confirm" />
-  <bpmn2:message id="Message_05ebl37" name="Payment" />
-  <bpmn2:message id="Message_01cp9ki" name="Product" />
-  <bpmn2:message id="Message_1p1ke3y" name="Raw materials" />
-  <bpmn2:message id="Message_0annsni" name="Invoice" />
-  <bpmn2:message id="Message_1858jqq" name="Shipping address" />
-  <bpmn2:message id="Message_1dd2uoz" name="Confirm" />
-  <bpmn2:message id="Message_0xe03aa" name="Raw materials request" />
-  <bpmn2:message id="Message_1376fyb" name="Order" />
+  <bpmn2:message id="Message_0zzvac5" name="stock" />
+  <bpmn2:message id="Message_0gdct3r" name="confirm" />
+  <bpmn2:message id="Message_05ebl37" name="payment" />
+  <bpmn2:message id="Message_01cp9ki" name="product" />
+  <bpmn2:message id="Message_1p1ke3y" name="raw_materials" />
+  <bpmn2:message id="Message_0annsni" name="invoice" />
+  <bpmn2:message id="Message_1858jqq" name="shipping_address" />
+  <bpmn2:message id="Message_1dd2uoz" name="confirm" />
+  <bpmn2:message id="Message_0xe03aa" name="rm_order" />
+  <bpmn2:message id="Message_1376fyb" name="order" />
   <bpmn2:message id="Message_1rnq4x3" name="pizza" />
   <bpmn2:message id="Message_1mi4idx" />
   <bpmn2:message id="Message_1pam53q" name="pizza order" />
@@ -16,6 +17,7 @@
     <bpmn2:participant id="Participant_0x6v44d" name="Customer" />
     <bpmn2:participant id="Participant_0n7kwiu" name="Seller" />
     <bpmn2:participant id="Participant_0xxs9a7" name="Supplier" />
+    <bpmn2:messageFlow id="MessageFlow_18nmdm5" sourceRef="Participant_0n7kwiu" targetRef="Participant_0x6v44d" messageRef="Message_0zzvac5" />
     <bpmn2:messageFlow id="MessageFlow_1nrprkj" sourceRef="Participant_0n7kwiu" targetRef="Participant_0x6v44d" messageRef="Message_0gdct3r" />
     <bpmn2:messageFlow id="MessageFlow_1gi4kem" sourceRef="Participant_0x6v44d" targetRef="Participant_0n7kwiu" messageRef="Message_05ebl37" />
     <bpmn2:messageFlow id="MessageFlow_19vlwbw" sourceRef="Participant_0n7kwiu" targetRef="Participant_0x6v44d" messageRef="Message_01cp9ki" />
@@ -33,6 +35,7 @@
       <bpmn2:outgoing>Flow_0kyymfy</bpmn2:outgoing>
       <bpmn2:participantRef>Participant_0x6v44d</bpmn2:participantRef>
       <bpmn2:participantRef>Participant_0n7kwiu</bpmn2:participantRef>
+      <bpmn2:messageFlowRef>MessageFlow_18nmdm5</bpmn2:messageFlowRef>
       <bpmn2:messageFlowRef>MessageFlow_1rw4usq</bpmn2:messageFlowRef>
     </bpmn2:choreographyTask>
     <bpmn2:sequenceFlow id="Flow_1f6eaf2" sourceRef="Event_1525yky" targetRef="ChoreographyTask_0kp4flv" />
@@ -50,7 +53,7 @@
       <bpmn2:messageFlowRef>MessageFlow_134yidr</bpmn2:messageFlowRef>
       <bpmn2:messageFlowRef>MessageFlow_1rax5mx</bpmn2:messageFlowRef>
     </bpmn2:choreographyTask>
-    <bpmn2:sequenceFlow id="Flow_1k5cri3" name="Order &#62; 5" sourceRef="Gateway_10fv7g5" targetRef="ChoreographyTask_0nl2rhr" />
+    <bpmn2:sequenceFlow id="Flow_1k5cri3" name="order &#62; stock" sourceRef="Gateway_10fv7g5" targetRef="ChoreographyTask_0nl2rhr" />
     <bpmn2:choreographyTask id="ChoreographyTask_1uie9z3" name="Confirm order" initiatingParticipantRef="Participant_0n7kwiu">
       <bpmn2:incoming>Flow_0c5yqsz</bpmn2:incoming>
       <bpmn2:outgoing>Flow_1iwbmcz</bpmn2:outgoing>
@@ -100,7 +103,7 @@
       <bpmn2:participantRef>Participant_0x6v44d</bpmn2:participantRef>
       <bpmn2:messageFlowRef>MessageFlow_1nrprkj</bpmn2:messageFlowRef>
     </bpmn2:choreographyTask>
-    <bpmn2:sequenceFlow id="Flow_1stf9mf" name="Order &#60;= 5" sourceRef="Gateway_10fv7g5" targetRef="ChoreographyTask_1e51o0k" />
+    <bpmn2:sequenceFlow id="Flow_1stf9mf" name="order &#60;= stock" sourceRef="Gateway_10fv7g5" targetRef="ChoreographyTask_1e51o0k" />
     <bpmn2:sequenceFlow id="Flow_0c5yqsz" sourceRef="ChoreographyTask_0nl2rhr" targetRef="ChoreographyTask_1uie9z3" />
     <bpmn2:exclusiveGateway id="Gateway_1ofchbb">
       <bpmn2:incoming>Flow_1iwbmcz</bpmn2:incoming>
@@ -121,7 +124,7 @@
       <bpmndi:BPMNShape id="BPMNShape_1p2ql6o" bpmnElement="Participant_0x6v44d" isMessageVisible="true" participantBandKind="top_initiating" choreographyActivityShape="ChoreographyTask_0kp4flv_di">
         <dc:Bounds x="750" y="310" width="100" height="20" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0s98noi" bpmnElement="Participant_0n7kwiu" isMessageVisible="false" participantBandKind="bottom_non_initiating" choreographyActivityShape="ChoreographyTask_0kp4flv_di">
+      <bpmndi:BPMNShape id="BPMNShape_0s98noi" bpmnElement="Participant_0n7kwiu" isMessageVisible="true" participantBandKind="bottom_non_initiating" choreographyActivityShape="ChoreographyTask_0kp4flv_di">
         <dc:Bounds x="750" y="370" width="100" height="20" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1f6eaf2_di" bpmnElement="Flow_1f6eaf2">
@@ -149,7 +152,7 @@
         <di:waypoint x="940" y="230" />
         <di:waypoint x="979" y="230" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="876" y="243" width="47" height="14" />
+          <dc:Bounds x="858" y="243" width="64" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="ChoreographyTask_1uie9z3_di" bpmnElement="ChoreographyTask_1uie9z3">
@@ -234,7 +237,7 @@
         <di:waypoint x="940" y="470" />
         <di:waypoint x="1049" y="470" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="873" y="443" width="54" height="14" />
+          <dc:Bounds x="854" y="443" width="71" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0c5yqsz_di" bpmnElement="Flow_0c5yqsz">
