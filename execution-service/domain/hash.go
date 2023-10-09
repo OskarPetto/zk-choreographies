@@ -3,6 +3,7 @@ package domain
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/binary"
 	"execution-service/utils"
 	"hash"
 
@@ -51,19 +52,19 @@ func (publicKey *PublicKey) ComputeHash() [HashSize]byte {
 func (transition *Transition) ComputeHash() [HashSize]byte {
 	mimc := mimc.NewMiMC()
 	for _, incomingPlace := range transition.IncomingPlaces {
-		hashUint8(mimc, incomingPlace)
+		hashUint16(mimc, incomingPlace)
 	}
 	for i := len(transition.IncomingPlaces); i < MaxBranchingFactor; i++ {
-		hashUint8(mimc, OutOfBoundsPlaceId)
+		hashUint16(mimc, OutOfBoundsPlaceId)
 	}
 	for _, outgoingPlace := range transition.OutgoingPlaces {
-		hashUint8(mimc, outgoingPlace)
+		hashUint16(mimc, outgoingPlace)
 	}
 	for i := len(transition.OutgoingPlaces); i < MaxBranchingFactor; i++ {
-		hashUint8(mimc, OutOfBoundsPlaceId)
+		hashUint16(mimc, OutOfBoundsPlaceId)
 	}
-	hashUint8(mimc, transition.Participant)
-	hashUint8(mimc, transition.Message)
+	hashUint16(mimc, transition.Participant)
+	hashUint16(mimc, transition.Message)
 	for _, coefficient := range transition.Constraint.Coefficients {
 		hashInt64(mimc, int64(coefficient))
 	}
@@ -71,34 +72,34 @@ func (transition *Transition) ComputeHash() [HashSize]byte {
 		hashInt64(mimc, 0)
 	}
 	for _, messageId := range transition.Constraint.MessageIds {
-		hashUint8(mimc, messageId)
+		hashUint16(mimc, messageId)
 	}
 	for i := len(transition.Constraint.MessageIds); i < MaxConstraintMessageCount; i++ {
 		hashInt64(mimc, int64(EmptyMessageId))
 	}
 	hashInt64(mimc, int64(transition.Constraint.Offset))
-	hashUint8(mimc, transition.Constraint.ComparisonOperator)
+	hashUint16(mimc, uint16(transition.Constraint.ComparisonOperator))
 	return computeHash(mimc)
 }
 
 func (model *Model) ComputeHash() {
 	mimc := mimc.NewMiMC()
-	hashUint8(mimc, model.PlaceCount)
-	hashUint8(mimc, model.ParticipantCount)
-	hashUint8(mimc, model.MessageCount)
+	hashUint16(mimc, model.PlaceCount)
+	hashUint16(mimc, model.ParticipantCount)
+	hashUint16(mimc, model.MessageCount)
 	for _, startPlace := range model.StartPlaces {
-		hashUint8(mimc, startPlace)
+		hashUint16(mimc, startPlace)
 	}
 	for i := len(model.StartPlaces); i < MaxStartPlaceCount; i++ {
-		hashUint8(mimc, OutOfBoundsPlaceId)
+		hashUint16(mimc, OutOfBoundsPlaceId)
 	}
 	endPlaceTree := merkletree.New(ghash.MIMC_BN254.New())
 	for _, endPlace := range model.EndPlaces {
-		bytes := Uint8ToBytes(endPlace)
+		bytes := Uint16ToBytes(endPlace)
 		endPlaceTree.Push(bytes[:])
 	}
 	for i := len(model.EndPlaces); i < MaxEndPlaceCount; i++ {
-		bytes := Uint8ToBytes(OutOfBoundsPlaceId)
+		bytes := Uint16ToBytes(OutOfBoundsPlaceId)
 		endPlaceTree.Push(bytes[:])
 	}
 	mimc.Write(endPlaceTree.Root())
@@ -165,9 +166,9 @@ func (message *Message) ComputeHash() {
 	message.Hash = hash
 }
 
-func Uint8ToBytes(value uint8) [fr.Bytes]byte {
+func Uint16ToBytes(value uint16) [fr.Bytes]byte {
 	var bytes [fr.Bytes]byte
-	bytes[fr.Bytes-1] = value // big endian
+	binary.BigEndian.PutUint16(bytes[30:], value)
 	return bytes
 }
 
@@ -203,8 +204,8 @@ func hashInt64(hasher hash.Hash, value int64) {
 	hasher.Write(bytes[:])
 }
 
-func hashUint8(hasher hash.Hash, value uint8) {
-	bytes := Uint8ToBytes(value)
+func hashUint16(hasher hash.Hash, value uint16) {
+	bytes := Uint16ToBytes(value)
 	hasher.Write(bytes[:])
 }
 

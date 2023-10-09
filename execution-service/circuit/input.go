@@ -150,11 +150,11 @@ func FromModel(model domain.Model) Model {
 	}
 	endPlaceTree := merkletree.New(hash.MIMC_BN254.New())
 	for _, endPlace := range model.EndPlaces {
-		bytes := domain.Uint8ToBytes(endPlace)
+		bytes := domain.Uint16ToBytes(endPlace)
 		endPlaceTree.Push(bytes[:])
 	}
 	for i := len(model.EndPlaces); i < domain.MaxEndPlaceCount; i++ {
-		bytes := domain.Uint8ToBytes(domain.OutOfBoundsPlaceId)
+		bytes := domain.Uint16ToBytes(domain.OutOfBoundsPlaceId)
 		endPlaceTree.Push(bytes[:])
 	}
 	transitionTree := merkletree.New(hash.MIMC_BN254.New())
@@ -185,11 +185,11 @@ func ToEndPlaceProof(model domain.Model, place domain.PlaceId) MerkleProof {
 		if endPlace == place {
 			index = i
 		}
-		bytes := domain.Uint8ToBytes(endPlace)
+		bytes := domain.Uint16ToBytes(endPlace)
 		buf.Write(bytes[:])
 	}
 	for i := len(model.EndPlaces); i < domain.MaxEndPlaceCount; i++ {
-		bytes := domain.Uint8ToBytes(domain.OutOfBoundsPlaceId)
+		bytes := domain.Uint16ToBytes(domain.OutOfBoundsPlaceId)
 		buf.Write(bytes[:])
 	}
 	merkleRoot, proofPath, _, err := merkletree.BuildReaderProof(&buf, hash.MIMC_BN254.New(), fr.Bytes, uint64(index))

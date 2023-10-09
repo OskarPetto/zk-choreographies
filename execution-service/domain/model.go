@@ -6,22 +6,21 @@ import (
 	"time"
 )
 
-const MaxPlaceCount = 128
-const MaxTransitionCount = 128
-const MaxMessageCount = 128
+const MaxPlaceCount = 256
+const MaxTransitionCount = 256
+const MaxMessageCount = 256
 const MaxParticipantCount = 32
-const MaxStartPlaceCount = 1
-const MaxEndPlaceCount = 8
+const MaxStartPlaceCount = 2
+const MaxEndPlaceCount = 16
 const MaxBranchingFactor = 4
 
 var MaxParticipantDepth = int(math.Log2(MaxParticipantCount))
 var MaxTransitionDepth = int(math.Log2(MaxTransitionCount))
 var MaxEndPlaceDepth = int(math.Log2(MaxEndPlaceCount))
 
-type PlaceId = uint8
-type ParticipantId = uint8
-type MessageId = uint8
-type VariableId = uint8
+type PlaceId = uint16
+type ParticipantId = uint16
+type MessageId = uint16
 
 const OutOfBoundsPlaceId = PlaceId(MaxPlaceCount)
 const EmptyParticipantId = ParticipantId(MaxParticipantCount)
@@ -41,8 +40,8 @@ type Transition struct {
 
 func OutOfBoundsTransition() Transition {
 	return Transition{
-		IncomingPlaces: make([]uint8, 0),
-		OutgoingPlaces: make([]uint8, 0),
+		IncomingPlaces: make([]PlaceId, 0),
+		OutgoingPlaces: make([]PlaceId, 0),
 		Participant:    EmptyParticipantId,
 		Message:        EmptyMessageId,
 		Constraint:     EmptyConstraint(),
@@ -54,10 +53,10 @@ type ModelId = string
 type Model struct {
 	Hash             Hash
 	Choreography     string
-	PlaceCount       uint8
-	ParticipantCount uint8
-	MessageCount     uint8
-	VariableCount    uint8
+	PlaceCount       uint16
+	ParticipantCount uint16
+	MessageCount     uint16
+	VariableCount    uint16
 	StartPlaces      []PlaceId
 	EndPlaces        []PlaceId
 	Transitions      []Transition

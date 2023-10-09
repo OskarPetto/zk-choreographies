@@ -32,7 +32,7 @@ type Constraint struct {
 
 func EmptyConstraint() Constraint {
 	return Constraint{
-		MessageIds: make([]uint8, 0),
+		MessageIds: make([]MessageId, 0),
 	}
 }
 

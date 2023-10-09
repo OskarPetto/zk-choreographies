@@ -1,5 +1,7 @@
 package proof
 
+import "execution-service/domain"
+
 type ProveInstantiationCommandJson struct {
 	Model    string `json:"model"`
 	Instance string `json:"instance"`
@@ -43,7 +45,7 @@ func (cmd *ProveTerminationCommandJson) ToProofCommand() (ProveTerminationComman
 	return ProveTerminationCommand{
 		Model:    cmd.Model,
 		Instance: cmd.Instance,
-		EndPlace: uint8(cmd.EndPlace),
+		EndPlace: domain.PlaceId(cmd.EndPlace),
 		Identity: cmd.Identity,
 	}, nil
 }

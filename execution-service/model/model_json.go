@@ -127,9 +127,9 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 	return domain.Model{
 		Hash:             hash,
 		Choreography:     model.Choreography,
-		PlaceCount:       uint8(model.PlaceCount),
-		ParticipantCount: uint8(model.ParticipantCount),
-		MessageCount:     uint8(model.MessageCount),
+		PlaceCount:       uint16(model.PlaceCount),
+		ParticipantCount: uint16(model.ParticipantCount),
+		MessageCount:     uint16(model.MessageCount),
 		StartPlaces:      startPlaces,
 		EndPlaces:        endPlaces,
 		Transitions:      transitions,
@@ -206,8 +206,8 @@ func (constraint *ConstraintJson) toConstraint() (domain.Constraint, error) {
 	return domain.Constraint{
 		Coefficients:       coefficients,
 		MessageIds:         messageIds,
-		Offset:             int32(constraint.Offset),
-		ComparisonOperator: uint8(constraint.ComparisonOperator),
+		Offset:             domain.IntegerType(constraint.Offset),
+		ComparisonOperator: domain.ComparisonOperator(constraint.ComparisonOperator),
 	}, nil
 }
 
