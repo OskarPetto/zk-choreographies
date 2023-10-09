@@ -6,9 +6,9 @@ import (
 	"time"
 )
 
-const MaxPlaceCount = 256
+const MaxPlaceCount = 128
+const MaxMessageCount = 128
 const MaxTransitionCount = 256
-const MaxMessageCount = 256
 const MaxParticipantCount = 32
 const MaxStartPlaceCount = 2
 const MaxEndPlaceCount = 16
