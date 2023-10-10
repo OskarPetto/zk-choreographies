@@ -24,13 +24,13 @@ type ProofService struct {
 func InitializeProofService() ProofService {
 	proofParameters := parameters.NewProofParameters()
 	signatureParameters := parameters.NewSignatureParameters()
-	instanceService := instance.NewInstanceService()
 	modelService := model.NewModelService()
 	messageService := message.NewMessageService()
-	return NewProofService(proofParameters, signatureParameters, instanceService, modelService, messageService)
+	instanceService := instance.NewInstanceService(modelService, messageService)
+	return NewProofService(proofParameters, signatureParameters, instanceService)
 }
 
-func NewProofService(proofParameters parameters.ProofParameters, signatureParameters parameters.SignatureParameters, instanceService instance.InstanceService, modelService model.ModelService, messageService message.MessageService) ProofService {
+func NewProofService(proofParameters parameters.ProofParameters, signatureParameters parameters.SignatureParameters, instanceService instance.InstanceService) ProofService {
 	fmt.Printf("Instantiation constraint system has %d constraints\n", proofParameters.CsInstantiation.GetNbConstraints())
 	fmt.Printf("Transition constraint system has %d constraints\n", proofParameters.CsTransition.GetNbConstraints())
 	fmt.Printf("Termination constraint system has %d constraints\n", proofParameters.CsTermination.GetNbConstraints())
@@ -38,8 +38,8 @@ func NewProofService(proofParameters parameters.ProofParameters, signatureParame
 		proofParameters:     proofParameters,
 		SignatureParameters: signatureParameters,
 		InstanceService:     instanceService,
-		ModelService:        modelService,
-		MessageService:      messageService,
+		ModelService:        instanceService.ModelService,
+		MessageService:      instanceService.MessageService,
 	}
 }
 

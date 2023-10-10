@@ -50,3 +50,43 @@ func (controller *InstanceController) FindInstancesByModel(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, jsonInstances)
 }
+
+func (controller *InstanceController) InstantiateModel(c *gin.Context) {
+	var jsonCmd InstantiateModelCommandJson
+	if err := c.BindJSON(&jsonCmd); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	cmd, err := jsonCmd.ToExecutionCommand()
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	result, err := controller.instanceService.InstantiateModel(cmd)
+	if err != nil {
+		c.Status(http.StatusForbidden)
+		return
+	}
+	jsonResult := ToJson(result)
+	c.IndentedJSON(http.StatusOK, jsonResult)
+}
+
+func (controller *InstanceController) ExecuteTransition(c *gin.Context) {
+	var jsonCmd ExecuteTransitionCommandJson
+	if err := c.BindJSON(&jsonCmd); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	cmd, err := jsonCmd.ToExecutionCommand()
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	result, err := controller.instanceService.ExecuteTransition(cmd)
+	if err != nil {
+		c.Status(http.StatusForbidden)
+		return
+	}
+	jsonResult := ToJson(result)
+	c.IndentedJSON(http.StatusOK, jsonResult)
+}
