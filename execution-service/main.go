@@ -5,7 +5,7 @@ import (
 	"execution-service/message"
 	"execution-service/model"
 	"execution-service/parameters"
-	"execution-service/proof"
+	"execution-service/prover"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,9 +18,9 @@ var instanceService = instance.NewInstanceService(modelService, messageService)
 var instanceController = instance.NewInstanceController(instanceService)
 
 var signatureParameters = parameters.NewSignatureParameters()
-var proofParameters = parameters.NewProofParameters()
-var proofService = proof.NewProofService(proofParameters, signatureParameters, instanceService)
-var proofController = proof.NewProofController(proofService)
+var proofParameters = parameters.NewProverParameters()
+var proverService = prover.NewProverService(proofParameters, signatureParameters, instanceService)
+var proverController = prover.NewProverController(proverService)
 
 func main() {
 
@@ -38,9 +38,9 @@ func main() {
 	router.POST("/instances/instantiation", instanceController.InstantiateModel)
 	router.POST("/instances/transition", instanceController.ExecuteTransition)
 
-	router.PUT("/proof/instantiation", proofController.ProveInstantiation)
-	router.PUT("/proof/transition", proofController.ProveTransition)
-	router.PUT("/proof/termination", proofController.ProveTermination)
+	router.PUT("/proof/instantiation", proverController.ProveInstantiation)
+	router.PUT("/proof/transition", proverController.ProveTransition)
+	router.PUT("/proof/termination", proverController.ProveTermination)
 
 	router.Run("localhost:8080")
 }

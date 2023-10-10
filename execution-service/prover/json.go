@@ -1,4 +1,4 @@
-package proof
+package prover
 
 import "execution-service/domain"
 
@@ -21,6 +21,11 @@ type ProveTerminationCommandJson struct {
 	Instance string `json:"instance"`
 	EndPlace uint   `json:"endPlace"`
 	Identity uint   `json:"identity"`
+}
+
+type ProofJson struct {
+	Value [8]string `json:"value"`
+	Input []string  `json:"input"`
 }
 
 func (cmd *ProveInstantiationCommandJson) ToProofCommand() (ProveInstantiationCommand, error) {
@@ -48,4 +53,24 @@ func (cmd *ProveTerminationCommandJson) ToProofCommand() (ProveTerminationComman
 		EndPlace: domain.PlaceId(cmd.EndPlace),
 		Identity: cmd.Identity,
 	}, nil
+}
+
+func (proof Proof) ToJson() ProofJson {
+	publicInputs := make([]string, len(proof.Input))
+	for i, publicInput := range proof.Input {
+		publicInputs[i] = publicInput.String()
+	}
+	return ProofJson{
+		Value: [8]string{
+			proof.Value[0].String(),
+			proof.Value[1].String(),
+			proof.Value[2].String(),
+			proof.Value[3].String(),
+			proof.Value[4].String(),
+			proof.Value[5].String(),
+			proof.Value[6].String(),
+			proof.Value[7].String(),
+		},
+		Input: publicInputs,
+	}
 }

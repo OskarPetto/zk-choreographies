@@ -1,11 +1,11 @@
-package proof_test
+package prover_test
 
 import (
 	"encoding/json"
 	"execution-service/instance"
 	"execution-service/model"
 	"execution-service/parameters"
-	"execution-service/proof"
+	"execution-service/prover"
 	"execution-service/testdata"
 	"fmt"
 	"testing"
@@ -13,15 +13,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var proofService proof.ProofService
+var proofService prover.ProverService
 var instanceService instance.InstanceService
 var modelService model.ModelService
 var signatureParameters parameters.SignatureParameters
 var states []testdata.State
-var proofs []proof.ProofJson
+var proofs []prover.ProofJson
 
 func TestInitializeProofService(t *testing.T) {
-	proofService = proof.InitializeProofService()
+	proofService = prover.InitializeProverService()
 	instanceService = proofService.InstanceService
 	modelService = proofService.ModelService
 	signatureParameters = proofService.SignatureParameters
@@ -37,7 +37,7 @@ func TestProveInstantiation(t *testing.T) {
 	model := states[0].Model
 	identity := states[0].Identity
 
-	proof, err := proofService.ProveInstantiation(proof.ProveInstantiationCommand{
+	proof, err := proofService.ProveInstantiation(prover.ProveInstantiationCommand{
 		Model:    model.Id(),
 		Instance: instance.Id(),
 		Identity: identity,
@@ -52,7 +52,7 @@ func TestProveTransition0(t *testing.T) {
 	nextInstance := states[1].Instance
 	identity := states[1].Identity
 
-	proof, err := proofService.ProveTransition(proof.ProveTransitionCommand{
+	proof, err := proofService.ProveTransition(prover.ProveTransitionCommand{
 		Model:           model.Id(),
 		CurrentInstance: currentInstance.Id(),
 		NextInstance:    nextInstance.Id(),
@@ -68,7 +68,7 @@ func TestProveTermination(t *testing.T) {
 	model := states[len(states)-1].Model
 	identity := states[len(states)-1].Identity
 
-	proof, err := proofService.ProveTermination(proof.ProveTerminationCommand{
+	proof, err := proofService.ProveTermination(prover.ProveTerminationCommand{
 		Model:    model.Id(),
 		Instance: instance.Id(),
 		Identity: identity,

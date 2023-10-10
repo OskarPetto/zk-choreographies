@@ -1,4 +1,4 @@
-package proof
+package prover
 
 import (
 	"execution-service/domain"

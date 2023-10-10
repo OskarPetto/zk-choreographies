@@ -26,7 +26,7 @@ const instantiationVkFilename = "instantiation.sol"
 const transitionVkFilename = "transition.sol"
 const terminationVkFilename = "termination.sol"
 
-type ProofParameters struct {
+type ProverParameters struct {
 	CsInstantiation constraint.ConstraintSystem
 	CsTransition    constraint.ConstraintSystem
 	CsTermination   constraint.ConstraintSystem
@@ -35,14 +35,14 @@ type ProofParameters struct {
 	PkTermination   groth16.ProvingKey
 }
 
-func NewProofParameters() ProofParameters {
+func NewProverParameters() ProverParameters {
 	csInstantiation := importConstraintSystem(&instantiationCircuit, instantiationCsFilename)
 	csTransition := importConstraintSystem(&transitionCircuit, transitionCsFilename)
 	csTermination := importConstraintSystem(&terminationCircuit, terminationCsFilename)
 	pkInstantiation := importProvingKey(csInstantiation, instantiationPkFilename, instantiationVkFilename)
 	pkTransition := importProvingKey(csTransition, transitionPkFilename, transitionVkFilename)
 	pkTermination := importProvingKey(csTermination, terminationPkFilename, terminationVkFilename)
-	return ProofParameters{
+	return ProverParameters{
 		csInstantiation,
 		csTransition,
 		csTermination,

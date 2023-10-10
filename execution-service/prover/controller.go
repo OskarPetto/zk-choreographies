@@ -1,4 +1,4 @@
-package proof
+package prover
 
 import (
 	"net/http"
@@ -6,17 +6,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ProofController struct {
-	proofService ProofService
+type ProverController struct {
+	proofService ProverService
 }
 
-func NewProofController(proofService ProofService) ProofController {
-	return ProofController{
+func NewProverController(proofService ProverService) ProverController {
+	return ProverController{
 		proofService: proofService,
 	}
 }
 
-func (controller *ProofController) ProveInstantiation(c *gin.Context) {
+func (controller *ProverController) ProveInstantiation(c *gin.Context) {
 	var jsonCmd ProveInstantiationCommandJson
 	if err := c.BindJSON(&jsonCmd); err != nil {
 		c.Status(http.StatusBadRequest)
@@ -36,7 +36,7 @@ func (controller *ProofController) ProveInstantiation(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, jsonResult)
 }
 
-func (controller *ProofController) ProveTransition(c *gin.Context) {
+func (controller *ProverController) ProveTransition(c *gin.Context) {
 	var jsonCmd ProveTransitionCommandJson
 	if err := c.BindJSON(&jsonCmd); err != nil {
 		c.Status(http.StatusBadRequest)
@@ -56,7 +56,7 @@ func (controller *ProofController) ProveTransition(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, jsonResult)
 }
 
-func (controller *ProofController) ProveTermination(c *gin.Context) {
+func (controller *ProverController) ProveTermination(c *gin.Context) {
 	var jsonCmd ProveTerminationCommandJson
 	if err := c.BindJSON(&jsonCmd); err != nil {
 		c.Status(http.StatusBadRequest)

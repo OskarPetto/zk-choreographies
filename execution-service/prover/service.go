@@ -1,4 +1,4 @@
-package proof
+package prover
 
 import (
 	"execution-service/circuit"
@@ -13,28 +13,28 @@ import (
 	"github.com/consensys/gnark/frontend"
 )
 
-type ProofService struct {
-	proofParameters     parameters.ProofParameters
+type ProverService struct {
+	proofParameters     parameters.ProverParameters
 	SignatureParameters parameters.SignatureParameters
 	InstanceService     instance.InstanceService
 	ModelService        model.ModelService
 	MessageService      message.MessageService
 }
 
-func InitializeProofService() ProofService {
-	proofParameters := parameters.NewProofParameters()
+func InitializeProverService() ProverService {
+	proofParameters := parameters.NewProverParameters()
 	signatureParameters := parameters.NewSignatureParameters()
 	modelService := model.NewModelService()
 	messageService := message.NewMessageService()
 	instanceService := instance.NewInstanceService(modelService, messageService)
-	return NewProofService(proofParameters, signatureParameters, instanceService)
+	return NewProverService(proofParameters, signatureParameters, instanceService)
 }
 
-func NewProofService(proofParameters parameters.ProofParameters, signatureParameters parameters.SignatureParameters, instanceService instance.InstanceService) ProofService {
+func NewProverService(proofParameters parameters.ProverParameters, signatureParameters parameters.SignatureParameters, instanceService instance.InstanceService) ProverService {
 	fmt.Printf("Instantiation constraint system has %d constraints\n", proofParameters.CsInstantiation.GetNbConstraints())
 	fmt.Printf("Transition constraint system has %d constraints\n", proofParameters.CsTransition.GetNbConstraints())
 	fmt.Printf("Termination constraint system has %d constraints\n", proofParameters.CsTermination.GetNbConstraints())
-	return ProofService{
+	return ProverService{
 		proofParameters:     proofParameters,
 		SignatureParameters: signatureParameters,
 		InstanceService:     instanceService,
@@ -43,7 +43,7 @@ func NewProofService(proofParameters parameters.ProofParameters, signatureParame
 	}
 }
 
-func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (Proof, error) {
+func (service *ProverService) ProveInstantiation(cmd ProveInstantiationCommand) (Proof, error) {
 	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
 		return Proof{}, err
@@ -70,7 +70,7 @@ func (service *ProofService) ProveInstantiation(cmd ProveInstantiationCommand) (
 	return toProof(groth16Proof, model.Hash, instance.Hash)
 }
 
-func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof, error) {
+func (service *ProverService) ProveTransition(cmd ProveTransitionCommand) (Proof, error) {
 	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
 		return Proof{}, err
@@ -113,7 +113,7 @@ func (service *ProofService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 	return toProof(proof, model.Hash, currentInstance.Hash, nextInstance.Hash)
 }
 
-func (service *ProofService) ProveTermination(cmd ProveTerminationCommand) (Proof, error) {
+func (service *ProverService) ProveTermination(cmd ProveTerminationCommand) (Proof, error) {
 	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
 		return Proof{}, err
