@@ -84,8 +84,9 @@ func (service *InstanceService) ExecuteTransition(cmd ExecuteTransitionCommand) 
 		return domain.Instance{}, err
 	}
 	var nextInstance domain.Instance
-	if cmd.CreateMessageCommand != nil {
-		message := service.MessageService.CreateMessage(*cmd.CreateMessageCommand)
+	if cmd.SendMessageCommand != nil {
+		recipient := currentInstance.PublicKeys[transition.RespondingParticipant]
+		message := service.MessageService.SendMessage(recipient, *cmd.SendMessageCommand)
 		nextInstance, err = currentInstance.ExecuteTransition(transition, constraintInput, message.Hash)
 	} else {
 		nextInstance, err = currentInstance.ExecuteTransition(transition, constraintInput, domain.EmptyHash())

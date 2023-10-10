@@ -203,10 +203,10 @@ func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountCh
 		}
 		tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountIncreasesAtOutgoingPlace)
 	}
-	participantMatches := api.Or(equals(api, transition.Participant, domain.EmptyParticipantId), equals(api, transition.Participant, participantId))
+	initiatingParticipantMatches := api.Or(equals(api, transition.InitiatingParticipant, domain.EmptyParticipantId), equals(api, transition.InitiatingParticipant, participantId))
 	messageMatches := equals(api, transition.Message, addedMessageId)
 	constraintSatisfied := evaluateConstraint(api, transition.Constraint, circuit.ConstraintInput, constraintMessageIds)
-	transitionMatches1 := api.And(tokenCountChangesMatch, participantMatches)
+	transitionMatches1 := api.And(tokenCountChangesMatch, initiatingParticipantMatches)
 	transitionMatches2 := api.And(messageMatches, constraintSatisfied)
 	transitionMatches := api.And(transitionMatches1, transitionMatches2)
 
@@ -249,7 +249,8 @@ func checkTransitionHash(api frontend.API, hash frontend.Variable, transition Tr
 	}
 	mimc.Write(transition.IncomingPlaces[:]...)
 	mimc.Write(transition.OutgoingPlaces[:]...)
-	mimc.Write(transition.Participant)
+	mimc.Write(transition.InitiatingParticipant)
+	mimc.Write(transition.RespondingParticipant)
 	mimc.Write(transition.Message)
 	mimc.Write(transition.Constraint.Coefficients[:]...)
 	mimc.Write(transition.Constraint.MessageIds[:]...)

@@ -74,3 +74,7 @@ func isTransitionExecutable(instance Instance, transition Transition, input Cons
 	}
 	return instance.EvaluateConstraint(transition.Constraint, input)
 }
+
+func (instance *Instance) FindMessageHashById(id MessageId) [HashSize]byte {
+	return instance.MessageHashes[id]
+}

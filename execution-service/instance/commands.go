@@ -11,8 +11,8 @@ type InstantiateModelCommand struct {
 }
 
 type ExecuteTransitionCommand struct {
-	Model                domain.ModelId
-	Instance             domain.InstanceId
-	Transition           domain.TransitionId
-	CreateMessageCommand *message.CreateMessageCommand
+	Model              domain.ModelId
+	Instance           domain.InstanceId
+	Transition         domain.TransitionId
+	SendMessageCommand *message.SendMessageCommand
 }

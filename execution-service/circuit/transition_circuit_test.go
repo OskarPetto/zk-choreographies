@@ -268,17 +268,20 @@ func TestTransition_InvalidConstraintInput(t *testing.T) {
 func TestTransition_InvalidMessageForConstraint(t *testing.T) {
 	model := transitionStates[3].Model
 	currentInstance := transitionStates[3].Instance
-	message := domain.NewIntegerMessage(6)
-	currentInstance.MessageHashes[8] = message.Hash.Value
+	order := domain.NewIntegerMessage(6)
+	stock := domain.NewIntegerMessage(4)
+	currentInstance.MessageHashes[9] = order.Hash.Value
+	currentInstance.MessageHashes[0] = stock.Hash.Value
 	currentInstance.ComputeHash()
 	nextInstance := transitionStates[4].Instance
-	nextInstance.MessageHashes[8] = message.Hash.Value
+	nextInstance.MessageHashes[9] = order.Hash.Value
+	nextInstance.MessageHashes[0] = stock.Hash.Value
 	nextInstance.ComputeHash()
 	transition := transitionStates[4].Transition
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(1))
 
 	constraintInput := transitionStates[4].ConstraintInput
-	constraintInput.Messages[0] = message
+	constraintInput.Messages[0] = order
 
 	witness := circuit.TransitionCircuit{
 		Model:           circuit.FromModel(model),

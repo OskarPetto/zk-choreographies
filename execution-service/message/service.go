@@ -16,7 +16,7 @@ func NewMessageService() MessageService {
 	}
 }
 
-func (service *MessageService) CreateMessage(cmd CreateMessageCommand) domain.Message {
+func (service *MessageService) SendMessage(publicKey domain.PublicKey, cmd SendMessageCommand) domain.Message {
 	var message domain.Message
 	if len(cmd.BytesMessage) > 0 {
 		message = domain.NewBytesMessage(cmd.BytesMessage)
@@ -24,6 +24,7 @@ func (service *MessageService) CreateMessage(cmd CreateMessageCommand) domain.Me
 		message = domain.NewIntegerMessage(cmd.IntegerMessage)
 	}
 	service.messages[message.Hash.String()] = message
+	fmt.Printf("Send message %+v to public key %+v\n", message, publicKey)
 	return message
 }
 

@@ -93,7 +93,7 @@ export class ChoreographyMapper {
     const relevantParticipants = [...participantIds.values()].filter(
       (participantId) =>
         choreographyTaskTransitions.some(
-          (choreographyTask) => choreographyTask.participant === participantId,
+          (choreographyTask) => choreographyTask.initiatingParticipant === participantId,
         ),
     );
 
@@ -323,7 +323,8 @@ export class ChoreographyMapper {
           name: choreographyTask.name,
           incomingPlaces: [incomingPlaceId],
           outgoingPlaces: [additionalPlaceId],
-          participant: initiatingParticipantId,
+          initiatingParticipant: initiatingParticipantId,
+          respondingParticipant: respondingParticipantId,
           message: initialMessage,
         },
         {
@@ -332,7 +333,8 @@ export class ChoreographyMapper {
           name: choreographyTask.name,
           incomingPlaces: [additionalPlaceId],
           outgoingPlaces: [outgoingPlaceId],
-          participant: respondingParticipantId,
+          initiatingParticipant: respondingParticipantId,
+          respondingParticipant: initiatingParticipantId,
           message: responseMessage,
         },
       ];
@@ -346,7 +348,8 @@ export class ChoreographyMapper {
           name: choreographyTask.name,
           incomingPlaces: [incomingPlaceId],
           outgoingPlaces: [outgoingPlaceId],
-          participant: initiatingParticipantId,
+          initiatingParticipant: initiatingParticipantId,
+          respondingParticipant: respondingParticipantId,
           message: initialMessage,
         },
         {
@@ -355,7 +358,8 @@ export class ChoreographyMapper {
           name: choreographyTask.name,
           incomingPlaces: [outgoingPlaceId],
           outgoingPlaces: [outgoingPlaceId],
-          participant: initiatingParticipantId,
+          initiatingParticipant: initiatingParticipantId,
+          respondingParticipant: respondingParticipantId,
           message: initialMessage,
         },
       ];
@@ -371,7 +375,7 @@ export class ChoreographyMapper {
         if (constraintString !== undefined) {
           const messageIdPerMessageName = constraintMapping.messageIdPerMessageName
           const constraint = this.constraintParser.parseConstraint(constraintString, messageIdPerMessageName)
-          transition.constraint = constraint;
+          transition.messageConstraint = constraint;
           break;
         }
       }

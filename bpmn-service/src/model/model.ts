@@ -17,9 +17,10 @@ export interface Transition {
   name?: string;
   incomingPlaces: PlaceId[];
   outgoingPlaces: PlaceId[];
-  participant?: ParticipantId;
+  initiatingParticipant?: ParticipantId;
+  respondingParticipant?: ParticipantId;
   message?: MessageId;
-  constraint?: Constraint;
+  messageConstraint?: Constraint;
 }
 
 export interface Hash { value: string; salt: string }

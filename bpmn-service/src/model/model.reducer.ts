@@ -78,11 +78,11 @@ export class ModelReducer {
           transition.incomingPlaces,
           transitionToRemove.incomingPlaces,
         );
-        if (transitionToRemove.constraint) {
-          if (transition.constraint) {
+        if (transitionToRemove.messageConstraint) {
+          if (transition.messageConstraint) {
             throw Error(`Cannot reduce model because transition ${transition.id} already has constraint`)
           } else {
-            transition.constraint = transitionToRemove.constraint
+            transition.messageConstraint = transitionToRemove.messageConstraint
           }
         }
       }
@@ -169,9 +169,10 @@ export class ModelReducer {
         name: transition.name,
         incomingPlaces: [...transition.incomingPlaces],
         outgoingPlaces: [...transition.outgoingPlaces],
-        participant: transition.participant,
+        initiatingParticipant: transition.initiatingParticipant,
+        respondingParticipant: transition.respondingParticipant,
         message: transition.message,
-        constraint: transition.constraint ? { ...transition.constraint } : undefined
+        messageConstraint: transition.messageConstraint ? { ...transition.messageConstraint } : undefined
       }),
     );
 

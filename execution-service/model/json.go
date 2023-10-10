@@ -16,13 +16,14 @@ type ConstraintJson struct {
 }
 
 type TransitionJson struct {
-	Id             string          `json:"id"`
-	Name           string          `json:"name"`
-	IncomingPlaces []uint          `json:"incomingPlaces"`
-	OutgoingPlaces []uint          `json:"outgoingPlaces"`
-	Participant    uint            `json:"participant,omitempty"`
-	Message        uint            `json:"message,omitempty"`
-	Contraint      *ConstraintJson `json:"constraint,omitempty"`
+	Id                    string          `json:"id"`
+	Name                  string          `json:"name"`
+	IncomingPlaces        []uint          `json:"incomingPlaces"`
+	OutgoingPlaces        []uint          `json:"outgoingPlaces"`
+	InitiatingParticipant uint            `json:"initiatingParticipant,omitempty"`
+	RespondingParticipant uint            `json:"respondingParticipant,omitempty"`
+	Message               uint            `json:"message,omitempty"`
+	Contraint             *ConstraintJson `json:"constraint,omitempty"`
 }
 
 type ModelJson struct {
@@ -45,8 +46,9 @@ func (transition *TransitionJson) UnmarshalJSON(data []byte) error {
 	type Alias TransitionJson
 	tmp := struct {
 		*Alias
-		Participant *uint `json:"participant"`
-		Message     *uint `json:"message"`
+		InitiatingParticipant *uint `json:"initiatingParticipant"`
+		RespondingParticipant *uint `json:"respondingParticipant"`
+		Message               *uint `json:"message"`
 	}{
 		Alias: (*Alias)(transition),
 	}
@@ -54,10 +56,15 @@ func (transition *TransitionJson) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	if tmp.Participant == nil {
-		transition.Participant = uint(domain.EmptyParticipantId)
+	if tmp.InitiatingParticipant == nil {
+		transition.InitiatingParticipant = uint(domain.EmptyParticipantId)
 	} else {
-		transition.Participant = *(tmp.Participant)
+		transition.InitiatingParticipant = *(tmp.InitiatingParticipant)
+	}
+	if tmp.RespondingParticipant == nil {
+		transition.RespondingParticipant = uint(domain.EmptyParticipantId)
+	} else {
+		transition.RespondingParticipant = *(tmp.RespondingParticipant)
 	}
 	if tmp.Message == nil {
 		transition.Message = uint(domain.EmptyMessageId)
@@ -151,7 +158,7 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 	for i := 0; i < outgoingPlaceCount; i++ {
 		outgoingPlaces[i] = domain.PlaceId(transition.OutgoingPlaces[i])
 	}
-	if transition.Participant > domain.MaxParticipantCount {
+	if transition.InitiatingParticipant > domain.MaxParticipantCount || transition.RespondingParticipant > domain.MaxParticipantCount {
 		return domain.Transition{}, fmt.Errorf("transition %s has invalid participant", transition.Id)
 	}
 	if transition.Message > domain.MaxMessageCount {
@@ -169,13 +176,14 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 	}
 
 	return domain.Transition{
-		Id:             transition.Id,
-		Name:           transition.Name,
-		IncomingPlaces: incomingPlaces,
-		OutgoingPlaces: outgoingPlaces,
-		Participant:    domain.ParticipantId(transition.Participant),
-		Message:        domain.MessageId(transition.Message),
-		Constraint:     constraint,
+		Id:                    transition.Id,
+		Name:                  transition.Name,
+		IncomingPlaces:        incomingPlaces,
+		OutgoingPlaces:        outgoingPlaces,
+		InitiatingParticipant: domain.ParticipantId(transition.InitiatingParticipant),
+		RespondingParticipant: domain.ParticipantId(transition.RespondingParticipant),
+		Message:               domain.MessageId(transition.Message),
+		Constraint:            constraint,
 	}, nil
 }
 
@@ -252,8 +260,11 @@ func transitionToJson(transition domain.Transition) TransitionJson {
 		IncomingPlaces: incomingPlaces,
 		OutgoingPlaces: outgoingPlaces,
 	}
-	if transition.Participant != domain.EmptyParticipantId {
-		jsonTransition.Participant = uint(transition.Participant)
+	if transition.InitiatingParticipant != domain.EmptyParticipantId {
+		jsonTransition.InitiatingParticipant = uint(transition.InitiatingParticipant)
+	}
+	if transition.RespondingParticipant != domain.EmptyParticipantId {
+		jsonTransition.RespondingParticipant = uint(transition.RespondingParticipant)
 	}
 	if transition.Message != domain.EmptyMessageId {
 		jsonTransition.Message = uint(transition.Message)

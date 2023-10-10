@@ -272,7 +272,7 @@ export class TestdataProvider {
           type: TransitionType.OPTIONAL_OUTGOING,
           incomingPlaces: [1],
           outgoingPlaces: [2],
-          constraint: {
+          messageConstraint: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,
@@ -284,7 +284,7 @@ export class TestdataProvider {
           type: TransitionType.OPTIONAL_OUTGOING,
           incomingPlaces: [1],
           outgoingPlaces: [9],
-          constraint: {
+          messageConstraint: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,
@@ -321,7 +321,8 @@ export class TestdataProvider {
           name: 'Submit purchase order',
           incomingPlaces: [0],
           outgoingPlaces: [13],
-          participant: 0,
+          initiatingParticipant: 0,
+          respondingParticipant: 1,
           message: 9,
         },
         {
@@ -330,7 +331,8 @@ export class TestdataProvider {
           name: 'Submit purchase order',
           incomingPlaces: [13],
           outgoingPlaces: [1],
-          participant: 1,
+          initiatingParticipant: 1,
+          respondingParticipant: 0,
           message: 0,
         },
         {
@@ -339,7 +341,8 @@ export class TestdataProvider {
           name: 'Purchase raw materials',
           incomingPlaces: [2],
           outgoingPlaces: [10],
-          participant: 1,
+          initiatingParticipant: 1,
+          respondingParticipant: 2,
           message: 8,
         },
         {
@@ -348,7 +351,8 @@ export class TestdataProvider {
           name: 'Purchase raw materials',
           incomingPlaces: [10],
           outgoingPlaces: [10],
-          participant: 1,
+          initiatingParticipant: 1,
+          respondingParticipant: 2,
           message: 8,
         },
         {
@@ -357,7 +361,8 @@ export class TestdataProvider {
           name: 'Confirm order',
           incomingPlaces: [10],
           outgoingPlaces: [14],
-          participant: 1,
+          initiatingParticipant: 1,
+          respondingParticipant: 0,
           message: 7,
         },
         {
@@ -366,7 +371,8 @@ export class TestdataProvider {
           name: 'Confirm order',
           incomingPlaces: [14],
           outgoingPlaces: [3],
-          participant: 0,
+          initiatingParticipant: 0,
+          respondingParticipant: 1,
         },
         {
           id: 'ChoreographyTask_1dsovf5_Participant_0x6v44d',
@@ -374,7 +380,8 @@ export class TestdataProvider {
           name: 'Ship product',
           incomingPlaces: [4],
           outgoingPlaces: [15],
-          participant: 0,
+          initiatingParticipant: 0,
+          respondingParticipant: 1,
           message: 6,
         },
         {
@@ -383,7 +390,8 @@ export class TestdataProvider {
           name: 'Ship product',
           incomingPlaces: [15],
           outgoingPlaces: [6],
-          participant: 1,
+          initiatingParticipant: 1,
+          respondingParticipant: 0,
           message: 3,
         },
         {
@@ -392,7 +400,8 @@ export class TestdataProvider {
           name: 'Invoice customer',
           incomingPlaces: [5],
           outgoingPlaces: [16],
-          participant: 1,
+          initiatingParticipant: 1,
+          respondingParticipant: 0,
           message: 5,
         },
         {
@@ -401,7 +410,8 @@ export class TestdataProvider {
           name: 'Invoice customer',
           incomingPlaces: [16],
           outgoingPlaces: [7],
-          participant: 0,
+          initiatingParticipant: 0,
+          respondingParticipant: 1,
           message: 2,
         },
         {
@@ -410,7 +420,8 @@ export class TestdataProvider {
           name: 'Confirm order',
           incomingPlaces: [9],
           outgoingPlaces: [17],
-          participant: 1,
+          initiatingParticipant: 1,
+          respondingParticipant: 0,
           message: 1,
         },
         {
@@ -419,7 +430,8 @@ export class TestdataProvider {
           name: 'Confirm order',
           incomingPlaces: [17],
           outgoingPlaces: [12],
-          participant: 0,
+          initiatingParticipant: 0,
+          respondingParticipant: 1,
         },
       ],
     };
@@ -454,8 +466,9 @@ export class TestdataProvider {
           name: 'Submit purchase order',
           incomingPlaces: [0],
           outgoingPlaces: [7],
-          participant: 0,
           message: 9,
+          initiatingParticipant: 0,
+          respondingParticipant: 1,
         },
         {
           id: 'ChoreographyTask_0kp4flv_Participant_0n7kwiu',
@@ -463,8 +476,9 @@ export class TestdataProvider {
           name: 'Submit purchase order',
           incomingPlaces: [7],
           outgoingPlaces: [1],
-          participant: 1,
           message: 0,
+          initiatingParticipant: 1,
+          respondingParticipant: 0,
         },
         {
           id: 'ChoreographyTask_0nl2rhr_0',
@@ -472,9 +486,10 @@ export class TestdataProvider {
           name: 'Purchase raw materials',
           incomingPlaces: [1],
           outgoingPlaces: [6],
-          participant: 1,
           message: 8,
-          constraint: {
+          initiatingParticipant: 1,
+          respondingParticipant: 2,
+          messageConstraint: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,
@@ -487,8 +502,9 @@ export class TestdataProvider {
           name: 'Purchase raw materials',
           incomingPlaces: [6],
           outgoingPlaces: [6],
-          participant: 1,
           message: 8,
+          initiatingParticipant: 1,
+          respondingParticipant: 2,
         },
         {
           id: 'ChoreographyTask_1uie9z3_Participant_0n7kwiu',
@@ -496,8 +512,9 @@ export class TestdataProvider {
           name: 'Confirm order',
           incomingPlaces: [6],
           outgoingPlaces: [8],
-          participant: 1,
           message: 7,
+          initiatingParticipant: 1,
+          respondingParticipant: 0,
         },
         {
           id: 'ChoreographyTask_1uie9z3_Participant_0x6v44d',
@@ -505,7 +522,8 @@ export class TestdataProvider {
           name: 'Confirm order',
           incomingPlaces: [8],
           outgoingPlaces: [2, 3],
-          participant: 0,
+          initiatingParticipant: 0,
+          respondingParticipant: 1,
         },
         {
           id: 'ChoreographyTask_1dsovf5_Participant_0x6v44d',
@@ -513,8 +531,9 @@ export class TestdataProvider {
           name: 'Ship product',
           incomingPlaces: [2],
           outgoingPlaces: [9],
-          participant: 0,
           message: 6,
+          initiatingParticipant: 0,
+          respondingParticipant: 1,
         },
         {
           id: 'ChoreographyTask_1dsovf5_Participant_0n7kwiu',
@@ -522,8 +541,9 @@ export class TestdataProvider {
           name: 'Ship product',
           incomingPlaces: [9],
           outgoingPlaces: [4],
-          participant: 1,
           message: 3,
+          initiatingParticipant: 1,
+          respondingParticipant: 0,
         },
         {
           id: 'ChoreographyTask_1htg6wy_Participant_0n7kwiu',
@@ -531,8 +551,9 @@ export class TestdataProvider {
           name: 'Invoice customer',
           incomingPlaces: [3],
           outgoingPlaces: [10],
-          participant: 1,
           message: 5,
+          initiatingParticipant: 1,
+          respondingParticipant: 0,
         },
         {
           id: 'ChoreographyTask_1htg6wy_Participant_0x6v44d',
@@ -540,8 +561,9 @@ export class TestdataProvider {
           name: 'Invoice customer',
           incomingPlaces: [10],
           outgoingPlaces: [5],
-          participant: 0,
           message: 2,
+          initiatingParticipant: 0,
+          respondingParticipant: 1,
         },
         {
           id: 'ChoreographyTask_1e51o0k_Participant_0n7kwiu',
@@ -549,9 +571,10 @@ export class TestdataProvider {
           name: 'Confirm order',
           incomingPlaces: [1],
           outgoingPlaces: [11],
-          participant: 1,
           message: 1,
-          constraint: {
+          initiatingParticipant: 1,
+          respondingParticipant: 0,
+          messageConstraint: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,
@@ -564,7 +587,8 @@ export class TestdataProvider {
           name: 'Confirm order',
           incomingPlaces: [11],
           outgoingPlaces: [2, 3],
-          participant: 0,
+          initiatingParticipant: 0,
+          respondingParticipant: 1,
         },
       ],
     };

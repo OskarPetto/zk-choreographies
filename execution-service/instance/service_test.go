@@ -2,6 +2,7 @@ package instance_test
 
 import (
 	"execution-service/instance"
+	"execution-service/message"
 	"execution-service/parameters"
 	"execution-service/testdata"
 	"testing"
@@ -42,6 +43,22 @@ func TestInstantiateModel(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestExecuteTransition0(t *testing.T) {
+	model := states[0].Model
+	modelService.ImportModel(model)
+	currentInstance := states[0].Instance
+	service.ImportInstance(currentInstance)
+
+	result, err := service.ExecuteTransition(instance.ExecuteTransitionCommand{
+		Model:      model.Id(),
+		Instance:   currentInstance.Id(),
+		Transition: model.Transitions[0].Id,
+	})
+	assert.Nil(t, err)
+	_, err = service.FindInstanceById(result.Id())
+	assert.Nil(t, err)
+}
+
 func TestExecuteTransition2(t *testing.T) {
 	model := states[1].Model
 	modelService.ImportModel(model)
@@ -52,6 +69,9 @@ func TestExecuteTransition2(t *testing.T) {
 		Model:      model.Id(),
 		Instance:   currentInstance.Id(),
 		Transition: model.Transitions[2].Id,
+		SendMessageCommand: &message.SendMessageCommand{
+			BytesMessage: []byte("test message"),
+		},
 	})
 	assert.Nil(t, err)
 	_, err = service.FindInstanceById(result.Id())

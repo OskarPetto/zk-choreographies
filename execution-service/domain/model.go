@@ -29,22 +29,24 @@ const EmptyMessageId = MessageId(MaxMessageCount)
 type TransitionId = string
 
 type Transition struct {
-	Id             TransitionId
-	Name           string
-	IncomingPlaces []PlaceId
-	OutgoingPlaces []PlaceId
-	Participant    ParticipantId
-	Message        MessageId
-	Constraint     Constraint
+	Id                    TransitionId
+	Name                  string
+	IncomingPlaces        []PlaceId
+	OutgoingPlaces        []PlaceId
+	InitiatingParticipant ParticipantId
+	RespondingParticipant ParticipantId
+	Message               MessageId
+	Constraint            Constraint
 }
 
 func OutOfBoundsTransition() Transition {
 	return Transition{
-		IncomingPlaces: make([]PlaceId, 0),
-		OutgoingPlaces: make([]PlaceId, 0),
-		Participant:    EmptyParticipantId,
-		Message:        EmptyMessageId,
-		Constraint:     EmptyConstraint(),
+		IncomingPlaces:        make([]PlaceId, 0),
+		OutgoingPlaces:        make([]PlaceId, 0),
+		InitiatingParticipant: EmptyParticipantId,
+		RespondingParticipant: EmptyParticipantId,
+		Message:               EmptyMessageId,
+		Constraint:            EmptyConstraint(),
 	}
 }
 

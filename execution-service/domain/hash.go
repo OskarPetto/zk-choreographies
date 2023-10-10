@@ -63,7 +63,8 @@ func (transition *Transition) ComputeHash() [HashSize]byte {
 	for i := len(transition.OutgoingPlaces); i < MaxBranchingFactor; i++ {
 		hashUint16(mimc, OutOfBoundsPlaceId)
 	}
-	hashUint16(mimc, transition.Participant)
+	hashUint16(mimc, transition.InitiatingParticipant)
+	hashUint16(mimc, transition.RespondingParticipant)
 	hashUint16(mimc, transition.Message)
 	for _, coefficient := range transition.Constraint.Coefficients {
 		hashInt64(mimc, int64(coefficient))
