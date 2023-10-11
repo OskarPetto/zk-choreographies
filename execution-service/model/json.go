@@ -1,7 +1,6 @@
 package model
 
 import (
-	"encoding/json"
 	"execution-service/domain"
 	"execution-service/hash"
 	"fmt"
@@ -40,15 +39,6 @@ type ModelJson struct {
 
 func (model *ModelJson) Id() string {
 	return model.Hash.Value
-}
-
-func FromJson(data []byte) (domain.Model, error) {
-	var model ModelJson
-	err := json.Unmarshal(data, &model)
-	if err != nil {
-		return domain.Model{}, err
-	}
-	return model.ToModel()
 }
 
 func (model *ModelJson) ToModel() (domain.Model, error) {
