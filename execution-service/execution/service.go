@@ -9,6 +9,8 @@ import (
 	"execution-service/prover"
 	"execution-service/state"
 	"fmt"
+
+	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )
 
 type ExecutionService struct {
@@ -56,10 +58,8 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 		return ExecutionResult{}, err
 	}
 	service.InstanceService.ImportInstance(instance)
-	plainState := domain.NewState(model, instance, nil)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
-	serializedState := state.Serialize(plainState)
-	encryptedState := serializedState.Encrypt(privateKey, publicKey)
+	encryptedState := createEncryptedState(model, instance, nil, privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       instance,
 		Proof:          proof,
@@ -113,13 +113,11 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 		return ExecutionResult{}, err
 	}
 	service.InstanceService.ImportInstance(nextInstance)
-	plainState := domain.NewState(model, nextInstance, message)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
 	if transition.RespondingParticipant != domain.EmptyParticipantId {
 		publicKey = currentInstance.PublicKeys[transition.RespondingParticipant]
 	}
-	serializedState := state.Serialize(plainState)
-	encryptedState := serializedState.Encrypt(privateKey, publicKey)
+	encryptedState := createEncryptedState(model, nextInstance, message, privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       nextInstance,
 		Proof:          proof,
@@ -146,13 +144,17 @@ func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand)
 		return ExecutionResult{}, err
 	}
 	service.InstanceService.DeleteInstance(instance)
-	plainState := domain.NewState(model, instance, nil)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
-	serializedState := state.Serialize(plainState)
-	encryptedState := serializedState.Encrypt(privateKey, publicKey)
+	encryptedState := createEncryptedState(model, instance, nil, privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       instance,
 		Proof:          proof,
 		EncryptedState: encryptedState,
 	}, nil
+}
+
+func createEncryptedState(model domain.Model, instance domain.Instance, message *domain.Message, privateKey *eddsa.PrivateKey, publicKey domain.PublicKey) domain.EncryptedState {
+	plainState := domain.NewState(model, instance, message)
+	serializedState := state.Serialize(plainState)
+	return serializedState.Encrypt(privateKey, publicKey)
 }
