@@ -2,34 +2,18 @@ package instance
 
 import (
 	"execution-service/domain"
-	"execution-service/message"
-	"execution-service/model"
 	"fmt"
 	"sort"
 )
 
 type InstanceService struct {
-	instances      map[string]domain.Instance
-	ModelService   model.ModelService
-	MessageService message.MessageService
+	instances map[string]domain.Instance
 }
 
-func InitializeInstanceService() InstanceService {
-	modelService := model.NewModelService()
-	messageService := message.NewMessageService()
-	return NewInstanceService(modelService, messageService)
-}
-
-func NewInstanceService(modelService model.ModelService, messageService message.MessageService) InstanceService {
+func NewInstanceService() InstanceService {
 	return InstanceService{
-		instances:      make(map[string]domain.Instance),
-		ModelService:   modelService,
-		MessageService: messageService,
+		instances: make(map[string]domain.Instance),
 	}
-}
-
-func (service *InstanceService) ImportInstance(instance domain.Instance) {
-	service.instances[instance.Id()] = instance
 }
 
 func (service *InstanceService) FindInstanceById(id domain.InstanceId) (domain.Instance, error) {
@@ -53,47 +37,10 @@ func (service *InstanceService) FindInstancesByModel(model domain.ModelId) []dom
 	return instances
 }
 
-func (service *InstanceService) InstantiateModel(cmd InstantiateModelCommand) (domain.Instance, error) {
-	model, err := service.ModelService.FindModelById(cmd.Model)
-	if err != nil {
-		return domain.Instance{}, err
-	}
-	instanceResult, err := model.Instantiate(cmd.PublicKeys)
-	if err != nil {
-		return domain.Instance{}, err
-	}
-	service.ImportInstance(instanceResult)
-	return instanceResult, nil
+func (service *InstanceService) ImportInstance(instance domain.Instance) {
+	service.instances[instance.Id()] = instance
 }
 
-func (service *InstanceService) ExecuteTransition(cmd ExecuteTransitionCommand) (domain.Instance, error) {
-	model, err := service.ModelService.FindModelById(cmd.Model)
-	if err != nil {
-		return domain.Instance{}, err
-	}
-	currentInstance, err := service.FindInstanceById(cmd.Instance)
-	if err != nil {
-		return domain.Instance{}, err
-	}
-	transition, err := model.FindTransitionById(cmd.Transition)
-	if err != nil {
-		return domain.Instance{}, err
-	}
-	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
-	if err != nil {
-		return domain.Instance{}, err
-	}
-	var nextInstance domain.Instance
-	if cmd.SendMessageCommand != nil {
-		recipient := currentInstance.PublicKeys[transition.RespondingParticipant]
-		message := service.MessageService.SendMessage(recipient, *cmd.SendMessageCommand)
-		nextInstance, err = currentInstance.ExecuteTransition(transition, constraintInput, message.Hash)
-	} else {
-		nextInstance, err = currentInstance.ExecuteTransition(transition, constraintInput, domain.EmptyHash())
-	}
-	if err != nil {
-		return domain.Instance{}, err
-	}
-	service.ImportInstance(nextInstance)
-	return nextInstance, nil
+func (service *InstanceService) DeleteInstance(instance domain.Instance) {
+	delete(service.instances, instance.Id())
 }

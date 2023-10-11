@@ -2,9 +2,6 @@ package prover
 
 import (
 	"execution-service/circuit"
-	"execution-service/instance"
-	"execution-service/message"
-	"execution-service/model"
 	"execution-service/parameters"
 	"fmt"
 
@@ -13,51 +10,35 @@ import (
 	"github.com/consensys/gnark/frontend"
 )
 
+type IProverService interface {
+	ProveInstantiation(cmd ProveInstantiationCommand) (Proof, error)
+	ProveTransition(cmd ProveTransitionCommand) (Proof, error)
+	ProveTermination(cmd ProveTerminationCommand) (Proof, error)
+}
+
 type ProverService struct {
-	proofParameters     parameters.ProverParameters
-	SignatureParameters parameters.SignatureParameters
-	InstanceService     instance.InstanceService
-	ModelService        model.ModelService
-	MessageService      message.MessageService
+	proofParameters parameters.ProverParameters
 }
 
 func InitializeProverService() ProverService {
 	proofParameters := parameters.NewProverParameters()
-	signatureParameters := parameters.NewSignatureParameters()
-	modelService := model.NewModelService()
-	messageService := message.NewMessageService()
-	instanceService := instance.NewInstanceService(modelService, messageService)
-	return NewProverService(proofParameters, signatureParameters, instanceService)
+	return NewProverService(proofParameters)
 }
 
-func NewProverService(proofParameters parameters.ProverParameters, signatureParameters parameters.SignatureParameters, instanceService instance.InstanceService) ProverService {
+func NewProverService(proofParameters parameters.ProverParameters) ProverService {
 	fmt.Printf("Instantiation constraint system has %d constraints\n", proofParameters.CsInstantiation.GetNbConstraints())
 	fmt.Printf("Transition constraint system has %d constraints\n", proofParameters.CsTransition.GetNbConstraints())
 	fmt.Printf("Termination constraint system has %d constraints\n", proofParameters.CsTermination.GetNbConstraints())
 	return ProverService{
-		proofParameters:     proofParameters,
-		SignatureParameters: signatureParameters,
-		InstanceService:     instanceService,
-		ModelService:        instanceService.ModelService,
-		MessageService:      instanceService.MessageService,
+		proofParameters: proofParameters,
 	}
 }
 
-func (service *ProverService) ProveInstantiation(cmd ProveInstantiationCommand) (Proof, error) {
-	model, err := service.ModelService.FindModelById(cmd.Model)
-	if err != nil {
-		return Proof{}, err
-	}
-	instance, err := service.InstanceService.FindInstanceById(cmd.Instance)
-	if err != nil {
-		return Proof{}, err
-	}
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
-	signature := instance.Sign(privateKey)
+func (service ProverService) ProveInstantiation(cmd ProveInstantiationCommand) (Proof, error) {
 	assignment := &circuit.InstantiationCircuit{
-		Model:          circuit.FromModel(model),
-		Instance:       circuit.FromInstance(instance),
-		Authentication: circuit.ToAuthentication(instance, signature),
+		Model:          circuit.FromModel(cmd.Model),
+		Instance:       circuit.FromInstance(cmd.Instance),
+		Authentication: circuit.ToAuthentication(cmd.Instance, cmd.Signature),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -67,39 +48,17 @@ func (service *ProverService) ProveInstantiation(cmd ProveInstantiationCommand) 
 	if err != nil {
 		return Proof{}, err
 	}
-	return toProof(groth16Proof, model.Hash, instance.Hash)
+	return toProof(groth16Proof, cmd.Model.Hash, cmd.Instance.Hash)
 }
 
-func (service *ProverService) ProveTransition(cmd ProveTransitionCommand) (Proof, error) {
-	model, err := service.ModelService.FindModelById(cmd.Model)
-	if err != nil {
-		return Proof{}, err
-	}
-	currentInstance, err := service.InstanceService.FindInstanceById(cmd.CurrentInstance)
-	if err != nil {
-		return Proof{}, err
-	}
-	nextInstance, err := service.InstanceService.FindInstanceById(cmd.NextInstance)
-	if err != nil {
-		return Proof{}, err
-	}
-	transition, err := model.FindTransitionById(cmd.Transition)
-	if err != nil {
-		return Proof{}, err
-	}
-	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
-	if err != nil {
-		return Proof{}, err
-	}
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
-	nextSignature := nextInstance.Sign(privateKey)
+func (service ProverService) ProveTransition(cmd ProveTransitionCommand) (Proof, error) {
 	assignment := &circuit.TransitionCircuit{
-		Model:           circuit.FromModel(model),
-		CurrentInstance: circuit.FromInstance(currentInstance),
-		NextInstance:    circuit.FromInstance(nextInstance),
-		Transition:      circuit.ToTransition(model, transition),
-		Authentication:  circuit.ToAuthentication(nextInstance, nextSignature),
-		ConstraintInput: circuit.FromConstraintInput(constraintInput),
+		Model:           circuit.FromModel(cmd.Model),
+		CurrentInstance: circuit.FromInstance(cmd.CurrentInstance),
+		NextInstance:    circuit.FromInstance(cmd.NextInstance),
+		Transition:      circuit.ToTransition(cmd.Model, cmd.Transition),
+		Authentication:  circuit.ToAuthentication(cmd.NextInstance, cmd.Signature),
+		ConstraintInput: circuit.FromConstraintInput(cmd.ConstraintInput),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -110,25 +69,16 @@ func (service *ProverService) ProveTransition(cmd ProveTransitionCommand) (Proof
 		return Proof{}, err
 	}
 
-	return toProof(proof, model.Hash, currentInstance.Hash, nextInstance.Hash)
+	return toProof(proof, cmd.CurrentInstance.Hash, cmd.CurrentInstance.Hash, cmd.NextInstance.Hash)
 }
 
-func (service *ProverService) ProveTermination(cmd ProveTerminationCommand) (Proof, error) {
-	model, err := service.ModelService.FindModelById(cmd.Model)
-	if err != nil {
-		return Proof{}, err
-	}
-	instance, err := service.InstanceService.FindInstanceById(cmd.Instance)
-	if err != nil {
-		return Proof{}, err
-	}
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
-	signature := instance.Sign(privateKey)
+func (service ProverService) ProveTermination(cmd ProveTerminationCommand) (Proof, error) {
+
 	assignment := &circuit.TerminationCircuit{
-		Model:          circuit.FromModel(model),
-		Instance:       circuit.FromInstance(instance),
-		Authentication: circuit.ToAuthentication(instance, signature),
-		EndPlaceProof:  circuit.ToEndPlaceProof(model, cmd.EndPlace),
+		Model:          circuit.FromModel(cmd.Model),
+		Instance:       circuit.FromInstance(cmd.Instance),
+		Authentication: circuit.ToAuthentication(cmd.Instance, cmd.Signature),
+		EndPlaceProof:  circuit.ToEndPlaceProof(cmd.Model, cmd.Instance),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -138,5 +88,5 @@ func (service *ProverService) ProveTermination(cmd ProveTerminationCommand) (Pro
 	if err != nil {
 		return Proof{}, err
 	}
-	return toProof(proof, model.Hash, instance.Hash)
+	return toProof(proof, cmd.Model.Hash, cmd.Instance.Hash)
 }

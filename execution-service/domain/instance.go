@@ -3,6 +3,8 @@ package domain
 import (
 	"fmt"
 	"time"
+
+	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )
 
 const PublicKeySize = 32
@@ -16,6 +18,12 @@ const OutOfBoundsTokenCount = -100
 func OutOfBoundsPublicKey() PublicKey {
 	return PublicKey{
 		Value: make([]byte, PublicKeySize),
+	}
+}
+
+func NewPublicKey(eddsaPub eddsa.PublicKey) PublicKey {
+	return PublicKey{
+		Value: eddsaPub.Bytes(),
 	}
 }
 
@@ -34,24 +42,26 @@ func (instance *Instance) Id() InstanceId {
 	return instance.Hash.String()
 }
 
-func (instance Instance) ExecuteTransition(transition Transition, input ConstraintInput, messageHash Hash) (Instance, error) {
+func (instance Instance) ExecuteTransition(transition Transition, input ConstraintInput) (Instance, error) {
 	if !isTransitionExecutable(instance, transition, input) {
 		return Instance{}, fmt.Errorf("transition %s is not executable", transition.Id)
 	}
-	instance.updateMessageHashes(transition, messageHash)
 	instance.updateTokenCounts(transition)
 	instance.CreatedAt = time.Now().Unix()
 	instance.ComputeHash()
 	return instance, nil
 }
 
-func (instance *Instance) updateMessageHashes(transition Transition, messageHash Hash) {
+func (instance Instance) SetMessageHash(transition Transition, messageHash Hash) Instance {
 	messageHashes := make([][HashSize]byte, len(instance.MessageHashes))
 	copy(messageHashes[:], instance.MessageHashes[:])
 	if transition.Message != EmptyMessageId {
 		messageHashes[transition.Message] = messageHash.Value
 	}
 	instance.MessageHashes = messageHashes
+	instance.CreatedAt = time.Now().Unix()
+	instance.ComputeHash()
+	return instance
 }
 
 func (instance *Instance) updateTokenCounts(transition Transition) {

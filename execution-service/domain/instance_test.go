@@ -12,13 +12,22 @@ import (
 var signatureParameters parameters.SignatureParameters = parameters.NewSignatureParameters()
 var states = testdata.GetModel2States(signatureParameters)
 
+func TestSetMessageHash(t *testing.T) {
+	messageHash := domain.NewMessage([]byte("test"), 0).Hash
+	state1 := states[1]
+	result := state1.Instance.SetMessageHash(state1.Model.Transitions[2], messageHash)
+	assert.Equal(t, state1.Instance.TokenCounts, result.TokenCounts)
+	assert.Equal(t, state1.Instance.PublicKeys, result.PublicKeys)
+	assert.NotEqual(t, state1.Instance.MessageHashes, result.MessageHashes)
+	assert.NotEqual(t, state1.Instance.Hash, result.Hash)
+}
+
 func TestExecuteTransition0(t *testing.T) {
 	state0 := states[0]
 	state1 := states[1]
 
 	constraintInput := domain.EmptyConstraintInput()
-	messageHash := domain.EmptyHash()
-	result, err := state0.Instance.ExecuteTransition(state0.Model.Transitions[0], constraintInput, messageHash)
+	result, err := state0.Instance.ExecuteTransition(state0.Model.Transitions[0], constraintInput)
 	assert.Nil(t, err)
 	assert.Equal(t, state1.Instance.TokenCounts, result.TokenCounts)
 	assert.Equal(t, state1.Instance.PublicKeys, result.PublicKeys)
@@ -30,11 +39,10 @@ func TestExecuteTransition2(t *testing.T) {
 	state1 := states[1]
 	state2 := states[2]
 	constraintInput := domain.EmptyConstraintInput()
-	messageHash := domain.NewBytesMessage([]byte("test")).Hash
-	result, err := state1.Instance.ExecuteTransition(state1.Model.Transitions[2], constraintInput, messageHash)
+	result, err := state1.Instance.ExecuteTransition(state1.Model.Transitions[2], constraintInput)
 	assert.Nil(t, err)
 	assert.Equal(t, state2.Instance.TokenCounts, result.TokenCounts)
 	assert.Equal(t, state2.Instance.PublicKeys, result.PublicKeys)
-	assert.NotEqual(t, state1.Instance.MessageHashes, result.MessageHashes)
+	assert.Equal(t, state1.Instance.MessageHashes, result.MessageHashes)
 	assert.NotEqual(t, state1.Instance.Hash, result.Hash)
 }

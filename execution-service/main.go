@@ -1,6 +1,7 @@
 package main
 
 import (
+	"execution-service/execution"
 	"execution-service/instance"
 	"execution-service/message"
 	"execution-service/model"
@@ -13,14 +14,15 @@ import (
 var modelService = model.NewModelService()
 var modelController = model.NewModelController(modelService)
 
-var messageService = message.NewMessageService()
-var instanceService = instance.NewInstanceService(modelService, messageService)
+var instanceService = instance.NewInstanceService()
 var instanceController = instance.NewInstanceController(instanceService)
 
+var messageService = message.NewMessageService()
 var signatureParameters = parameters.NewSignatureParameters()
 var proofParameters = parameters.NewProverParameters()
-var proverService = prover.NewProverService(proofParameters, signatureParameters, instanceService)
-var proverController = prover.NewProverController(proverService)
+var proverService = prover.NewProverService(proofParameters)
+var executionService = execution.NewExecutionService(modelService, instanceService, messageService, proverService, signatureParameters)
+var executionController = execution.NewExecutionController(executionService)
 
 func main() {
 
@@ -29,18 +31,13 @@ func main() {
 
 	router.GET("/models/:modelId", modelController.FindModelById)
 	router.GET("/models/choreography/:choreographyId", modelController.FindModelsByChoreography)
-	router.PUT("/models", modelController.ImportModel)
 
 	router.GET("/instances/:instanceId", instanceController.FindInstanceById)
 	router.GET("/instances/model/:modelId/", instanceController.FindInstancesByModel)
-	router.PUT("/instances", instanceController.ImportInstance)
 
-	router.POST("/instances/instantiation", instanceController.InstantiateModel)
-	router.POST("/instances/transition", instanceController.ExecuteTransition)
-
-	router.PUT("/proof/instantiation", proverController.ProveInstantiation)
-	router.PUT("/proof/transition", proverController.ProveTransition)
-	router.PUT("/proof/termination", proverController.ProveTermination)
+	router.POST("/execution/instantiation", executionController.InstantiateModel)
+	router.POST("/execution/transition", executionController.ExecuteTransition)
+	router.POST("/execution/termination", executionController.TerminateInstance)
 
 	router.Run("localhost:8080")
 }

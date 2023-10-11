@@ -5,22 +5,22 @@ import (
 )
 
 type ProveInstantiationCommand struct {
-	Model    domain.ModelId
-	Instance domain.InstanceId
-	Identity domain.IdentityId
+	Model     domain.Model
+	Instance  domain.Instance
+	Signature domain.Signature
 }
 
 type ProveTransitionCommand struct {
-	Model           domain.ModelId
-	CurrentInstance domain.InstanceId
-	NextInstance    domain.InstanceId
-	Transition      domain.TransitionId
-	Identity        domain.IdentityId
+	Model           domain.Model
+	CurrentInstance domain.Instance
+	NextInstance    domain.Instance
+	Transition      domain.Transition
+	Signature       domain.Signature
+	ConstraintInput domain.ConstraintInput
 }
 
 type ProveTerminationCommand struct {
-	Model    domain.ModelId
-	Instance domain.InstanceId
-	EndPlace domain.PlaceId
-	Identity domain.IdentityId
+	Model     domain.Model
+	Instance  domain.Instance
+	Signature domain.Signature
 }

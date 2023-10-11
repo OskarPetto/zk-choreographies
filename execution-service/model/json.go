@@ -233,7 +233,7 @@ func ToJson(model domain.Model) ModelJson {
 		transitions[i] = transitionToJson(transition)
 	}
 	return ModelJson{
-		Hash:             hash.HashToJson(model.Hash),
+		Hash:             hash.ToJson(model.Hash),
 		Choreography:     model.Choreography,
 		PlaceCount:       uint(model.PlaceCount),
 		ParticipantCount: uint(model.ParticipantCount),

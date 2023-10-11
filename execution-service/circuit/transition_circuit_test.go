@@ -203,7 +203,7 @@ func TestTransition_OverwrittenMessageHash(t *testing.T) {
 	transition := transitionStates[3].Transition
 	constraintInput := transitionStates[3].ConstraintInput
 
-	nextInstance.MessageHashes[8] = domain.NewBytesMessage([]byte("Not a purchase order")).Hash.Value
+	nextInstance.MessageHashes[8] = domain.NewMessage([]byte("Not a purchase order"), 0).Hash.Value
 	nextInstance.ComputeHash()
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 
@@ -268,8 +268,8 @@ func TestTransition_InvalidConstraintInput(t *testing.T) {
 func TestTransition_InvalidMessageForConstraint(t *testing.T) {
 	model := transitionStates[3].Model
 	currentInstance := transitionStates[3].Instance
-	order := domain.NewIntegerMessage(6)
-	stock := domain.NewIntegerMessage(4)
+	order := domain.NewMessage(nil, 6)
+	stock := domain.NewMessage(nil, 4)
 	currentInstance.MessageHashes[9] = order.Hash.Value
 	currentInstance.MessageHashes[0] = stock.Hash.Value
 	currentInstance.ComputeHash()

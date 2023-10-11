@@ -3,7 +3,6 @@ package instance
 import (
 	"execution-service/domain"
 	"execution-service/hash"
-	"execution-service/message"
 	"execution-service/utils"
 	"fmt"
 	"time"
@@ -17,18 +16,6 @@ type InstanceJson struct {
 	PublicKeys    []string      `json:"publicKeys"`
 	MessageHashes []string      `json:"messageHashes"`
 	CreatedAt     time.Time     `json:"updatedAt"`
-}
-
-type InstantiateModelCommandJson struct {
-	Model      string   `json:"model"`
-	PublicKeys []string `json:"publicKeys"`
-}
-
-type ExecuteTransitionCommandJson struct {
-	Model              string                          `json:"model"`
-	Instance           string                          `json:"instance"`
-	Transition         string                          `json:"transition"`
-	SendMessageCommand *message.SendMessageCommandJson `json:"sendMessageCommand,omitempty"`
 }
 
 func ToJson(instance domain.Instance) InstanceJson {
@@ -46,7 +33,7 @@ func ToJson(instance domain.Instance) InstanceJson {
 	}
 	return InstanceJson{
 		Id:            instance.Id(),
-		Hash:          hash.HashToJson(instance.Hash),
+		Hash:          hash.ToJson(instance.Hash),
 		Model:         instance.Model,
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
@@ -101,36 +88,5 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
 		CreatedAt:     json.CreatedAt.Unix(),
-	}, nil
-}
-
-func (cmd *InstantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCommand, error) {
-	publicKeys := make([]domain.PublicKey, len(cmd.PublicKeys))
-	for i, publicKey := range cmd.PublicKeys {
-		bytes, err := utils.StringToBytes(publicKey)
-		if err != nil {
-			return InstantiateModelCommand{}, err
-		}
-		publicKeys[i] = domain.PublicKey{
-			Value: bytes,
-		}
-	}
-	return InstantiateModelCommand{
-		Model:      cmd.Model,
-		PublicKeys: publicKeys,
-	}, nil
-}
-
-func (cmd *ExecuteTransitionCommandJson) ToExecutionCommand() (ExecuteTransitionCommand, error) {
-	var sendMessageCommand *message.SendMessageCommand = nil
-	if cmd.SendMessageCommand != nil {
-		result := cmd.SendMessageCommand.ToMessageCommand()
-		sendMessageCommand = &result
-	}
-	return ExecuteTransitionCommand{
-		Model:              cmd.Model,
-		Instance:           cmd.Instance,
-		Transition:         cmd.Transition,
-		SendMessageCommand: sendMessageCommand,
 	}, nil
 }

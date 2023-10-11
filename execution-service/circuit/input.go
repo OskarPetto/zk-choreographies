@@ -179,11 +179,11 @@ func FromModel(model domain.Model) Model {
 	}
 }
 
-func ToEndPlaceProof(model domain.Model, place domain.PlaceId) MerkleProof {
+func ToEndPlaceProof(model domain.Model, instance domain.Instance) MerkleProof {
 	var buf bytes.Buffer
-	index := domain.MaxEndPlaceCount
+	index := 0
 	for i, endPlace := range model.EndPlaces {
-		if endPlace == place {
+		if instance.TokenCounts[endPlace] == 1 {
 			index = i
 		}
 		bytes := domain.Uint16ToBytes(endPlace)

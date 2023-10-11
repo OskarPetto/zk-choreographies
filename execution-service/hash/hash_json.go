@@ -10,7 +10,7 @@ type HashJson struct {
 	Salt  string `json:"salt"`
 }
 
-func HashToJson(hash domain.Hash) HashJson {
+func ToJson(hash domain.Hash) HashJson {
 	return HashJson{
 		Value: utils.BytesToString(hash.Value[:]),
 		Salt:  utils.BytesToString(hash.Salt[:]),

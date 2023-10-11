@@ -23,7 +23,7 @@ func TestTermination(t *testing.T) {
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, instance),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -43,7 +43,7 @@ func TestTermination_InvalidModelHash(t *testing.T) {
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, instance),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -61,7 +61,7 @@ func TestTermination_InvalidInstanceHash(t *testing.T) {
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, instance),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -77,7 +77,7 @@ func TestTermination_InvalidTokenCounts(t *testing.T) {
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, instance),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -93,7 +93,7 @@ func TestTermination_InvalidSignature(t *testing.T) {
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, instance),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())
@@ -110,7 +110,7 @@ func TestTermination_NotAParticipant(t *testing.T) {
 		Instance:       circuit.FromInstance(instance),
 		Authentication: circuit.ToAuthentication(instance, signature),
 		Model:          circuit.FromModel(model),
-		EndPlaceProof:  circuit.ToEndPlaceProof(model, 13),
+		EndPlaceProof:  circuit.ToEndPlaceProof(model, instance),
 	}
 
 	err := test.IsSolved(&terminationCircuit, &witness, ecc.BN254.ScalarField())

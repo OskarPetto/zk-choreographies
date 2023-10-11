@@ -370,11 +370,10 @@ export class ChoreographyMapper {
 
   addConstraints(transitions: Transition[], constraintMapping: ConstraintMapping) {
     transitions.forEach(transition => {
-      for (const outgoingPlace of transition.outgoingPlaces) {
-        const constraintString = constraintMapping.sequenceFlowNames.get(outgoingPlace)
+      for (const incomingPlace of transition.incomingPlaces) {
+        const constraintString = constraintMapping.sequenceFlowNames.get(incomingPlace)
         if (constraintString !== undefined) {
-          const messageIdPerMessageName = constraintMapping.messageIdPerMessageName
-          const constraint = this.constraintParser.parseConstraint(constraintString, messageIdPerMessageName)
+          const constraint = this.constraintParser.parseConstraint(constraintString, constraintMapping.messageIdPerMessageName)
           transition.messageConstraint = constraint;
           break;
         }

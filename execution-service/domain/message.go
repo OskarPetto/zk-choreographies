@@ -7,20 +7,21 @@ type Message struct {
 }
 
 func EmptyMessage() Message {
-	return Message{}
-}
-
-func NewBytesMessage(bytesMessage []byte) Message {
-	message := Message{
-		BytesMessage: bytesMessage,
+	return Message{
+		Hash: EmptyHash(),
 	}
-	message.ComputeHash()
-	return message
 }
 
-func NewIntegerMessage(integerMessage IntegerType) Message {
-	message := Message{
-		IntegerMessage: integerMessage,
+func NewMessage(bytesMessage []byte, integerMessage IntegerType) Message {
+	var message Message
+	if len(bytesMessage) > 0 {
+		message = Message{
+			BytesMessage: bytesMessage,
+		}
+	} else {
+		message = Message{
+			IntegerMessage: integerMessage,
+		}
 	}
 	message.ComputeHash()
 	return message
