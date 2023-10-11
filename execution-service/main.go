@@ -7,6 +7,7 @@ import (
 	"execution-service/model"
 	"execution-service/parameters"
 	"execution-service/prover"
+	"execution-service/state"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,20 +25,25 @@ var proverService = prover.NewProverService(proofParameters)
 var executionService = execution.NewExecutionService(modelService, instanceService, messageService, proverService, signatureParameters)
 var executionController = execution.NewExecutionController(executionService)
 
+var stateService = state.NewStateService(modelService, instanceService, messageService, signatureParameters)
+var stateController = state.NewStateController(stateService)
+
 func main() {
 
 	router := gin.Default()
 	router.POST("/models", modelController.CreateModel)
 
 	router.GET("/models/:modelId", modelController.FindModelById)
-	router.GET("/models/choreography/:choreographyId", modelController.FindModelsByChoreography)
+	router.GET("/models", modelController.FindModelsByChoreography)
 
 	router.GET("/instances/:instanceId", instanceController.FindInstanceById)
-	router.GET("/instances/model/:modelId/", instanceController.FindInstancesByModel)
+	router.GET("/instances", instanceController.FindInstancesByModel)
 
-	router.POST("/execution/instantiation", executionController.InstantiateModel)
-	router.POST("/execution/transition", executionController.ExecuteTransition)
-	router.POST("/execution/termination", executionController.TerminateInstance)
+	router.POST("/instantiation", executionController.InstantiateModel)
+	router.POST("/transition", executionController.ExecuteTransition)
+	router.POST("/termination", executionController.TerminateInstance)
+
+	router.PUT("/state", stateController.ImportState)
 
 	router.Run("localhost:8080")
 }

@@ -13,16 +13,31 @@ import (
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )
 
+type State struct {
+	Model    Model
+	Instance Instance
+	Message  *Message
+}
+
+func NewState(model Model, instance Instance, message *Message) State {
+	return State{
+		Model:    model,
+		Instance: instance,
+		Message:  message,
+	}
+}
+
 type SerializedState struct {
 	Value []byte
 }
 
 type EncryptedState struct {
-	Value []byte
+	Value  []byte
+	Sender PublicKey
 }
 
-func (encryptedState *EncryptedState) Decrypt(recipient *eddsa.PrivateKey, sender PublicKey) (SerializedState, error) {
-	secretKey := ecdh(recipient, sender)
+func (encryptedState *EncryptedState) Decrypt(privateKey *eddsa.PrivateKey) (SerializedState, error) {
+	secretKey := ecdh(privateKey, encryptedState.Sender)
 
 	aes, err := aes.NewCipher(secretKey)
 	utils.PanicOnError(err)
@@ -61,7 +76,8 @@ func (state *SerializedState) Encrypt(sender *eddsa.PrivateKey, recipient Public
 
 	ciphertext := gcm.Seal(nonce, nonce, state.Value, nil)
 	return EncryptedState{
-		Value: ciphertext,
+		Value:  ciphertext,
+		Sender: NewPublicKey(sender.PublicKey),
 	}
 }
 

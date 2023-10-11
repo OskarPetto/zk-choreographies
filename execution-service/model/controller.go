@@ -42,7 +42,11 @@ func (controller *ModelController) CreateModel(c *gin.Context) {
 }
 
 func (controller *ModelController) FindModelsByChoreography(c *gin.Context) {
-	choreographyId := c.Param("choreographyId")
+	choreographyId := c.Query("choreographyId")
+	if choreographyId == "" {
+		c.Status(http.StatusBadRequest)
+		return
+	}
 	models := controller.modelService.FindModelsByChoreography(choreographyId)
 	jsonModels := make([]ModelJson, len(models))
 	for i, instance := range models {

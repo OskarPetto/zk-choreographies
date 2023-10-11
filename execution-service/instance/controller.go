@@ -27,7 +27,11 @@ func (controller *InstanceController) FindInstanceById(c *gin.Context) {
 }
 
 func (controller *InstanceController) FindInstancesByModel(c *gin.Context) {
-	modelId := c.Param("modelId")
+	modelId := c.Query("modelId")
+	if modelId == "" {
+		c.Status(http.StatusBadGateway)
+		return
+	}
 	instances := controller.instanceService.FindInstancesByModel(modelId)
 	jsonInstances := make([]InstanceJson, len(instances))
 	for i, instance := range instances {

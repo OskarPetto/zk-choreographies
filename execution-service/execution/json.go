@@ -7,38 +7,38 @@ import (
 	"execution-service/utils"
 )
 
-type InstantiateModelCommandJson struct {
+type instantiateModelCommandJson struct {
 	Model      string   `json:"model"`
 	PublicKeys []string `json:"publicKeys"`
 	Identity   uint     `json:"identity"`
 }
 
-type ExecuteTransitionCommandJson struct {
+type executeTransitionCommandJson struct {
 	Model                string                    `json:"model"`
 	Instance             string                    `json:"instance"`
 	Transition           string                    `json:"transition"`
 	Identity             uint                      `json:"identity"`
-	CreateMessageCommand *CreateMessageCommandJson `json:"createMessageCommand,omitempty"`
+	CreateMessageCommand *createMessageCommandJson `json:"createMessageCommand,omitempty"`
 }
 
-type TerminateInstanceCommandJson struct {
+type terminateInstanceCommandJson struct {
 	Model    string `json:"model"`
 	Instance string `json:"instance"`
 	Identity uint   `json:"identity"`
 }
 
-type CreateMessageCommandJson struct {
+type createMessageCommandJson struct {
 	IntegerMessage uint   `json:"integerMessage,omitempty"`
 	BytesMessage   string `json:"bytesMessage,omitempty"`
 }
 
-type ExecutionResultJson struct {
+type executionResultJson struct {
 	Instance       instance.InstanceJson `json:"instance"`
 	Proof          prover.ProofJson      `json:"proof"`
 	EncryptedState string                `json:"encryptedState"`
 }
 
-func (cmd *InstantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCommand, error) {
+func (cmd *instantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCommand, error) {
 	publicKeys := make([]domain.PublicKey, len(cmd.PublicKeys))
 	for i, publicKey := range cmd.PublicKeys {
 		bytes, err := utils.StringToBytes(publicKey)
@@ -56,7 +56,7 @@ func (cmd *InstantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCo
 	}, nil
 }
 
-func (cmd *ExecuteTransitionCommandJson) ToExecutionCommand() (ExecuteTransitionCommand, error) {
+func (cmd *executeTransitionCommandJson) ToExecutionCommand() (ExecuteTransitionCommand, error) {
 	var createMessageCommand *CreateMessageCommand = nil
 	if cmd.CreateMessageCommand != nil {
 		tmp := cmd.CreateMessageCommand.ToExecutionCommand()
@@ -71,7 +71,7 @@ func (cmd *ExecuteTransitionCommandJson) ToExecutionCommand() (ExecuteTransition
 	}, nil
 }
 
-func (cmd *TerminateInstanceCommandJson) ToExecutionCommand() (TerminateInstanceCommand, error) {
+func (cmd *terminateInstanceCommandJson) ToExecutionCommand() (TerminateInstanceCommand, error) {
 	return TerminateInstanceCommand{
 		Model:    cmd.Model,
 		Instance: cmd.Instance,
@@ -79,7 +79,7 @@ func (cmd *TerminateInstanceCommandJson) ToExecutionCommand() (TerminateInstance
 	}, nil
 }
 
-func (cmd *CreateMessageCommandJson) ToExecutionCommand() CreateMessageCommand {
+func (cmd *createMessageCommandJson) ToExecutionCommand() CreateMessageCommand {
 	bytesMessage, err := utils.StringToBytes(cmd.BytesMessage)
 	if err != nil {
 		return CreateMessageCommand{
@@ -94,8 +94,8 @@ func (cmd *CreateMessageCommandJson) ToExecutionCommand() CreateMessageCommand {
 	}
 }
 
-func ToJson(result ExecutionResult) ExecutionResultJson {
-	return ExecutionResultJson{
+func ToJson(result ExecutionResult) executionResultJson {
+	return executionResultJson{
 		Instance:       instance.ToJson(result.Instance),
 		Proof:          result.Proof.ToJson(),
 		EncryptedState: utils.BytesToString(result.EncryptedState.Value),

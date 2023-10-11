@@ -17,7 +17,7 @@ func NewExecutionController(executionService ExecutionService) ExecutionControll
 }
 
 func (controller *ExecutionController) InstantiateModel(c *gin.Context) {
-	var jsonCmd InstantiateModelCommandJson
+	var jsonCmd instantiateModelCommandJson
 	if err := c.BindJSON(&jsonCmd); err != nil {
 		c.Status(http.StatusBadRequest)
 		return
@@ -37,7 +37,7 @@ func (controller *ExecutionController) InstantiateModel(c *gin.Context) {
 }
 
 func (controller *ExecutionController) ExecuteTransition(c *gin.Context) {
-	var jsonCmd ExecuteTransitionCommandJson
+	var jsonCmd executeTransitionCommandJson
 	if err := c.BindJSON(&jsonCmd); err != nil {
 		c.Status(http.StatusBadRequest)
 		return
@@ -57,7 +57,7 @@ func (controller *ExecutionController) ExecuteTransition(c *gin.Context) {
 }
 
 func (controller *ExecutionController) TerminateInstance(c *gin.Context) {
-	var jsonCmd TerminateInstanceCommandJson
+	var jsonCmd terminateInstanceCommandJson
 	if err := c.BindJSON(&jsonCmd); err != nil {
 		c.Status(http.StatusBadRequest)
 		return

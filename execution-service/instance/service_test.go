@@ -11,7 +11,6 @@ import (
 
 var signatureParameters parameters.SignatureParameters = parameters.NewSignatureParameters()
 var states = testdata.GetModel2States(signatureParameters)
-var publicKeys = signatureParameters.GetPublicKeys(2)
 
 var service = instance.NewInstanceService()
 

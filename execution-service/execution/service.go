@@ -56,9 +56,10 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 		return ExecutionResult{}, err
 	}
 	service.InstanceService.ImportInstance(instance)
-	state := state.NewState(model, instance, nil)
+	plainState := domain.NewState(model, instance, nil)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
-	encryptedState := state.Encrypt(privateKey, publicKey)
+	serializedState := state.Serialize(plainState)
+	encryptedState := serializedState.Encrypt(privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       instance,
 		Proof:          proof,
@@ -112,12 +113,13 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 		return ExecutionResult{}, err
 	}
 	service.InstanceService.ImportInstance(nextInstance)
-	state := state.NewState(model, nextInstance, message)
+	plainState := domain.NewState(model, nextInstance, message)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
 	if transition.RespondingParticipant != domain.EmptyParticipantId {
 		publicKey = currentInstance.PublicKeys[transition.RespondingParticipant]
 	}
-	encryptedState := state.Encrypt(privateKey, publicKey)
+	serializedState := state.Serialize(plainState)
+	encryptedState := serializedState.Encrypt(privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       nextInstance,
 		Proof:          proof,
@@ -144,9 +146,10 @@ func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand)
 		return ExecutionResult{}, err
 	}
 	service.InstanceService.DeleteInstance(instance)
-	state := state.NewState(model, instance, nil)
+	plainState := domain.NewState(model, instance, nil)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
-	encryptedState := state.Encrypt(privateKey, publicKey)
+	serializedState := state.Serialize(plainState)
+	encryptedState := serializedState.Encrypt(privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       instance,
 		Proof:          proof,
