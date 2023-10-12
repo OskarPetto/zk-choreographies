@@ -62,6 +62,7 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
+	api.AssertIsEqual(circuit.CurrentInstance.Model, circuit.NextInstance.Model)
 	circuit.comparePublicKeys(api)
 	checkAuthentication(api, circuit.Authentication, circuit.NextInstance)
 	tokenCountChanges := circuit.compareTokenCounts(api)

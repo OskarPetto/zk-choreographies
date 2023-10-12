@@ -14,35 +14,35 @@ type stateJson struct {
 	Message  *message.MessageJson  `json:"message"`
 }
 
-type encryptedStateJson struct {
+type chiphertextJson struct {
 	Value  string `json:"value"`
 	Sender string `json:"sender"`
 }
 
 type ImportStateCommandJson struct {
-	EncryptedState encryptedStateJson `json:"encryptedState"`
-	Identity       uint               `json:"identity"`
+	Chiphertext chiphertextJson `json:"encryptedState"`
+	Identity    uint            `json:"identity"`
 }
 
-func ToJson(encryptedState domain.EncryptedState) encryptedStateJson {
+func ToJson(encryptedState domain.Chiphertext) chiphertextJson {
 	value := utils.BytesToString(encryptedState.Value)
 	sender := utils.BytesToString(encryptedState.Sender.Value)
-	return encryptedStateJson{
+	return chiphertextJson{
 		Value:  value,
 		Sender: sender,
 	}
 }
 
-func (json *encryptedStateJson) ToEncryptedState() (domain.EncryptedState, error) {
+func (json *chiphertextJson) ToChiphertext() (domain.Chiphertext, error) {
 	value, err := utils.StringToBytes(json.Value)
 	if err != nil {
-		return domain.EncryptedState{}, err
+		return domain.Chiphertext{}, err
 	}
 	sender, err := utils.StringToBytes(json.Sender)
 	if err != nil {
-		return domain.EncryptedState{}, err
+		return domain.Chiphertext{}, err
 	}
-	return domain.EncryptedState{
+	return domain.Chiphertext{
 		Value: value,
 		Sender: domain.PublicKey{
 			Value: sender,
@@ -51,12 +51,12 @@ func (json *encryptedStateJson) ToEncryptedState() (domain.EncryptedState, error
 }
 
 func (cmd *ImportStateCommandJson) ToStateCommand() (ImportStateCommand, error) {
-	encryptedState, err := cmd.EncryptedState.ToEncryptedState()
+	ciphertext, err := cmd.Chiphertext.ToChiphertext()
 	if err != nil {
 		return ImportStateCommand{}, err
 	}
 	return ImportStateCommand{
-		EncryptedState: encryptedState,
+		EncryptedState: ciphertext,
 		Identity:       cmd.Identity,
 	}, nil
 }

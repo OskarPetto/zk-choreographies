@@ -34,7 +34,7 @@ func ToJson(instance domain.Instance) InstanceJson {
 	return InstanceJson{
 		Id:            instance.Id(),
 		Hash:          hash.ToJson(instance.Hash),
-		Model:         instance.Model,
+		Model:         utils.BytesToString(instance.Model[:]),
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
@@ -81,9 +81,13 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 	if err != nil {
 		return domain.Instance{}, fmt.Errorf("instance %s has invalid hash", json.Id)
 	}
+	model, err := utils.StringToBytes(json.Model)
+	if err != nil {
+		return domain.Instance{}, fmt.Errorf("instance %s has invalid model", json.Model)
+	}
 	return domain.Instance{
 		Hash:          hash,
-		Model:         json.Model,
+		Model:         [domain.HashSize]byte(model),
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,

@@ -58,7 +58,7 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 	service.InstanceService.ImportInstance(instance)
 	service.ModelService.ImportModel(model)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
-	encryptedState := createEncryptedState(model, instance, nil, privateKey, publicKey)
+	encryptedState := encryptState(model, instance, nil, privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       instance,
 		Proof:          proof,
@@ -116,7 +116,7 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if transition.RespondingParticipant != domain.EmptyParticipantId {
 		publicKey = currentInstance.FindParticipantById(transition.RespondingParticipant)
 	}
-	encryptedState := createEncryptedState(model, nextInstance, message, privateKey, publicKey)
+	encryptedState := encryptState(model, nextInstance, message, privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       nextInstance,
 		Proof:          proof,
@@ -145,7 +145,7 @@ func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand)
 	service.InstanceService.DeleteInstance(instance)
 	service.ModelService.DeleteModel(model)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
-	encryptedState := createEncryptedState(model, instance, nil, privateKey, publicKey)
+	encryptedState := encryptState(model, instance, nil, privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       instance,
 		Proof:          proof,
@@ -153,8 +153,8 @@ func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand)
 	}, nil
 }
 
-func createEncryptedState(model domain.Model, instance domain.Instance, message *domain.Message, privateKey *eddsa.PrivateKey, publicKey domain.PublicKey) domain.EncryptedState {
-	plainState := domain.NewState(model, instance, message)
+func encryptState(model domain.Model, instance domain.Instance, message *domain.Message, privateKey *eddsa.PrivateKey, publicKey domain.PublicKey) domain.Chiphertext {
+	plainState := state.State{Model: model, Instance: instance, Message: message}
 	serializedState := state.Serialize(plainState)
 	return serializedState.Encrypt(privateKey, publicKey)
 }

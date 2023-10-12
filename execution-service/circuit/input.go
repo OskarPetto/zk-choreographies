@@ -33,6 +33,7 @@ type Authentication struct {
 
 type Instance struct {
 	Hash          Hash
+	Model         frontend.Variable
 	TokenCounts   [domain.MaxPlaceCount]frontend.Variable
 	PublicKeyRoot frontend.Variable
 	MessageHashes [domain.MaxMessageCount]frontend.Variable
@@ -129,6 +130,7 @@ func FromInstance(instance domain.Instance) Instance {
 	}
 	return Instance{
 		Hash:          fromHash(instance.Hash),
+		Model:         fromBytes(instance.Model),
 		TokenCounts:   tokenCounts,
 		PublicKeyRoot: tree.Root(),
 		MessageHashes: messageHashes,

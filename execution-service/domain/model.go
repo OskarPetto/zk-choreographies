@@ -85,7 +85,7 @@ func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
 		messageHashes[i] = EmptyHash().Value
 	}
 	instance := Instance{
-		Model:         model.Id(),
+		Model:         model.Hash.Value,
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,

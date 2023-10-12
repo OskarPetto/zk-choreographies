@@ -276,7 +276,7 @@ func getModelState(model domain.Model, transitionIndex uint, activePlaces []doma
 		messageHashes[i] = messageHash.Value
 	}
 	instance := domain.Instance{
-		Model:         "modelHash",
+		Model:         model.Hash.Value,
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,

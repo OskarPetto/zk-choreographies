@@ -9,7 +9,7 @@ import (
 	"execution-service/utils"
 )
 
-func Serialize(state domain.State) domain.SerializedState {
+func Serialize(state State) domain.Plaintext {
 	var messageJson *message.MessageJson = nil
 	if state.Message != nil {
 		tmp := message.ToJson(*state.Message)
@@ -22,36 +22,36 @@ func Serialize(state domain.State) domain.SerializedState {
 	}
 	stateJsonBytes, err := json.Marshal(stateJson)
 	utils.PanicOnError(err)
-	serializedState := domain.SerializedState{
+	serializedState := domain.Plaintext{
 		Value: stateJsonBytes,
 	}
 	return serializedState
 }
 
-func Deserialize(serializedState domain.SerializedState) (domain.State, error) {
+func Deserialize(serializedState domain.Plaintext) (State, error) {
 	var stateJson stateJson
 	err := json.Unmarshal(serializedState.Value, &stateJson)
 	if err != nil {
-		return domain.State{}, err
+		return State{}, err
 	}
 	model, err := stateJson.Model.ToModel()
 	if err != nil {
-		return domain.State{}, err
+		return State{}, err
 	}
 	instance, err := stateJson.Instance.ToInstance()
 	if err != nil {
-		return domain.State{}, err
+		return State{}, err
 	}
 	var message *domain.Message = nil
 	if stateJson.Message != nil {
 		tmp, err := stateJson.Message.ToMessage()
 		if err != nil {
-			return domain.State{}, err
+			return State{}, err
 		}
 		message = &tmp
 	}
 
-	return domain.State{
+	return State{
 		Model:    model,
 		Instance: instance,
 		Message:  message,

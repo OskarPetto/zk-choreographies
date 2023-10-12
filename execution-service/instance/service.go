@@ -1,7 +1,9 @@
 package instance
 
 import (
+	"bytes"
 	"execution-service/domain"
+	"execution-service/utils"
 	"fmt"
 	"sort"
 )
@@ -25,9 +27,13 @@ func (service *InstanceService) FindInstanceById(id domain.InstanceId) (domain.I
 }
 
 func (service *InstanceService) FindInstancesByModel(model domain.ModelId) []domain.Instance {
+	modelHash, err := utils.StringToBytes(model)
+	if err != nil {
+		return []domain.Instance{}
+	}
 	instances := make([]domain.Instance, 0, len(service.instances))
 	for _, instance := range service.instances {
-		if instance.Model == model {
+		if bytes.Equal(instance.Model[:], modelHash) {
 			instances = append(instances, instance)
 		}
 	}

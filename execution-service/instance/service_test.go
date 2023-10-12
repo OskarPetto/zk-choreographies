@@ -4,6 +4,7 @@ import (
 	"execution-service/instance"
 	"execution-service/parameters"
 	"execution-service/testdata"
+	"execution-service/utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,8 @@ var service = instance.NewInstanceService()
 func TestFindInstancesByModel(t *testing.T) {
 	instance := states[0].Instance
 	service.ImportInstance(instance)
-	result := service.FindInstancesByModel(instance.Model)
+	modelId := utils.BytesToString(instance.Model[:])
+	result := service.FindInstancesByModel(modelId)
 	assert.Equal(t, 1, len(result))
 }
 

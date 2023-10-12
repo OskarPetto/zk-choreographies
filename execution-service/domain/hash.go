@@ -125,6 +125,7 @@ func (model *Model) ComputeHash() {
 
 func (instance *Instance) ComputeHash() {
 	mimc := mimc.NewMiMC()
+	mimc.Write(instance.Model[:])
 	for _, tokenCount := range instance.TokenCounts {
 		hashInt64(mimc, int64(tokenCount))
 	}

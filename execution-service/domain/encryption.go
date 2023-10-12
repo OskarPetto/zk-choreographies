@@ -13,31 +13,16 @@ import (
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )
 
-type State struct {
-	Model    Model
-	Instance Instance
-	Message  *Message
-}
-
-func NewState(model Model, instance Instance, message *Message) State {
-	return State{
-		Model:    model,
-		Instance: instance,
-		Message:  message,
-	}
-}
-
-type SerializedState struct {
+type Plaintext struct {
 	Value []byte
 }
 
-type EncryptedState struct {
-	Value     []byte
-	Sender    PublicKey
-	Recipient PublicKey
+type Chiphertext struct {
+	Value  []byte
+	Sender PublicKey
 }
 
-func (encryptedState *EncryptedState) Decrypt(privateKey *eddsa.PrivateKey) (SerializedState, error) {
+func (encryptedState *Chiphertext) Decrypt(privateKey *eddsa.PrivateKey) (Plaintext, error) {
 	secretKey := ecdh(privateKey, encryptedState.Sender)
 
 	aes, err := aes.NewCipher(secretKey)
@@ -51,18 +36,18 @@ func (encryptedState *EncryptedState) Decrypt(privateKey *eddsa.PrivateKey) (Ser
 
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		return SerializedState{}, err
+		return Plaintext{}, err
 	}
 
 	if err != nil {
-		return SerializedState{}, err
+		return Plaintext{}, err
 	}
-	return SerializedState{
+	return Plaintext{
 		Value: plaintext,
 	}, nil
 }
 
-func (state *SerializedState) Encrypt(sender *eddsa.PrivateKey, recipient PublicKey) EncryptedState {
+func (state *Plaintext) Encrypt(sender *eddsa.PrivateKey, recipient PublicKey) Chiphertext {
 	secretKey := ecdh(sender, recipient)
 
 	aes, err := aes.NewCipher(secretKey)
@@ -76,10 +61,9 @@ func (state *SerializedState) Encrypt(sender *eddsa.PrivateKey, recipient Public
 	utils.PanicOnError(err)
 
 	ciphertext := gcm.Seal(nonce, nonce, state.Value, nil)
-	return EncryptedState{
-		Value:     ciphertext,
-		Sender:    NewPublicKey(sender.PublicKey),
-		Recipient: recipient,
+	return Chiphertext{
+		Value:  ciphertext,
+		Sender: NewPublicKey(sender.PublicKey),
 	}
 }
 

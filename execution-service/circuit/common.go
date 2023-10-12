@@ -35,6 +35,7 @@ func checkInstanceHash(api frontend.API, instance Instance) error {
 	if err != nil {
 		return err
 	}
+	mimc.Write(instance.Model)
 	mimc.Write(instance.TokenCounts[:]...)
 	mimc.Write(instance.PublicKeyRoot)
 	mimc.Write(instance.MessageHashes[:]...)

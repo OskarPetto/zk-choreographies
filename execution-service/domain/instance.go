@@ -31,7 +31,7 @@ type InstanceId = string
 
 type Instance struct {
 	Hash          Hash
-	Model         ModelId
+	Model         [HashSize]byte
 	TokenCounts   []int8
 	PublicKeys    []PublicKey
 	MessageHashes [][HashSize]byte

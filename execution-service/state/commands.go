@@ -3,6 +3,6 @@ package state
 import "execution-service/domain"
 
 type ImportStateCommand struct {
-	EncryptedState domain.EncryptedState
+	EncryptedState domain.Chiphertext
 	Identity       domain.IdentityId
 }
