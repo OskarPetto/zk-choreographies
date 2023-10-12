@@ -115,7 +115,7 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	service.InstanceService.ImportInstance(nextInstance)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
 	if transition.RespondingParticipant != domain.EmptyParticipantId {
-		publicKey = currentInstance.PublicKeys[transition.RespondingParticipant]
+		publicKey = currentInstance.FindParticipantById(transition.RespondingParticipant)
 	}
 	encryptedState := createEncryptedState(model, nextInstance, message, privateKey, publicKey)
 	return ExecutionResult{

@@ -88,3 +88,7 @@ func isTransitionExecutable(instance Instance, transition Transition, input Cons
 func (instance *Instance) FindMessageHashById(id MessageId) [HashSize]byte {
 	return instance.MessageHashes[id]
 }
+
+func (instance *Instance) FindParticipantById(id ParticipantId) PublicKey {
+	return instance.PublicKeys[id]
+}
