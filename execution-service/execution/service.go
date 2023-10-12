@@ -40,10 +40,8 @@ func NewExecutionService(modelService model.ModelService, instanceService instan
 }
 
 func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (ExecutionResult, error) {
-	model, err := service.ModelService.FindModelById(cmd.Model)
-	if err != nil {
-		return ExecutionResult{}, err
-	}
+	model := cmd.Model
+	model.ComputeHash()
 	instance, err := model.Instantiate(cmd.PublicKeys)
 	if err != nil {
 		return ExecutionResult{}, err
@@ -58,6 +56,7 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 		return ExecutionResult{}, err
 	}
 	service.InstanceService.ImportInstance(instance)
+	service.ModelService.ImportModel(model)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
 	encryptedState := createEncryptedState(model, instance, nil, privateKey, publicKey)
 	return ExecutionResult{
@@ -144,6 +143,7 @@ func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand)
 		return ExecutionResult{}, err
 	}
 	service.InstanceService.DeleteInstance(instance)
+	service.ModelService.DeleteModel(model)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
 	encryptedState := createEncryptedState(model, instance, nil, privateKey, publicKey)
 	return ExecutionResult{

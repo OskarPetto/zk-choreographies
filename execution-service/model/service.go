@@ -16,16 +16,6 @@ func NewModelService() ModelService {
 	}
 }
 
-func (service *ModelService) CreateModel(model domain.Model) domain.Model {
-	model.ComputeHash()
-	service.models[model.Id()] = model
-	return model
-}
-
-func (service *ModelService) ImportModel(model domain.Model) {
-	service.models[model.Id()] = model
-}
-
 func (service *ModelService) FindModelById(modelId domain.ModelId) (domain.Model, error) {
 	model, exists := service.models[modelId]
 	if exists {
@@ -43,4 +33,12 @@ func (service *ModelService) FindAllModels() []domain.Model {
 		return models[i].CreatedAt > models[j].CreatedAt
 	})
 	return models
+}
+
+func (service *ModelService) ImportModel(model domain.Model) {
+	service.models[model.Id()] = model
+}
+
+func (service *ModelService) DeleteModel(model domain.Model) {
+	delete(service.models, model.Id())
 }

@@ -31,7 +31,8 @@ var stateController = state.NewStateController(stateService)
 func main() {
 
 	router := gin.Default()
-	router.POST("/models", modelController.CreateModel)
+
+	router.PUT("/state", stateController.ImportState)
 
 	router.GET("/models/:modelId", modelController.FindModelById)
 	router.GET("/models", modelController.FindAllModels)
@@ -42,8 +43,6 @@ func main() {
 	router.POST("/instantiation", executionController.InstantiateModel)
 	router.POST("/transition", executionController.ExecuteTransition)
 	router.POST("/termination", executionController.TerminateInstance)
-
-	router.PUT("/state", stateController.ImportState)
 
 	router.Run("localhost:8080")
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ChoreographyParser } from './choreography.parser';
 import { ChoreographyMapper } from './choreography.mapper';
 import { ModelReducer } from '../model/model.reducer';
-import { ModelGateway } from '../model/model.gateway';
+import { Model } from 'src/model/model';
 
 @Injectable()
 export class ChoreographyService {
@@ -10,15 +10,13 @@ export class ChoreographyService {
     private choreographyParser: ChoreographyParser,
     private choreographyMapper: ChoreographyMapper,
     private modelReducer: ModelReducer,
-    private modelGateway: ModelGateway,
-  ) {}
+  ) { }
 
-  async transformChoreography(xmlString: string): Promise<string> {
+  async transformChoreography(xmlString: string): Promise<Model> {
     const definitions = this.choreographyParser.parseBpmn(xmlString);
     const choreography = definitions.choreographies[0];
     const model = this.choreographyMapper.toModel(xmlString, choreography);
     const reducedModel = this.modelReducer.reduceModel(model);
-    const createdModel = await this.modelGateway.createModel(reducedModel);
-    return createdModel.hash.value;
+    return reducedModel;
   }
 }

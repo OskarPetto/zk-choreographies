@@ -17,9 +17,3 @@ func TestImportModel(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, model.Hash, modelResult.Hash)
 }
-
-func TestCreateModel(t *testing.T) {
-	model := testdata.GetModel2()
-	modelResult := modelService.CreateModel(model)
-	assert.NotEqual(t, model.Hash, modelResult.Hash)
-}

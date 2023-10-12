@@ -1,17 +1,18 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { ChoreographyService } from './choreography.service';
+import { Model } from 'src/model/model';
 
-export class ImportChoreographyCommand {
+export class TransformChoreographyCommand {
   xmlString: string;
 }
 
 @Controller('choreographies')
 export class ChoreographyController {
-  constructor(private choreographyService: ChoreographyService) {}
+  constructor(private choreographyService: ChoreographyService) { }
   @Post()
-  async importChoreography(
-    @Body() cmd: ImportChoreographyCommand,
-  ): Promise<string> {
+  async transformChoreography(
+    @Body() cmd: TransformChoreographyCommand,
+  ): Promise<Model> {
     return this.choreographyService.transformChoreography(cmd.xmlString);
   }
 }

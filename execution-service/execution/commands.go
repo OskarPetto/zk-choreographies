@@ -10,7 +10,7 @@ type CreateMessageCommand struct {
 }
 
 type InstantiateModelCommand struct {
-	Model      domain.ModelId
+	Model      domain.Model
 	PublicKeys []domain.PublicKey
 	Identity   domain.IdentityId
 }
