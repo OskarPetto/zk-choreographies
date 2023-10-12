@@ -31,6 +31,7 @@ contract InstanceManager {
         uint model,
         uint instance
     ) public {
+        require(instancesWithTheirModel[instance] == 0);
         instantiationVerifier.verifyProof(proof, [model, instance]);
         instancesWithTheirModel[instance] = model;
         emit Instantiation(model, instance);
