@@ -41,13 +41,8 @@ func (controller *ModelController) CreateModel(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, ToJson(result))
 }
 
-func (controller *ModelController) FindModelsByChoreography(c *gin.Context) {
-	choreographyId := c.Query("choreographyId")
-	if choreographyId == "" {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	models := controller.modelService.FindModelsByChoreography(choreographyId)
+func (controller *ModelController) FindAllModels(c *gin.Context) {
+	models := controller.modelService.FindAllModels()
 	jsonModels := make([]ModelJson, len(models))
 	for i, instance := range models {
 		jsonModels[i] = ToJson(instance)

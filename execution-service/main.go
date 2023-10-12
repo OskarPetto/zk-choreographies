@@ -34,10 +34,10 @@ func main() {
 	router.POST("/models", modelController.CreateModel)
 
 	router.GET("/models/:modelId", modelController.FindModelById)
-	router.GET("/models", modelController.FindModelsByChoreography)
+	router.GET("/models", modelController.FindAllModels)
+	router.GET("/models/:modelId/instances", instanceController.FindInstancesByModel)
 
 	router.GET("/instances/:instanceId", instanceController.FindInstanceById)
-	router.GET("/instances", instanceController.FindInstancesByModel)
 
 	router.POST("/instantiation", executionController.InstantiateModel)
 	router.POST("/transition", executionController.ExecuteTransition)

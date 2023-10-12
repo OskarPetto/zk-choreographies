@@ -34,12 +34,10 @@ func (service *ModelService) FindModelById(modelId domain.ModelId) (domain.Model
 	return domain.Model{}, fmt.Errorf("model %s not found", modelId)
 }
 
-func (service *ModelService) FindModelsByChoreography(choreography string) []domain.Model {
+func (service *ModelService) FindAllModels() []domain.Model {
 	models := make([]domain.Model, 0, len(service.models))
 	for _, model := range service.models {
-		if model.Source == choreography {
-			models = append(models, model)
-		}
+		models = append(models, model)
 	}
 	sort.Slice(models, func(i, j int) bool {
 		return models[i].CreatedAt > models[j].CreatedAt

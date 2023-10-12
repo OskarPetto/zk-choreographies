@@ -5,6 +5,7 @@ import { ChoreographyMapper } from './choreography.mapper';
 describe('ChoreographyMapper', () => {
   let choreographyMapper: ChoreographyMapper;
   const definitions2 = TestdataProvider.getDefinitions2();
+  const xmlString = TestdataProvider.getExampleChoreography();
   const model2 = TestdataProvider.getModel2();
 
   beforeAll(() => {
@@ -16,7 +17,7 @@ describe('ChoreographyMapper', () => {
   describe('toModel', () => {
     it('should map bpmn choreography correctly', () => {
       const result = choreographyMapper.toModel(
-        'example_choreography',
+        xmlString,
         definitions2.choreographies[0],
       );
       expect(result).toEqual(model2);

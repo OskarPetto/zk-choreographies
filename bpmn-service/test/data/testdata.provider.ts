@@ -6,7 +6,6 @@ import {
   GatewayType,
   LoopType,
 } from 'src/choreography/choreography';
-import { BpmnModel } from 'src/bpmn/bpmn';
 
 function readTextFile(filename: string) {
   const filePath = path.join(process.cwd(), filename);
@@ -19,18 +18,12 @@ function writeTextFile(filename: string, data: string) {
 }
 
 export class TestdataProvider {
-  static getFloorChoreography(): BpmnModel {
-    return {
-      id: 'floor_choreography',
-      xmlString: readTextFile('test/data/floor_choreography.bpmn'),
-    };
+  static getFloorChoreography(): string {
+    return readTextFile('test/data/floor_choreography.bpmn');
   }
 
-  static getExampleChoreography(): BpmnModel {
-    return {
-      id: 'example_choreography',
-      xmlString: readTextFile('test/data/example_choreography.bpmn'),
-    };
+  static getExampleChoreography(): string {
+    return readTextFile('test/data/example_choreography.bpmn');
   }
 
   static writeExampleChoreography() {
@@ -254,7 +247,7 @@ export class TestdataProvider {
   static getModel2(): Model {
     return {
       hash: defaultHash(),
-      source: 'example_choreography',
+      source: TestdataProvider.getExampleChoreography(),
       placeCount: 20,
       participantCount: 2,
       messageCount: 10,
@@ -447,7 +440,7 @@ export class TestdataProvider {
   static getModel2Reduced(): Model {
     return {
       hash: defaultHash(),
-      source: 'example_choreography',
+      source: TestdataProvider.getExampleChoreography(),
       placeCount: 14,
       participantCount: 2,
       messageCount: 10,
