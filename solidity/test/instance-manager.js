@@ -20,8 +20,8 @@ contract('InstanceManager', (accounts) => {
 
     await instanceManager.instantiate(instantiationProof, model, instance);
 
-    const storedModel = await instanceManager.instancesWithTheirModel(instance);
-    assert.equal(storedModel.toString(), model.toString(), "instance was stored");
+    const storedInstance = await instanceManager.instancesPerModel(model);
+    assert.equal(storedInstance.toString(), instance.toString(), "instance was stored");
   });
 
   it('termination', async () => {
@@ -37,8 +37,8 @@ contract('InstanceManager', (accounts) => {
     await instanceManager.instantiate(terminationProof, model, instance); // uses mock
     await instanceManager.terminate(terminationProof, model, instance);
 
-    const storedModel = await instanceManager.instancesWithTheirModel(instance);
-    assert.equal(storedModel.toString(), "0", "instance was deleted");
+    const storedInstance = await instanceManager.instancesPerModel(model);
+    assert.equal(storedInstance.toString(), "0", "instance was deleted");
   });
 
   it('transition', async () => {
@@ -54,9 +54,7 @@ contract('InstanceManager', (accounts) => {
     await instanceManager.instantiate(transitionProof, model, currentInstance); // uses mock
     await instanceManager.transition(transitionProof, model, currentInstance, nextInstance);
 
-    let storedModel = await instanceManager.instancesWithTheirModel(nextInstance);
-    assert.equal(storedModel.toString(), model.toString(), "nextInstance was stored");
-    storedModel = await instanceManager.instancesWithTheirModel(currentInstance);
-    assert.equal(storedModel.toString(), "0", "currentInstance was deleted");
+    let storedInstance = await instanceManager.instancesPerModel(model);
+    assert.equal(storedInstance.toString(), nextInstance.toString(), "nextInstance was stored");
   });
 });

@@ -6,7 +6,7 @@ import "./TransitionVerifier.sol";
 import "./TerminationVerifier.sol";
 
 contract InstanceManager {
-    mapping(uint => uint) public instancesWithTheirModel;
+    mapping(uint => uint) public instancesPerModel;
 
     InstantiationVerifier instantiationVerifier;
     TransitionVerifier transitionVerifier;
@@ -31,9 +31,9 @@ contract InstanceManager {
         uint model,
         uint instance
     ) public {
-        require(instancesWithTheirModel[instance] == 0);
+        require(instancesPerModel[model] == 0);
         instantiationVerifier.verifyProof(proof, [model, instance]);
-        instancesWithTheirModel[instance] = model;
+        instancesPerModel[model] = instance;
         emit Instantiation(model, instance);
     }
 
@@ -43,21 +43,20 @@ contract InstanceManager {
         uint currentInstance,
         uint nextInstance
     ) public {
-        require(instancesWithTheirModel[currentInstance] == model);
+        require(instancesPerModel[model] == currentInstance);
         transitionVerifier.verifyProof(
             proof,
             [model, currentInstance, nextInstance]
         );
-        delete instancesWithTheirModel[currentInstance];
-        instancesWithTheirModel[nextInstance] = model;
+        instancesPerModel[model] = nextInstance;
         emit Transition(model, currentInstance, nextInstance);
     }
 
     function terminate(uint[8] memory proof, uint model, uint instance) public {
-        require(instancesWithTheirModel[instance] == model);
+        require(instancesPerModel[model] == instance);
         terminationVerifier.verifyProof(proof, [model, instance]);
 
-        delete instancesWithTheirModel[instance];
+        delete instancesPerModel[model];
         emit Termination(model, instance);
     }
 }
