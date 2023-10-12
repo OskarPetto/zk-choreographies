@@ -54,7 +54,7 @@ type ModelId = string
 
 type Model struct {
 	Hash             Hash
-	Choreography     string
+	Source           string
 	PlaceCount       uint16
 	ParticipantCount uint16
 	MessageCount     uint16

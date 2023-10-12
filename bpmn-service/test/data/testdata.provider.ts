@@ -6,6 +6,7 @@ import {
   GatewayType,
   LoopType,
 } from 'src/choreography/choreography';
+import { BpmnModel } from 'src/bpmn/bpmn';
 
 function readTextFile(filename: string) {
   const filePath = path.join(process.cwd(), filename);
@@ -18,12 +19,18 @@ function writeTextFile(filename: string, data: string) {
 }
 
 export class TestdataProvider {
-  static getFloorChoreography(): string {
-    return readTextFile('test/data/floor_choreography.bpmn');
+  static getFloorChoreography(): BpmnModel {
+    return {
+      id: 'floor_choreography',
+      xmlString: readTextFile('test/data/floor_choreography.bpmn'),
+    };
   }
 
-  static getExampleChoreography(): string {
-    return readTextFile('test/data/example_choreography.bpmn');
+  static getExampleChoreography(): BpmnModel {
+    return {
+      id: 'example_choreography',
+      xmlString: readTextFile('test/data/example_choreography.bpmn'),
+    };
   }
 
   static writeExampleChoreography() {
@@ -185,7 +192,7 @@ export class TestdataProvider {
             },
             {
               id: 'Flow_1stf9mf',
-              name: 'order <= stock'
+              name: 'order <= stock',
             },
             {
               id: 'Flow_0c5yqsz',
@@ -237,7 +244,7 @@ export class TestdataProvider {
             {
               id: 'Message_1376fyb',
               name: 'order',
-            }
+            },
           ],
         },
       ],
@@ -247,7 +254,7 @@ export class TestdataProvider {
   static getModel2(): Model {
     return {
       hash: defaultHash(),
-      choreography: 'Choreography_07n6r3q',
+      source: 'example_choreography',
       placeCount: 20,
       participantCount: 2,
       messageCount: 10,
@@ -272,24 +279,12 @@ export class TestdataProvider {
           type: TransitionType.OPTIONAL_OUTGOING,
           incomingPlaces: [1],
           outgoingPlaces: [2],
-          messageConstraint: {
-            coefficients: [1, -1],
-            messageIds: [9, 0],
-            offset: 0,
-            comparisonOperator: 1,
-          }
         },
         {
           id: 'Gateway_10fv7g5_Flow_1stf9mf',
           type: TransitionType.OPTIONAL_OUTGOING,
           incomingPlaces: [1],
           outgoingPlaces: [9],
-          messageConstraint: {
-            coefficients: [1, -1],
-            messageIds: [9, 0],
-            offset: 0,
-            comparisonOperator: 4,
-          }
         },
         {
           id: 'Gateway_1ofchbb_Flow_1iwbmcz',
@@ -344,6 +339,12 @@ export class TestdataProvider {
           initiatingParticipant: 1,
           respondingParticipant: 2,
           message: 8,
+          messageConstraint: {
+            coefficients: [1, -1],
+            messageIds: [9, 0],
+            offset: 0,
+            comparisonOperator: 1,
+          },
         },
         {
           id: 'ChoreographyTask_0nl2rhr_loop',
@@ -423,6 +424,12 @@ export class TestdataProvider {
           initiatingParticipant: 1,
           respondingParticipant: 0,
           message: 1,
+          messageConstraint: {
+            coefficients: [1, -1],
+            messageIds: [9, 0],
+            offset: 0,
+            comparisonOperator: 4,
+          },
         },
         {
           id: 'ChoreographyTask_1e51o0k_Participant_0x6v44d',
@@ -440,7 +447,7 @@ export class TestdataProvider {
   static getModel2Reduced(): Model {
     return {
       hash: defaultHash(),
-      choreography: 'Choreography_07n6r3q',
+      source: 'example_choreography',
       placeCount: 14,
       participantCount: 2,
       messageCount: 10,
@@ -494,7 +501,7 @@ export class TestdataProvider {
             messageIds: [9, 0],
             offset: 0,
             comparisonOperator: 1,
-          }
+          },
         },
         {
           id: 'ChoreographyTask_0nl2rhr_loop',
@@ -579,7 +586,7 @@ export class TestdataProvider {
             messageIds: [9, 0],
             offset: 0,
             comparisonOperator: 4,
-          }
+          },
         },
         {
           id: 'ChoreographyTask_1e51o0k_Participant_0x6v44d',

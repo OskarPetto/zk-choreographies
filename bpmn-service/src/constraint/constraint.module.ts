@@ -5,6 +5,6 @@ import { ConstraintParser } from './constraint.parser';
   imports: [],
   controllers: [],
   providers: [ConstraintParser],
-  exports: [ConstraintParser]
+  exports: [ConstraintParser],
 })
-export class ConstraintModule { }
+export class ConstraintModule {}

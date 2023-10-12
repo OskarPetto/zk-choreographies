@@ -9,14 +9,16 @@ import { ModelGateway } from '../model/model.gateway';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 import { ConstraintModule } from 'src/constraint/constraint.module';
+import { BpmnService } from 'src/bpmn/bpmn.service';
 
 describe('ChoreographyService', () => {
-  let bpmnService: ChoreographyService;
-  let bpmnParser: ChoreographyParser;
-  let bpmnMapper: ChoreographyMapper;
+  let choreographyService: ChoreographyService;
+  let bpmnService: BpmnService;
+  let choreographyParser: ChoreographyParser;
+  let choreographyMapper: ChoreographyMapper;
   let modelReducer: ModelReducer;
   let modelGateway: ModelGateway;
-  const bpmnString = TestdataProvider.getExampleChoreography();
+  const bpmnModel = TestdataProvider.getExampleChoreography();
   const definitions = TestdataProvider.getDefinitions2();
   const model2Reduced = TestdataProvider.getModel2Reduced();
   const model2 = TestdataProvider.getModel2();
@@ -25,6 +27,7 @@ describe('ChoreographyService', () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [],
       providers: [
+        BpmnService,
         ChoreographyService,
         ChoreographyParser,
         ChoreographyMapper,
@@ -34,20 +37,25 @@ describe('ChoreographyService', () => {
       imports: [HttpModule, ConfigModule, ConstraintModule],
     }).compile();
 
-    bpmnService = moduleRef.get<ChoreographyService>(ChoreographyService);
-    bpmnParser = moduleRef.get<ChoreographyParser>(ChoreographyParser);
-    bpmnMapper = moduleRef.get<ChoreographyMapper>(ChoreographyMapper);
+    choreographyService =
+      moduleRef.get<ChoreographyService>(ChoreographyService);
+    bpmnService = moduleRef.get<BpmnService>(BpmnService);
+    choreographyParser = moduleRef.get<ChoreographyParser>(ChoreographyParser);
+    choreographyMapper = moduleRef.get<ChoreographyMapper>(ChoreographyMapper);
     modelReducer = moduleRef.get<ModelReducer>(ModelReducer);
     modelGateway = moduleRef.get<ModelGateway>(ModelGateway);
   });
 
   describe('importBpmnProcess', () => {
     it('should call parser, mapper, reducer and service correctly', async () => {
-      when(jest.spyOn(bpmnParser, 'parseBpmn'))
-        .calledWith(bpmnString)
+      when(jest.spyOn(bpmnService, 'findBpmnModelById'))
+        .calledWith(bpmnModel.id)
+        .mockReturnValue(bpmnModel);
+      when(jest.spyOn(choreographyParser, 'parseBpmn'))
+        .calledWith(bpmnModel.xmlString)
         .mockReturnValue(definitions);
-      when(jest.spyOn(bpmnMapper, 'toModel'))
-        .calledWith(definitions.choreographies[0])
+      when(jest.spyOn(choreographyMapper, 'toModel'))
+        .calledWith(bpmnModel.id, definitions.choreographies[0])
         .mockReturnValue(model2);
       when(jest.spyOn(modelReducer, 'reduceModel'))
         .calledWith(model2)
@@ -57,7 +65,7 @@ describe('ChoreographyService', () => {
         .spyOn(modelGateway, 'createModel')
         .mockImplementation((model) => Promise.resolve(model));
 
-      bpmnService.importChoreography(bpmnString);
+      choreographyService.transformChoreography(bpmnModel.id);
 
       expect(modelGateway.createModel).toBeCalledWith(model2Reduced);
     });

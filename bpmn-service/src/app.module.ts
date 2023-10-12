@@ -1,16 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ChoreographyModule } from './choreography/choreography.module';
-import { ModelModule } from './model/model.module';
 import { ConfigModule } from '@nestjs/config';
 import { ConstraintModule } from './constraint/constraint.module';
 
 @Module({
-  imports: [
-    ChoreographyModule,
-    ModelModule,
-    ConstraintModule,
-    ConfigModule.forRoot(),
-  ],
+  imports: [ChoreographyModule, ConstraintModule, ConfigModule.forRoot()],
   exports: [],
   controllers: [],
   providers: [],

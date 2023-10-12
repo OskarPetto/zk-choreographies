@@ -3,26 +3,25 @@ import { ChoreographyParser } from './choreography.parser';
 import { ChoreographyMapper } from './choreography.mapper';
 import { ModelReducer } from '../model/model.reducer';
 import { ModelGateway } from '../model/model.gateway';
-import { Choreography } from './choreography';
+import { BpmnService } from 'src/bpmn/bpmn.service';
 
 @Injectable()
 export class ChoreographyService {
-  private choreographies: Map<string, Choreography> = new Map();
-
   constructor(
-    private bpmnParser: ChoreographyParser,
-    private bpmnMapper: ChoreographyMapper,
+    private bpmnService: BpmnService,
+    private choreographyParser: ChoreographyParser,
+    private choreographyMapper: ChoreographyMapper,
     private modelReducer: ModelReducer,
     private modelGateway: ModelGateway,
   ) {}
 
-  async importChoreography(bpmnString: string): Promise<string> {
-    const definitions = this.bpmnParser.parseBpmn(bpmnString);
+  async transformChoreography(id: string): Promise<string> {
+    const bpmnModel = this.bpmnService.findBpmnModelById(id);
+    const definitions = this.choreographyParser.parseBpmn(bpmnModel.xmlString);
     const choreography = definitions.choreographies[0];
-    const model = this.bpmnMapper.toModel(choreography);
+    const model = this.choreographyMapper.toModel(id, choreography);
     const reducedModel = this.modelReducer.reduceModel(model);
     const createdModel = await this.modelGateway.createModel(reducedModel);
-    this.choreographies.set(choreography.id, choreography);
     return createdModel.hash.value;
   }
 }

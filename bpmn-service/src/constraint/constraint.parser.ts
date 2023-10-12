@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Constraint, defaultConstraint } from './constraint';
+import { Constraint } from './constraint';
 import { MessageId as BpmnMessageId } from 'src/choreography/choreography';
 import { MessageId } from 'src/model/model';
 /* eslint @typescript-eslint/no-var-requires: "off" */
@@ -14,10 +14,10 @@ interface ConstraintPart {
 export class ConstraintParser {
   parseConstraint(
     constraint: string | undefined,
-    messageIds: Map<BpmnMessageId, MessageId>
+    messageIds: Map<BpmnMessageId, MessageId>,
   ): Constraint | undefined {
     if (constraint === undefined) {
-      return undefined
+      return undefined;
     }
     try {
       const script = esprima.parseScript(constraint);
@@ -27,7 +27,9 @@ export class ConstraintParser {
       const expression = script.body[0].expression;
       return this.parseBooleanExpression(expression, messageIds);
     } catch (e) {
-      console.log(`parsing constraint '${constraint}' resulted in error: ${e.message}`);
+      console.log(
+        `parsing constraint '${constraint}' resulted in error: ${e.message}`,
+      );
     }
     return undefined;
   }
@@ -67,13 +69,13 @@ export class ConstraintParser {
       throw Error('not implemented');
     }
 
-    let offset = resultingParts[resultingParts.length - 1].constant
-    let coefficients = []
-    let messages = []
+    const offset = resultingParts[resultingParts.length - 1].constant;
+    const coefficients = [];
+    const messages = [];
 
     for (let i = 0; i < resultingParts.length - 1; i++) {
-      coefficients.push(resultingParts[i].constant)
-      messages.push(resultingParts[i].messageId ?? 0)
+      coefficients.push(resultingParts[i].constant);
+      messages.push(resultingParts[i].messageId ?? 0);
     }
 
     return {
@@ -98,9 +100,9 @@ export class ConstraintParser {
     } else if (expression.type == 'Identifier') {
       let messageId;
       if (!messageIds.has(expression.name)) {
-        throw Error(`message identifier '${expression.name}' not known`)
+        throw Error(`message identifier '${expression.name}' not known`);
       } else {
-        messageId = messageIds.get(expression.name)
+        messageId = messageIds.get(expression.name);
       }
       return [
         {

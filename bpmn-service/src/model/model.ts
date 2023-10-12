@@ -23,11 +23,14 @@ export interface Transition {
   messageConstraint?: Constraint;
 }
 
-export interface Hash { value: string; salt: string }
+export interface Hash {
+  value: string;
+  salt: string;
+}
 
 export interface Model {
   hash: Hash;
-  choreography: string;
+  source: string;
   placeCount: number;
   participantCount: number;
   messageCount: number;
@@ -37,5 +40,5 @@ export interface Model {
 }
 
 export function defaultHash(): Hash {
-  return { value: '', salt: '' }
+  return { value: '', salt: '' };
 }

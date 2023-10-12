@@ -27,7 +27,7 @@ type TransitionJson struct {
 
 type ModelJson struct {
 	Hash             hash.HashJson    `json:"hash"`
-	Choreography     string           `json:"name"`
+	Source           string           `json:"source"`
 	PlaceCount       uint             `json:"placeCount"`
 	ParticipantCount uint             `json:"participantCount"`
 	MessageCount     uint             `json:"messageCount"`
@@ -91,7 +91,7 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 	}
 	return domain.Model{
 		Hash:             hash,
-		Choreography:     model.Choreography,
+		Source:           model.Source,
 		PlaceCount:       uint16(model.PlaceCount),
 		ParticipantCount: uint16(model.ParticipantCount),
 		MessageCount:     uint16(model.MessageCount),
@@ -204,7 +204,7 @@ func ToJson(model domain.Model) ModelJson {
 	}
 	return ModelJson{
 		Hash:             hash.ToJson(model.Hash),
-		Choreography:     model.Choreography,
+		Source:           model.Source,
 		PlaceCount:       uint(model.PlaceCount),
 		ParticipantCount: uint(model.ParticipantCount),
 		MessageCount:     uint(model.MessageCount),

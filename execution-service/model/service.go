@@ -37,7 +37,7 @@ func (service *ModelService) FindModelById(modelId domain.ModelId) (domain.Model
 func (service *ModelService) FindModelsByChoreography(choreography string) []domain.Model {
 	models := make([]domain.Model, 0, len(service.models))
 	for _, model := range service.models {
-		if model.Choreography == choreography {
+		if model.Source == choreography {
 			models = append(models, model)
 		}
 	}

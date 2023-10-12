@@ -2,7 +2,7 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { ChoreographyService } from './choreography.service';
 
 export class ImportChoreographyCommand {
-  bpmnString: string;
+  id: string;
 }
 
 @Controller('choreographies')
@@ -12,6 +12,6 @@ export class ChoreographyController {
   async importChoreography(
     @Body() cmd: ImportChoreographyCommand,
   ): Promise<string> {
-    return this.choreographyService.importChoreography(cmd.bpmnString);
+    return this.choreographyService.transformChoreography(cmd.id);
   }
 }

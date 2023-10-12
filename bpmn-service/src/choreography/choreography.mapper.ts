@@ -26,14 +26,14 @@ import {
 import { ConstraintParser } from 'src/constraint/constraint.parser';
 
 interface ConstraintMapping {
-  sequenceFlowNames: Map<PlaceId, string | undefined>
-  messageIdPerMessageName: Map<string, MessageId>
+  sequenceFlowNames: Map<PlaceId, string | undefined>;
+  messageIdPerMessageName: Map<string, MessageId>;
 }
 
 @Injectable()
 export class ChoreographyMapper {
-  constructor(private constraintParser: ConstraintParser) { }
-  toModel(choreography: Choreography): Model {
+  constructor(private constraintParser: ConstraintParser) {}
+  toModel(id: string, choreography: Choreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
     );
@@ -93,7 +93,8 @@ export class ChoreographyMapper {
     const relevantParticipants = [...participantIds.values()].filter(
       (participantId) =>
         choreographyTaskTransitions.some(
-          (choreographyTask) => choreographyTask.initiatingParticipant === participantId,
+          (choreographyTask) =>
+            choreographyTask.initiatingParticipant === participantId,
         ),
     );
 
@@ -107,7 +108,7 @@ export class ChoreographyMapper {
 
     return {
       hash: { value: '', salt: '' },
-      choreography: choreography.id,
+      source: id,
       placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length + 2,
       participantCount: relevantParticipants.length,
       messageCount: messageIds.size,
@@ -136,12 +137,12 @@ export class ChoreographyMapper {
     sequenceFlows: SequenceFlow[],
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
     messages: Message[],
-    messageIds: Map<BpmnMessageId, MessageId>
+    messageIds: Map<BpmnMessageId, MessageId>,
   ): ConstraintMapping {
     const constraintMapping: ConstraintMapping = {
       sequenceFlowNames: new Map(),
-      messageIdPerMessageName: new Map()
-    }
+      messageIdPerMessageName: new Map(),
+    };
     for (const sequenceFlow of sequenceFlows) {
       const placeId = sequenceFlowPlaceIds.get(sequenceFlow.id)!;
       constraintMapping.sequenceFlowNames.set(placeId, sequenceFlow.name);
@@ -368,16 +369,23 @@ export class ChoreographyMapper {
     }
   }
 
-  addConstraints(transitions: Transition[], constraintMapping: ConstraintMapping) {
-    transitions.forEach(transition => {
+  addConstraints(
+    transitions: Transition[],
+    constraintMapping: ConstraintMapping,
+  ) {
+    transitions.forEach((transition) => {
       for (const incomingPlace of transition.incomingPlaces) {
-        const constraintString = constraintMapping.sequenceFlowNames.get(incomingPlace)
+        const constraintString =
+          constraintMapping.sequenceFlowNames.get(incomingPlace);
         if (constraintString !== undefined) {
-          const constraint = this.constraintParser.parseConstraint(constraintString, constraintMapping.messageIdPerMessageName)
+          const constraint = this.constraintParser.parseConstraint(
+            constraintString,
+            constraintMapping.messageIdPerMessageName,
+          );
           transition.messageConstraint = constraint;
           break;
         }
       }
-    })
+    });
   }
 }

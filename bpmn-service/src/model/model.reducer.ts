@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Model, PlaceId, Transition, TransitionType, defaultHash } from './model';
+import {
+  Model,
+  PlaceId,
+  Transition,
+  TransitionType,
+  defaultHash,
+} from './model';
 
 @Injectable()
 export class ModelReducer {
@@ -80,9 +86,11 @@ export class ModelReducer {
         );
         if (transitionToRemove.messageConstraint) {
           if (transition.messageConstraint) {
-            throw Error(`Cannot reduce model because transition ${transition.id} already has constraint`)
+            throw Error(
+              `Cannot reduce model because transition ${transition.id} already has constraint`,
+            );
           } else {
-            transition.messageConstraint = transitionToRemove.messageConstraint
+            transition.messageConstraint = transitionToRemove.messageConstraint;
           }
         }
       }
@@ -172,13 +180,15 @@ export class ModelReducer {
         initiatingParticipant: transition.initiatingParticipant,
         respondingParticipant: transition.respondingParticipant,
         message: transition.message,
-        messageConstraint: transition.messageConstraint ? { ...transition.messageConstraint } : undefined
+        messageConstraint: transition.messageConstraint
+          ? { ...transition.messageConstraint }
+          : undefined,
       }),
     );
 
     return {
       hash: defaultHash(),
-      choreography: model.choreography,
+      source: model.source,
       placeCount: model.placeCount,
       participantCount: model.participantCount,
       messageCount: model.messageCount,

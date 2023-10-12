@@ -4,15 +4,15 @@ import { ChoreographyParser } from './choreography.parser';
 describe('ChoreographyParser', () => {
   let choreographyParser: ChoreographyParser;
   const definitions2 = TestdataProvider.getDefinitions2();
-  const bpmnString = TestdataProvider.getExampleChoreography();
+  const bpmnModel = TestdataProvider.getExampleChoreography();
 
-  beforeAll(async () => {
+  beforeAll(() => {
     choreographyParser = new ChoreographyParser();
   });
 
   describe('parseBpmn', () => {
     it('should parse bpmn choreography correctly', () => {
-      const result = choreographyParser.parseBpmn(bpmnString);
+      const result = choreographyParser.parseBpmn(bpmnModel.xmlString);
       expect(result).toEqual(definitions2);
     });
   });
