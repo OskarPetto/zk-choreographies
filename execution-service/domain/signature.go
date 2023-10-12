@@ -10,7 +10,7 @@ import (
 
 type IdentityId = uint
 
-const IdentityCount = MaxParticipantCount
+const IdentityCount = 3
 
 type Signature struct {
 	Value       []byte

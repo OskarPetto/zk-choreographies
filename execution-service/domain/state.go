@@ -32,8 +32,9 @@ type SerializedState struct {
 }
 
 type EncryptedState struct {
-	Value  []byte
-	Sender PublicKey
+	Value     []byte
+	Sender    PublicKey
+	Recipient PublicKey
 }
 
 func (encryptedState *EncryptedState) Decrypt(privateKey *eddsa.PrivateKey) (SerializedState, error) {
@@ -76,8 +77,9 @@ func (state *SerializedState) Encrypt(sender *eddsa.PrivateKey, recipient Public
 
 	ciphertext := gcm.Seal(nonce, nonce, state.Value, nil)
 	return EncryptedState{
-		Value:  ciphertext,
-		Sender: NewPublicKey(sender.PublicKey),
+		Value:     ciphertext,
+		Sender:    NewPublicKey(sender.PublicKey),
+		Recipient: recipient,
 	}
 }
 
