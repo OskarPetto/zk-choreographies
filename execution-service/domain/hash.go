@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/binary"
@@ -38,7 +39,7 @@ func (hash *Hash) String() HashId {
 	return utils.BytesToString(hash.Value[:])
 }
 
-func (publicKey *PublicKey) ComputeHash() [HashSize]byte {
+func (publicKey PublicKey) ComputeHash() [HashSize]byte {
 	var eddsaPublicKey eddsa.PublicKey
 	eddsaPublicKey.A.SetBytes(publicKey.Value)
 	xBytes := eddsaPublicKey.A.X.Bytes()
@@ -49,7 +50,7 @@ func (publicKey *PublicKey) ComputeHash() [HashSize]byte {
 	return computeHash(mimc)
 }
 
-func (transition *Transition) ComputeHash() [HashSize]byte {
+func (transition Transition) ComputeHash() [HashSize]byte {
 	mimc := mimc.NewMiMC()
 	for _, incomingPlace := range transition.IncomingPlaces {
 		hashUint16(mimc, incomingPlace)
@@ -83,7 +84,17 @@ func (transition *Transition) ComputeHash() [HashSize]byte {
 	return computeHash(mimc)
 }
 
-func (model *Model) ComputeHash() {
+func (model Model) HasValidHash() bool {
+	computedHash := model.ComputeHash(model.Hash.Salt)
+	return bytes.Equal(computedHash.Value[:], model.Hash.Value[:])
+}
+
+func (model *Model) UpdateHash() {
+	salt := randomFieldElement("model")
+	model.Hash = model.ComputeHash(salt)
+}
+
+func (model Model) ComputeHash(salt [fr.Bytes]byte) Hash {
 	mimc := mimc.NewMiMC()
 	hashUint16(mimc, model.PlaceCount)
 	hashUint16(mimc, model.ParticipantCount)
@@ -115,15 +126,24 @@ func (model *Model) ComputeHash() {
 		transitionTree.Push(hash[:])
 	}
 	mimc.Write(transitionTree.Root())
-	salt := randomFieldElement("model")
 	mimc.Write(salt[:])
-	model.Hash = Hash{
+	return Hash{
 		Value: computeHash(mimc),
 		Salt:  salt,
 	}
 }
 
-func (instance *Instance) ComputeHash() {
+func (instance Instance) HasValidHash() bool {
+	computedHash := instance.ComputeHash(instance.Hash.Salt)
+	return bytes.Equal(computedHash.Value[:], instance.Hash.Value[:])
+}
+
+func (instance *Instance) UpdateHash() {
+	salt := randomFieldElement("instance")
+	instance.Hash = instance.ComputeHash(salt)
+}
+
+func (instance Instance) ComputeHash(salt [fr.Bytes]byte) Hash {
 	mimc := mimc.NewMiMC()
 	mimc.Write(instance.Model[:])
 	for _, tokenCount := range instance.TokenCounts {
@@ -150,22 +170,28 @@ func (instance *Instance) ComputeHash() {
 		hash := OutOfBoundsHash().Value
 		mimc.Write(hash[:])
 	}
-	salt := randomFieldElement("instance")
 	mimc.Write(salt[:])
-	instance.Hash = Hash{
+	return Hash{
 		Value: computeHash(mimc),
 		Salt:  salt,
 	}
 }
 
-func (message *Message) ComputeHash() {
-	var hash Hash
+func (message Message) HasValidHash() bool {
+	computedHash := message.ComputeHash(message.Hash.Salt)
+	return bytes.Equal(computedHash.Value[:], message.Hash.Value[:])
+}
+
+func (message *Message) UpdateHash() {
+	salt := randomFieldElement("message")
+	message.Hash = message.ComputeHash(salt)
+}
+
+func (message Message) ComputeHash(salt [fr.Bytes]byte) Hash {
 	if message.IsBytesMessage() {
-		hash = hashBytesMessage(message.BytesMessage)
-	} else {
-		hash = hashIntegerMessage(message.IntegerMessage)
+		return hashBytesMessage(message.BytesMessage, salt)
 	}
-	message.Hash = hash
+	return hashIntegerMessage(message.IntegerMessage, salt)
 }
 
 func Uint16ToBytes(value uint16) [fr.Bytes]byte {
@@ -174,8 +200,7 @@ func Uint16ToBytes(value uint16) [fr.Bytes]byte {
 	return bytes
 }
 
-func hashBytesMessage(message []byte) Hash {
-	salt := randomFrSizedBytes()
+func hashBytesMessage(message []byte, salt [fr.Bytes]byte) Hash {
 	input := append(message, salt[:]...)
 	bytesHash := sha256.Sum256(input)
 	return Hash{
@@ -184,10 +209,9 @@ func hashBytesMessage(message []byte) Hash {
 	}
 }
 
-func hashIntegerMessage(message IntegerType) Hash {
+func hashIntegerMessage(message IntegerType, salt [fr.Bytes]byte) Hash {
 	mimc := mimc.NewMiMC()
 	hashInt64(mimc, int64(message))
-	salt := randomFieldElement("integerMessage")
 	mimc.Write(salt[:])
 	return Hash{
 		Value: computeHash(mimc),

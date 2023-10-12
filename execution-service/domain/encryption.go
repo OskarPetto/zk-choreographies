@@ -1,11 +1,13 @@
 package domain
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
 	"execution-service/utils"
+	"fmt"
 	"math/big"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/fr"
@@ -17,13 +19,18 @@ type Plaintext struct {
 	Value []byte
 }
 
-type Chiphertext struct {
-	Value  []byte
-	Sender PublicKey
+type Ciphertext struct {
+	Value     []byte
+	Sender    PublicKey
+	Recipient PublicKey
 }
 
-func (encryptedState *Chiphertext) Decrypt(privateKey *eddsa.PrivateKey) (Plaintext, error) {
-	secretKey := ecdh(privateKey, encryptedState.Sender)
+func (ciphertext *Ciphertext) Decrypt(privateKey *eddsa.PrivateKey) (Plaintext, error) {
+	publicKey := privateKey.PublicKey.A.Bytes()
+	if !bytes.Equal(publicKey[:], ciphertext.Recipient.Value) {
+		return Plaintext{}, fmt.Errorf("ciphertext is meant for %s", utils.BytesToString(publicKey[:]))
+	}
+	secretKey := ecdh(privateKey, ciphertext.Sender)
 
 	aes, err := aes.NewCipher(secretKey)
 	utils.PanicOnError(err)
@@ -32,9 +39,9 @@ func (encryptedState *Chiphertext) Decrypt(privateKey *eddsa.PrivateKey) (Plaint
 	utils.PanicOnError(err)
 
 	nonceSize := gcm.NonceSize()
-	nonce, ciphertext := encryptedState.Value[:nonceSize], encryptedState.Value[nonceSize:]
+	nonce, remainingCiphertext := ciphertext.Value[:nonceSize], ciphertext.Value[nonceSize:]
 
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	plaintext, err := gcm.Open(nil, nonce, remainingCiphertext, nil)
 	if err != nil {
 		return Plaintext{}, err
 	}
@@ -47,7 +54,7 @@ func (encryptedState *Chiphertext) Decrypt(privateKey *eddsa.PrivateKey) (Plaint
 	}, nil
 }
 
-func (state *Plaintext) Encrypt(sender *eddsa.PrivateKey, recipient PublicKey) Chiphertext {
+func (plaintext *Plaintext) Encrypt(sender *eddsa.PrivateKey, recipient PublicKey) Ciphertext {
 	secretKey := ecdh(sender, recipient)
 
 	aes, err := aes.NewCipher(secretKey)
@@ -60,10 +67,11 @@ func (state *Plaintext) Encrypt(sender *eddsa.PrivateKey, recipient PublicKey) C
 	_, err = rand.Read(nonce)
 	utils.PanicOnError(err)
 
-	ciphertext := gcm.Seal(nonce, nonce, state.Value, nil)
-	return Chiphertext{
-		Value:  ciphertext,
-		Sender: NewPublicKey(sender.PublicKey),
+	ciphertext := gcm.Seal(nonce, nonce, plaintext.Value, nil)
+	return Ciphertext{
+		Value:     ciphertext,
+		Sender:    NewPublicKey(sender.PublicKey),
+		Recipient: recipient,
 	}
 }
 

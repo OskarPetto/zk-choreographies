@@ -40,8 +40,10 @@ func NewExecutionService(modelService model.ModelService, instanceService instan
 }
 
 func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (ExecutionResult, error) {
-	model := cmd.Model
-	model.ComputeHash()
+	model, err := service.ModelService.FindModelById(cmd.Model)
+	if err != nil {
+		return ExecutionResult{}, err
+	}
 	instance, err := model.Instantiate(cmd.PublicKeys)
 	if err != nil {
 		return ExecutionResult{}, err
@@ -56,9 +58,8 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 		return ExecutionResult{}, err
 	}
 	service.InstanceService.ImportInstance(instance)
-	service.ModelService.ImportModel(model)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
-	encryptedState := encryptState(model, instance, nil, privateKey, publicKey)
+	encryptedState := encryptState(state.State{Instance: &instance}, privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       instance,
 		Proof:          proof,
@@ -116,7 +117,7 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if transition.RespondingParticipant != domain.EmptyParticipantId {
 		publicKey = currentInstance.FindParticipantById(transition.RespondingParticipant)
 	}
-	encryptedState := encryptState(model, nextInstance, message, privateKey, publicKey)
+	encryptedState := encryptState(state.State{Instance: &nextInstance, Message: message}, privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       nextInstance,
 		Proof:          proof,
@@ -143,9 +144,8 @@ func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand)
 		return ExecutionResult{}, err
 	}
 	service.InstanceService.DeleteInstance(instance)
-	service.ModelService.DeleteModel(model)
 	publicKey := domain.NewPublicKey(privateKey.PublicKey)
-	encryptedState := encryptState(model, instance, nil, privateKey, publicKey)
+	encryptedState := encryptState(state.State{}, privateKey, publicKey)
 	return ExecutionResult{
 		Instance:       instance,
 		Proof:          proof,
@@ -153,8 +153,7 @@ func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand)
 	}, nil
 }
 
-func encryptState(model domain.Model, instance domain.Instance, message *domain.Message, privateKey *eddsa.PrivateKey, publicKey domain.PublicKey) domain.Chiphertext {
-	plainState := state.State{Model: model, Instance: instance, Message: message}
+func encryptState(plainState state.State, privateKey *eddsa.PrivateKey, publicKey domain.PublicKey) domain.Ciphertext {
 	serializedState := state.Serialize(plainState)
 	return serializedState.Encrypt(privateKey, publicKey)
 }

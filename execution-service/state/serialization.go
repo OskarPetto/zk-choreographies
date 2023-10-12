@@ -10,14 +10,24 @@ import (
 )
 
 func Serialize(state State) domain.Plaintext {
+	var modelJson *model.ModelJson = nil
+	if state.Model != nil {
+		tmp := model.ToJson(*state.Model)
+		modelJson = &tmp
+	}
+	var instanceJson *instance.InstanceJson = nil
+	if state.Instance != nil {
+		tmp := instance.ToJson(*state.Instance)
+		instanceJson = &tmp
+	}
 	var messageJson *message.MessageJson = nil
 	if state.Message != nil {
 		tmp := message.ToJson(*state.Message)
 		messageJson = &tmp
 	}
 	stateJson := stateJson{
-		Model:    model.ToJson(state.Model),
-		Instance: instance.ToJson(state.Instance),
+		Model:    modelJson,
+		Instance: instanceJson,
 		Message:  messageJson,
 	}
 	stateJsonBytes, err := json.Marshal(stateJson)
@@ -34,13 +44,21 @@ func Deserialize(serializedState domain.Plaintext) (State, error) {
 	if err != nil {
 		return State{}, err
 	}
-	model, err := stateJson.Model.ToModel()
-	if err != nil {
-		return State{}, err
+	var model *domain.Model = nil
+	if stateJson.Model != nil {
+		tmp, err := stateJson.Model.ToModel()
+		if err != nil {
+			return State{}, err
+		}
+		model = &tmp
 	}
-	instance, err := stateJson.Instance.ToInstance()
-	if err != nil {
-		return State{}, err
+	var instance *domain.Instance = nil
+	if stateJson.Instance != nil {
+		tmp, err := stateJson.Instance.ToInstance()
+		if err != nil {
+			return State{}, err
+		}
+		instance = &tmp
 	}
 	var message *domain.Message = nil
 	if stateJson.Message != nil {

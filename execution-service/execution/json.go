@@ -3,15 +3,14 @@ package execution
 import (
 	"execution-service/domain"
 	"execution-service/instance"
-	"execution-service/model"
 	"execution-service/prover"
 	"execution-service/utils"
 )
 
 type instantiateModelCommandJson struct {
-	Model      model.ModelJson `json:"model"`
-	PublicKeys []string        `json:"publicKeys"`
-	Identity   uint            `json:"identity"`
+	Model      string   `json:"model"`
+	PublicKeys []string `json:"publicKeys"`
+	Identity   uint     `json:"identity"`
 }
 
 type executeTransitionCommandJson struct {
@@ -50,12 +49,8 @@ func (cmd *instantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCo
 			Value: bytes,
 		}
 	}
-	model, err := cmd.Model.ToModel()
-	if err != nil {
-		return InstantiateModelCommand{}, err
-	}
 	return InstantiateModelCommand{
-		Model:      model,
+		Model:      cmd.Model,
 		PublicKeys: publicKeys,
 		Identity:   cmd.Identity,
 	}, nil

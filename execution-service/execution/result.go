@@ -8,5 +8,5 @@ import (
 type ExecutionResult struct {
 	Instance       domain.Instance
 	Proof          prover.Proof
-	EncryptedState domain.Chiphertext
+	EncryptedState domain.Ciphertext
 }

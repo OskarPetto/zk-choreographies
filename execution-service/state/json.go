@@ -9,49 +9,59 @@ import (
 )
 
 type stateJson struct {
-	Model    model.ModelJson       `json:"model"`
-	Instance instance.InstanceJson `json:"instance"`
-	Message  *message.MessageJson  `json:"message"`
+	Model    *model.ModelJson       `json:"model,omitempty"`
+	Instance *instance.InstanceJson `json:"instance,omitempty"`
+	Message  *message.MessageJson   `json:"message,omitempty"`
 }
 
 type chiphertextJson struct {
-	Value  string `json:"value"`
-	Sender string `json:"sender"`
+	Value     string `json:"value"`
+	Sender    string `json:"sender"`
+	Recipient string `json:"recipient"`
 }
 
 type ImportStateCommandJson struct {
-	Chiphertext chiphertextJson `json:"encryptedState"`
-	Identity    uint            `json:"identity"`
+	Ciphertext chiphertextJson `json:"encryptedState"`
+	Identity   uint            `json:"identity"`
 }
 
-func ToJson(encryptedState domain.Chiphertext) chiphertextJson {
+func ToJson(encryptedState domain.Ciphertext) chiphertextJson {
 	value := utils.BytesToString(encryptedState.Value)
 	sender := utils.BytesToString(encryptedState.Sender.Value)
+	recipient := utils.BytesToString(encryptedState.Recipient.Value)
 	return chiphertextJson{
-		Value:  value,
-		Sender: sender,
+		Value:     value,
+		Sender:    sender,
+		Recipient: recipient,
 	}
 }
 
-func (json *chiphertextJson) ToChiphertext() (domain.Chiphertext, error) {
+func (json *chiphertextJson) ToCiphertext() (domain.Ciphertext, error) {
 	value, err := utils.StringToBytes(json.Value)
 	if err != nil {
-		return domain.Chiphertext{}, err
+		return domain.Ciphertext{}, err
 	}
 	sender, err := utils.StringToBytes(json.Sender)
 	if err != nil {
-		return domain.Chiphertext{}, err
+		return domain.Ciphertext{}, err
 	}
-	return domain.Chiphertext{
+	recipient, err := utils.StringToBytes(json.Recipient)
+	if err != nil {
+		return domain.Ciphertext{}, err
+	}
+	return domain.Ciphertext{
 		Value: value,
 		Sender: domain.PublicKey{
 			Value: sender,
+		},
+		Recipient: domain.PublicKey{
+			Value: recipient,
 		},
 	}, nil
 }
 
 func (cmd *ImportStateCommandJson) ToStateCommand() (ImportStateCommand, error) {
-	ciphertext, err := cmd.Chiphertext.ToChiphertext()
+	ciphertext, err := cmd.Ciphertext.ToCiphertext()
 	if err != nil {
 		return ImportStateCommand{}, err
 	}

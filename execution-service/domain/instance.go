@@ -48,7 +48,7 @@ func (instance Instance) ExecuteTransition(transition Transition, input Constrai
 	}
 	instance.updateTokenCounts(transition)
 	instance.CreatedAt = time.Now().Unix()
-	instance.ComputeHash()
+	instance.UpdateHash()
 	return instance, nil
 }
 
@@ -60,7 +60,7 @@ func (instance Instance) SetMessageHash(transition Transition, messageHash Hash)
 	}
 	instance.MessageHashes = messageHashes
 	instance.CreatedAt = time.Now().Unix()
-	instance.ComputeHash()
+	instance.UpdateHash()
 	return instance
 }
 

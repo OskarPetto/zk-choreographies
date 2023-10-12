@@ -16,10 +16,6 @@ func NewMessageService() MessageService {
 	}
 }
 
-func (service *MessageService) ImportMessage(message domain.Message) {
-	service.messages[message.Hash.String()] = message
-}
-
 func (service *MessageService) FindMessageByHashValue(hashValue [domain.HashSize]byte) (domain.Message, error) {
 	id := utils.BytesToString(hashValue[:])
 	message, exists := service.messages[id]
@@ -45,4 +41,12 @@ func (service *MessageService) FindConstraintInput(constraint domain.Constraint,
 		}
 	}
 	return constraintInput, nil
+}
+
+func (service *MessageService) ImportMessage(message domain.Message) error {
+	if !message.HasValidHash() {
+		return fmt.Errorf("message %s has invalid hash", message.String())
+	}
+	service.messages[message.Hash.String()] = message
+	return nil
 }

@@ -26,6 +26,6 @@ func GetModel2() domain.Model {
 	model, err := fromJson(byteValue)
 	utils.PanicOnError(err)
 	model.CreatedAt = 1695983320
-	model.ComputeHash()
+	model.UpdateHash()
 	return model
 }

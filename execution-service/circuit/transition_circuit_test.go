@@ -181,7 +181,7 @@ func TestTransition_AlteredPublicKeys(t *testing.T) {
 	otherPublicKeys := signatureParameters.GetPublicKeys(3)
 	currentInstance.PublicKeys[0] = otherPublicKeys[1]
 	currentInstance.PublicKeys[1] = otherPublicKeys[2]
-	currentInstance.ComputeHash()
+	currentInstance.UpdateHash()
 
 	witness := circuit.TransitionCircuit{
 		Model:           circuit.FromModel(model),
@@ -204,7 +204,7 @@ func TestTransition_OverwrittenMessageHash(t *testing.T) {
 	constraintInput := transitionStates[3].ConstraintInput
 
 	nextInstance.MessageHashes[8] = domain.NewMessage([]byte("Not a purchase order"), 0).Hash.Value
-	nextInstance.ComputeHash()
+	nextInstance.UpdateHash()
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 
 	witness := circuit.TransitionCircuit{
@@ -272,11 +272,11 @@ func TestTransition_InvalidMessageForConstraint(t *testing.T) {
 	stock := domain.NewMessage(nil, 4)
 	currentInstance.MessageHashes[9] = order.Hash.Value
 	currentInstance.MessageHashes[0] = stock.Hash.Value
-	currentInstance.ComputeHash()
+	currentInstance.UpdateHash()
 	nextInstance := transitionStates[4].Instance
 	nextInstance.MessageHashes[9] = order.Hash.Value
 	nextInstance.MessageHashes[0] = stock.Hash.Value
-	nextInstance.ComputeHash()
+	nextInstance.UpdateHash()
 	transition := transitionStates[4].Transition
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(1))
 

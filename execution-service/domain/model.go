@@ -91,7 +91,7 @@ func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
 		MessageHashes: messageHashes,
 		CreatedAt:     time.Now().Unix(),
 	}
-	instance.ComputeHash()
+	instance.UpdateHash()
 	return instance, nil
 }
 

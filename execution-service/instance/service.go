@@ -43,8 +43,12 @@ func (service *InstanceService) FindInstancesByModel(model domain.ModelId) []dom
 	return instances
 }
 
-func (service *InstanceService) ImportInstance(instance domain.Instance) {
+func (service *InstanceService) ImportInstance(instance domain.Instance) error {
+	if !instance.HasValidHash() {
+		return fmt.Errorf("instance %s has invalid hash", instance.Id())
+	}
 	service.instances[instance.Id()] = instance
+	return nil
 }
 
 func (service *InstanceService) DeleteInstance(instance domain.Instance) {

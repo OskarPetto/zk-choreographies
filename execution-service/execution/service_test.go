@@ -46,7 +46,7 @@ func TestInstantiateModel(t *testing.T) {
 	identity := states[0].Identity
 	publicKeys := states[0].Instance.PublicKeys
 	result, err := executionService.InstantiateModel(execution.InstantiateModelCommand{
-		Model:      model,
+		Model:      model.Id(),
 		PublicKeys: publicKeys,
 		Identity:   identity,
 	})

@@ -35,8 +35,12 @@ func (service *ModelService) FindAllModels() []domain.Model {
 	return models
 }
 
-func (service *ModelService) ImportModel(model domain.Model) {
+func (service *ModelService) ImportModel(model domain.Model) error {
+	if !model.HasValidHash() {
+		return fmt.Errorf("model %s has invalid hash", model.Id())
+	}
 	service.models[model.Id()] = model
+	return nil
 }
 
 func (service *ModelService) DeleteModel(model domain.Model) {

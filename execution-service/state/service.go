@@ -33,8 +33,23 @@ func (service *StateService) ImportState(cmd ImportStateCommand) error {
 	if err != nil {
 		return err
 	}
-	service.ModelService.ImportModel(plainState.Model)
-	service.InstanceService.ImportInstance(plainState.Instance)
-	service.MessageService.ImportMessage(*plainState.Message)
+	if plainState.Model != nil {
+		err = service.ModelService.ImportModel(*plainState.Model)
+		if err != nil {
+			return err
+		}
+	}
+	if plainState.Instance != nil {
+		err = service.InstanceService.ImportInstance(*plainState.Instance)
+		if err != nil {
+			return err
+		}
+	}
+	if plainState.Message != nil {
+		err = service.MessageService.ImportMessage(*plainState.Message)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

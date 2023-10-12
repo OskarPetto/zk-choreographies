@@ -23,10 +23,17 @@ func NewMessage(bytesMessage []byte, integerMessage IntegerType) Message {
 			IntegerMessage: integerMessage,
 		}
 	}
-	message.ComputeHash()
+	message.UpdateHash()
 	return message
 }
 
 func (message *Message) IsBytesMessage() bool {
 	return len(message.BytesMessage) > 0
+}
+
+func (message Message) String() string {
+	if message.IsBytesMessage() {
+		return string(message.BytesMessage)
+	}
+	return string(message.IntegerMessage)
 }

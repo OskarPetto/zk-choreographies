@@ -282,7 +282,7 @@ func getModelState(model domain.Model, transitionIndex uint, activePlaces []doma
 		MessageHashes: messageHashes,
 		CreatedAt:     time.Now().Unix(),
 	}
-	instance.ComputeHash()
+	instance.UpdateHash()
 	privateKey := signatureParameters.GetPrivateKeyForIdentity(uint(idendity))
 	signature := instance.Sign(privateKey)
 
