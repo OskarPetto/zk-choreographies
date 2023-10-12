@@ -6,15 +6,15 @@ import "./TransitionVerifier.sol";
 import "./TerminationVerifier.sol";
 
 contract InstanceManager {
-    mapping(uint => uint) public instancesPerModel;
+    mapping(uint => uint) public instancesWithTheirModel;
 
     InstantiationVerifier instantiationVerifier;
     TransitionVerifier transitionVerifier;
     TerminationVerifier terminationVerifier;
 
-    event Instantiation(uint model);
-    event Transition(uint model);
-    event Termination(uint model);
+    event Instantiation(uint model, uint instance);
+    event Transition(uint model, uint currentInstance, uint nextInstance);
+    event Termination(uint model, uint instance);
 
     constructor(
         address _instantiationVerifier,
@@ -31,11 +31,9 @@ contract InstanceManager {
         uint model,
         uint instance
     ) public {
-        require(instancesPerModel[model] == 0);
         instantiationVerifier.verifyProof(proof, [model, instance]);
-
-        instancesPerModel[model] = instance;
-        emit Instantiation(model);
+        instancesWithTheirModel[instance] = model;
+        emit Instantiation(model, instance);
     }
 
     function transition(
@@ -44,21 +42,21 @@ contract InstanceManager {
         uint currentInstance,
         uint nextInstance
     ) public {
-        require(instancesPerModel[model] == currentInstance);
+        require(instancesWithTheirModel[currentInstance] == model);
         transitionVerifier.verifyProof(
             proof,
             [model, currentInstance, nextInstance]
         );
-
-        instancesPerModel[model] = nextInstance;
-        emit Transition(model);
+        delete instancesWithTheirModel[currentInstance];
+        instancesWithTheirModel[nextInstance] = model;
+        emit Transition(model, currentInstance, nextInstance);
     }
 
     function terminate(uint[8] memory proof, uint model, uint instance) public {
-        require(instancesPerModel[model] == instance);
+        require(instancesWithTheirModel[instance] == model);
         terminationVerifier.verifyProof(proof, [model, instance]);
 
-        delete instancesPerModel[model];
-        emit Termination(model);
+        delete instancesWithTheirModel[instance];
+        emit Termination(model, instance);
     }
 }
