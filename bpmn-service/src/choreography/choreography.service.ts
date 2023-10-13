@@ -12,7 +12,7 @@ export class ChoreographyService {
     private modelReducer: ModelReducer,
   ) {}
 
-  async transformChoreography(xmlString: string): Promise<Model> {
+  transformChoreography(xmlString: string): Model {
     const definitions = this.choreographyParser.parseBpmn(xmlString);
     const choreography = definitions.choreographies[0];
     const model = this.choreographyMapper.toModel(xmlString, choreography);

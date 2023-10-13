@@ -107,7 +107,6 @@ export class ChoreographyMapper {
     this.addConstraints(transitions, constraintMapping);
 
     return {
-      hash: { value: '', salt: '' },
       source: xmlString,
       placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length + 2,
       participantCount: relevantParticipants.length,

@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Model, TransitionType, defaultHash } from '../../src/model/model';
+import { Model, TransitionType } from '../../src/model/model';
 import {
   Definitions,
   GatewayType,
@@ -246,7 +246,6 @@ export class TestdataProvider {
 
   static getModel2(): Model {
     return {
-      hash: defaultHash(),
       source: TestdataProvider.getExampleChoreography(),
       placeCount: 20,
       participantCount: 2,
@@ -439,7 +438,6 @@ export class TestdataProvider {
 
   static getModel2Reduced(): Model {
     return {
-      hash: defaultHash(),
       source: TestdataProvider.getExampleChoreography(),
       placeCount: 14,
       participantCount: 2,

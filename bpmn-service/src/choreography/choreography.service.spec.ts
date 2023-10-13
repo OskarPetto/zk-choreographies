@@ -39,7 +39,7 @@ describe('ChoreographyService', () => {
   });
 
   describe('importBpmnProcess', () => {
-    it('should call parser, mapper, reducer and service correctly', async () => {
+    it('should call parser, mapper and reducer correctly', async () => {
       when(jest.spyOn(choreographyParser, 'parseBpmn'))
         .calledWith(xmlString)
         .mockReturnValue(definitions);
@@ -51,7 +51,6 @@ describe('ChoreographyService', () => {
         .mockReturnValue(model2Reduced);
 
       const result = choreographyService.transformChoreography(xmlString);
-
       expect(result).toEqual(model2Reduced);
     });
   });

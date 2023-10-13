@@ -1,11 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  Model,
-  PlaceId,
-  Transition,
-  TransitionType,
-  defaultHash,
-} from './model';
+import { Model, PlaceId, Transition, TransitionType } from './model';
 
 @Injectable()
 export class ModelReducer {
@@ -187,7 +181,6 @@ export class ModelReducer {
     );
 
     return {
-      hash: defaultHash(),
       source: model.source,
       placeCount: model.placeCount,
       participantCount: model.participantCount,
