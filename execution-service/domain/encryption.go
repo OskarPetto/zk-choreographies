@@ -15,6 +15,15 @@ import (
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
 )
 
+type State struct {
+	Model             *Model
+	EncryptedModel    *Ciphertext
+	Instance          *Instance
+	EncryptedInstance *Ciphertext
+	Message           *Message
+	EncryptedMessage  *Ciphertext
+}
+
 type Plaintext struct {
 	Value []byte
 }

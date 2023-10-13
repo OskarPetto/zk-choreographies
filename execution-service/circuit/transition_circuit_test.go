@@ -203,9 +203,9 @@ func TestTransition_OverwrittenMessageHash(t *testing.T) {
 	transition := transitionStates[3].Transition
 	constraintInput := transitionStates[3].ConstraintInput
 
-	cmd := domain.CreateMessageCommand{Model: model.Hash.Hash, BytesMessage: []byte("Not a purchase order"), IntegerMessage: nil}
+	cmd := domain.CreateMessageCommand{BytesMessage: []byte("Not a purchase order"), IntegerMessage: nil}
 
-	nextInstance.MessageHashes[8] = domain.CreateMessage(cmd).Hash.Hash
+	nextInstance.MessageHashes[8] = domain.CreateMessage(model.Hash.Hash, cmd).Hash.Hash
 	nextInstance.UpdateHash()
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 
@@ -272,10 +272,10 @@ func TestTransition_InvalidMessageForConstraint(t *testing.T) {
 	currentInstance := transitionStates[3].Instance
 	orderValue := int32(6)
 	stockValue := int32(4)
-	cmdOrder := domain.CreateMessageCommand{Model: model.Hash.Hash, BytesMessage: nil, IntegerMessage: &orderValue}
-	cmdStock := domain.CreateMessageCommand{Model: model.Hash.Hash, BytesMessage: nil, IntegerMessage: &stockValue}
-	order := domain.CreateMessage(cmdOrder)
-	stock := domain.CreateMessage(cmdStock)
+	cmdOrder := domain.CreateMessageCommand{BytesMessage: nil, IntegerMessage: &orderValue}
+	cmdStock := domain.CreateMessageCommand{BytesMessage: nil, IntegerMessage: &stockValue}
+	order := domain.CreateMessage(model.Hash.Hash, cmdOrder)
+	stock := domain.CreateMessage(model.Hash.Hash, cmdStock)
 
 	currentInstance.MessageHashes[9] = order.Hash.Hash
 	currentInstance.MessageHashes[0] = stock.Hash.Hash

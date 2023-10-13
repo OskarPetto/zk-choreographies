@@ -20,13 +20,13 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 	model2 := GetModel2()
 	orderValue := domain.IntegerType(2)
 	stockValue := domain.IntegerType(20)
-	order := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, IntegerMessage: &orderValue})
-	stock := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, IntegerMessage: &stockValue})
-	confirm := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, BytesMessage: []byte("confirm")})
-	invoice := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, BytesMessage: []byte("invoice")})
-	shippingAddress := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, BytesMessage: []byte("shipping_address")})
-	product := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, BytesMessage: []byte("product")})
-	payment := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, BytesMessage: []byte("payment")})
+	order := domain.CreateMessage(model2.Hash.Hash, domain.CreateMessageCommand{IntegerMessage: &orderValue})
+	stock := domain.CreateMessage(model2.Hash.Hash, domain.CreateMessageCommand{IntegerMessage: &stockValue})
+	confirm := domain.CreateMessage(model2.Hash.Hash, domain.CreateMessageCommand{BytesMessage: []byte("confirm")})
+	invoice := domain.CreateMessage(model2.Hash.Hash, domain.CreateMessageCommand{BytesMessage: []byte("invoice")})
+	shippingAddress := domain.CreateMessage(model2.Hash.Hash, domain.CreateMessageCommand{BytesMessage: []byte("shipping_address")})
+	product := domain.CreateMessage(model2.Hash.Hash, domain.CreateMessageCommand{BytesMessage: []byte("product")})
+	payment := domain.CreateMessage(model2.Hash.Hash, domain.CreateMessageCommand{BytesMessage: []byte("payment")})
 	return []State{
 		getModelState(
 			model2,

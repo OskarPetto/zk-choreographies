@@ -1,11 +1,16 @@
 package execution_test
 
 import (
+	"encoding/json"
 	"execution-service/domain"
 	"execution-service/execution"
+	"execution-service/instance"
+	"execution-service/message"
+	"execution-service/model"
 	"execution-service/prover"
 	"execution-service/state"
 	"execution-service/testdata"
+	"execution-service/utils"
 	"fmt"
 	"testing"
 
@@ -53,11 +58,10 @@ func TestInstantiateModel(t *testing.T) {
 		Identity:   identity,
 	})
 	assert.Nil(t, err)
-	state, err := state.Deserialize(*result.PlainState)
+	instance := result.State.Instance
+	_, err = instanceService.FindInstanceById(instance.Id())
 	assert.Nil(t, err)
-	_, err = instanceService.FindInstanceById(state.Instance.Id())
-	assert.Nil(t, err)
-	printSize(result)
+	printSize(result.State)
 }
 
 func TestExecuteTransition0(t *testing.T) {
@@ -73,11 +77,10 @@ func TestExecuteTransition0(t *testing.T) {
 		CreateMessageCommand: nil,
 	})
 	assert.Nil(t, err)
-	state, err := state.Deserialize(*result.PlainState)
+	instance := result.State.Instance
+	_, err = instanceService.FindInstanceById(instance.Id())
 	assert.Nil(t, err)
-	_, err = instanceService.FindInstanceById(state.Instance.Id())
-	assert.Nil(t, err)
-	printSize(result)
+	printSize(result.State)
 }
 
 func TestExecuteTransition2(t *testing.T) {
@@ -92,33 +95,70 @@ func TestExecuteTransition2(t *testing.T) {
 		Transition: model.Transitions[2].Id,
 		Identity:   identity,
 		CreateMessageCommand: &domain.CreateMessageCommand{
-			Model:        model.Hash.Hash,
 			BytesMessage: []byte("hallo"),
 		},
 	})
 	assert.Nil(t, err)
-	plainState, err := state.Deserialize(*result.PlainState)
-	assert.Nil(t, err)
-	_, err = instanceService.FindInstanceById(plainState.Instance.Id())
+	instance := result.State.Instance
+	_, err = instanceService.FindInstanceById(instance.Id())
 	assert.Nil(t, err)
 
-	plaintext, err := result.EncryptedState.Decrypt(privateKey)
+	encryptedMessage := result.State.EncryptedMessage
+	serializedMessage, err := encryptedMessage.Decrypt(privateKey)
 	assert.Nil(t, err)
-	plainState, err = state.Deserialize(plaintext)
+	message, err := state.DeserializeMessage(serializedMessage)
 	assert.Nil(t, err)
-	_, err = messageService.FindMessageById(plainState.Message.Id())
+	_, err = messageService.FindMessageById(message.Id())
 	assert.Nil(t, err)
-	printSize(result)
+	printSize(result.State)
 }
 
-func printSize(result execution.ExecutionResult) {
+func TestTerminateInstance(t *testing.T) {
+	model := states[len(states)-1].Model
+	instance := states[len(states)-1].Instance
+	identity := states[len(states)-1].Identity
+	result, err := executionService.TerminateInstance(execution.TerminateInstanceCommand{
+		Model:    model.Id(),
+		Instance: instance.Id(),
+		Identity: identity,
+	})
+	assert.Nil(t, err)
+	assert.Equal(t, domain.State{}, result.State)
+	printSize(result.State)
+}
+
+func printSize(domainState domain.State) {
 	plainSize := 0
 	encryptedSize := 0
-	if result.PlainState != nil {
-		plainSize = len(result.PlainState.Value)
+	if domainState.Model != nil {
+		value, err := json.Marshal(model.ToJson(*domainState.Model))
+		utils.PanicOnError(err)
+		plainSize += len(value)
 	}
-	if result.EncryptedState != nil {
-		encryptedSize = len(result.EncryptedState.Value)
+	if domainState.Instance != nil {
+		value, err := json.Marshal(instance.ToJson(*domainState.Instance))
+		utils.PanicOnError(err)
+		plainSize += len(value)
+	}
+	if domainState.Message != nil {
+		value, err := json.Marshal(message.ToJson(*domainState.Message))
+		utils.PanicOnError(err)
+		plainSize += len(value)
+	}
+	if domainState.EncryptedModel != nil {
+		encryptedSize += len(domainState.EncryptedModel.Value)
+		encryptedSize += len(domainState.EncryptedModel.Sender.Value)
+		encryptedSize += len(domainState.EncryptedModel.Recipient.Value)
+	}
+	if domainState.EncryptedInstance != nil {
+		encryptedSize += len(domainState.EncryptedInstance.Value)
+		encryptedSize += len(domainState.EncryptedInstance.Sender.Value)
+		encryptedSize += len(domainState.EncryptedInstance.Recipient.Value)
+	}
+	if domainState.EncryptedMessage != nil {
+		encryptedSize += len(domainState.EncryptedMessage.Value)
+		encryptedSize += len(domainState.EncryptedMessage.Sender.Value)
+		encryptedSize += len(domainState.EncryptedMessage.Recipient.Value)
 	}
 	fmt.Printf("The length of the plain state is %d bytes\n", plainSize)
 	fmt.Printf("The length of the encrypted state is %d bytes\n", encryptedSize)

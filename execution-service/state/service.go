@@ -1,6 +1,7 @@
 package state
 
 import (
+	"execution-service/domain"
 	"execution-service/instance"
 	"execution-service/message"
 	"execution-service/model"
@@ -14,6 +15,14 @@ type StateService struct {
 	SignatureParameters parameters.SignatureParameters
 }
 
+func InitializeStateService() StateService {
+	modelService := model.NewModelService()
+	instanceService := instance.NewInstanceService()
+	messageService := message.NewMessageService()
+	signatureParameters := parameters.NewSignatureParameters()
+	return NewStateService(modelService, instanceService, messageService, signatureParameters)
+}
+
 func NewStateService(modelService model.ModelService, instanceService instance.InstanceService, messageService message.MessageService, signatureParameters parameters.SignatureParameters) StateService {
 	return StateService{
 		ModelService:        modelService,
@@ -25,31 +34,60 @@ func NewStateService(modelService model.ModelService, instanceService instance.I
 
 func (service *StateService) ImportState(cmd ImportStateCommand) error {
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
-	serializedState, err := cmd.EncryptedState.Decrypt(privateKey)
-	if err != nil {
-		return err
-	}
-	plainState, err := Deserialize(serializedState)
-	if err != nil {
-		return err
-	}
-	if plainState.Model != nil {
-		err = service.ModelService.ImportModel(*plainState.Model)
+	var model *domain.Model = nil
+	var instance *domain.Instance = nil
+	var message *domain.Message = nil
+	if cmd.State.Model != nil {
+		model = cmd.State.Model
+	} else if cmd.State.EncryptedModel != nil {
+		plainText, err := cmd.State.EncryptedModel.Decrypt(privateKey)
 		if err != nil {
 			return err
 		}
-	}
-	if plainState.Instance != nil {
-		err = service.InstanceService.ImportInstance(*plainState.Instance)
+		tmp, err := DeserializeModel(plainText)
 		if err != nil {
 			return err
 		}
+		model = &tmp
 	}
-	if plainState.Message != nil {
-		err = service.MessageService.ImportMessage(*plainState.Message)
+
+	if cmd.State.Instance != nil {
+		instance = cmd.State.Instance
+	} else if cmd.State.EncryptedInstance != nil {
+		plainText, err := cmd.State.EncryptedInstance.Decrypt(privateKey)
 		if err != nil {
 			return err
 		}
+		tmp, err := DeserializeInstance(plainText)
+		if err != nil {
+			return err
+		}
+		instance = &tmp
 	}
+
+	if cmd.State.Message != nil {
+		message = cmd.State.Message
+	} else if cmd.State.EncryptedMessage != nil {
+		plainText, err := cmd.State.EncryptedMessage.Decrypt(privateKey)
+		if err != nil {
+			return err
+		}
+		tmp, err := DeserializeMessage(plainText)
+		if err != nil {
+			return err
+		}
+		message = &tmp
+	}
+
+	if model != nil {
+		service.ModelService.ImportModel(*model)
+	}
+	if instance != nil {
+		service.InstanceService.ImportInstance(*instance)
+	}
+	if message != nil {
+		service.MessageService.ImportMessage(*message)
+	}
+
 	return nil
 }

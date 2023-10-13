@@ -9,69 +9,71 @@ import (
 	"execution-service/utils"
 )
 
-func (state State) Serialize() domain.Plaintext {
-	var modelJson *model.ModelJson = nil
-	if state.Model != nil {
-		tmp := model.ToJson(*state.Model)
-		modelJson = &tmp
-	}
-	var instanceJson *instance.InstanceJson = nil
-	if state.Instance != nil {
-		tmp := instance.ToJson(*state.Instance)
-		instanceJson = &tmp
-	}
-	var messageJson *message.MessageJson = nil
-	if state.Message != nil {
-		tmp := message.ToJson(*state.Message)
-		messageJson = &tmp
-	}
-	stateJson := StateJson{
-		Model:    modelJson,
-		Instance: instanceJson,
-		Message:  messageJson,
-	}
-	stateJsonBytes, err := json.Marshal(stateJson)
+func SerializeModel(domainModel domain.Model) domain.Plaintext {
+	modelJson := model.ToJson(domainModel)
+	modelJsonBytes, err := json.Marshal(modelJson)
 	utils.PanicOnError(err)
-	serializedState := domain.Plaintext{
-		Value: stateJsonBytes,
+	plainText := domain.Plaintext{
+		Value: modelJsonBytes,
 	}
-	return serializedState
+	return plainText
 }
 
-func Deserialize(serializedState domain.Plaintext) (State, error) {
-	var stateJson StateJson
-	err := json.Unmarshal(serializedState.Value, &stateJson)
-	if err != nil {
-		return State{}, err
+func SerializeInstance(domainInstance domain.Instance) domain.Plaintext {
+	instanceJson := instance.ToJson(domainInstance)
+	instanceJsonBytes, err := json.Marshal(instanceJson)
+	utils.PanicOnError(err)
+	plainText := domain.Plaintext{
+		Value: instanceJsonBytes,
 	}
-	var model *domain.Model = nil
-	if stateJson.Model != nil {
-		tmp, err := stateJson.Model.ToModel()
-		if err != nil {
-			return State{}, err
-		}
-		model = &tmp
-	}
-	var instance *domain.Instance = nil
-	if stateJson.Instance != nil {
-		tmp, err := stateJson.Instance.ToInstance()
-		if err != nil {
-			return State{}, err
-		}
-		instance = &tmp
-	}
-	var message *domain.Message = nil
-	if stateJson.Message != nil {
-		tmp, err := stateJson.Message.ToMessage()
-		if err != nil {
-			return State{}, err
-		}
-		message = &tmp
-	}
+	return plainText
+}
 
-	return State{
-		Model:    model,
-		Instance: instance,
-		Message:  message,
-	}, nil
+func SerializeMessage(domainMessage domain.Message) domain.Plaintext {
+	messageJson := message.ToJson(domainMessage)
+	messageJsonBytes, err := json.Marshal(messageJson)
+	utils.PanicOnError(err)
+	plainText := domain.Plaintext{
+		Value: messageJsonBytes,
+	}
+	return plainText
+}
+
+func DeserializeModel(plaintext domain.Plaintext) (domain.Model, error) {
+	var modelJson model.ModelJson
+	err := json.Unmarshal(plaintext.Value, &modelJson)
+	if err != nil {
+		return domain.Model{}, err
+	}
+	model, err := modelJson.ToModel()
+	if err != nil {
+		return domain.Model{}, err
+	}
+	return model, nil
+}
+
+func DeserializeInstance(plaintext domain.Plaintext) (domain.Instance, error) {
+	var instanceJson instance.InstanceJson
+	err := json.Unmarshal(plaintext.Value, &instanceJson)
+	if err != nil {
+		return domain.Instance{}, err
+	}
+	instance, err := instanceJson.ToInstance()
+	if err != nil {
+		return domain.Instance{}, err
+	}
+	return instance, nil
+}
+
+func DeserializeMessage(plaintext domain.Plaintext) (domain.Message, error) {
+	var messageJson message.MessageJson
+	err := json.Unmarshal(plaintext.Value, &messageJson)
+	if err != nil {
+		return domain.Message{}, err
+	}
+	message, err := messageJson.ToMessage()
+	if err != nil {
+		return domain.Message{}, err
+	}
+	return message, nil
 }

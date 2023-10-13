@@ -6,7 +6,6 @@ import (
 )
 
 type ExecutionResult struct {
-	Proof          prover.Proof
-	EncryptedState *domain.Ciphertext
-	PlainState     *domain.Plaintext
+	Proof prover.Proof
+	State domain.State
 }

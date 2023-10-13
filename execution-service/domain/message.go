@@ -10,7 +10,6 @@ type Message struct {
 }
 
 type CreateMessageCommand struct {
-	Model          Hash
 	BytesMessage   []byte
 	IntegerMessage *IntegerType
 }
@@ -19,9 +18,9 @@ func EmptyMessage() Message {
 	return Message{}
 }
 
-func CreateMessage(cmd CreateMessageCommand) Message {
+func CreateMessage(model Hash, cmd CreateMessageCommand) Message {
 	message := Message{
-		Model: cmd.Model,
+		Model: model,
 	}
 	if len(cmd.BytesMessage) > 0 {
 		message.BytesMessage = cmd.BytesMessage
