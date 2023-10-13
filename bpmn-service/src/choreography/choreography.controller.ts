@@ -8,7 +8,7 @@ export class TransformChoreographyCommand {
 
 @Controller('choreographies')
 export class ChoreographyController {
-  constructor(private choreographyService: ChoreographyService) { }
+  constructor(private choreographyService: ChoreographyService) {}
   @Post()
   async transformChoreography(
     @Body() cmd: TransformChoreographyCommand,

@@ -7,4 +7,4 @@ import { ModelReducer } from './model.reducer';
   controllers: [],
   providers: [ModelReducer],
 })
-export class ModelModule { }
+export class ModelModule {}
