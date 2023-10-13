@@ -6,7 +6,7 @@ import (
 )
 
 type ExecutionResult struct {
-	Instance       domain.Instance
 	Proof          prover.Proof
-	EncryptedState domain.Ciphertext
+	EncryptedState *domain.Ciphertext
+	PlainState     *domain.Plaintext
 }

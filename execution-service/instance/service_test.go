@@ -18,7 +18,7 @@ var service = instance.NewInstanceService()
 func TestFindInstancesByModel(t *testing.T) {
 	instance := states[0].Instance
 	service.ImportInstance(instance)
-	modelId := utils.BytesToString(instance.Model[:])
+	modelId := utils.BytesToString(instance.Model.Value[:])
 	result := service.FindInstancesByModel(modelId)
 	assert.Equal(t, 1, len(result))
 }

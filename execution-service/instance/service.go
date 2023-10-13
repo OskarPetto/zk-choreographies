@@ -33,7 +33,7 @@ func (service *InstanceService) FindInstancesByModel(model domain.ModelId) []dom
 	}
 	instances := make([]domain.Instance, 0, len(service.instances))
 	for _, instance := range service.instances {
-		if bytes.Equal(instance.Model[:], modelHash) {
+		if bytes.Equal(instance.Model.Value[:], modelHash) {
 			instances = append(instances, instance)
 		}
 	}

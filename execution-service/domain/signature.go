@@ -19,7 +19,7 @@ type Signature struct {
 }
 
 func (instance Instance) Sign(privateKey *eddsa.PrivateKey) Signature {
-	signature, err := privateKey.Sign(instance.Hash.Value[:], hash.MIMC_BN254.New())
+	signature, err := privateKey.Sign(instance.Hash.Hash.Value[:], hash.MIMC_BN254.New())
 	utils.PanicOnError(err)
 	publicKey := PublicKey{
 		Value: privateKey.PublicKey.Bytes(),

@@ -2,9 +2,9 @@ package execution
 
 import (
 	"execution-service/domain"
-	"execution-service/instance"
 	"execution-service/prover"
 	"execution-service/utils"
+	"fmt"
 )
 
 type instantiateModelCommandJson struct {
@@ -28,14 +28,14 @@ type terminateInstanceCommandJson struct {
 }
 
 type createMessageCommandJson struct {
-	IntegerMessage uint   `json:"integerMessage,omitempty"`
+	IntegerMessage *uint  `json:"integerMessage,omitempty"`
 	BytesMessage   string `json:"bytesMessage,omitempty"`
 }
 
 type executionResultJson struct {
-	Instance       instance.InstanceJson `json:"instance"`
-	Proof          prover.ProofJson      `json:"proof"`
-	EncryptedState string                `json:"encryptedState"`
+	Proof          prover.ProofJson `json:"proof"`
+	EncryptedState string           `json:"encryptedState,omitempty"`
+	PlainState     string           `json:"plainState,omitempty"`
 }
 
 func (cmd *instantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCommand, error) {
@@ -57,9 +57,12 @@ func (cmd *instantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCo
 }
 
 func (cmd *executeTransitionCommandJson) ToExecutionCommand() (ExecuteTransitionCommand, error) {
-	var createMessageCommand *CreateMessageCommand = nil
+	var createMessageCommand *domain.CreateMessageCommand = nil
 	if cmd.CreateMessageCommand != nil {
-		tmp := cmd.CreateMessageCommand.ToExecutionCommand()
+		tmp, err := cmd.CreateMessageCommand.toDomainCommand(cmd.Model)
+		if err != nil {
+			return ExecuteTransitionCommand{}, nil
+		}
 		createMessageCommand = &tmp
 	}
 	return ExecuteTransitionCommand{
@@ -79,25 +82,47 @@ func (cmd *terminateInstanceCommandJson) ToExecutionCommand() (TerminateInstance
 	}, nil
 }
 
-func (cmd *createMessageCommandJson) ToExecutionCommand() CreateMessageCommand {
-	bytesMessage, err := utils.StringToBytes(cmd.BytesMessage)
+func (cmd *createMessageCommandJson) toDomainCommand(modelId domain.ModelId) (domain.CreateMessageCommand, error) {
+	model, err := utils.StringToBytes(modelId)
 	if err != nil {
-		return CreateMessageCommand{
-			IntegerMessage: int32(cmd.IntegerMessage),
-			BytesMessage:   []byte{},
-		}
+		return domain.CreateMessageCommand{}, err
 	}
+	modelFixed := [domain.HashSize]byte(model)
 
-	return CreateMessageCommand{
-		IntegerMessage: domain.EmptyIntegerMessage,
-		BytesMessage:   bytesMessage,
+	bytesMessage, err := utils.StringToBytes(cmd.BytesMessage)
+	if err == nil {
+		return domain.CreateMessageCommand{
+			Model: domain.Hash{
+				Value: modelFixed,
+			},
+			IntegerMessage: nil,
+			BytesMessage:   bytesMessage,
+		}, nil
+	} else if cmd.IntegerMessage != nil {
+		intValue := domain.IntegerType(*cmd.IntegerMessage)
+		return domain.CreateMessageCommand{
+			Model: domain.Hash{
+				Value: modelFixed,
+			},
+			IntegerMessage: &intValue,
+			BytesMessage:   bytesMessage,
+		}, nil
 	}
+	return domain.CreateMessageCommand{}, fmt.Errorf("createMessageCommand of model %s could not be parsed", modelId)
 }
 
 func ToJson(result ExecutionResult) executionResultJson {
+	encryptedState := ""
+	if result.EncryptedState != nil {
+		encryptedState = utils.BytesToString(result.EncryptedState.Value)
+	}
+	plainState := ""
+	if result.PlainState != nil {
+		plainState = string(result.PlainState.Value)
+	}
 	return executionResultJson{
-		Instance:       instance.ToJson(result.Instance),
 		Proof:          result.Proof.ToJson(),
-		EncryptedState: utils.BytesToString(result.EncryptedState.Value),
+		EncryptedState: encryptedState,
+		PlainState:     plainState,
 	}
 }

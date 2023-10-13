@@ -22,7 +22,11 @@ type HashId = string
 
 type Hash struct {
 	Value [HashSize]byte
-	Salt  [SaltSize]byte
+}
+
+type SaltedHash struct {
+	Hash Hash
+	Salt [SaltSize]byte
 }
 
 func EmptyHash() Hash {
@@ -35,11 +39,11 @@ func OutOfBoundsHash() Hash {
 	return hash
 }
 
-func (hash *Hash) String() HashId {
-	return utils.BytesToString(hash.Value[:])
+func (hash *SaltedHash) String() HashId {
+	return utils.BytesToString(hash.Hash.Value[:])
 }
 
-func (publicKey PublicKey) ComputeHash() [HashSize]byte {
+func (publicKey PublicKey) ComputeHash() Hash {
 	var eddsaPublicKey eddsa.PublicKey
 	eddsaPublicKey.A.SetBytes(publicKey.Value)
 	xBytes := eddsaPublicKey.A.X.Bytes()
@@ -50,7 +54,7 @@ func (publicKey PublicKey) ComputeHash() [HashSize]byte {
 	return computeHash(mimc)
 }
 
-func (transition Transition) ComputeHash() [HashSize]byte {
+func (transition Transition) ComputeHash() Hash {
 	mimc := mimc.NewMiMC()
 	for _, incomingPlace := range transition.IncomingPlaces {
 		hashUint16(mimc, incomingPlace)
@@ -86,7 +90,7 @@ func (transition Transition) ComputeHash() [HashSize]byte {
 
 func (model Model) HasValidHash() bool {
 	computedHash := model.ComputeHash(model.Hash.Salt)
-	return bytes.Equal(computedHash.Value[:], model.Hash.Value[:])
+	return bytes.Equal(computedHash.Hash.Value[:], model.Hash.Hash.Value[:])
 }
 
 func (model *Model) UpdateHash() {
@@ -94,7 +98,7 @@ func (model *Model) UpdateHash() {
 	model.Hash = model.ComputeHash(salt)
 }
 
-func (model Model) ComputeHash(salt [fr.Bytes]byte) Hash {
+func (model Model) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
 	mimc := mimc.NewMiMC()
 	hashUint16(mimc, model.PlaceCount)
 	hashUint16(mimc, model.ParticipantCount)
@@ -118,24 +122,24 @@ func (model Model) ComputeHash(salt [fr.Bytes]byte) Hash {
 	transitionTree := merkletree.New(ghash.MIMC_BN254.New())
 	for _, transition := range model.Transitions {
 		hash := transition.ComputeHash()
-		transitionTree.Push(hash[:])
+		transitionTree.Push(hash.Value[:])
 	}
 	for i := len(model.Transitions); i < MaxTransitionCount; i++ {
 		transition := OutOfBoundsTransition()
 		hash := transition.ComputeHash()
-		transitionTree.Push(hash[:])
+		transitionTree.Push(hash.Value[:])
 	}
 	mimc.Write(transitionTree.Root())
 	mimc.Write(salt[:])
-	return Hash{
-		Value: computeHash(mimc),
-		Salt:  salt,
+	return SaltedHash{
+		Hash: computeHash(mimc),
+		Salt: salt,
 	}
 }
 
 func (instance Instance) HasValidHash() bool {
 	computedHash := instance.ComputeHash(instance.Hash.Salt)
-	return bytes.Equal(computedHash.Value[:], instance.Hash.Value[:])
+	return bytes.Equal(computedHash.Hash.Value[:], instance.Hash.Hash.Value[:])
 }
 
 func (instance *Instance) UpdateHash() {
@@ -143,9 +147,9 @@ func (instance *Instance) UpdateHash() {
 	instance.Hash = instance.ComputeHash(salt)
 }
 
-func (instance Instance) ComputeHash(salt [fr.Bytes]byte) Hash {
+func (instance Instance) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
 	mimc := mimc.NewMiMC()
-	mimc.Write(instance.Model[:])
+	mimc.Write(instance.Model.Value[:])
 	for _, tokenCount := range instance.TokenCounts {
 		hashInt64(mimc, int64(tokenCount))
 	}
@@ -155,31 +159,31 @@ func (instance Instance) ComputeHash(salt [fr.Bytes]byte) Hash {
 	tree := merkletree.New(ghash.MIMC_BN254.New())
 	for _, publicKey := range instance.PublicKeys {
 		hash := publicKey.ComputeHash()
-		tree.Push(hash[:])
+		tree.Push(hash.Value[:])
 	}
 	for i := len(instance.PublicKeys); i < MaxParticipantCount; i++ {
 		publicKey := OutOfBoundsPublicKey()
 		hash := publicKey.ComputeHash()
-		tree.Push(hash[:])
+		tree.Push(hash.Value[:])
 	}
 	mimc.Write(tree.Root())
 	for _, messageHash := range instance.MessageHashes {
-		mimc.Write(messageHash[:])
+		mimc.Write(messageHash.Value[:])
 	}
 	for i := len(instance.MessageHashes); i < MaxMessageCount; i++ {
 		hash := OutOfBoundsHash().Value
 		mimc.Write(hash[:])
 	}
 	mimc.Write(salt[:])
-	return Hash{
-		Value: computeHash(mimc),
-		Salt:  salt,
+	return SaltedHash{
+		Hash: computeHash(mimc),
+		Salt: salt,
 	}
 }
 
 func (message Message) HasValidHash() bool {
 	computedHash := message.ComputeHash(message.Hash.Salt)
-	return bytes.Equal(computedHash.Value[:], message.Hash.Value[:])
+	return bytes.Equal(computedHash.Hash.Value[:], message.Hash.Hash.Value[:])
 }
 
 func (message *Message) UpdateHash() {
@@ -187,40 +191,42 @@ func (message *Message) UpdateHash() {
 	message.Hash = message.ComputeHash(salt)
 }
 
-func (message Message) ComputeHash(salt [fr.Bytes]byte) Hash {
+func (message Message) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
 	if message.IsBytesMessage() {
-		return hashBytesMessage(message.BytesMessage, salt)
+		return hashBytesMessage(message, salt)
 	}
-	return hashIntegerMessage(message.IntegerMessage, salt)
+	mimc := mimc.NewMiMC()
+	mimc.Write(message.Model.Value[:])
+	hashInt64(mimc, int64(message.IntegerMessage))
+	mimc.Write(salt[:])
+	return SaltedHash{
+		Hash: computeHash(mimc),
+		Salt: salt,
+	}
+}
+
+func hashBytesMessage(message Message, salt [fr.Bytes]byte) SaltedHash {
+	input := append(message.Model.Value[:], message.BytesMessage...)
+	input = append(input, salt[:]...)
+	bytesHash := sha256.Sum256(input)
+	return SaltedHash{
+		Hash: Hash{
+			Value: hashToField(bytesHash, "bytesMessage"),
+		},
+		Salt: salt,
+	}
+}
+
+func computeHash(hasher hash.Hash) Hash {
+	return Hash{
+		Value: [HashSize]byte(hasher.Sum(nil)),
+	}
 }
 
 func Uint16ToBytes(value uint16) [fr.Bytes]byte {
 	var bytes [fr.Bytes]byte
 	binary.BigEndian.PutUint16(bytes[30:], value)
 	return bytes
-}
-
-func hashBytesMessage(message []byte, salt [fr.Bytes]byte) Hash {
-	input := append(message, salt[:]...)
-	bytesHash := sha256.Sum256(input)
-	return Hash{
-		Value: hashToField(bytesHash, "bytesMessage"),
-		Salt:  salt,
-	}
-}
-
-func hashIntegerMessage(message IntegerType, salt [fr.Bytes]byte) Hash {
-	mimc := mimc.NewMiMC()
-	hashInt64(mimc, int64(message))
-	mimc.Write(salt[:])
-	return Hash{
-		Value: computeHash(mimc),
-		Salt:  salt,
-	}
-}
-
-func computeHash(hasher hash.Hash) [HashSize]byte {
-	return [HashSize]byte(hasher.Sum(nil))
 }
 
 func hashInt64(hasher hash.Hash, value int64) {

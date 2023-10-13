@@ -32,7 +32,7 @@ func main() {
 
 	router := gin.Default()
 
-	router.PUT("/state", stateController.ImportState)
+	router.POST("/models", modelController.CreateModel)
 
 	router.GET("/models/:modelId", modelController.FindModelById)
 	router.GET("/models", modelController.FindAllModels)
@@ -43,6 +43,8 @@ func main() {
 	router.POST("/instantiation", executionController.InstantiateModel)
 	router.POST("/transition", executionController.ExecuteTransition)
 	router.POST("/termination", executionController.TerminateInstance)
+
+	router.PUT("/state", stateController.ImportState)
 
 	router.Run("localhost:8080")
 }

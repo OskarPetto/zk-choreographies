@@ -9,7 +9,7 @@ import (
 	"execution-service/utils"
 )
 
-func Serialize(state State) domain.Plaintext {
+func (state State) Serialize() domain.Plaintext {
 	var modelJson *model.ModelJson = nil
 	if state.Model != nil {
 		tmp := model.ToJson(*state.Model)
@@ -25,7 +25,7 @@ func Serialize(state State) domain.Plaintext {
 		tmp := message.ToJson(*state.Message)
 		messageJson = &tmp
 	}
-	stateJson := stateJson{
+	stateJson := StateJson{
 		Model:    modelJson,
 		Instance: instanceJson,
 		Message:  messageJson,
@@ -39,7 +39,7 @@ func Serialize(state State) domain.Plaintext {
 }
 
 func Deserialize(serializedState domain.Plaintext) (State, error) {
-	var stateJson stateJson
+	var stateJson StateJson
 	err := json.Unmarshal(serializedState.Value, &stateJson)
 	if err != nil {
 		return State{}, err

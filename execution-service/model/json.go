@@ -26,56 +26,56 @@ type TransitionJson struct {
 }
 
 type ModelJson struct {
-	Hash             hash.HashJson    `json:"hash"`
-	Source           string           `json:"source"`
-	PlaceCount       uint             `json:"placeCount"`
-	ParticipantCount uint             `json:"participantCount"`
-	MessageCount     uint             `json:"messageCount"`
-	StartPlaces      []uint           `json:"startPlaces"`
-	EndPlaces        []uint           `json:"endPlaces"`
-	Transitions      []TransitionJson `json:"transitions"`
-	CreatedAt        time.Time        `json:"createdAt"`
+	Hash             hash.SaltedHashJson `json:"hash"`
+	Source           string              `json:"source"`
+	PlaceCount       uint                `json:"placeCount"`
+	ParticipantCount uint                `json:"participantCount"`
+	MessageCount     uint                `json:"messageCount"`
+	StartPlaces      []uint              `json:"startPlaces"`
+	EndPlaces        []uint              `json:"endPlaces"`
+	Transitions      []TransitionJson    `json:"transitions"`
+	CreatedAt        time.Time           `json:"createdAt"`
 }
 
-func (model *ModelJson) Id() string {
-	return model.Hash.Value
+func (model *ModelJson) id() string {
+	return model.Hash.Hash
 }
 
 func (model *ModelJson) ToModel() (domain.Model, error) {
 	if model.PlaceCount > domain.MaxPlaceCount {
-		return domain.Model{}, fmt.Errorf("model '%s' has too many places", model.Id())
+		return domain.Model{}, fmt.Errorf("model '%s' has too many places", model.id())
 	}
 	if model.ParticipantCount > domain.MaxParticipantCount {
-		return domain.Model{}, fmt.Errorf("model '%s' has too many participants", model.Id())
+		return domain.Model{}, fmt.Errorf("model '%s' has too many participants", model.id())
 	}
 	if model.MessageCount > domain.MaxMessageCount {
-		return domain.Model{}, fmt.Errorf("model '%s' has too many messages", model.Id())
+		return domain.Model{}, fmt.Errorf("model '%s' has too many messages", model.id())
 	}
 	startPlaceCount := len(model.StartPlaces)
 	if startPlaceCount > domain.MaxStartPlaceCount || startPlaceCount < 1 {
-		return domain.Model{}, fmt.Errorf("model '%s' has invalid number of startPlaces", model.Id())
+		return domain.Model{}, fmt.Errorf("model '%s' has invalid number of startPlaces", model.id())
 	}
 	startPlaces := make([]domain.PlaceId, startPlaceCount)
 	for i, startPlace := range model.StartPlaces {
 		if startPlace >= domain.MaxPlaceCount {
-			return domain.Model{}, fmt.Errorf("model '%s' has invalid startPlace", model.Id())
+			return domain.Model{}, fmt.Errorf("model '%s' has invalid startPlace", model.id())
 		}
 		startPlaces[i] = domain.PlaceId(startPlace)
 	}
 	endPlaceCount := len(model.EndPlaces)
 	if endPlaceCount > domain.MaxEndPlaceCount || endPlaceCount < 1 {
-		return domain.Model{}, fmt.Errorf("model '%s' has invalid number of endPlaces", model.Id())
+		return domain.Model{}, fmt.Errorf("model '%s' has invalid number of endPlaces", model.id())
 	}
 	endPlaces := make([]domain.PlaceId, endPlaceCount)
 	for i, endPlace := range model.EndPlaces {
 		if endPlace >= domain.MaxPlaceCount {
-			return domain.Model{}, fmt.Errorf("model '%s' has invalid endPlace", model.Id())
+			return domain.Model{}, fmt.Errorf("model '%s' has invalid endPlace", model.id())
 		}
 		endPlaces[i] = domain.PlaceId(endPlace)
 	}
 	transitionCount := len(model.Transitions)
 	if transitionCount > domain.MaxTransitionCount {
-		return domain.Model{}, fmt.Errorf("model '%s' has too many transitions", model.Id())
+		return domain.Model{}, fmt.Errorf("model '%s' has too many transitions", model.id())
 	}
 	transitions := make([]domain.Transition, transitionCount)
 	for i, transition := range model.Transitions {
@@ -87,7 +87,7 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 	}
 	hash, err := model.Hash.ToHash()
 	if err != nil {
-		return domain.Model{}, fmt.Errorf("model '%s' has invalid hash", model.Id())
+		return domain.Model{}, fmt.Errorf("model '%s' has invalid hash", model.id())
 	}
 	return domain.Model{
 		Hash:             hash,
@@ -152,7 +152,7 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 		OutgoingPlaces:        outgoingPlaces,
 		InitiatingParticipant: domain.ParticipantId(initiatingParticipant),
 		RespondingParticipant: domain.ParticipantId(respondingParticipant),
-		Message:               domain.MessageId(message),
+		Message:               domain.ModelMessageId(message),
 		Constraint:            constraint,
 	}, nil
 }
@@ -171,12 +171,12 @@ func (constraint *ConstraintJson) toConstraint() (domain.Constraint, error) {
 	for i, coefficient := range constraint.Coefficients {
 		coefficients[i] = domain.IntegerType(coefficient)
 	}
-	messageIds := make([]domain.MessageId, len(constraint.MessageIds))
+	messageIds := make([]domain.ModelMessageId, len(constraint.MessageIds))
 	for i, messageId := range constraint.MessageIds {
 		if messageId > domain.MaxMessageCount {
 			return domain.Constraint{}, fmt.Errorf("constraint has invalid messageId")
 		}
-		messageIds[i] = domain.MessageId(messageId)
+		messageIds[i] = domain.ModelMessageId(messageId)
 	}
 	if !isValidOparator(constraint.ComparisonOperator) {
 		return domain.Constraint{}, fmt.Errorf("constraint has invalid oparator")

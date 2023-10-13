@@ -4,11 +4,6 @@ import (
 	"execution-service/domain"
 )
 
-type CreateMessageCommand struct {
-	BytesMessage   []byte
-	IntegerMessage domain.IntegerType
-}
-
 type InstantiateModelCommand struct {
 	Model      domain.ModelId
 	PublicKeys []domain.PublicKey
@@ -20,7 +15,7 @@ type ExecuteTransitionCommand struct {
 	Instance             domain.InstanceId
 	Transition           domain.TransitionId
 	Identity             domain.IdentityId
-	CreateMessageCommand *CreateMessageCommand
+	CreateMessageCommand *domain.CreateMessageCommand
 }
 
 type TerminateInstanceCommand struct {

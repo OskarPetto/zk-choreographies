@@ -48,7 +48,7 @@ func (service ProverService) ProveInstantiation(cmd ProveInstantiationCommand) (
 	if err != nil {
 		return Proof{}, err
 	}
-	return toProof(groth16Proof, cmd.Model.Hash, cmd.Instance.Hash)
+	return toProof(groth16Proof, cmd.Instance.Hash.Hash)
 }
 
 func (service ProverService) ProveTransition(cmd ProveTransitionCommand) (Proof, error) {
@@ -69,7 +69,7 @@ func (service ProverService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 		return Proof{}, err
 	}
 
-	return toProof(proof, cmd.CurrentInstance.Hash, cmd.CurrentInstance.Hash, cmd.NextInstance.Hash)
+	return toProof(proof, cmd.CurrentInstance.Hash.Hash, cmd.NextInstance.Hash.Hash)
 }
 
 func (service ProverService) ProveTermination(cmd ProveTerminationCommand) (Proof, error) {
@@ -88,5 +88,5 @@ func (service ProverService) ProveTermination(cmd ProveTerminationCommand) (Proo
 	if err != nil {
 		return Proof{}, err
 	}
-	return toProof(proof, cmd.Model.Hash, cmd.Instance.Hash)
+	return toProof(proof, cmd.Instance.Hash.Hash)
 }

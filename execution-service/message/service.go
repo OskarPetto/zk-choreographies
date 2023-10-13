@@ -2,7 +2,6 @@ package message
 
 import (
 	"execution-service/domain"
-	"execution-service/utils"
 	"fmt"
 )
 
@@ -16,8 +15,7 @@ func NewMessageService() MessageService {
 	}
 }
 
-func (service *MessageService) FindMessageByHashValue(hashValue [domain.HashSize]byte) (domain.Message, error) {
-	id := utils.BytesToString(hashValue[:])
+func (service *MessageService) FindMessageById(id domain.MessageId) (domain.Message, error) {
 	message, exists := service.messages[id]
 	if !exists {
 		return domain.Message{}, fmt.Errorf("message %s not found", id)
@@ -31,7 +29,8 @@ func (service *MessageService) FindConstraintInput(constraint domain.Constraint,
 		coefficient := constraint.Coefficients[i]
 		if coefficient != 0 {
 			messageHash := instance.MessageHashes[messageId]
-			message, err := service.FindMessageByHashValue(messageHash)
+			messageId := string(messageHash.Value[:])
+			message, err := service.FindMessageById(messageId)
 			if err != nil {
 				return domain.ConstraintInput{}, err
 			}
@@ -45,8 +44,8 @@ func (service *MessageService) FindConstraintInput(constraint domain.Constraint,
 
 func (service *MessageService) ImportMessage(message domain.Message) error {
 	if !message.HasValidHash() {
-		return fmt.Errorf("message %s has invalid hash", message.String())
+		return fmt.Errorf("message %s has invalid hash", message.Hash.String())
 	}
-	service.messages[message.Hash.String()] = message
+	service.messages[message.Id()] = message
 	return nil
 }

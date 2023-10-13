@@ -8,7 +8,7 @@ import (
 	"execution-service/utils"
 )
 
-type stateJson struct {
+type StateJson struct {
 	Model    *model.ModelJson       `json:"model,omitempty"`
 	Instance *instance.InstanceJson `json:"instance,omitempty"`
 	Message  *message.MessageJson   `json:"message,omitempty"`
@@ -25,7 +25,7 @@ type ImportStateCommandJson struct {
 	Identity   uint            `json:"identity"`
 }
 
-func ToJson(encryptedState domain.Ciphertext) chiphertextJson {
+func ToCiphertextJson(encryptedState domain.Ciphertext) chiphertextJson {
 	value := utils.BytesToString(encryptedState.Value)
 	sender := utils.BytesToString(encryptedState.Sender.Value)
 	recipient := utils.BytesToString(encryptedState.Recipient.Value)

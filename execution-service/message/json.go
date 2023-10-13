@@ -7,9 +7,9 @@ import (
 )
 
 type MessageJson struct {
-	Hash           hash.HashJson `json:"hash"`
-	IntegerMessage int           `json:"integerMessage,omitempty"`
-	BytesMessage   string        `json:"bytesMessage,omitempty"`
+	Hash           hash.SaltedHashJson `json:"hash"`
+	IntegerMessage int                 `json:"integerMessage,omitempty"`
+	BytesMessage   string              `json:"bytesMessage,omitempty"`
 }
 
 func ToJson(message domain.Message) MessageJson {

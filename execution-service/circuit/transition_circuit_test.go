@@ -68,7 +68,7 @@ func TestTransition_InvalidModelHash(t *testing.T) {
 	nextSignature := transitionStates[1].Signature
 	constraintInput := transitionStates[1].ConstraintInput
 
-	model.Hash = domain.EmptyHash()
+	model.Hash = domain.SaltedHash{}
 
 	witness := circuit.TransitionCircuit{
 		Model:           circuit.FromModel(model),
@@ -90,7 +90,7 @@ func TestTransition_InvalidInstanceHash(t *testing.T) {
 	transition := transitionStates[1].Transition
 	constraintInput := transitionStates[1].ConstraintInput
 
-	nextInstance.Hash = domain.EmptyHash()
+	nextInstance.Hash = domain.SaltedHash{}
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 
 	witness := circuit.TransitionCircuit{
@@ -203,7 +203,9 @@ func TestTransition_OverwrittenMessageHash(t *testing.T) {
 	transition := transitionStates[3].Transition
 	constraintInput := transitionStates[3].ConstraintInput
 
-	nextInstance.MessageHashes[8] = domain.NewMessage([]byte("Not a purchase order"), 0).Hash.Value
+	cmd := domain.CreateMessageCommand{Model: model.Hash.Hash, BytesMessage: []byte("Not a purchase order"), IntegerMessage: nil}
+
+	nextInstance.MessageHashes[8] = domain.CreateMessage(cmd).Hash.Hash
 	nextInstance.UpdateHash()
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 
@@ -268,14 +270,19 @@ func TestTransition_InvalidConstraintInput(t *testing.T) {
 func TestTransition_InvalidMessageForConstraint(t *testing.T) {
 	model := transitionStates[3].Model
 	currentInstance := transitionStates[3].Instance
-	order := domain.NewMessage(nil, 6)
-	stock := domain.NewMessage(nil, 4)
-	currentInstance.MessageHashes[9] = order.Hash.Value
-	currentInstance.MessageHashes[0] = stock.Hash.Value
+	orderValue := int32(6)
+	stockValue := int32(4)
+	cmdOrder := domain.CreateMessageCommand{Model: model.Hash.Hash, BytesMessage: nil, IntegerMessage: &orderValue}
+	cmdStock := domain.CreateMessageCommand{Model: model.Hash.Hash, BytesMessage: nil, IntegerMessage: &stockValue}
+	order := domain.CreateMessage(cmdOrder)
+	stock := domain.CreateMessage(cmdStock)
+
+	currentInstance.MessageHashes[9] = order.Hash.Hash
+	currentInstance.MessageHashes[0] = stock.Hash.Hash
 	currentInstance.UpdateHash()
 	nextInstance := transitionStates[4].Instance
-	nextInstance.MessageHashes[9] = order.Hash.Value
-	nextInstance.MessageHashes[0] = stock.Hash.Value
+	nextInstance.MessageHashes[9] = order.Hash.Hash
+	nextInstance.MessageHashes[0] = stock.Hash.Hash
 	nextInstance.UpdateHash()
 	transition := transitionStates[4].Transition
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(1))

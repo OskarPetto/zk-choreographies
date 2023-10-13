@@ -6,15 +6,15 @@ import "./TransitionVerifier.sol";
 import "./TerminationVerifier.sol";
 
 contract InstanceManager {
-    mapping(uint => uint) public instancesPerModel;
+    mapping(uint => bool) public instances;
 
     InstantiationVerifier instantiationVerifier;
     TransitionVerifier transitionVerifier;
     TerminationVerifier terminationVerifier;
 
-    event Instantiation(uint model, uint instance);
-    event Transition(uint model, uint currentInstance, uint nextInstance);
-    event Termination(uint model, uint instance);
+    event Instantiation(uint instance);
+    event Transition(uint currentInstance, uint nextInstance);
+    event Termination(uint instance);
 
     constructor(
         address _instantiationVerifier,
@@ -26,37 +26,30 @@ contract InstanceManager {
         terminationVerifier = TerminationVerifier(_terminationVerifier);
     }
 
-    function instantiate(
-        uint[8] memory proof,
-        uint model,
-        uint instance
-    ) public {
-        require(instancesPerModel[model] == 0);
-        instantiationVerifier.verifyProof(proof, [model, instance]);
-        instancesPerModel[model] = instance;
-        emit Instantiation(model, instance);
+    function instantiate(uint[8] memory proof, uint instance) public {
+        require(instances[instance] == false);
+        instantiationVerifier.verifyProof(proof, [instance]);
+        instances[instance] = true;
+        emit Instantiation(instance);
     }
 
     function transition(
         uint[8] memory proof,
-        uint model,
         uint currentInstance,
         uint nextInstance
     ) public {
-        require(instancesPerModel[model] == currentInstance);
-        transitionVerifier.verifyProof(
-            proof,
-            [model, currentInstance, nextInstance]
-        );
-        instancesPerModel[model] = nextInstance;
-        emit Transition(model, currentInstance, nextInstance);
+        require(instances[currentInstance] == true);
+        transitionVerifier.verifyProof(proof, [currentInstance, nextInstance]);
+        instances[currentInstance] = false;
+        instances[nextInstance] = true;
+        emit Transition(currentInstance, nextInstance);
     }
 
-    function terminate(uint[8] memory proof, uint model, uint instance) public {
-        require(instancesPerModel[model] == instance);
-        terminationVerifier.verifyProof(proof, [model, instance]);
+    function terminate(uint[8] memory proof, uint instance) public {
+        require(instances[instance] == true);
+        terminationVerifier.verifyProof(proof, [instance]);
 
-        delete instancesPerModel[model];
-        emit Termination(model, instance);
+        delete instances[instance];
+        emit Termination(instance);
     }
 }

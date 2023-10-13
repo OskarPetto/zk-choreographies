@@ -34,3 +34,18 @@ func (controller *ModelController) FindAllModels(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, jsonModels)
 }
+
+func (controller *ModelController) CreateModel(c *gin.Context) {
+	var modelJson ModelJson
+	if err := c.BindJSON(&modelJson); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	model, err := modelJson.ToModel()
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	result := controller.modelService.CreateModel(model)
+	c.IndentedJSON(http.StatusOK, ToJson(result))
+}

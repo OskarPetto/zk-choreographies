@@ -15,9 +15,14 @@ import (
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
-type Hash struct {
-	Value frontend.Variable `gnark:",public"`
-	Salt  frontend.Variable
+type PublicHash struct {
+	Hash frontend.Variable `gnark:",public"`
+	Salt frontend.Variable
+}
+
+type PrivateHash struct {
+	Hash frontend.Variable
+	Salt frontend.Variable
 }
 
 type MerkleProof struct {
@@ -32,7 +37,7 @@ type Authentication struct {
 }
 
 type Instance struct {
-	Hash          Hash
+	Hash          PublicHash
 	Model         frontend.Variable
 	TokenCounts   [domain.MaxPlaceCount]frontend.Variable
 	PublicKeyRoot frontend.Variable
@@ -62,7 +67,7 @@ type Transition struct {
 }
 
 type Model struct {
-	Hash             Hash
+	Hash             PrivateHash
 	PlaceCount       frontend.Variable
 	ParticipantCount frontend.Variable
 	MessageCount     frontend.Variable
@@ -78,12 +83,12 @@ func ToAuthentication(instance domain.Instance, signature domain.Signature) Auth
 	var buf bytes.Buffer
 	for _, publicKey := range instance.PublicKeys {
 		hash := publicKey.ComputeHash()
-		buf.Write(hash[:])
+		buf.Write(hash.Value[:])
 	}
 	for i := len(instance.PublicKeys); i < domain.MaxParticipantCount; i++ {
 		publicKey := domain.OutOfBoundsPublicKey()
 		hash := publicKey.ComputeHash()
-		buf.Write(hash[:])
+		buf.Write(hash.Value[:])
 	}
 	merkleRoot, proofPath, _, err := merkletree.BuildReaderProof(&buf, hash.MIMC_BN254.New(), fr.Bytes, uint64(signature.Participant))
 	utils.PanicOnError(err)
@@ -114,23 +119,23 @@ func FromInstance(instance domain.Instance) Instance {
 	tree := merkletree.New(hash.MIMC_BN254.New())
 	for _, publicKey := range instance.PublicKeys {
 		hash := publicKey.ComputeHash()
-		tree.Push(hash[:])
+		tree.Push(hash.Value[:])
 	}
 	for i := len(instance.PublicKeys); i < domain.MaxParticipantCount; i++ {
 		publicKey := domain.OutOfBoundsPublicKey()
 		hash := publicKey.ComputeHash()
-		tree.Push(hash[:])
+		tree.Push(hash.Value[:])
 	}
 	var messageHashes [domain.MaxMessageCount]frontend.Variable
 	for i, messageHash := range instance.MessageHashes {
-		messageHashes[i] = fromBytes(messageHash)
+		messageHashes[i] = fromHash(messageHash)
 	}
 	for i := len(instance.MessageHashes); i < domain.MaxMessageCount; i++ {
-		messageHashes[i] = fromBytes(domain.OutOfBoundsHash().Value)
+		messageHashes[i] = fromHash(domain.OutOfBoundsHash())
 	}
 	return Instance{
-		Hash:          fromHash(instance.Hash),
-		Model:         fromBytes(instance.Model),
+		Hash:          toPublicHash(instance.Hash),
+		Model:         fromHash(instance.Model),
 		TokenCounts:   tokenCounts,
 		PublicKeyRoot: tree.Root(),
 		MessageHashes: messageHashes,
@@ -163,15 +168,15 @@ func FromModel(model domain.Model) Model {
 	transitionTree := merkletree.New(hash.MIMC_BN254.New())
 	for _, transition := range model.Transitions {
 		hash := transition.ComputeHash()
-		transitionTree.Push(hash[:])
+		transitionTree.Push(hash.Value[:])
 	}
 	for i := len(model.Transitions); i < domain.MaxTransitionCount; i++ {
 		transition := domain.OutOfBoundsTransition()
 		hash := transition.ComputeHash()
-		transitionTree.Push(hash[:])
+		transitionTree.Push(hash.Value[:])
 	}
 	return Model{
-		Hash:             fromHash(model.Hash),
+		Hash:             toPrivateHash(model.Hash),
 		PlaceCount:       model.PlaceCount,
 		ParticipantCount: model.ParticipantCount,
 		MessageCount:     model.MessageCount,
@@ -231,12 +236,12 @@ func ToTransition(model domain.Model, transition domain.Transition) Transition {
 			index = i
 		}
 		hash := modelTransition.ComputeHash()
-		buf.Write(hash[:])
+		buf.Write(hash.Value[:])
 	}
 	for i := len(model.Transitions); i < domain.MaxTransitionCount; i++ {
 		modelTransition := domain.OutOfBoundsTransition()
 		hash := modelTransition.ComputeHash()
-		buf.Write(hash[:])
+		buf.Write(hash.Value[:])
 	}
 	merkleRoot, proofPath, _, err := merkletree.BuildReaderProof(&buf, hash.MIMC_BN254.New(), fr.Bytes, uint64(index))
 	utils.PanicOnError(err)
@@ -300,11 +305,22 @@ func FromConstraintInput(input domain.ConstraintInput) ConstraintInput {
 	}
 }
 
-func fromHash(hash domain.Hash) Hash {
-	return Hash{
-		Value: fromBytes(hash.Value),
-		Salt:  fromBytes(hash.Salt),
+func toPublicHash(hash domain.SaltedHash) PublicHash {
+	return PublicHash{
+		Hash: fromHash(hash.Hash),
+		Salt: fromBytes(hash.Salt),
 	}
+}
+
+func toPrivateHash(hash domain.SaltedHash) PrivateHash {
+	return PrivateHash{
+		Hash: fromHash(hash.Hash),
+		Salt: fromBytes(hash.Salt),
+	}
+}
+
+func fromHash(hash domain.Hash) frontend.Variable {
+	return fromBytes(hash.Value)
 }
 
 func fromBytes(data [fr.Bytes]byte) frontend.Variable {

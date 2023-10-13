@@ -18,13 +18,15 @@ type State struct {
 
 func GetModel2States(signatureParameters parameters.SignatureParameters) []State {
 	model2 := GetModel2()
-	order := domain.NewMessage(nil, 2)
-	stock := domain.NewMessage(nil, 20)
-	confirm := domain.NewMessage([]byte("confirm"), 0)
-	invoice := domain.NewMessage([]byte("invoice"), 0)
-	shippingAddress := domain.NewMessage([]byte("shipping_address"), 0)
-	product := domain.NewMessage([]byte("product"), 0)
-	payment := domain.NewMessage([]byte("payment"), 0)
+	orderValue := domain.IntegerType(2)
+	stockValue := domain.IntegerType(20)
+	order := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, IntegerMessage: &orderValue})
+	stock := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, IntegerMessage: &stockValue})
+	confirm := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, BytesMessage: []byte("confirm")})
+	invoice := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, BytesMessage: []byte("invoice")})
+	shippingAddress := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, BytesMessage: []byte("shipping_address")})
+	product := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, BytesMessage: []byte("product")})
+	payment := domain.CreateMessage(domain.CreateMessageCommand{Model: model2.Hash.Hash, BytesMessage: []byte("payment")})
 	return []State{
 		getModelState(
 			model2,
@@ -82,7 +84,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 				domain.EmptyHash(),
 				domain.EmptyHash(),
 				domain.EmptyHash(),
-				order.Hash,
+				order.Hash.Hash,
 			},
 			domain.EmptyConstraintInput(),
 			signatureParameters,
@@ -94,7 +96,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			3,
 			[]domain.PlaceId{1},
 			[]domain.Hash{
-				stock.Hash,
+				stock.Hash.Hash,
 				domain.EmptyHash(),
 				domain.EmptyHash(),
 				domain.EmptyHash(),
@@ -103,7 +105,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 				domain.EmptyHash(),
 				domain.EmptyHash(),
 				domain.EmptyHash(),
-				order.Hash,
+				order.Hash.Hash,
 			},
 			domain.EmptyConstraintInput(),
 			signatureParameters,
@@ -115,8 +117,8 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			12,
 			[]domain.PlaceId{11},
 			[]domain.Hash{
-				stock.Hash,
-				confirm.Hash,
+				stock.Hash.Hash,
+				confirm.Hash.Hash,
 				domain.EmptyHash(),
 				domain.EmptyHash(),
 				domain.EmptyHash(),
@@ -124,7 +126,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 				domain.EmptyHash(),
 				domain.EmptyHash(),
 				domain.EmptyHash(),
-				order.Hash,
+				order.Hash.Hash,
 			},
 			domain.ConstraintInput{
 				Messages: []domain.Message{
@@ -141,8 +143,8 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			13,
 			[]domain.PlaceId{2, 3},
 			[]domain.Hash{
-				stock.Hash,
-				confirm.Hash,
+				stock.Hash.Hash,
+				confirm.Hash.Hash,
 				domain.EmptyHash(),
 				domain.EmptyHash(),
 				domain.EmptyHash(),
@@ -150,7 +152,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 				domain.EmptyHash(),
 				domain.EmptyHash(),
 				domain.EmptyHash(),
-				order.Hash,
+				order.Hash.Hash,
 			},
 			domain.EmptyConstraintInput(),
 			signatureParameters,
@@ -162,16 +164,16 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			10,
 			[]domain.PlaceId{2, 10},
 			[]domain.Hash{
-				stock.Hash,
-				confirm.Hash,
+				stock.Hash.Hash,
+				confirm.Hash.Hash,
 				domain.EmptyHash(),
 				domain.EmptyHash(),
 				domain.EmptyHash(),
-				invoice.Hash,
+				invoice.Hash.Hash,
 				domain.EmptyHash(),
 				domain.EmptyHash(),
 				domain.EmptyHash(),
-				order.Hash,
+				order.Hash.Hash,
 			},
 			domain.EmptyConstraintInput(),
 			signatureParameters,
@@ -183,16 +185,16 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			8,
 			[]domain.PlaceId{9, 10},
 			[]domain.Hash{
-				stock.Hash,
-				confirm.Hash,
+				stock.Hash.Hash,
+				confirm.Hash.Hash,
 				domain.EmptyHash(),
 				domain.EmptyHash(),
 				domain.EmptyHash(),
-				invoice.Hash,
-				shippingAddress.Hash,
+				invoice.Hash.Hash,
+				shippingAddress.Hash.Hash,
 				domain.EmptyHash(),
 				domain.EmptyHash(),
-				order.Hash,
+				order.Hash.Hash,
 			},
 			domain.EmptyConstraintInput(),
 			signatureParameters,
@@ -204,16 +206,16 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			9,
 			[]domain.PlaceId{10, 4},
 			[]domain.Hash{
-				stock.Hash,
-				confirm.Hash,
+				stock.Hash.Hash,
+				confirm.Hash.Hash,
 				domain.EmptyHash(),
-				product.Hash,
+				product.Hash.Hash,
 				domain.EmptyHash(),
-				invoice.Hash,
-				shippingAddress.Hash,
+				invoice.Hash.Hash,
+				shippingAddress.Hash.Hash,
 				domain.EmptyHash(),
 				domain.EmptyHash(),
-				order.Hash,
+				order.Hash.Hash,
 			},
 			domain.EmptyConstraintInput(),
 			signatureParameters,
@@ -225,16 +227,16 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			11,
 			[]domain.PlaceId{4, 5},
 			[]domain.Hash{
-				stock.Hash,
-				confirm.Hash,
-				payment.Hash,
-				product.Hash,
+				stock.Hash.Hash,
+				confirm.Hash.Hash,
+				payment.Hash.Hash,
+				product.Hash.Hash,
 				domain.EmptyHash(),
-				invoice.Hash,
-				shippingAddress.Hash,
+				invoice.Hash.Hash,
+				shippingAddress.Hash.Hash,
 				domain.EmptyHash(),
 				domain.EmptyHash(),
-				order.Hash,
+				order.Hash.Hash,
 			},
 			domain.EmptyConstraintInput(),
 			signatureParameters,
@@ -246,16 +248,16 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			1,
 			[]domain.PlaceId{13},
 			[]domain.Hash{
-				stock.Hash,
-				confirm.Hash,
-				payment.Hash,
-				product.Hash,
+				stock.Hash.Hash,
+				confirm.Hash.Hash,
+				payment.Hash.Hash,
+				product.Hash.Hash,
 				domain.EmptyHash(),
-				invoice.Hash,
-				shippingAddress.Hash,
+				invoice.Hash.Hash,
+				shippingAddress.Hash.Hash,
 				domain.EmptyHash(),
 				domain.EmptyHash(),
-				order.Hash,
+				order.Hash.Hash,
 			},
 			domain.EmptyConstraintInput(),
 			signatureParameters,
@@ -271,12 +273,10 @@ func getModelState(model domain.Model, transitionIndex uint, activePlaces []doma
 		tokenCounts[placeId] = 1
 	}
 	publicKeys := signatureParameters.GetPublicKeys(int(model.ParticipantCount))
-	messageHashes := make([][domain.HashSize]byte, model.MessageCount)
-	for i, messageHash := range hashes {
-		messageHashes[i] = messageHash.Value
-	}
+	messageHashes := make([]domain.Hash, model.MessageCount)
+	copy(messageHashes, hashes)
 	instance := domain.Instance{
-		Model:         model.Hash.Value,
+		Model:         model.Hash.Hash,
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,

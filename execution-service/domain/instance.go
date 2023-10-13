@@ -30,11 +30,11 @@ func NewPublicKey(eddsaPub eddsa.PublicKey) PublicKey {
 type InstanceId = string
 
 type Instance struct {
-	Hash          Hash
-	Model         [HashSize]byte
+	Hash          SaltedHash
+	Model         Hash
 	TokenCounts   []int8
 	PublicKeys    []PublicKey
-	MessageHashes [][HashSize]byte
+	MessageHashes []Hash
 	CreatedAt     int64
 }
 
@@ -53,10 +53,10 @@ func (instance Instance) ExecuteTransition(transition Transition, input Constrai
 }
 
 func (instance Instance) SetMessageHash(transition Transition, messageHash Hash) Instance {
-	messageHashes := make([][HashSize]byte, len(instance.MessageHashes))
+	messageHashes := make([]Hash, len(instance.MessageHashes))
 	copy(messageHashes[:], instance.MessageHashes[:])
 	if transition.Message != EmptyMessageId {
-		messageHashes[transition.Message] = messageHash.Value
+		messageHashes[transition.Message] = messageHash
 	}
 	instance.MessageHashes = messageHashes
 	instance.CreatedAt = time.Now().Unix()
@@ -85,7 +85,7 @@ func isTransitionExecutable(instance Instance, transition Transition, input Cons
 	return instance.EvaluateConstraint(transition.Constraint, input)
 }
 
-func (instance *Instance) FindMessageHashById(id MessageId) [HashSize]byte {
+func (instance *Instance) FindMessageHashById(id ModelMessageId) Hash {
 	return instance.MessageHashes[id]
 }
 

@@ -9,13 +9,13 @@ import (
 )
 
 type InstanceJson struct {
-	Id            string        `json:"id"`
-	Hash          hash.HashJson `json:"hash"`
-	Model         string        `json:"model"`
-	TokenCounts   []int         `json:"tokenCounts"`
-	PublicKeys    []string      `json:"publicKeys"`
-	MessageHashes []string      `json:"messageHashes"`
-	CreatedAt     time.Time     `json:"updatedAt"`
+	Id            string              `json:"id"`
+	Hash          hash.SaltedHashJson `json:"hash"`
+	Model         string              `json:"model"`
+	TokenCounts   []int               `json:"tokenCounts"`
+	PublicKeys    []string            `json:"publicKeys"`
+	MessageHashes []string            `json:"messageHashes"`
+	CreatedAt     time.Time           `json:"updatedAt"`
 }
 
 func ToJson(instance domain.Instance) InstanceJson {
@@ -29,12 +29,12 @@ func ToJson(instance domain.Instance) InstanceJson {
 	}
 	messageHashes := make([]string, len(instance.MessageHashes))
 	for i, messageHash := range instance.MessageHashes {
-		messageHashes[i] = utils.BytesToString(messageHash[:])
+		messageHashes[i] = utils.BytesToString(messageHash.Value[:])
 	}
 	return InstanceJson{
 		Id:            instance.Id(),
 		Hash:          hash.ToJson(instance.Hash),
-		Model:         utils.BytesToString(instance.Model[:]),
+		Model:         utils.BytesToString(instance.Model.Value[:]),
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,
@@ -69,13 +69,15 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 			Value: publicKeyBytes,
 		}
 	}
-	messageHashes := make([][domain.HashSize]byte, len(json.MessageHashes))
+	messageHashes := make([]domain.Hash, len(json.MessageHashes))
 	for i, messageHash := range json.MessageHashes {
 		hash, err := utils.StringToBytes(messageHash)
 		if err != nil {
 			return domain.Instance{}, fmt.Errorf("instance %s has invalid messageHash", json.Id)
 		}
-		messageHashes[i] = [domain.HashSize]byte(hash)
+		messageHashes[i] = domain.Hash{
+			Value: [domain.HashSize]byte(hash),
+		}
 	}
 	hash, err := json.Hash.ToHash()
 	if err != nil {
@@ -85,9 +87,12 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 	if err != nil {
 		return domain.Instance{}, fmt.Errorf("instance %s has invalid model", json.Model)
 	}
+	modelFixedSize := [domain.HashSize]byte(model)
 	return domain.Instance{
-		Hash:          hash,
-		Model:         [domain.HashSize]byte(model),
+		Hash: hash,
+		Model: domain.Hash{
+			Value: modelFixedSize,
+		},
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,

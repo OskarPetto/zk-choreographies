@@ -34,7 +34,7 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	api.AssertIsEqual(circuit.Model.Hash.Value, circuit.Instance.Model)
+	api.AssertIsEqual(circuit.Model.Hash.Hash, circuit.Instance.Model)
 	checkAuthentication(api, circuit.Authentication, circuit.Instance)
 	circuit.checkTokenCounts(api)
 	circuit.checkMessageHashes(api)

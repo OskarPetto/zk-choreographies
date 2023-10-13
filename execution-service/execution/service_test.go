@@ -1,8 +1,10 @@
 package execution_test
 
 import (
+	"execution-service/domain"
 	"execution-service/execution"
 	"execution-service/prover"
+	"execution-service/state"
 	"execution-service/testdata"
 	"fmt"
 	"testing"
@@ -51,9 +53,11 @@ func TestInstantiateModel(t *testing.T) {
 		Identity:   identity,
 	})
 	assert.Nil(t, err)
-	_, err = instanceService.FindInstanceById(result.Instance.Id())
+	state, err := state.Deserialize(*result.PlainState)
 	assert.Nil(t, err)
-	fmt.Printf("The length of the encrypted state is %d bytes\n", len(result.EncryptedState.Value))
+	_, err = instanceService.FindInstanceById(state.Instance.Id())
+	assert.Nil(t, err)
+	printSize(result)
 }
 
 func TestExecuteTransition0(t *testing.T) {
@@ -69,12 +73,15 @@ func TestExecuteTransition0(t *testing.T) {
 		CreateMessageCommand: nil,
 	})
 	assert.Nil(t, err)
-	_, err = instanceService.FindInstanceById(result.Instance.Id())
+	state, err := state.Deserialize(*result.PlainState)
 	assert.Nil(t, err)
-	fmt.Printf("The length of the encrypted state is %d bytes\n", len(result.EncryptedState.Value))
+	_, err = instanceService.FindInstanceById(state.Instance.Id())
+	assert.Nil(t, err)
+	printSize(result)
 }
 
 func TestExecuteTransition2(t *testing.T) {
+	privateKey := executionService.SignatureParameters.GetPrivateKeyForIdentity(1)
 	model := states[1].Model
 	identity := states[1].Identity
 	currentInstance := states[1].Instance
@@ -84,12 +91,35 @@ func TestExecuteTransition2(t *testing.T) {
 		Instance:   currentInstance.Id(),
 		Transition: model.Transitions[2].Id,
 		Identity:   identity,
-		CreateMessageCommand: &execution.CreateMessageCommand{
+		CreateMessageCommand: &domain.CreateMessageCommand{
+			Model:        model.Hash.Hash,
 			BytesMessage: []byte("hallo"),
 		},
 	})
 	assert.Nil(t, err)
-	_, err = instanceService.FindInstanceById(result.Instance.Id())
+	plainState, err := state.Deserialize(*result.PlainState)
 	assert.Nil(t, err)
-	fmt.Printf("The length of the encrypted state is %d bytes\n", len(result.EncryptedState.Value))
+	_, err = instanceService.FindInstanceById(plainState.Instance.Id())
+	assert.Nil(t, err)
+
+	plaintext, err := result.EncryptedState.Decrypt(privateKey)
+	assert.Nil(t, err)
+	plainState, err = state.Deserialize(plaintext)
+	assert.Nil(t, err)
+	_, err = messageService.FindMessageById(plainState.Message.Id())
+	assert.Nil(t, err)
+	printSize(result)
+}
+
+func printSize(result execution.ExecutionResult) {
+	plainSize := 0
+	encryptedSize := 0
+	if result.PlainState != nil {
+		plainSize = len(result.PlainState.Value)
+	}
+	if result.EncryptedState != nil {
+		encryptedSize = len(result.EncryptedState.Value)
+	}
+	fmt.Printf("The length of the plain state is %d bytes\n", plainSize)
+	fmt.Printf("The length of the encrypted state is %d bytes\n", encryptedSize)
 }

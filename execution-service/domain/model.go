@@ -20,11 +20,11 @@ var MaxEndPlaceDepth = int(math.Log2(MaxEndPlaceCount))
 
 type PlaceId = uint16
 type ParticipantId = uint16
-type MessageId = uint16
+type ModelMessageId = uint16
 
 const OutOfBoundsPlaceId = PlaceId(MaxPlaceCount)
 const EmptyParticipantId = ParticipantId(MaxParticipantCount)
-const EmptyMessageId = MessageId(MaxMessageCount)
+const EmptyMessageId = ModelMessageId(MaxMessageCount)
 
 type TransitionId = string
 
@@ -35,7 +35,7 @@ type Transition struct {
 	OutgoingPlaces        []PlaceId
 	InitiatingParticipant ParticipantId
 	RespondingParticipant ParticipantId
-	Message               MessageId
+	Message               ModelMessageId
 	Constraint            Constraint
 }
 
@@ -53,7 +53,7 @@ func OutOfBoundsTransition() Transition {
 type ModelId = string
 
 type Model struct {
-	Hash             Hash
+	Hash             SaltedHash
 	Source           string
 	PlaceCount       uint16
 	ParticipantCount uint16
@@ -80,12 +80,12 @@ func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
 	for _, startPlace := range model.StartPlaces {
 		tokenCounts[startPlace] = 1
 	}
-	messageHashes := make([][HashSize]byte, model.MessageCount)
+	messageHashes := make([]Hash, model.MessageCount)
 	for i := 0; i < int(model.MessageCount); i++ {
-		messageHashes[i] = EmptyHash().Value
+		messageHashes[i] = EmptyHash()
 	}
 	instance := Instance{
-		Model:         model.Hash.Value,
+		Model:         model.Hash.Hash,
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,

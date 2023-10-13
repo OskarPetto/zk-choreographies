@@ -26,7 +26,7 @@ func checkModelHash(api frontend.API, model Model) error {
 	mimc.Write(model.TransitionRoot)
 	mimc.Write(model.Hash.Salt)
 	result := mimc.Sum()
-	api.AssertIsEqual(result, model.Hash.Value)
+	api.AssertIsEqual(result, model.Hash.Hash)
 	return nil
 }
 
@@ -41,7 +41,7 @@ func checkInstanceHash(api frontend.API, instance Instance) error {
 	mimc.Write(instance.MessageHashes[:]...)
 	mimc.Write(instance.Hash.Salt)
 	hash := mimc.Sum()
-	api.AssertIsEqual(hash, instance.Hash.Value)
+	api.AssertIsEqual(hash, instance.Hash.Hash)
 	return nil
 }
 
@@ -66,7 +66,7 @@ func checkSignature(api frontend.API, authentication Authentication, instance In
 		return err
 	}
 
-	return eddsa.Verify(curve, authentication.Signature, instance.Hash.Value, authentication.PublicKey, &mimc)
+	return eddsa.Verify(curve, authentication.Signature, instance.Hash.Hash, authentication.PublicKey, &mimc)
 }
 
 func checkPublicKeyHash(api frontend.API, hash frontend.Variable, publicKey eddsa.PublicKey) error {

@@ -25,14 +25,14 @@ var ValidComparisonOperators = []ComparisonOperator{OperatorEqual, OperatorGreat
 // ax + by + c = 0
 type Constraint struct {
 	Coefficients       []IntegerType
-	MessageIds         []MessageId
+	MessageIds         []ModelMessageId
 	Offset             IntegerType
 	ComparisonOperator ComparisonOperator
 }
 
 func EmptyConstraint() Constraint {
 	return Constraint{
-		MessageIds: make([]MessageId, 0),
+		MessageIds: make([]ModelMessageId, 0),
 	}
 }
 
@@ -52,11 +52,11 @@ func (instance *Instance) EvaluateConstraint(constraint Constraint, input Constr
 	}
 	lhs := constraint.Offset
 	for i, message := range input.Messages {
-		hash := message.Hash.Value
+		hash := message.Hash.Hash
 		messageId := EmptyMessageId
 		for i, messageHash := range instance.MessageHashes {
-			if bytes.Equal(hash[:], messageHash[:]) {
-				messageId = MessageId(i)
+			if bytes.Equal(hash.Value[:], messageHash.Value[:]) {
+				messageId = ModelMessageId(i)
 				break
 			}
 		}

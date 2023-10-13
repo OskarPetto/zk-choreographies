@@ -5,34 +5,36 @@ import (
 	"execution-service/utils"
 )
 
-type HashJson struct {
-	Value string `json:"value"`
-	Salt  string `json:"salt"`
+type SaltedHashJson struct {
+	Hash string `json:"hash"`
+	Salt string `json:"salt"`
 }
 
-func ToJson(hash domain.Hash) HashJson {
-	return HashJson{
-		Value: utils.BytesToString(hash.Value[:]),
-		Salt:  utils.BytesToString(hash.Salt[:]),
+func ToJson(hash domain.SaltedHash) SaltedHashJson {
+	return SaltedHashJson{
+		Hash: utils.BytesToString(hash.Hash.Value[:]),
+		Salt: utils.BytesToString(hash.Salt[:]),
 	}
 }
 
-func (hash *HashJson) ToHash() (domain.Hash, error) {
-	if hash.Value == "" && hash.Salt == "" {
-		return domain.EmptyHash(), nil
+func (hash *SaltedHashJson) ToHash() (domain.SaltedHash, error) {
+	if hash.Hash == "" && hash.Salt == "" {
+		return domain.SaltedHash{}, nil
 	}
-	value, err := utils.StringToBytes(hash.Value)
+	value, err := utils.StringToBytes(hash.Hash)
 	if err != nil {
-		return domain.Hash{}, err
+		return domain.SaltedHash{}, err
 	}
 	salt, err := utils.StringToBytes(hash.Salt)
 	if err != nil {
-		return domain.Hash{}, err
+		return domain.SaltedHash{}, err
 	}
 	valueFixed := [domain.HashSize]byte(value)
 	saltFixed := [domain.SaltSize]byte(salt)
-	return domain.Hash{
-		Value: valueFixed,
-		Salt:  saltFixed,
+	return domain.SaltedHash{
+		Hash: domain.Hash{
+			Value: valueFixed,
+		},
+		Salt: saltFixed,
 	}, nil
 }

@@ -43,6 +43,12 @@ func (service *ModelService) ImportModel(model domain.Model) error {
 	return nil
 }
 
+func (service *ModelService) CreateModel(model domain.Model) domain.Model {
+	model.UpdateHash()
+	service.models[model.Id()] = model
+	return model
+}
+
 func (service *ModelService) DeleteModel(model domain.Model) {
 	delete(service.models, model.Id())
 }

@@ -58,12 +58,11 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 		return ExecutionResult{}, err
 	}
 	service.InstanceService.ImportInstance(instance)
-	publicKey := domain.NewPublicKey(privateKey.PublicKey)
-	encryptedState := encryptState(state.State{Instance: &instance}, privateKey, publicKey)
+	plainState := state.State{Model: &model, Instance: &instance}.Serialize()
 	return ExecutionResult{
-		Instance:       instance,
 		Proof:          proof,
-		EncryptedState: encryptedState,
+		EncryptedState: nil,
+		PlainState:     &plainState,
 	}, nil
 }
 
@@ -88,9 +87,9 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	nextInstance := currentInstance
 	var message *domain.Message = nil
 	if transition.Message != domain.EmptyMessageId && cmd.CreateMessageCommand != nil {
-		tmp := domain.NewMessage(cmd.CreateMessageCommand.BytesMessage, cmd.CreateMessageCommand.IntegerMessage)
+		tmp := domain.CreateMessage(*cmd.CreateMessageCommand)
 		message = &tmp
-		nextInstance = currentInstance.SetMessageHash(transition, message.Hash)
+		nextInstance = currentInstance.SetMessageHash(transition, message.Hash.Hash)
 	}
 	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
 	if err != nil {
@@ -117,11 +116,17 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if transition.RespondingParticipant != domain.EmptyParticipantId {
 		publicKey = currentInstance.FindParticipantById(transition.RespondingParticipant)
 	}
-	encryptedState := encryptState(state.State{Instance: &nextInstance, Message: message}, privateKey, publicKey)
+	plainState := state.State{Model: &model, Instance: &nextInstance}.Serialize()
+	var encryptedState *domain.Ciphertext = nil
+	if message != nil {
+		service.MessageService.ImportMessage(*message)
+		tmp := encryptState(state.State{Message: message}, privateKey, publicKey)
+		encryptedState = &tmp
+	}
 	return ExecutionResult{
-		Instance:       nextInstance,
 		Proof:          proof,
 		EncryptedState: encryptedState,
+		PlainState:     &plainState,
 	}, nil
 }
 
@@ -143,17 +148,14 @@ func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand)
 	if err != nil {
 		return ExecutionResult{}, err
 	}
-	service.InstanceService.DeleteInstance(instance)
-	publicKey := domain.NewPublicKey(privateKey.PublicKey)
-	encryptedState := encryptState(state.State{}, privateKey, publicKey)
 	return ExecutionResult{
-		Instance:       instance,
 		Proof:          proof,
-		EncryptedState: encryptedState,
+		EncryptedState: nil,
+		PlainState:     nil,
 	}, nil
 }
 
 func encryptState(plainState state.State, privateKey *eddsa.PrivateKey, publicKey domain.PublicKey) domain.Ciphertext {
-	serializedState := state.Serialize(plainState)
+	serializedState := plainState.Serialize()
 	return serializedState.Encrypt(privateKey, publicKey)
 }

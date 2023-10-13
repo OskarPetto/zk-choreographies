@@ -18,7 +18,7 @@ func TestSerializationAndDeserialization(t *testing.T) {
 		Instance: &states[0].Instance,
 		Message:  states[0].Message,
 	}
-	result, err := state.Deserialize(state.Serialize(plainState))
+	result, err := state.Deserialize(plainState.Serialize())
 	assert.Nil(t, err)
 	assert.Equal(t, result, plainState)
 }

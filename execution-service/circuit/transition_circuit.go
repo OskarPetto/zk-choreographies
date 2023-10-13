@@ -87,6 +87,7 @@ func (circuit *TransitionCircuit) findConstraintInputMessageIds(api frontend.API
 		if err != nil {
 			return ConstraintMessageIds{}, err
 		}
+		mimc.Write(circuit.Model.Hash.Hash)
 		mimc.Write(integerMessage)
 		mimc.Write(salt)
 		messageHash := mimc.Sum()
