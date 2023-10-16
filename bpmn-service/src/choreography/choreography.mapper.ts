@@ -94,7 +94,7 @@ export class ChoreographyMapper {
       (participantId) =>
         choreographyTaskTransitions.some(
           (choreographyTask) =>
-            choreographyTask.initiatingParticipant === participantId,
+            choreographyTask.sender === participantId,
         ),
     );
 
@@ -323,8 +323,8 @@ export class ChoreographyMapper {
           name: choreographyTask.name,
           incomingPlaces: [incomingPlaceId],
           outgoingPlaces: [additionalPlaceId],
-          initiatingParticipant: initiatingParticipantId,
-          respondingParticipant: respondingParticipantId,
+          sender: initiatingParticipantId,
+          recipient: respondingParticipantId,
           message: initialMessage,
         },
         {
@@ -333,8 +333,8 @@ export class ChoreographyMapper {
           name: choreographyTask.name,
           incomingPlaces: [additionalPlaceId],
           outgoingPlaces: [outgoingPlaceId],
-          initiatingParticipant: respondingParticipantId,
-          respondingParticipant: initiatingParticipantId,
+          sender: respondingParticipantId,
+          recipient: initiatingParticipantId,
           message: responseMessage,
         },
       ];
@@ -348,8 +348,8 @@ export class ChoreographyMapper {
           name: choreographyTask.name,
           incomingPlaces: [incomingPlaceId],
           outgoingPlaces: [outgoingPlaceId],
-          initiatingParticipant: initiatingParticipantId,
-          respondingParticipant: respondingParticipantId,
+          sender: initiatingParticipantId,
+          recipient: respondingParticipantId,
           message: initialMessage,
         },
         {
@@ -358,8 +358,8 @@ export class ChoreographyMapper {
           name: choreographyTask.name,
           incomingPlaces: [outgoingPlaceId],
           outgoingPlaces: [outgoingPlaceId],
-          initiatingParticipant: initiatingParticipantId,
-          respondingParticipant: respondingParticipantId,
+          sender: initiatingParticipantId,
+          recipient: respondingParticipantId,
           message: initialMessage,
         },
       ];

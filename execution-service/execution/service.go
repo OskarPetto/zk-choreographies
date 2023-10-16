@@ -116,8 +116,8 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 		return ExecutionResult{}, err
 	}
 	var encryptedMessage *domain.Ciphertext = nil
-	if message != nil && transition.RespondingParticipant != domain.EmptyParticipantId {
-		publicKey := currentInstance.FindParticipantById(transition.RespondingParticipant)
+	if message != nil && transition.Recipient != domain.EmptyParticipantId {
+		publicKey := currentInstance.FindParticipantById(transition.Recipient)
 		plaintext := state.SerializeMessage(*message)
 		tmp := plaintext.Encrypt(privateKey, publicKey)
 		encryptedMessage = &tmp

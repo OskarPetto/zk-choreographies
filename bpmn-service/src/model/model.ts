@@ -17,8 +17,8 @@ export interface Transition {
   name?: string;
   incomingPlaces: PlaceId[];
   outgoingPlaces: PlaceId[];
-  initiatingParticipant?: ParticipantId;
-  respondingParticipant?: ParticipantId;
+  sender?: ParticipantId;
+  recipient?: ParticipantId;
   message?: MessageId;
   constraint?: Constraint;
 }

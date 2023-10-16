@@ -43,8 +43,8 @@
         7
       ],
       "message": 9,
-      "initiatingParticipant": 0,
-      "respondingParticipant": 1
+      "sender": 0,
+      "recipient": 1
     },
     {
       "id": "ChoreographyTask_0kp4flv_Participant_0n7kwiu",
@@ -57,8 +57,8 @@
         1
       ],
       "message": 0,
-      "initiatingParticipant": 1,
-      "respondingParticipant": 0
+      "sender": 1,
+      "recipient": 0
     },
     {
       "id": "ChoreographyTask_0nl2rhr_0",
@@ -71,8 +71,8 @@
         6
       ],
       "message": 8,
-      "initiatingParticipant": 1,
-      "respondingParticipant": 2,
+      "sender": 1,
+      "recipient": 2,
       "constraint": {
         "coefficients": [
           1,
@@ -97,8 +97,8 @@
         6
       ],
       "message": 8,
-      "initiatingParticipant": 1,
-      "respondingParticipant": 2
+      "sender": 1,
+      "recipient": 2
     },
     {
       "id": "ChoreographyTask_1uie9z3_Participant_0n7kwiu",
@@ -111,8 +111,8 @@
         8
       ],
       "message": 7,
-      "initiatingParticipant": 1,
-      "respondingParticipant": 0
+      "sender": 1,
+      "recipient": 0
     },
     {
       "id": "ChoreographyTask_1uie9z3_Participant_0x6v44d",
@@ -125,8 +125,8 @@
         2,
         3
       ],
-      "initiatingParticipant": 0,
-      "respondingParticipant": 1
+      "sender": 0,
+      "recipient": 1
     },
     {
       "id": "ChoreographyTask_1dsovf5_Participant_0x6v44d",
@@ -139,8 +139,8 @@
         9
       ],
       "message": 6,
-      "initiatingParticipant": 0,
-      "respondingParticipant": 1
+      "sender": 0,
+      "recipient": 1
     },
     {
       "id": "ChoreographyTask_1dsovf5_Participant_0n7kwiu",
@@ -153,8 +153,8 @@
         4
       ],
       "message": 3,
-      "initiatingParticipant": 1,
-      "respondingParticipant": 0
+      "sender": 1,
+      "recipient": 0
     },
     {
       "id": "ChoreographyTask_1htg6wy_Participant_0n7kwiu",
@@ -167,8 +167,8 @@
         10
       ],
       "message": 5,
-      "initiatingParticipant": 1,
-      "respondingParticipant": 0
+      "sender": 1,
+      "recipient": 0
     },
     {
       "id": "ChoreographyTask_1htg6wy_Participant_0x6v44d",
@@ -181,8 +181,8 @@
         5
       ],
       "message": 2,
-      "initiatingParticipant": 0,
-      "respondingParticipant": 1
+      "sender": 0,
+      "recipient": 1
     },
     {
       "id": "ChoreographyTask_1e51o0k_Participant_0n7kwiu",
@@ -195,8 +195,8 @@
         11
       ],
       "message": 1,
-      "initiatingParticipant": 1,
-      "respondingParticipant": 0,
+      "sender": 1,
+      "recipient": 0,
       "constraint": {
         "coefficients": [
           1,
@@ -221,8 +221,8 @@
         2,
         3
       ],
-      "initiatingParticipant": 0,
-      "respondingParticipant": 1
+      "sender": 0,
+      "recipient": 1
     }
   ]
 }

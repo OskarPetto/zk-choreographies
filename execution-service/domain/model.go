@@ -29,24 +29,24 @@ const EmptyMessageId = ModelMessageId(MaxMessageCount)
 type TransitionId = string
 
 type Transition struct {
-	Id                    TransitionId
-	Name                  string
-	IncomingPlaces        []PlaceId
-	OutgoingPlaces        []PlaceId
-	InitiatingParticipant ParticipantId
-	RespondingParticipant ParticipantId
-	Message               ModelMessageId
-	Constraint            Constraint
+	Id             TransitionId
+	Name           string
+	IncomingPlaces []PlaceId
+	OutgoingPlaces []PlaceId
+	Sender         ParticipantId
+	Recipient      ParticipantId
+	Message        ModelMessageId
+	Constraint     Constraint
 }
 
 func OutOfBoundsTransition() Transition {
 	return Transition{
-		IncomingPlaces:        make([]PlaceId, 0),
-		OutgoingPlaces:        make([]PlaceId, 0),
-		InitiatingParticipant: EmptyParticipantId,
-		RespondingParticipant: EmptyParticipantId,
-		Message:               EmptyMessageId,
-		Constraint:            EmptyConstraint(),
+		IncomingPlaces: make([]PlaceId, 0),
+		OutgoingPlaces: make([]PlaceId, 0),
+		Sender:         EmptyParticipantId,
+		Recipient:      EmptyParticipantId,
+		Message:        EmptyMessageId,
+		Constraint:     EmptyConstraint(),
 	}
 }
 
@@ -107,8 +107,8 @@ func (model *Model) FindNextParticipants(transition Transition) []ParticipantId 
 	participants := make([]ParticipantId, 0)
 	for _, nextTransition := range model.Transitions {
 		intersection := intersect(transition.OutgoingPlaces, nextTransition.IncomingPlaces)
-		if len(intersection) > 0 && nextTransition.InitiatingParticipant != EmptyParticipantId {
-			participants = append(participants, nextTransition.InitiatingParticipant)
+		if len(intersection) > 0 && nextTransition.Sender != EmptyParticipantId {
+			participants = append(participants, nextTransition.Sender)
 		}
 	}
 	return participants

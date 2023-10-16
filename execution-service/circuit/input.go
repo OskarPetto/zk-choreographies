@@ -57,13 +57,13 @@ type Constraint struct {
 }
 
 type Transition struct {
-	IncomingPlaces        [domain.MaxBranchingFactor]frontend.Variable
-	OutgoingPlaces        [domain.MaxBranchingFactor]frontend.Variable
-	InitiatingParticipant frontend.Variable
-	RespondingParticipant frontend.Variable
-	Message               frontend.Variable
-	Constraint            Constraint
-	MerkleProof           MerkleProof
+	IncomingPlaces [domain.MaxBranchingFactor]frontend.Variable
+	OutgoingPlaces [domain.MaxBranchingFactor]frontend.Variable
+	Sender         frontend.Variable
+	Recipient      frontend.Variable
+	Message        frontend.Variable
+	Constraint     Constraint
+	MerkleProof    MerkleProof
 }
 
 type Model struct {
@@ -252,12 +252,12 @@ func ToTransition(model domain.Model, transition domain.Transition) Transition {
 		merkeProof.Path[i] = proofPath[i]
 	}
 	return Transition{
-		IncomingPlaces:        incomingPlaces,
-		OutgoingPlaces:        outgoingPlaces,
-		InitiatingParticipant: transition.InitiatingParticipant,
-		RespondingParticipant: transition.RespondingParticipant,
-		Message:               transition.Message,
-		Constraint:            fromConstraint(transition.Constraint),
+		IncomingPlaces: incomingPlaces,
+		OutgoingPlaces: outgoingPlaces,
+		Sender:         transition.Sender,
+		Recipient:      transition.Recipient,
+		Message:        transition.Message,
+		Constraint:     fromConstraint(transition.Constraint),
 		MerkleProof: MerkleProof{
 			MerkleProof: merkeProof,
 			Index:       index,

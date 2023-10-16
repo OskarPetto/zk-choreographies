@@ -171,8 +171,8 @@ export class ModelReducer {
         name: transition.name,
         incomingPlaces: [...transition.incomingPlaces],
         outgoingPlaces: [...transition.outgoingPlaces],
-        initiatingParticipant: transition.initiatingParticipant,
-        respondingParticipant: transition.respondingParticipant,
+        sender: transition.sender,
+        recipient: transition.recipient,
         message: transition.message,
         constraint: transition.constraint
           ? { ...transition.constraint }
