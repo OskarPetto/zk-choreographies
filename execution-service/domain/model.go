@@ -58,7 +58,6 @@ type Model struct {
 	PlaceCount       uint16
 	ParticipantCount uint16
 	MessageCount     uint16
-	VariableCount    uint16
 	StartPlaces      []PlaceId
 	EndPlaces        []PlaceId
 	Transitions      []Transition
