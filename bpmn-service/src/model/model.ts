@@ -20,7 +20,7 @@ export interface Transition {
   initiatingParticipant?: ParticipantId;
   respondingParticipant?: ParticipantId;
   message?: MessageId;
-  messageConstraint?: Constraint;
+  constraint?: Constraint;
 }
 
 export interface Model {

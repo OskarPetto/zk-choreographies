@@ -31,9 +31,7 @@ type Constraint struct {
 }
 
 func EmptyConstraint() Constraint {
-	return Constraint{
-		MessageIds: make([]ModelMessageId, 0),
-	}
+	return Constraint{}
 }
 
 type ConstraintInput struct {

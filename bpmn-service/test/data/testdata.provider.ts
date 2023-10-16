@@ -331,7 +331,7 @@ export class TestdataProvider {
           initiatingParticipant: 1,
           respondingParticipant: 2,
           message: 8,
-          messageConstraint: {
+          constraint: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,
@@ -416,7 +416,7 @@ export class TestdataProvider {
           initiatingParticipant: 1,
           respondingParticipant: 0,
           message: 1,
-          messageConstraint: {
+          constraint: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,
@@ -487,7 +487,7 @@ export class TestdataProvider {
           message: 8,
           initiatingParticipant: 1,
           respondingParticipant: 2,
-          messageConstraint: {
+          constraint: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,
@@ -572,7 +572,7 @@ export class TestdataProvider {
           message: 1,
           initiatingParticipant: 1,
           respondingParticipant: 0,
-          messageConstraint: {
+          constraint: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,

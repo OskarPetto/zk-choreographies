@@ -73,7 +73,7 @@
       "message": 8,
       "initiatingParticipant": 1,
       "respondingParticipant": 2,
-      "messageConstraint": {
+      "constraint": {
         "coefficients": [
           1,
           -1
@@ -197,7 +197,7 @@
       "message": 1,
       "initiatingParticipant": 1,
       "respondingParticipant": 0,
-      "messageConstraint": {
+      "constraint": {
         "coefficients": [
           1,
           -1

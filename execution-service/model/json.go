@@ -242,7 +242,28 @@ func transitionToJson(transition domain.Transition) TransitionJson {
 		tmp := uint(transition.Message)
 		jsonTransition.Message = &tmp
 	}
+	if transition.Constraint.Coefficients != nil {
+		tmp := constraintToJson(transition.Constraint)
+		jsonTransition.Contraint = &tmp
+	}
 	return jsonTransition
+}
+
+func constraintToJson(constraint domain.Constraint) ConstraintJson {
+	coefficients := make([]int, len(constraint.Coefficients))
+	for i, coefficient := range constraint.Coefficients {
+		coefficients[i] = int(coefficient)
+	}
+	messageIds := make([]uint, len(constraint.MessageIds))
+	for i, messageId := range constraint.MessageIds {
+		messageIds[i] = uint(messageId)
+	}
+	return ConstraintJson{
+		Coefficients:       coefficients,
+		MessageIds:         messageIds,
+		Offset:             int(constraint.Offset),
+		ComparisonOperator: uint(constraint.ComparisonOperator),
+	}
 }
 
 func isValidOparator(oparator uint) bool {
