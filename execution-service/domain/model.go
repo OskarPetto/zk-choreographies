@@ -103,3 +103,29 @@ func (model *Model) FindTransitionById(id TransitionId) (Transition, error) {
 	}
 	return Transition{}, fmt.Errorf("transition %s not found in model %s", id, model.Id())
 }
+
+func (model *Model) FindNextParticipants(transition Transition) []ParticipantId {
+	participants := make([]ParticipantId, 0)
+	for _, nextTransition := range model.Transitions {
+		intersection := intersect(transition.OutgoingPlaces, nextTransition.IncomingPlaces)
+		if len(intersection) > 0 && nextTransition.InitiatingParticipant != EmptyParticipantId {
+			participants = append(participants, nextTransition.InitiatingParticipant)
+		}
+	}
+	return participants
+}
+
+func intersect(set1 []PlaceId, set2 []PlaceId) []PlaceId {
+	result := make([]PlaceId, 0)
+	hash := make(map[PlaceId]bool)
+	for _, v := range set1 {
+		hash[v] = true
+	}
+	for _, v := range set2 {
+		if hash[v] {
+			result = append(result, v)
+			hash[v] = false
+		}
+	}
+	return result
+}

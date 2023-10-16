@@ -86,6 +86,10 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 		tmp := domain.CreateMessage(model.Hash.Hash, *cmd.CreateMessageCommand)
 		message = &tmp
 		nextInstance = currentInstance.SetMessageHash(transition, message.Hash.Hash)
+		err = service.MessageService.ImportMessage(*message)
+		if err != nil {
+			return ExecutionResult{}, err
+		}
 	}
 	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
 	if err != nil {
@@ -107,19 +111,17 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return ExecutionResult{}, err
 	}
-	service.InstanceService.ImportInstance(nextInstance)
-	publicKey := domain.NewPublicKey(privateKey.PublicKey)
-	if transition.RespondingParticipant != domain.EmptyParticipantId {
-		publicKey = currentInstance.FindParticipantById(transition.RespondingParticipant)
+	err = service.InstanceService.ImportInstance(nextInstance)
+	if err != nil {
+		return ExecutionResult{}, err
 	}
 	var encryptedMessage *domain.Ciphertext = nil
-	if message != nil {
-		service.MessageService.ImportMessage(*message)
+	if message != nil && transition.RespondingParticipant != domain.EmptyParticipantId {
+		publicKey := currentInstance.FindParticipantById(transition.RespondingParticipant)
 		plaintext := state.SerializeMessage(*message)
 		tmp := plaintext.Encrypt(privateKey, publicKey)
 		encryptedMessage = &tmp
 	}
-
 	return ExecutionResult{
 		Proof: proof,
 		State: domain.State{Model: &model, Instance: &nextInstance, EncryptedMessage: encryptedMessage},
