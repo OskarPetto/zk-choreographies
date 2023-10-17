@@ -312,32 +312,84 @@ export class ChoreographyMapper {
       : undefined;
 
     if (choreographyTask.loopType === undefined) {
-      const additionalPlaceId =
-        sequenceFlowPlaceIds.size + additionalPlaceIds.length;
-      additionalPlaceIds.push(additionalPlaceId);
 
-      return [
-        {
-          id: `${choreographyTask.id}_${choreographyTask.initiatingParticipant}`,
-          type: TransitionType.REQUIRED,
-          name: choreographyTask.name,
-          incomingPlaces: [incomingPlaceId],
-          outgoingPlaces: [additionalPlaceId],
-          sender: initiatingParticipantId,
-          recipient: respondingParticipantId,
-          message: initialMessage,
-        },
-        {
-          id: `${choreographyTask.id}_${choreographyTask.respondingParticipant}`,
-          type: TransitionType.REQUIRED,
-          name: choreographyTask.name,
-          incomingPlaces: [additionalPlaceId],
-          outgoingPlaces: [outgoingPlaceId],
-          sender: respondingParticipantId,
-          recipient: initiatingParticipantId,
-          message: responseMessage,
-        },
-      ];
+      if (initialMessage != undefined && responseMessage != undefined) {
+        const additionalPlaceId1 =
+          sequenceFlowPlaceIds.size + additionalPlaceIds.length;
+        const additionalPlaceId2 = additionalPlaceId1 + 1;
+        additionalPlaceIds.push(additionalPlaceId1);
+        additionalPlaceIds.push(additionalPlaceId2);
+
+        return [
+          {
+            id: `${choreographyTask.id}_0`,
+            type: TransitionType.REQUIRED,
+            name: choreographyTask.name,
+            incomingPlaces: [incomingPlaceId],
+            outgoingPlaces: [additionalPlaceId1],
+            sender: initiatingParticipantId,
+            recipient: respondingParticipantId,
+            message: initialMessage,
+          },
+          {
+            id: `${choreographyTask.id}_1`,
+            type: TransitionType.REQUIRED,
+            name: choreographyTask.name,
+            incomingPlaces: [additionalPlaceId1],
+            outgoingPlaces: [additionalPlaceId2],
+            sender: respondingParticipantId,
+            recipient: initiatingParticipantId,
+            message: responseMessage,
+          },
+          {
+            id: `${choreographyTask.id}_2`,
+            type: TransitionType.REQUIRED,
+            name: choreographyTask.name,
+            incomingPlaces: [additionalPlaceId2],
+            outgoingPlaces: [outgoingPlaceId],
+            sender: initiatingParticipantId,
+            recipient: respondingParticipantId,
+          },
+        ];
+      } else if (initialMessage != undefined) {
+        const additionalPlaceId =
+          sequenceFlowPlaceIds.size + additionalPlaceIds.length;
+        additionalPlaceIds.push(additionalPlaceId);
+
+        return [
+          {
+            id: `${choreographyTask.id}_0`,
+            type: TransitionType.REQUIRED,
+            name: choreographyTask.name,
+            incomingPlaces: [incomingPlaceId],
+            outgoingPlaces: [additionalPlaceId],
+            sender: initiatingParticipantId,
+            recipient: respondingParticipantId,
+            message: initialMessage,
+          },
+          {
+            id: `${choreographyTask.id}_1`,
+            type: TransitionType.REQUIRED,
+            name: choreographyTask.name,
+            incomingPlaces: [additionalPlaceId],
+            outgoingPlaces: [outgoingPlaceId],
+            sender: respondingParticipantId,
+            recipient: initiatingParticipantId,
+          },
+        ];
+      } else {
+        return [
+          {
+            id: choreographyTask.id,
+            type: TransitionType.REQUIRED,
+            name: choreographyTask.name,
+            incomingPlaces: [incomingPlaceId],
+            outgoingPlaces: [outgoingPlaceId],
+            sender: initiatingParticipantId,
+            recipient: respondingParticipantId,
+          }
+        ];
+      }
     } else if (
       choreographyTask.loopType === LoopType.MULTI_INSTANCE_SEQUENTIAL
     ) {

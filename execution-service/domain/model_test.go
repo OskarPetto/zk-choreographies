@@ -19,7 +19,7 @@ func TestInstantiateModel(t *testing.T) {
 }
 
 func TestFindTransitionById(t *testing.T) {
-	id := "ChoreographyTask_0kp4flv_Participant_0x6v44d"
+	id := "ChoreographyTask_0kp4flv_0"
 	model := states[0].Model
 	transition, err := model.FindTransitionById(id)
 	assert.Nil(t, err)

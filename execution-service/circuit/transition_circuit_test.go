@@ -245,13 +245,13 @@ func TestTransition_OtherParticipant(t *testing.T) {
 }
 
 func TestTransition_InvalidConstraintInput(t *testing.T) {
-	model := transitionStates[3].Model
-	currentInstance := transitionStates[3].Instance
-	nextInstance := transitionStates[4].Instance
-	transition := transitionStates[4].Transition
-	nextSignature := transitionStates[4].Signature
+	model := transitionStates[4].Model
+	currentInstance := transitionStates[4].Instance
+	nextInstance := transitionStates[5].Instance
+	transition := transitionStates[5].Transition
+	nextSignature := transitionStates[5].Signature
 
-	constraintInput := transitionStates[4].ConstraintInput
+	constraintInput := transitionStates[5].ConstraintInput
 	constraintInput.Messages[0].IntegerMessage = 1
 
 	witness := circuit.TransitionCircuit{
@@ -268,8 +268,8 @@ func TestTransition_InvalidConstraintInput(t *testing.T) {
 }
 
 func TestTransition_InvalidMessageForConstraint(t *testing.T) {
-	model := transitionStates[3].Model
-	currentInstance := transitionStates[3].Instance
+	model := transitionStates[4].Model
+	currentInstance := transitionStates[4].Instance
 	orderValue := int32(6)
 	stockValue := int32(4)
 	cmdOrder := domain.CreateMessageCommand{BytesMessage: nil, IntegerMessage: &orderValue}
@@ -280,14 +280,14 @@ func TestTransition_InvalidMessageForConstraint(t *testing.T) {
 	currentInstance.MessageHashes[9] = order.Hash.Hash
 	currentInstance.MessageHashes[0] = stock.Hash.Hash
 	currentInstance.UpdateHash()
-	nextInstance := transitionStates[4].Instance
+	nextInstance := transitionStates[5].Instance
 	nextInstance.MessageHashes[9] = order.Hash.Hash
 	nextInstance.MessageHashes[0] = stock.Hash.Hash
 	nextInstance.UpdateHash()
-	transition := transitionStates[4].Transition
+	transition := transitionStates[5].Transition
 	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(1))
 
-	constraintInput := transitionStates[4].ConstraintInput
+	constraintInput := transitionStates[5].ConstraintInput
 	constraintInput.Messages[0] = order
 
 	witness := circuit.TransitionCircuit{
