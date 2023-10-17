@@ -15,6 +15,8 @@ export class ModelReducer {
         case TransitionType.OPTIONAL_INCOMING:
           this.removeTransitionAndIncomingPlaces(newModel, transition);
           break;
+        case undefined:
+          throw Error(`Model has already been reduced`);
       }
     }
     this.repairPlaceIds(newModel);
@@ -29,6 +31,7 @@ export class ModelReducer {
       placeMap.set(place, index++);
     }
     for (const transition of model.transitions) {
+      transition.type = undefined;
       transition.incomingPlaces = transition.incomingPlaces.map(
         (place) => placeMap.get(place)!,
       );

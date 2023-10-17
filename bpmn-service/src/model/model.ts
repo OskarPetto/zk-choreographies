@@ -13,7 +13,7 @@ export enum TransitionType {
 
 export interface Transition {
   id: TransitionId;
-  type: TransitionType;
+  type?: TransitionType;
   name?: string;
   incomingPlaces: PlaceId[];
   outgoingPlaces: PlaceId[];

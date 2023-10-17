@@ -12,7 +12,6 @@
   "transitions": [
     {
       "id": "Event_1525yky",
-      "type": 0,
       "incomingPlaces": [
         12
       ],
@@ -22,7 +21,6 @@
     },
     {
       "id": "Event_08d32d7",
-      "type": 0,
       "name": "Order fullfilled",
       "incomingPlaces": [
         4,
@@ -34,7 +32,6 @@
     },
     {
       "id": "ChoreographyTask_0kp4flv_Participant_0x6v44d",
-      "type": 0,
       "name": "Submit purchase order",
       "incomingPlaces": [
         0
@@ -48,7 +45,6 @@
     },
     {
       "id": "ChoreographyTask_0kp4flv_Participant_0n7kwiu",
-      "type": 0,
       "name": "Submit purchase order",
       "incomingPlaces": [
         7
@@ -62,7 +58,6 @@
     },
     {
       "id": "ChoreographyTask_0nl2rhr_0",
-      "type": 0,
       "name": "Purchase raw materials",
       "incomingPlaces": [
         1
@@ -88,7 +83,6 @@
     },
     {
       "id": "ChoreographyTask_0nl2rhr_loop",
-      "type": 0,
       "name": "Purchase raw materials",
       "incomingPlaces": [
         6
@@ -102,7 +96,6 @@
     },
     {
       "id": "ChoreographyTask_1uie9z3_Participant_0n7kwiu",
-      "type": 0,
       "name": "Confirm order",
       "incomingPlaces": [
         6
@@ -116,7 +109,6 @@
     },
     {
       "id": "ChoreographyTask_1uie9z3_Participant_0x6v44d",
-      "type": 0,
       "name": "Confirm order",
       "incomingPlaces": [
         8
@@ -130,7 +122,6 @@
     },
     {
       "id": "ChoreographyTask_1dsovf5_Participant_0x6v44d",
-      "type": 0,
       "name": "Ship product",
       "incomingPlaces": [
         2
@@ -144,7 +135,6 @@
     },
     {
       "id": "ChoreographyTask_1dsovf5_Participant_0n7kwiu",
-      "type": 0,
       "name": "Ship product",
       "incomingPlaces": [
         9
@@ -158,7 +148,6 @@
     },
     {
       "id": "ChoreographyTask_1htg6wy_Participant_0n7kwiu",
-      "type": 0,
       "name": "Invoice customer",
       "incomingPlaces": [
         3
@@ -172,7 +161,6 @@
     },
     {
       "id": "ChoreographyTask_1htg6wy_Participant_0x6v44d",
-      "type": 0,
       "name": "Invoice customer",
       "incomingPlaces": [
         10
@@ -186,7 +174,6 @@
     },
     {
       "id": "ChoreographyTask_1e51o0k_Participant_0n7kwiu",
-      "type": 0,
       "name": "Confirm order",
       "incomingPlaces": [
         1
@@ -212,7 +199,6 @@
     },
     {
       "id": "ChoreographyTask_1e51o0k_Participant_0x6v44d",
-      "type": 0,
       "name": "Confirm order",
       "incomingPlaces": [
         11

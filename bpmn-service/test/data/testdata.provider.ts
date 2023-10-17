@@ -447,20 +447,17 @@ export class TestdataProvider {
       transitions: [
         {
           id: 'Event_1525yky',
-          type: TransitionType.REQUIRED,
           incomingPlaces: [12],
           outgoingPlaces: [0],
         },
         {
           id: 'Event_08d32d7',
-          type: TransitionType.REQUIRED,
           name: 'Order fullfilled',
           incomingPlaces: [4, 5],
           outgoingPlaces: [13],
         },
         {
           id: 'ChoreographyTask_0kp4flv_Participant_0x6v44d',
-          type: TransitionType.REQUIRED,
           name: 'Submit purchase order',
           incomingPlaces: [0],
           outgoingPlaces: [7],
@@ -470,7 +467,6 @@ export class TestdataProvider {
         },
         {
           id: 'ChoreographyTask_0kp4flv_Participant_0n7kwiu',
-          type: TransitionType.REQUIRED,
           name: 'Submit purchase order',
           incomingPlaces: [7],
           outgoingPlaces: [1],
@@ -480,7 +476,6 @@ export class TestdataProvider {
         },
         {
           id: 'ChoreographyTask_0nl2rhr_0',
-          type: TransitionType.REQUIRED,
           name: 'Purchase raw materials',
           incomingPlaces: [1],
           outgoingPlaces: [6],
@@ -496,7 +491,6 @@ export class TestdataProvider {
         },
         {
           id: 'ChoreographyTask_0nl2rhr_loop',
-          type: TransitionType.REQUIRED,
           name: 'Purchase raw materials',
           incomingPlaces: [6],
           outgoingPlaces: [6],
@@ -506,7 +500,6 @@ export class TestdataProvider {
         },
         {
           id: 'ChoreographyTask_1uie9z3_Participant_0n7kwiu',
-          type: TransitionType.REQUIRED,
           name: 'Confirm order',
           incomingPlaces: [6],
           outgoingPlaces: [8],
@@ -516,7 +509,6 @@ export class TestdataProvider {
         },
         {
           id: 'ChoreographyTask_1uie9z3_Participant_0x6v44d',
-          type: TransitionType.REQUIRED,
           name: 'Confirm order',
           incomingPlaces: [8],
           outgoingPlaces: [2, 3],
@@ -525,7 +517,6 @@ export class TestdataProvider {
         },
         {
           id: 'ChoreographyTask_1dsovf5_Participant_0x6v44d',
-          type: TransitionType.REQUIRED,
           name: 'Ship product',
           incomingPlaces: [2],
           outgoingPlaces: [9],
@@ -535,7 +526,6 @@ export class TestdataProvider {
         },
         {
           id: 'ChoreographyTask_1dsovf5_Participant_0n7kwiu',
-          type: TransitionType.REQUIRED,
           name: 'Ship product',
           incomingPlaces: [9],
           outgoingPlaces: [4],
@@ -545,7 +535,6 @@ export class TestdataProvider {
         },
         {
           id: 'ChoreographyTask_1htg6wy_Participant_0n7kwiu',
-          type: TransitionType.REQUIRED,
           name: 'Invoice customer',
           incomingPlaces: [3],
           outgoingPlaces: [10],
@@ -555,7 +544,6 @@ export class TestdataProvider {
         },
         {
           id: 'ChoreographyTask_1htg6wy_Participant_0x6v44d',
-          type: TransitionType.REQUIRED,
           name: 'Invoice customer',
           incomingPlaces: [10],
           outgoingPlaces: [5],
@@ -565,7 +553,6 @@ export class TestdataProvider {
         },
         {
           id: 'ChoreographyTask_1e51o0k_Participant_0n7kwiu',
-          type: TransitionType.REQUIRED,
           name: 'Confirm order',
           incomingPlaces: [1],
           outgoingPlaces: [11],
@@ -581,7 +568,6 @@ export class TestdataProvider {
         },
         {
           id: 'ChoreographyTask_1e51o0k_Participant_0x6v44d',
-          type: TransitionType.REQUIRED,
           name: 'Confirm order',
           incomingPlaces: [11],
           outgoingPlaces: [2, 3],
