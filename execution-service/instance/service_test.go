@@ -2,6 +2,7 @@ package instance_test
 
 import (
 	"execution-service/instance"
+	"execution-service/model"
 	"execution-service/parameters"
 	"execution-service/testdata"
 	"execution-service/utils"
@@ -13,7 +14,8 @@ import (
 var signatureParameters parameters.SignatureParameters = parameters.NewSignatureParameters()
 var states = testdata.GetModel2States(signatureParameters)
 
-var service = instance.NewInstanceService()
+var modelService = model.NewModelService()
+var service = instance.NewInstanceService(modelService)
 
 func TestFindInstancesByModel(t *testing.T) {
 	instance := states[0].Instance

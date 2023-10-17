@@ -22,17 +22,25 @@ type ConstraintMessageIds struct {
 }
 
 type TransitionCircuit struct {
-	Model           Model
-	CurrentInstance Instance
-	NextInstance    Instance
-	Transition      Transition
-	Authentication  Authentication
-	ConstraintInput ConstraintInput
+	Model                   Model
+	CurrentInstance         Instance
+	NextInstance            Instance
+	Transition              Transition
+	SenderAuthentication    Authentication
+	RecipientAuthentication Authentication
+	ConstraintInput         ConstraintInput
 }
 
 func NewTransitionCircuit() TransitionCircuit {
 	return TransitionCircuit{
-		Authentication: Authentication{
+		SenderAuthentication: Authentication{
+			MerkleProof: MerkleProof{
+				MerkleProof: merkle.MerkleProof{
+					Path: make([]frontend.Variable, domain.MaxParticipantDepth+1),
+				},
+			},
+		},
+		RecipientAuthentication: Authentication{
 			MerkleProof: MerkleProof{
 				MerkleProof: merkle.MerkleProof{
 					Path: make([]frontend.Variable, domain.MaxParticipantDepth+1),
@@ -62,9 +70,16 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
+	err = checkAuthentication(api, circuit.SenderAuthentication, circuit.NextInstance)
+	if err != nil {
+		return err
+	}
+	err = checkAuthentication(api, circuit.RecipientAuthentication, circuit.NextInstance)
+	if err != nil {
+		return err
+	}
 	api.AssertIsEqual(circuit.CurrentInstance.Model, circuit.NextInstance.Model)
 	circuit.comparePublicKeys(api)
-	checkAuthentication(api, circuit.Authentication, circuit.NextInstance)
 	tokenCountChanges := circuit.compareTokenCounts(api)
 	addedMessageId := circuit.findAddedMessageId(api)
 	constraintInputMessageIds, err := circuit.findConstraintInputMessageIds(api)
@@ -87,7 +102,6 @@ func (circuit *TransitionCircuit) findConstraintInputMessageIds(api frontend.API
 		if err != nil {
 			return ConstraintMessageIds{}, err
 		}
-		mimc.Write(circuit.Model.Hash.Hash)
 		mimc.Write(integerMessage)
 		mimc.Write(salt)
 		messageHash := mimc.Sum()
@@ -188,7 +202,8 @@ func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountCh
 	checkTransitionHash(api, circuit.Transition.MerkleProof.MerkleProof.Path[0], circuit.Transition)
 
 	transition := circuit.Transition
-	participantId := circuit.Authentication.MerkleProof.Index
+	senderParticipantId := circuit.SenderAuthentication.MerkleProof.Index
+	recipientParticipantId := circuit.RecipientAuthentication.MerkleProof.Index
 
 	var tokenCountChangesMatch frontend.Variable = 1
 	for _, incomingPlace := range transition.IncomingPlaces {
@@ -205,12 +220,16 @@ func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountCh
 		}
 		tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountIncreasesAtOutgoingPlace)
 	}
-	initiatingParticipantMatches := api.Or(equals(api, transition.Sender, domain.EmptyParticipantId), equals(api, transition.Sender, participantId))
+
+	senderMatches := api.Or(equals(api, transition.Sender, domain.EmptyParticipantId), equals(api, transition.Sender, senderParticipantId))
+	recipientMatches := api.Or(equals(api, transition.Recipient, domain.EmptyParticipantId), equals(api, transition.Recipient, recipientParticipantId))
 	messageMatches := equals(api, transition.Message, addedMessageId)
 	constraintSatisfied := evaluateConstraint(api, transition.Constraint, circuit.ConstraintInput, constraintMessageIds)
-	transitionMatches1 := api.And(tokenCountChangesMatch, initiatingParticipantMatches)
-	transitionMatches2 := api.And(messageMatches, constraintSatisfied)
-	transitionMatches := api.And(transitionMatches1, transitionMatches2)
+
+	transitionMatches := api.And(senderMatches, recipientMatches)
+	transitionMatches = api.And(transitionMatches, tokenCountChangesMatch)
+	transitionMatches = api.And(transitionMatches, messageMatches)
+	transitionMatches = api.And(transitionMatches, constraintSatisfied)
 
 	noMessageHashesAdded := equals(api, addedMessageId, domain.EmptyMessageId)
 	noChanges := api.And(tokenCountChanges.noChanges, noMessageHashesAdded)

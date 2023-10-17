@@ -52,13 +52,21 @@ func (service ProverService) ProveInstantiation(cmd ProveInstantiationCommand) (
 }
 
 func (service ProverService) ProveTransition(cmd ProveTransitionCommand) (Proof, error) {
+
+	senderAuthentication := circuit.ToAuthentication(cmd.NextInstance, cmd.SenderSignature)
+	recipientAuthentication := senderAuthentication
+	if cmd.RecipientSignature != nil {
+		recipientAuthentication = circuit.ToAuthentication(cmd.NextInstance, *cmd.RecipientSignature)
+	}
+
 	assignment := &circuit.TransitionCircuit{
-		Model:           circuit.FromModel(cmd.Model),
-		CurrentInstance: circuit.FromInstance(cmd.CurrentInstance),
-		NextInstance:    circuit.FromInstance(cmd.NextInstance),
-		Transition:      circuit.ToTransition(cmd.Model, cmd.Transition),
-		Authentication:  circuit.ToAuthentication(cmd.NextInstance, cmd.Signature),
-		ConstraintInput: circuit.FromConstraintInput(cmd.ConstraintInput),
+		Model:                   circuit.FromModel(cmd.Model),
+		CurrentInstance:         circuit.FromInstance(cmd.CurrentInstance),
+		NextInstance:            circuit.FromInstance(cmd.NextInstance),
+		Transition:              circuit.ToTransition(cmd.Model, cmd.Transition),
+		SenderAuthentication:    senderAuthentication,
+		RecipientAuthentication: recipientAuthentication,
+		ConstraintInput:         circuit.FromConstraintInput(cmd.ConstraintInput),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {

@@ -11,12 +11,13 @@ type ProveInstantiationCommand struct {
 }
 
 type ProveTransitionCommand struct {
-	Model           domain.Model
-	CurrentInstance domain.Instance
-	NextInstance    domain.Instance
-	Transition      domain.Transition
-	Signature       domain.Signature
-	ConstraintInput domain.ConstraintInput
+	Model              domain.Model
+	CurrentInstance    domain.Instance
+	NextInstance       domain.Instance
+	Transition         domain.Transition
+	SenderSignature    domain.Signature
+	RecipientSignature *domain.Signature
+	ConstraintInput    domain.ConstraintInput
 }
 
 type ProveTerminationCommand struct {

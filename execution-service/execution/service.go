@@ -7,8 +7,7 @@ import (
 	"execution-service/model"
 	"execution-service/parameters"
 	"execution-service/prover"
-	"execution-service/state"
-	"fmt"
+	"execution-service/signature"
 )
 
 type ExecutionService struct {
@@ -16,24 +15,27 @@ type ExecutionService struct {
 	InstanceService     instance.InstanceService
 	MessageService      message.MessageService
 	ProverService       prover.IProverService
+	SignatureService    signature.SignatureService
 	SignatureParameters parameters.SignatureParameters
 }
 
 func InitializeExecutionService(proverService prover.IProverService) ExecutionService {
-	modelService := model.NewModelService()
-	instanceService := instance.NewInstanceService()
-	messageService := message.NewMessageService()
 	signatureParameters := parameters.NewSignatureParameters()
-	return NewExecutionService(modelService, instanceService, messageService, proverService, signatureParameters)
+	modelService := model.NewModelService()
+	instanceService := instance.NewInstanceService(modelService)
+	messageService := message.NewMessageService(modelService, instanceService, signatureParameters)
+	signatureService := signature.NewSignatureService(instanceService)
+	return NewExecutionService(modelService, instanceService, messageService, proverService, signatureParameters, signatureService)
 }
 
-func NewExecutionService(modelService model.ModelService, instanceService instance.InstanceService, messageService message.MessageService, proverService prover.IProverService, signatureParameters parameters.SignatureParameters) ExecutionService {
+func NewExecutionService(modelService model.ModelService, instanceService instance.InstanceService, messageService message.MessageService, proverService prover.IProverService, signatureParameters parameters.SignatureParameters, signatureService signature.SignatureService) ExecutionService {
 	return ExecutionService{
 		ModelService:        modelService,
 		InstanceService:     instanceService,
 		MessageService:      messageService,
 		ProverService:       proverService,
 		SignatureParameters: signatureParameters,
+		SignatureService:    signatureService,
 	}
 }
 
@@ -57,8 +59,8 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 	}
 	service.InstanceService.ImportInstance(instance)
 	return ExecutionResult{
-		Proof: proof,
-		State: domain.State{Model: &model, Instance: &instance},
+		Proof:    proof,
+		Instance: instance,
 	}, nil
 }
 
@@ -75,38 +77,32 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return ExecutionResult{}, err
 	}
-	if transition.Message != domain.EmptyMessageId && cmd.CreateMessageCommand == nil {
-		return ExecutionResult{}, fmt.Errorf("message is required in transition %s", cmd.Transition)
-	} else if transition.Message == domain.EmptyMessageId && cmd.CreateMessageCommand != nil {
-		return ExecutionResult{}, fmt.Errorf("message is not allowed in transition %s", cmd.Transition)
-	}
-	nextInstance := currentInstance
-	var message *domain.Message = nil
-	if transition.Message != domain.EmptyMessageId && cmd.CreateMessageCommand != nil {
-		tmp := domain.CreateMessage(model.Hash.Hash, *cmd.CreateMessageCommand)
-		message = &tmp
-		nextInstance = currentInstance.SetMessageHash(transition, message.Hash.Hash)
-		err = service.MessageService.ImportMessage(*message)
-		if err != nil {
-			return ExecutionResult{}, err
-		}
-	}
 	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
 	if err != nil {
 		return ExecutionResult{}, err
 	}
-	nextInstance, err = nextInstance.ExecuteTransition(transition, constraintInput)
+	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput)
 	if err != nil {
 		return ExecutionResult{}, err
 	}
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	senderSignature := nextInstance.Sign(privateKey)
+	var recipientSignature *domain.Signature = nil
+	if transition.Recipient != domain.EmptyParticipantId {
+		tmp, err := service.SignatureService.FindSignatureByInstance(nextInstance.Id()) TODO: split execution and proof
+		if err != nil {
+			return ExecutionResult{}, err
+		}
+		recipientSignature = &tmp
+	}
 	proof, err := service.ProverService.ProveTransition(prover.ProveTransitionCommand{
-		Model:           model,
-		CurrentInstance: currentInstance,
-		NextInstance:    nextInstance,
-		Transition:      transition,
-		Signature:       nextInstance.Sign(privateKey),
-		ConstraintInput: constraintInput,
+		Model:              model,
+		CurrentInstance:    currentInstance,
+		NextInstance:       nextInstance,
+		Transition:         transition,
+		SenderSignature:    senderSignature,
+		RecipientSignature: recipientSignature,
+		ConstraintInput:    constraintInput,
 	})
 	if err != nil {
 		return ExecutionResult{}, err
@@ -115,16 +111,9 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return ExecutionResult{}, err
 	}
-	var encryptedMessage *domain.Ciphertext = nil
-	if message != nil && transition.Recipient != domain.EmptyParticipantId {
-		publicKey := currentInstance.FindParticipantById(transition.Recipient)
-		plaintext := state.SerializeMessage(*message)
-		tmp := plaintext.Encrypt(privateKey, publicKey)
-		encryptedMessage = &tmp
-	}
 	return ExecutionResult{
-		Proof: proof,
-		State: domain.State{Model: &model, Instance: &nextInstance, EncryptedMessage: encryptedMessage},
+		Proof:    proof,
+		Instance: nextInstance,
 	}, nil
 }
 
@@ -147,7 +136,7 @@ func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand)
 		return ExecutionResult{}, err
 	}
 	return ExecutionResult{
-		Proof: proof,
-		State: domain.State{},
+		Proof:    proof,
+		Instance: instance,
 	}, nil
 }

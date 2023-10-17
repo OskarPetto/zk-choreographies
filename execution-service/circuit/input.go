@@ -11,7 +11,6 @@ import (
 	"github.com/consensys/gnark-crypto/hash"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/accumulator/merkle"
-	"github.com/consensys/gnark/std/hash/mimc"
 	"github.com/consensys/gnark/std/signature/eddsa"
 )
 
@@ -90,7 +89,13 @@ func ToAuthentication(instance domain.Instance, signature domain.Signature) Auth
 		hash := publicKey.ComputeHash()
 		buf.Write(hash.Value[:])
 	}
-	merkleRoot, proofPath, _, err := merkletree.BuildReaderProof(&buf, hash.MIMC_BN254.New(), fr.Bytes, uint64(signature.Participant))
+	participantId := domain.EmptyParticipantId
+	for i, publicKey := range instance.PublicKeys {
+		if bytes.Equal(publicKey.Value, signature.PublicKey.Value) {
+			participantId = domain.ParticipantId(i)
+		}
+	}
+	merkleRoot, proofPath, _, err := merkletree.BuildReaderProof(&buf, hash.MIMC_BN254.New(), fr.Bytes, uint64(participantId))
 	utils.PanicOnError(err)
 	var merkeProof merkle.MerkleProof
 	merkeProof.RootHash = merkleRoot
@@ -103,7 +108,7 @@ func ToAuthentication(instance domain.Instance, signature domain.Signature) Auth
 		PublicKey: fromPublicKey(signature.PublicKey),
 		MerkleProof: MerkleProof{
 			MerkleProof: merkeProof,
-			Index:       signature.Participant,
+			Index:       participantId,
 		},
 	}
 }
@@ -327,12 +332,4 @@ func fromBytes(data [fr.Bytes]byte) frontend.Variable {
 	fieldElement, err := fr.BigEndian.Element(&data)
 	utils.PanicOnError(err)
 	return fieldElement
-}
-
-func (merkleProof *MerkleProof) CheckRootHash(api frontend.API, hash frontend.Variable) {
-	api.AssertIsEqual(merkleProof.MerkleProof.RootHash, hash)
-}
-
-func (merkleProof *MerkleProof) VerifyProof(api frontend.API, m mimc.MiMC) {
-	merkleProof.MerkleProof.VerifyProof(api, &m, merkleProof.Index)
 }

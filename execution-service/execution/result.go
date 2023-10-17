@@ -6,6 +6,6 @@ import (
 )
 
 type ExecutionResult struct {
-	Proof prover.Proof
-	State domain.State
+	Proof    prover.Proof
+	Instance domain.Instance
 }

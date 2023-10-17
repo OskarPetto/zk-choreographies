@@ -196,7 +196,6 @@ func (message Message) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
 		return hashBytesMessage(message, salt)
 	}
 	mimc := mimc.NewMiMC()
-	mimc.Write(message.Model.Value[:])
 	hashInt64(mimc, int64(message.IntegerMessage))
 	mimc.Write(salt[:])
 	return SaltedHash{
@@ -206,7 +205,8 @@ func (message Message) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
 }
 
 func hashBytesMessage(message Message, salt [fr.Bytes]byte) SaltedHash {
-	input := append(message.Model.Value[:], message.BytesMessage...)
+	input := make([]byte, len(message.BytesMessage))
+	copy(input, message.BytesMessage)
 	input = append(input, salt[:]...)
 	bytesHash := sha256.Sum256(input)
 	return SaltedHash{

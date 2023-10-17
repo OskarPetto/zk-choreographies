@@ -3,18 +3,21 @@ package instance
 import (
 	"bytes"
 	"execution-service/domain"
+	"execution-service/model"
 	"execution-service/utils"
 	"fmt"
 	"sort"
 )
 
 type InstanceService struct {
-	instances map[string]domain.Instance
+	ModelService model.ModelService
+	instances    map[string]domain.Instance
 }
 
-func NewInstanceService() InstanceService {
+func NewInstanceService(modelService model.ModelService) InstanceService {
 	return InstanceService{
-		instances: make(map[string]domain.Instance),
+		instances:    make(map[string]domain.Instance),
+		ModelService: modelService,
 	}
 }
 
@@ -46,6 +49,11 @@ func (service *InstanceService) FindInstancesByModel(model domain.ModelId) []dom
 func (service *InstanceService) ImportInstance(instance domain.Instance) error {
 	if !instance.HasValidHash() {
 		return fmt.Errorf("instance %s has invalid hash", instance.Id())
+	}
+	modelId := utils.BytesToString(instance.Model.Value[:])
+	_, err := service.ModelService.FindModelById(modelId)
+	if err != nil {
+		return err
 	}
 	service.instances[instance.Id()] = instance
 	return nil

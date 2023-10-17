@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"bytes"
 	"execution-service/utils"
 
 	"github.com/consensys/gnark-crypto/ecc/bn254/twistededwards/eddsa"
@@ -13,9 +12,9 @@ type IdentityId = uint
 const IdentityCount = 3
 
 type Signature struct {
-	Value       []byte
-	PublicKey   PublicKey
-	Participant ParticipantId
+	Value     []byte
+	Instance  Hash
+	PublicKey PublicKey
 }
 
 func (instance Instance) Sign(privateKey *eddsa.PrivateKey) Signature {
@@ -24,16 +23,17 @@ func (instance Instance) Sign(privateKey *eddsa.PrivateKey) Signature {
 	publicKey := PublicKey{
 		Value: privateKey.PublicKey.Bytes(),
 	}
-	var participantId ParticipantId = 0
-	for i, instancePublicKey := range instance.PublicKeys {
-		if bytes.Equal(publicKey.Value, instancePublicKey.Value) {
-			participantId = ParticipantId(i)
-			break
-		}
-	}
 	return Signature{
-		Value:       signature,
-		PublicKey:   publicKey,
-		Participant: participantId,
+		Value:     signature,
+		Instance:  instance.Hash.Hash,
+		PublicKey: publicKey,
 	}
+}
+
+func (signature Signature) Verify() bool {
+	var publicKey eddsa.PublicKey
+	publicKey.SetBytes(signature.PublicKey.Value)
+	doesVerify, err := publicKey.Verify(signature.Value, signature.Instance.Value[:], hash.MIMC_BN254.New())
+	utils.PanicOnError(err)
+	return doesVerify
 }

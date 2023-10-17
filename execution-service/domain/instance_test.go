@@ -14,8 +14,7 @@ var states = testdata.GetModel2States(signatureParameters)
 
 func TestSetMessageHash(t *testing.T) {
 	state1 := states[1]
-	cmd := domain.CreateMessageCommand{BytesMessage: []byte("test"), IntegerMessage: nil}
-	messageHash := domain.CreateMessage(state1.Model.Hash.Hash, cmd).Hash.Hash
+	messageHash := domain.NewBytesMessage([]byte("test")).Hash.Hash
 	result := state1.Instance.SetMessageHash(state1.Model.Transitions[2], messageHash)
 	assert.Equal(t, state1.Instance.TokenCounts, result.TokenCounts)
 	assert.Equal(t, state1.Instance.PublicKeys, result.PublicKeys)

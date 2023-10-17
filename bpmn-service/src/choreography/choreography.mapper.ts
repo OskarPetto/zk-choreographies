@@ -314,44 +314,6 @@ export class ChoreographyMapper {
     if (choreographyTask.loopType === undefined) {
 
       if (initialMessage != undefined && responseMessage != undefined) {
-        const additionalPlaceId1 =
-          sequenceFlowPlaceIds.size + additionalPlaceIds.length;
-        const additionalPlaceId2 = additionalPlaceId1 + 1;
-        additionalPlaceIds.push(additionalPlaceId1);
-        additionalPlaceIds.push(additionalPlaceId2);
-
-        return [
-          {
-            id: `${choreographyTask.id}_0`,
-            type: TransitionType.REQUIRED,
-            name: choreographyTask.name,
-            incomingPlaces: [incomingPlaceId],
-            outgoingPlaces: [additionalPlaceId1],
-            sender: initiatingParticipantId,
-            recipient: respondingParticipantId,
-            message: initialMessage,
-          },
-          {
-            id: `${choreographyTask.id}_1`,
-            type: TransitionType.REQUIRED,
-            name: choreographyTask.name,
-            incomingPlaces: [additionalPlaceId1],
-            outgoingPlaces: [additionalPlaceId2],
-            sender: respondingParticipantId,
-            recipient: initiatingParticipantId,
-            message: responseMessage,
-          },
-          {
-            id: `${choreographyTask.id}_2`,
-            type: TransitionType.REQUIRED,
-            name: choreographyTask.name,
-            incomingPlaces: [additionalPlaceId2],
-            outgoingPlaces: [outgoingPlaceId],
-            sender: initiatingParticipantId,
-            recipient: respondingParticipantId,
-          },
-        ];
-      } else if (initialMessage != undefined) {
         const additionalPlaceId =
           sequenceFlowPlaceIds.size + additionalPlaceIds.length;
         additionalPlaceIds.push(additionalPlaceId);
@@ -375,9 +337,11 @@ export class ChoreographyMapper {
             outgoingPlaces: [outgoingPlaceId],
             sender: respondingParticipantId,
             recipient: initiatingParticipantId,
-          },
+            message: responseMessage,
+          }
         ];
       } else {
+
         return [
           {
             id: choreographyTask.id,
@@ -387,7 +351,8 @@ export class ChoreographyMapper {
             outgoingPlaces: [outgoingPlaceId],
             sender: initiatingParticipantId,
             recipient: respondingParticipantId,
-          }
+            message: initialMessage,
+          },
         ];
       }
     } else if (

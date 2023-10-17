@@ -1,34 +1,34 @@
 package domain
 
+import "time"
+
 type MessageId = string
 
 type Message struct {
 	Hash           SaltedHash
-	Model          Hash
 	IntegerMessage IntegerType
 	BytesMessage   []byte
-}
-
-type CreateMessageCommand struct {
-	BytesMessage   []byte
-	IntegerMessage *IntegerType
+	CreatedAt      int64
 }
 
 func EmptyMessage() Message {
 	return Message{}
 }
 
-func CreateMessage(model Hash, cmd CreateMessageCommand) Message {
+func NewBytesMessage(bytes []byte) Message {
 	message := Message{
-		Model: model,
+		BytesMessage: bytes,
 	}
-	if len(cmd.BytesMessage) > 0 {
-		message.BytesMessage = cmd.BytesMessage
-	} else if cmd.IntegerMessage != nil {
-		message.IntegerMessage = *cmd.IntegerMessage
-	} else {
-		return EmptyMessage()
+	message.CreatedAt = time.Now().Unix()
+	message.UpdateHash()
+	return message
+}
+
+func NewIntegerMessage(integer IntegerType) Message {
+	message := Message{
+		IntegerMessage: integer,
 	}
+	message.CreatedAt = time.Now().Unix()
 	message.UpdateHash()
 	return message
 }
