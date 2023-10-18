@@ -3,8 +3,8 @@ package message
 import (
 	"execution-service/domain"
 	"execution-service/hash"
-	"execution-service/instance"
 	"execution-service/utils"
+	"time"
 )
 
 type CiphertextJson struct {
@@ -17,20 +17,17 @@ type MessageJson struct {
 	Hash           hash.SaltedHashJson `json:"hash"`
 	IntegerMessage *int                `json:"integerMessage,omitempty"`
 	BytesMessage   string              `json:"bytesMessage,omitempty"`
+	CreatedAt      time.Time           `json:"createdAt"`
 }
 
 type CreateMessageCommandJson struct {
-	Model          string `json:"model"`
-	Instance       string `json:"instance"`
-	Transition     string `json:"transition"`
 	Identity       uint   `json:"identity"`
 	IntegerMessage *int   `json:"integerMessage,omitempty"`
 	BytesMessage   string `json:"bytesMessage,omitempty"`
 }
 
 type CreateMessageResultJson struct {
-	Instance         instance.InstanceJson `json:"instance"`
-	EncryptedMessage CiphertextJson        `json:"encryptedMessage"`
+	EncryptedMessage CiphertextJson `json:"encryptedMessage"`
 }
 
 type ImportMessageCommandJson struct {
@@ -40,7 +37,8 @@ type ImportMessageCommandJson struct {
 
 func MessageToJson(message domain.Message) MessageJson {
 	messageJson := MessageJson{
-		Hash: hash.ToJson(message.Hash),
+		Hash:      hash.ToJson(message.Hash),
+		CreatedAt: time.Unix(message.CreatedAt, 0),
 	}
 	if message.IsBytesMessage() {
 		messageJson.BytesMessage = utils.BytesToString(message.BytesMessage)
@@ -57,7 +55,8 @@ func (messageJson *MessageJson) ToMessage() (domain.Message, error) {
 		return domain.EmptyMessage(), err
 	}
 	message := domain.Message{
-		Hash: hash,
+		Hash:      hash,
+		CreatedAt: messageJson.CreatedAt.Unix(),
 	}
 	if messageJson.BytesMessage != "" {
 		bytes, err := utils.StringToBytes(messageJson.BytesMessage)
@@ -71,39 +70,7 @@ func (messageJson *MessageJson) ToMessage() (domain.Message, error) {
 	return message, nil
 }
 
-func (cmd *CreateMessageCommandJson) ToMessageCommand() (CreateMessageCommand, error) {
-	createMessageCommand := CreateMessageCommand{
-		Model:      cmd.Model,
-		Instance:   cmd.Instance,
-		Transition: cmd.Transition,
-		Identity:   cmd.Identity,
-	}
-	if cmd.BytesMessage != "" {
-		bytes, err := utils.StringToBytes(cmd.BytesMessage)
-		if err != nil {
-			return CreateMessageCommand{}, err
-		}
-		createMessageCommand.BytesMessage = bytes
-	} else {
-		tmp := domain.IntegerType(*cmd.IntegerMessage)
-		createMessageCommand.IntegerMessage = &tmp
-	}
-
-	return createMessageCommand, nil
-}
-
-func (cmd *ImportMessageCommandJson) ToMessageCommand() (ImportMessageCommand, error) {
-	ciphertext, err := cmd.EncryptedMessage.toCiphertext()
-	if err != nil {
-		return ImportMessageCommand{}, err
-	}
-	return ImportMessageCommand{
-		Identity:         cmd.Identity,
-		EncryptedMessage: ciphertext,
-	}, nil
-}
-
-func (json *CiphertextJson) toCiphertext() (domain.Ciphertext, error) {
+func (json *CiphertextJson) ToCiphertext() (domain.Ciphertext, error) {
 	value, err := utils.StringToBytes(json.Value)
 	if err != nil {
 		return domain.Ciphertext{}, err
@@ -127,14 +94,7 @@ func (json *CiphertextJson) toCiphertext() (domain.Ciphertext, error) {
 	}, nil
 }
 
-func CreateMessageResultToJson(result CreateMessageResult) CreateMessageResultJson {
-	return CreateMessageResultJson{
-		Instance:         instance.ToJson(result.Instance),
-		EncryptedMessage: toCiphertextJson(result.EncryptedMessage),
-	}
-}
-
-func toCiphertextJson(encryptedState domain.Ciphertext) CiphertextJson {
+func ToCiphertextJson(encryptedState domain.Ciphertext) CiphertextJson {
 	value := utils.BytesToString(encryptedState.Value)
 	sender := utils.BytesToString(encryptedState.Sender.Value)
 	recipient := utils.BytesToString(encryptedState.Recipient.Value)

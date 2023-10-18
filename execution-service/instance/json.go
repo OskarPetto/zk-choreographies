@@ -15,7 +15,7 @@ type InstanceJson struct {
 	TokenCounts   []int               `json:"tokenCounts"`
 	PublicKeys    []string            `json:"publicKeys"`
 	MessageHashes []string            `json:"messageHashes"`
-	CreatedAt     time.Time           `json:"updatedAt"`
+	CreatedAt     time.Time           `json:"createdAt"`
 }
 
 func ToJson(instance domain.Instance) InstanceJson {

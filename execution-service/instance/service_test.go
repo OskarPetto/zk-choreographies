@@ -1,6 +1,7 @@
 package instance_test
 
 import (
+	"execution-service/domain"
 	"execution-service/instance"
 	"execution-service/model"
 	"execution-service/parameters"
@@ -15,19 +16,40 @@ var signatureParameters parameters.SignatureParameters = parameters.NewSignature
 var states = testdata.GetModel2States(signatureParameters)
 
 var modelService = model.NewModelService()
-var service = instance.NewInstanceService(modelService)
+var instanceService = instance.NewInstanceService(modelService)
 
 func TestFindInstancesByModel(t *testing.T) {
 	instance := states[0].Instance
-	service.ImportInstance(instance)
+	instanceService.SaveInstance(instance)
 	modelId := utils.BytesToString(instance.Model.Value[:])
-	result := service.FindInstancesByModel(modelId)
+	result := instanceService.FindInstancesByModel(modelId)
 	assert.Equal(t, 1, len(result))
 }
 
 func TestFindInstanceById(t *testing.T) {
 	instance := states[0].Instance
-	service.ImportInstance(instance)
-	_, err := service.FindInstanceById(instance.Id())
+	instanceService.SaveInstance(instance)
+	_, err := instanceService.FindInstanceById(instance.Id())
 	assert.Nil(t, err)
+}
+
+func TestImportInstanceWithoutModel(t *testing.T) {
+	instance := states[0].Instance
+	err := instanceService.ImportInstance(instance)
+	assert.NotNil(t, err)
+}
+
+func TestImportInstanceWithModel(t *testing.T) {
+	model := states[0].Model
+	modelService.ImportModel(model)
+	instance := states[0].Instance
+	err := instanceService.ImportInstance(instance)
+	assert.Nil(t, err)
+}
+
+func TestImportInstanceInvalidHash(t *testing.T) {
+	instance := states[0].Instance
+	instance.Hash = domain.SaltedHash{}
+	err := instanceService.ImportInstance(instance)
+	assert.NotNil(t, err)
 }

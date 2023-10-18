@@ -55,10 +55,10 @@ func (service *InstanceService) ImportInstance(instance domain.Instance) error {
 	if err != nil {
 		return err
 	}
-	service.instances[instance.Id()] = instance
+	service.SaveInstance(instance)
 	return nil
 }
 
-func (service *InstanceService) DeleteInstance(instance domain.Instance) {
-	delete(service.instances, instance.Id())
+func (service *InstanceService) SaveInstance(instance domain.Instance) {
+	service.instances[instance.Id()] = instance
 }

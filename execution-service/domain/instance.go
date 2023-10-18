@@ -89,6 +89,6 @@ func (instance *Instance) FindMessageHashById(id ModelMessageId) Hash {
 	return instance.MessageHashes[id]
 }
 
-func (instance *Instance) FindParticipantById(id ParticipantId) PublicKey {
+func (instance *Instance) FindPublicKeyByParticipant(id ParticipantId) PublicKey {
 	return instance.PublicKeys[id]
 }

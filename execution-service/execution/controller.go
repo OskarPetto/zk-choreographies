@@ -27,13 +27,13 @@ func (controller *ExecutionController) InstantiateModel(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 		return
 	}
-	result, err := controller.executionService.InstantiateModel(cmd)
+	event, err := controller.executionService.InstantiateModel(cmd)
 	if err != nil {
 		c.Status(http.StatusForbidden)
 		return
 	}
-	jsonResult := ToJson(result)
-	c.IndentedJSON(http.StatusOK, jsonResult)
+	jsonEvent := InstatiatedModelEventToJson(event)
+	c.IndentedJSON(http.StatusOK, jsonEvent)
 }
 
 func (controller *ExecutionController) ExecuteTransition(c *gin.Context) {
@@ -47,13 +47,13 @@ func (controller *ExecutionController) ExecuteTransition(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 		return
 	}
-	result, err := controller.executionService.ExecuteTransition(cmd)
+	event, err := controller.executionService.ExecuteTransition(cmd)
 	if err != nil {
 		c.Status(http.StatusForbidden)
 		return
 	}
-	jsonResult := ToJson(result)
-	c.IndentedJSON(http.StatusOK, jsonResult)
+	jsonEvent := ExecutedTransitionEventToJson(event)
+	c.IndentedJSON(http.StatusOK, jsonEvent)
 }
 
 func (controller *ExecutionController) TerminateInstance(c *gin.Context) {
@@ -67,11 +67,51 @@ func (controller *ExecutionController) TerminateInstance(c *gin.Context) {
 		c.Status(http.StatusBadRequest)
 		return
 	}
-	result, err := controller.executionService.TerminateInstance(cmd)
+	event, err := controller.executionService.TerminateInstance(cmd)
 	if err != nil {
 		c.Status(http.StatusForbidden)
 		return
 	}
-	jsonResult := ToJson(result)
-	c.IndentedJSON(http.StatusOK, jsonResult)
+	jsonEvent := TerminatedInstanceEventToJson(event)
+	c.IndentedJSON(http.StatusOK, jsonEvent)
+}
+
+func (controller *ExecutionController) SendMessage(c *gin.Context) {
+	var jsonCmd sendMessageCommandJson
+	if err := c.BindJSON(&jsonCmd); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	cmd, err := jsonCmd.ToExecutionCommand()
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	event, err := controller.executionService.SendMessage(cmd)
+	if err != nil {
+		c.Status(http.StatusForbidden)
+		return
+	}
+	jsonEvent := SentMessageEventToJson(event)
+	c.IndentedJSON(http.StatusOK, jsonEvent)
+}
+
+func (controller *ExecutionController) ReceiveMessage(c *gin.Context) {
+	var jsonCmd receiveMessageCommandJson
+	if err := c.BindJSON(&jsonCmd); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	cmd, err := jsonCmd.ToExecutionCommand()
+	if err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	event, err := controller.executionService.ReceiveMessage(cmd)
+	if err != nil {
+		c.Status(http.StatusForbidden)
+		return
+	}
+	jsonEvent := ReceivedMessageEventToJson(event)
+	c.IndentedJSON(http.StatusOK, jsonEvent)
 }

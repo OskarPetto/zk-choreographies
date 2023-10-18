@@ -12,7 +12,8 @@ type State struct {
 	SenderSignature    domain.Signature
 	RecipientSignature *domain.Signature
 	Transition         domain.Transition
-	Identity           domain.IdentityId
+	Sender             domain.IdentityId
+	Recipient          *domain.IdentityId
 	ConstraintInput    domain.ConstraintInput
 	Message            *domain.Message
 }
@@ -294,7 +295,8 @@ func getModelState(signatureParameters parameters.SignatureParameters, model dom
 		Transition:         transition,
 		SenderSignature:    senderSignature,
 		RecipientSignature: recipientSignature,
-		Identity:           sender,
+		Sender:             sender,
+		Recipient:          recipient,
 		ConstraintInput:    constraintInput,
 		Message:            message,
 	}

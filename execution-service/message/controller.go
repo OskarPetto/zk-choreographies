@@ -1,7 +1,6 @@
 package message
 
 import (
-	"execution-service/signature"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -35,42 +34,4 @@ func (controller *MessageController) FindMessageById(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, MessageToJson(message))
-}
-
-func (controller *MessageController) ImportMessage(c *gin.Context) {
-	var cmdJson ImportMessageCommandJson
-	if err := c.BindJSON(&cmdJson); err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	cmd, err := cmdJson.ToMessageCommand()
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	result, err := controller.messageService.ImportMessage(cmd)
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	c.IndentedJSON(http.StatusOK, signature.ToJson(result))
-}
-
-func (controller *MessageController) CreateMessage(c *gin.Context) {
-	var cmdJson CreateMessageCommandJson
-	if err := c.BindJSON(&cmdJson); err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	cmd, err := cmdJson.ToMessageCommand()
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	result, err := controller.messageService.CreateMessage(cmd)
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	c.IndentedJSON(http.StatusOK, CreateMessageResultToJson(result))
 }

@@ -1,13 +1,14 @@
 package execution
 
 import (
+	"bytes"
 	"execution-service/domain"
 	"execution-service/instance"
 	"execution-service/message"
 	"execution-service/model"
 	"execution-service/parameters"
 	"execution-service/prover"
-	"execution-service/signature"
+	"fmt"
 )
 
 type ExecutionService struct {
@@ -15,38 +16,35 @@ type ExecutionService struct {
 	InstanceService     instance.InstanceService
 	MessageService      message.MessageService
 	ProverService       prover.IProverService
-	SignatureService    signature.SignatureService
 	SignatureParameters parameters.SignatureParameters
 }
 
 func InitializeExecutionService(proverService prover.IProverService) ExecutionService {
-	signatureParameters := parameters.NewSignatureParameters()
 	modelService := model.NewModelService()
 	instanceService := instance.NewInstanceService(modelService)
-	messageService := message.NewMessageService(modelService, instanceService, signatureParameters)
-	signatureService := signature.NewSignatureService(instanceService)
-	return NewExecutionService(modelService, instanceService, messageService, proverService, signatureParameters, signatureService)
+	messageService := message.NewMessageService(instanceService)
+	signatureParameters := parameters.NewSignatureParameters()
+	return NewExecutionService(modelService, instanceService, messageService, proverService, signatureParameters)
 }
 
-func NewExecutionService(modelService model.ModelService, instanceService instance.InstanceService, messageService message.MessageService, proverService prover.IProverService, signatureParameters parameters.SignatureParameters, signatureService signature.SignatureService) ExecutionService {
+func NewExecutionService(modelService model.ModelService, instanceService instance.InstanceService, messageService message.MessageService, proverService prover.IProverService, signatureParameters parameters.SignatureParameters) ExecutionService {
 	return ExecutionService{
 		ModelService:        modelService,
 		InstanceService:     instanceService,
 		MessageService:      messageService,
 		ProverService:       proverService,
 		SignatureParameters: signatureParameters,
-		SignatureService:    signatureService,
 	}
 }
 
-func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (ExecutionResult, error) {
+func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (InstantiatedModelEvent, error) {
 	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
-		return ExecutionResult{}, err
+		return InstantiatedModelEvent{}, err
 	}
 	instance, err := model.Instantiate(cmd.PublicKeys)
 	if err != nil {
-		return ExecutionResult{}, err
+		return InstantiatedModelEvent{}, err
 	}
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	proof, err := service.ProverService.ProveInstantiation(prover.ProveInstantiationCommand{
@@ -55,76 +53,67 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 		Signature: instance.Sign(privateKey),
 	})
 	if err != nil {
-		return ExecutionResult{}, err
+		return InstantiatedModelEvent{}, err
 	}
 	service.InstanceService.ImportInstance(instance)
-	return ExecutionResult{
+	return InstantiatedModelEvent{
 		Proof:    proof,
 		Instance: instance,
 	}, nil
 }
 
-func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand) (ExecutionResult, error) {
+func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand) (ExecutedTransitionEvent, error) {
 	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
-		return ExecutionResult{}, err
+		return ExecutedTransitionEvent{}, err
 	}
 	currentInstance, err := service.InstanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
-		return ExecutionResult{}, err
+		return ExecutedTransitionEvent{}, err
 	}
 	transition, err := model.FindTransitionById(cmd.Transition)
 	if err != nil {
-		return ExecutionResult{}, err
+		return ExecutedTransitionEvent{}, err
 	}
 	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
 	if err != nil {
-		return ExecutionResult{}, err
+		return ExecutedTransitionEvent{}, err
 	}
 	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput)
 	if err != nil {
-		return ExecutionResult{}, err
+		return ExecutedTransitionEvent{}, err
 	}
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	senderSignature := nextInstance.Sign(privateKey)
-	var recipientSignature *domain.Signature = nil
-	if transition.Recipient != domain.EmptyParticipantId {
-		tmp, err := service.SignatureService.FindSignatureByInstance(nextInstance.Id()) TODO: split execution and proof
-		if err != nil {
-			return ExecutionResult{}, err
-		}
-		recipientSignature = &tmp
-	}
 	proof, err := service.ProverService.ProveTransition(prover.ProveTransitionCommand{
-		Model:              model,
-		CurrentInstance:    currentInstance,
-		NextInstance:       nextInstance,
-		Transition:         transition,
-		SenderSignature:    senderSignature,
-		RecipientSignature: recipientSignature,
-		ConstraintInput:    constraintInput,
+		Model:           model,
+		CurrentInstance: currentInstance,
+		NextInstance:    nextInstance,
+		Transition:      transition,
+		SenderSignature: senderSignature,
+		ConstraintInput: constraintInput,
 	})
 	if err != nil {
-		return ExecutionResult{}, err
+		return ExecutedTransitionEvent{}, err
 	}
 	err = service.InstanceService.ImportInstance(nextInstance)
 	if err != nil {
-		return ExecutionResult{}, err
+		return ExecutedTransitionEvent{}, err
 	}
-	return ExecutionResult{
+	return ExecutedTransitionEvent{
 		Proof:    proof,
 		Instance: nextInstance,
 	}, nil
 }
 
-func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand) (ExecutionResult, error) {
+func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand) (TerminatedInstanceEvent, error) {
 	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
-		return ExecutionResult{}, err
+		return TerminatedInstanceEvent{}, err
 	}
 	instance, err := service.InstanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
-		return ExecutionResult{}, err
+		return TerminatedInstanceEvent{}, err
 	}
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	proof, err := service.ProverService.ProveTermination(prover.ProveTerminationCommand{
@@ -133,10 +122,117 @@ func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand)
 		Signature: instance.Sign(privateKey),
 	})
 	if err != nil {
-		return ExecutionResult{}, err
+		return TerminatedInstanceEvent{}, err
 	}
-	return ExecutionResult{
-		Proof:    proof,
-		Instance: instance,
+	return TerminatedInstanceEvent{
+		Proof: proof,
+	}, nil
+}
+
+func (service *ExecutionService) SendMessage(cmd SendMessageCommand) (SentMessageEvent, error) {
+	model, err := service.ModelService.FindModelById(cmd.Model)
+	if err != nil {
+		return SentMessageEvent{}, err
+	}
+	currentInstance, err := service.InstanceService.FindInstanceById(cmd.Instance)
+	if err != nil {
+		return SentMessageEvent{}, err
+	}
+	transition, err := model.FindTransitionById(cmd.Transition)
+	if err != nil {
+		return SentMessageEvent{}, err
+	}
+	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
+	if err != nil {
+		return SentMessageEvent{}, err
+	}
+	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput)
+	if err != nil {
+		return SentMessageEvent{}, err
+	}
+	if !bytes.Equal(currentInstance.Model.Value[:], model.Hash.Hash.Value[:]) {
+		return SentMessageEvent{}, fmt.Errorf("instance %s is not of model %s", cmd.Instance, cmd.Model)
+	}
+	if transition.Message == domain.EmptyMessageId {
+		return SentMessageEvent{}, fmt.Errorf("transition %s does not send any message", transition.Id)
+	}
+	if transition.Recipient == domain.EmptyParticipantId {
+		return SentMessageEvent{}, fmt.Errorf("transition %s has no recipient", transition.Id)
+	}
+	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	recipientPublicKey := currentInstance.FindPublicKeyByParticipant(transition.Recipient)
+	var messageToSend domain.Message
+	if cmd.BytesMessage != nil {
+		messageToSend = domain.NewBytesMessage(cmd.BytesMessage)
+	} else {
+		messageToSend = domain.NewIntegerMessage(*cmd.IntegerMessage)
+	}
+	service.MessageService.SaveMessage(messageToSend)
+	service.InstanceService.SaveInstance(nextInstance)
+
+	plaintext := message.SerializeMessage(messageToSend)
+	ciphertext := plaintext.Encrypt(privateKey, recipientPublicKey)
+
+	senderSignature := nextInstance.Sign(privateKey)
+
+	return SentMessageEvent{
+		Model:            cmd.Model,
+		CurrentInstance:  cmd.Instance,
+		Transition:       cmd.Transition,
+		NextInstance:     nextInstance,
+		SenderSignature:  senderSignature,
+		EncryptedMessage: ciphertext,
+	}, nil
+}
+
+func (service *ExecutionService) ReceiveMessage(cmd ReceiveMessageCommand) (ReceivedMessageEvent, error) {
+	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	plaintext, err := cmd.EncryptedMessage.Decrypt(privateKey)
+	if err != nil {
+		return ReceivedMessageEvent{}, err
+	}
+	receivedMessage, err := message.DeserializeMessage(plaintext)
+	if err != nil {
+		return ReceivedMessageEvent{}, err
+	}
+	model, err := service.ModelService.FindModelById(cmd.Model)
+	if err != nil {
+		return ReceivedMessageEvent{}, err
+	}
+	currentInstance, err := service.InstanceService.FindInstanceById(cmd.CurrentInstance)
+	if err != nil {
+		return ReceivedMessageEvent{}, err
+	}
+	transition, err := model.FindTransitionById(cmd.Transition)
+	if err != nil {
+		return ReceivedMessageEvent{}, err
+	}
+	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
+	if err != nil {
+		return ReceivedMessageEvent{}, err
+	}
+	recipientSignature := cmd.NextInstance.Sign(privateKey)
+	proof, err := service.ProverService.ProveTransition(prover.ProveTransitionCommand{
+		Model:              model,
+		CurrentInstance:    currentInstance,
+		NextInstance:       cmd.NextInstance,
+		Transition:         transition,
+		SenderSignature:    cmd.SenderSignature,
+		RecipientSignature: &recipientSignature,
+		ConstraintInput:    constraintInput,
+	})
+	if err != nil {
+		return ReceivedMessageEvent{}, err
+	}
+	err = service.MessageService.ImportMessage(receivedMessage)
+	if err != nil {
+		return ReceivedMessageEvent{}, err
+	}
+	err = service.InstanceService.ImportInstance(cmd.NextInstance)
+	if err != nil {
+		return ReceivedMessageEvent{}, err
+	}
+	return ReceivedMessageEvent{
+		Proof: proof,
 	}, nil
 }
