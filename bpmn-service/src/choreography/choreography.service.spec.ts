@@ -14,7 +14,7 @@ describe('ChoreographyService', () => {
   let choreographyParser: ChoreographyParser;
   let choreographyMapper: ChoreographyMapper;
   let modelReducer: ModelReducer;
-  const xmlString = TestdataProvider.getExampleChoreography();
+  const xmlString = TestdataProvider.readBpmn('example_choreography');
   const definitions = TestdataProvider.getDefinitions2();
   const model2Reduced = TestdataProvider.getModel2Reduced();
   const model2 = TestdataProvider.getModel2();

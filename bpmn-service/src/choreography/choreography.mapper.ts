@@ -13,7 +13,6 @@ import {
   MessageId as BpmnMessageId,
   Message,
   Choreography,
-  LoopType,
 } from './choreography';
 import {
   Model,
@@ -32,7 +31,7 @@ interface ConstraintMapping {
 
 @Injectable()
 export class ChoreographyMapper {
-  constructor(private constraintParser: ConstraintParser) { }
+  constructor(private constraintParser: ConstraintParser) {}
   toModel(xmlString: string, choreography: Choreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
@@ -93,8 +92,7 @@ export class ChoreographyMapper {
     const relevantParticipants = [...participantIds.values()].filter(
       (participantId) =>
         choreographyTaskTransitions.some(
-          (choreographyTask) =>
-            choreographyTask.sender === participantId,
+          (choreographyTask) => choreographyTask.sender === participantId,
         ),
     );
 
@@ -336,10 +334,9 @@ export class ChoreographyMapper {
           sender: respondingParticipantId,
           recipient: initiatingParticipantId,
           message: responseMessage,
-        }
+        },
       ];
     } else {
-
       return [
         {
           id: choreographyTask.id,

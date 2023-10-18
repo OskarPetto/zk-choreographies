@@ -10,7 +10,11 @@ export class ChoreographyService {
     private choreographyParser: ChoreographyParser,
     private choreographyMapper: ChoreographyMapper,
     private modelReducer: ModelReducer,
-  ) {}
+  ) {
+    // const bpmn = TestdataProvider.readBpmn('pizza_choreography');
+    // const model = this.transformChoreography(bpmn);
+    // TestdataProvider.writeModel('pizza_choreography', model);
+  }
 
   transformChoreography(xmlString: string): Model {
     const definitions = this.choreographyParser.parseBpmn(xmlString);

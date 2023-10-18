@@ -1,11 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Model, TransitionType } from '../../src/model/model';
-import {
-  Definitions,
-  GatewayType,
-  LoopType,
-} from 'src/choreography/choreography';
+import { Definitions, GatewayType } from 'src/choreography/choreography';
 
 function readTextFile(filename: string) {
   const filePath = path.join(process.cwd(), filename);
@@ -18,19 +14,12 @@ function writeTextFile(filename: string, data: string) {
 }
 
 export class TestdataProvider {
-  static getFloorChoreography(): string {
-    return readTextFile('test/data/floor_choreography.bpmn');
+  static readBpmn(filename: string): string {
+    return readTextFile(`test/data/${filename}.bpmn`);
   }
 
-  static getExampleChoreography(): string {
-    return readTextFile('test/data/example_choreography.bpmn');
-  }
-
-  static writeExampleChoreography() {
-    writeTextFile(
-      'test/data/example_choreography.json',
-      JSON.stringify(this.getModel2Reduced()),
-    );
+  static writeModel(filename: string, model: Model) {
+    writeTextFile(`test/data/${filename}.json`, JSON.stringify(model));
   }
 
   static getDefinitions2(): Definitions {
@@ -245,7 +234,7 @@ export class TestdataProvider {
 
   static getModel2(): Model {
     return {
-      source: TestdataProvider.getExampleChoreography(),
+      source: 'test',
       placeCount: 19,
       participantCount: 3,
       messageCount: 10,
@@ -419,7 +408,7 @@ export class TestdataProvider {
 
   static getModel2Reduced(): Model {
     return {
-      source: TestdataProvider.getExampleChoreography(),
+      source: 'test',
       placeCount: 13,
       participantCount: 3,
       messageCount: 10,

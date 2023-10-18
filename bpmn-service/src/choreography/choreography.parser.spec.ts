@@ -4,7 +4,7 @@ import { ChoreographyParser } from './choreography.parser';
 describe('ChoreographyParser', () => {
   let choreographyParser: ChoreographyParser;
   const definitions2 = TestdataProvider.getDefinitions2();
-  const xmlString = TestdataProvider.getExampleChoreography();
+  const xmlString = TestdataProvider.readBpmn('example_choreography');
 
   beforeAll(() => {
     choreographyParser = new ChoreographyParser();
