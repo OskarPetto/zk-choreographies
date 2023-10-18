@@ -290,9 +290,9 @@ export class ChoreographyMapper {
     messageIds: Map<BpmnMessageId, MessageId>,
     additionalPlaceIds: PlaceId[],
   ): Transition[] {
-    const incomingPlaceIds = choreographyTask.incoming.map(
-      (sequenceFlowId) => sequenceFlowPlaceIds.get(sequenceFlowId)!,
-    );
+    const incomingPlaceId = sequenceFlowPlaceIds.get(
+      choreographyTask.incoming,
+    )!;
     const outgoingPlaceId = sequenceFlowPlaceIds.get(
       choreographyTask.outgoing,
     )!;
@@ -321,7 +321,7 @@ export class ChoreographyMapper {
           id: `${choreographyTask.id}_0`,
           type: TransitionType.REQUIRED,
           name: choreographyTask.name,
-          incomingPlaces: incomingPlaceIds,
+          incomingPlaces: [incomingPlaceId],
           outgoingPlaces: [additionalPlaceId],
           sender: initiatingParticipantId,
           recipient: respondingParticipantId,
@@ -344,7 +344,7 @@ export class ChoreographyMapper {
           id: choreographyTask.id,
           type: TransitionType.REQUIRED,
           name: choreographyTask.name,
-          incomingPlaces: incomingPlaceIds,
+          incomingPlaces: [incomingPlaceId],
           outgoingPlaces: [outgoingPlaceId],
           sender: initiatingParticipantId,
           recipient: respondingParticipantId,

@@ -213,7 +213,7 @@ export class ChoreographyParser {
       return {
         id: choreographyTask.id,
         name: choreographyTask.name,
-        incoming: choreographyTask[this.incomingTag],
+        incoming: choreographyTask[this.incomingTag][0],
         outgoing: choreographyTask[this.outgoingTag][0],
         initiatingParticipant: initiatingParticipantRef,
         respondingParticipant: respondingParticipantRef,

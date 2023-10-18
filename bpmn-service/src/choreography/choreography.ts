@@ -59,7 +59,7 @@ export enum LoopType {
 export interface ChoreographyTask {
   id: string;
   name?: string;
-  incoming: SequenceFlowId[];
+  incoming: SequenceFlowId;
   outgoing: SequenceFlowId;
   initiatingParticipant: ParticipantId;
   respondingParticipant: ParticipantId;

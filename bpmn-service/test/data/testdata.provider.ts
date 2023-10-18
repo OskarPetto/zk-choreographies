@@ -86,7 +86,7 @@ export class TestdataProvider {
             {
               id: 'ChoreographyTask_0kp4flv',
               name: 'Submit purchase order',
-              incoming: ['Flow_1f6eaf2'],
+              incoming: 'Flow_1f6eaf2',
               outgoing: 'Flow_0kyymfy',
               initiatingParticipant: 'Participant_0x6v44d',
               respondingParticipant: 'Participant_0n7kwiu',
@@ -96,7 +96,7 @@ export class TestdataProvider {
             {
               id: 'ChoreographyTask_0nl2rhr',
               name: 'Purchase raw materials',
-              incoming: ['Flow_1k5cri3'],
+              incoming: 'Flow_1k5cri3',
               outgoing: 'Flow_0c5yqsz',
               initiatingParticipant: 'Participant_0n7kwiu',
               respondingParticipant: 'Participant_0xxs9a7',
@@ -106,7 +106,7 @@ export class TestdataProvider {
             {
               id: 'ChoreographyTask_1uie9z3',
               name: 'Confirm order',
-              incoming: ['Flow_0c5yqsz'],
+              incoming: 'Flow_0c5yqsz',
               outgoing: 'Flow_1iwbmcz',
               initiatingParticipant: 'Participant_0n7kwiu',
               respondingParticipant: 'Participant_0x6v44d',
@@ -115,7 +115,7 @@ export class TestdataProvider {
             {
               id: 'ChoreographyTask_1dsovf5',
               name: 'Ship product',
-              incoming: ['Flow_1jplxjf'],
+              incoming: 'Flow_1jplxjf',
               outgoing: 'Flow_0glm8k3',
               initiatingParticipant: 'Participant_0x6v44d',
               respondingParticipant: 'Participant_0n7kwiu',
@@ -125,7 +125,7 @@ export class TestdataProvider {
             {
               id: 'ChoreographyTask_1htg6wy',
               name: 'Invoice customer',
-              incoming: ['Flow_1h69rwb'],
+              incoming: 'Flow_1h69rwb',
               outgoing: 'Flow_0433489',
               initiatingParticipant: 'Participant_0n7kwiu',
               respondingParticipant: 'Participant_0x6v44d',
@@ -135,7 +135,7 @@ export class TestdataProvider {
             {
               id: 'ChoreographyTask_1e51o0k',
               name: 'Confirm order',
-              incoming: ['Flow_1stf9mf'],
+              incoming: 'Flow_1stf9mf',
               outgoing: 'Flow_0ec3gh0',
               initiatingParticipant: 'Participant_0n7kwiu',
               respondingParticipant: 'Participant_0x6v44d',
