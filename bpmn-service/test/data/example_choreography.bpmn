@@ -45,7 +45,7 @@
       <bpmn2:outgoing>Flow_1stf9mf</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
     <bpmn2:sequenceFlow id="Flow_0kyymfy" sourceRef="ChoreographyTask_0kp4flv" targetRef="Gateway_10fv7g5" />
-    <bpmn2:choreographyTask id="ChoreographyTask_0nl2rhr" name="Purchase raw materials" initiatingParticipantRef="Participant_0n7kwiu" loopType="MultiInstanceSequential">
+    <bpmn2:choreographyTask id="ChoreographyTask_0nl2rhr" name="Purchase raw materials" initiatingParticipantRef="Participant_0n7kwiu">
       <bpmn2:incoming>Flow_1k5cri3</bpmn2:incoming>
       <bpmn2:outgoing>Flow_0c5yqsz</bpmn2:outgoing>
       <bpmn2:participantRef>Participant_0n7kwiu</bpmn2:participantRef>
@@ -139,13 +139,13 @@
         <di:waypoint x="915" y="350" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNShape id="ChoreographyTask_0nl2rhr_di" bpmnElement="ChoreographyTask_0nl2rhr">
-        <dc:Bounds x="980" y="180" width="100" height="100" />
+        <dc:Bounds x="980" y="190" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_0fuyz04" bpmnElement="Participant_0n7kwiu" isMessageVisible="true" participantBandKind="top_initiating" choreographyActivityShape="ChoreographyTask_0nl2rhr_di">
-        <dc:Bounds x="980" y="180" width="100" height="20" />
+        <dc:Bounds x="980" y="190" width="100" height="20" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_1he4b9l" bpmnElement="Participant_0xxs9a7" isMessageVisible="true" participantBandKind="bottom_non_initiating" choreographyActivityShape="ChoreographyTask_0nl2rhr_di">
-        <dc:Bounds x="980" y="260" width="100" height="20" />
+        <dc:Bounds x="980" y="250" width="100" height="20" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1k5cri3_di" bpmnElement="Flow_1k5cri3">
         <di:waypoint x="940" y="325" />

@@ -290,9 +290,9 @@ export class ChoreographyMapper {
     messageIds: Map<BpmnMessageId, MessageId>,
     additionalPlaceIds: PlaceId[],
   ): Transition[] {
-    const incomingPlaceId = sequenceFlowPlaceIds.get(
-      choreographyTask.incoming,
-    )!;
+    const incomingPlaceIds = choreographyTask.incoming.map(
+      (sequenceFlowId) => sequenceFlowPlaceIds.get(sequenceFlowId)!,
+    );
     const outgoingPlaceId = sequenceFlowPlaceIds.get(
       choreographyTask.outgoing,
     )!;
@@ -311,77 +311,47 @@ export class ChoreographyMapper {
       ? messageIds.get(choreographyTask.responseMessage)
       : undefined;
 
-    if (choreographyTask.loopType === undefined) {
+    if (initialMessage != undefined && responseMessage != undefined) {
+      const additionalPlaceId =
+        sequenceFlowPlaceIds.size + additionalPlaceIds.length;
+      additionalPlaceIds.push(additionalPlaceId);
 
-      if (initialMessage != undefined && responseMessage != undefined) {
-        const additionalPlaceId =
-          sequenceFlowPlaceIds.size + additionalPlaceIds.length;
-        additionalPlaceIds.push(additionalPlaceId);
-
-        return [
-          {
-            id: `${choreographyTask.id}_0`,
-            type: TransitionType.REQUIRED,
-            name: choreographyTask.name,
-            incomingPlaces: [incomingPlaceId],
-            outgoingPlaces: [additionalPlaceId],
-            sender: initiatingParticipantId,
-            recipient: respondingParticipantId,
-            message: initialMessage,
-          },
-          {
-            id: `${choreographyTask.id}_1`,
-            type: TransitionType.REQUIRED,
-            name: choreographyTask.name,
-            incomingPlaces: [additionalPlaceId],
-            outgoingPlaces: [outgoingPlaceId],
-            sender: respondingParticipantId,
-            recipient: initiatingParticipantId,
-            message: responseMessage,
-          }
-        ];
-      } else {
-
-        return [
-          {
-            id: choreographyTask.id,
-            type: TransitionType.REQUIRED,
-            name: choreographyTask.name,
-            incomingPlaces: [incomingPlaceId],
-            outgoingPlaces: [outgoingPlaceId],
-            sender: initiatingParticipantId,
-            recipient: respondingParticipantId,
-            message: initialMessage,
-          },
-        ];
-      }
-    } else if (
-      choreographyTask.loopType === LoopType.MULTI_INSTANCE_SEQUENTIAL
-    ) {
       return [
         {
           id: `${choreographyTask.id}_0`,
           type: TransitionType.REQUIRED,
           name: choreographyTask.name,
-          incomingPlaces: [incomingPlaceId],
-          outgoingPlaces: [outgoingPlaceId],
+          incomingPlaces: incomingPlaceIds,
+          outgoingPlaces: [additionalPlaceId],
           sender: initiatingParticipantId,
           recipient: respondingParticipantId,
           message: initialMessage,
         },
         {
-          id: `${choreographyTask.id}_loop`,
+          id: `${choreographyTask.id}_1`,
           type: TransitionType.REQUIRED,
           name: choreographyTask.name,
-          incomingPlaces: [outgoingPlaceId],
+          incomingPlaces: [additionalPlaceId],
+          outgoingPlaces: [outgoingPlaceId],
+          sender: respondingParticipantId,
+          recipient: initiatingParticipantId,
+          message: responseMessage,
+        }
+      ];
+    } else {
+
+      return [
+        {
+          id: choreographyTask.id,
+          type: TransitionType.REQUIRED,
+          name: choreographyTask.name,
+          incomingPlaces: incomingPlaceIds,
           outgoingPlaces: [outgoingPlaceId],
           sender: initiatingParticipantId,
           recipient: respondingParticipantId,
           message: initialMessage,
         },
       ];
-    } else {
-      throw Error('not supported');
     }
   }
 

@@ -35,7 +35,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			signatureParameters,
 			model2,
 			domain.MaxTransitionCount,
-			[]domain.PlaceId{10},
+			[]domain.PlaceId{11},
 			[]domain.Hash{
 				domain.EmptyHash(),
 				domain.EmptyHash(),
@@ -149,7 +149,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			signatureParameters,
 			model2,
 			9,
-			[]domain.PlaceId{2, 9},
+			[]domain.PlaceId{2, 10},
 			[]domain.Hash{
 				stock.Hash.Hash,
 				confirm.Hash.Hash,
@@ -193,7 +193,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			signatureParameters,
 			model2,
 			7,
-			[]domain.PlaceId{8, 5},
+			[]domain.PlaceId{9, 5},
 			[]domain.Hash{
 				stock.Hash.Hash,
 				confirm.Hash.Hash,
@@ -237,7 +237,7 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 			signatureParameters,
 			model2,
 			1,
-			[]domain.PlaceId{11},
+			[]domain.PlaceId{12},
 			[]domain.Hash{
 				stock.Hash.Hash,
 				confirm.Hash.Hash,

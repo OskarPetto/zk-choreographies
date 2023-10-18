@@ -7,7 +7,8 @@ import (
 )
 
 func TestInstantiateModel(t *testing.T) {
-	publicKeys := signatureParameters.GetPublicKeys(2)
+	model := states[0].Model
+	publicKeys := signatureParameters.GetPublicKeys(int(model.ParticipantCount))
 	state0 := states[0]
 	result, err := state0.Model.Instantiate(publicKeys)
 	assert.Nil(t, err)
