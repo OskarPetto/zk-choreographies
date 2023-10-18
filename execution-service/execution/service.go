@@ -146,34 +146,28 @@ func (service *ExecutionService) SendMessage(cmd SendMessageCommand) (SentMessag
 	if err != nil {
 		return SentMessageEvent{}, err
 	}
-	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput)
-	if err != nil {
-		return SentMessageEvent{}, err
-	}
 	if !bytes.Equal(currentInstance.Model.Value[:], model.Hash.Hash.Value[:]) {
 		return SentMessageEvent{}, fmt.Errorf("instance %s is not of model %s", cmd.Instance, cmd.Model)
 	}
-	if transition.Message == domain.EmptyMessageId {
-		return SentMessageEvent{}, fmt.Errorf("transition %s does not send any message", transition.Id)
-	}
-	if transition.Recipient == domain.EmptyParticipantId {
-		return SentMessageEvent{}, fmt.Errorf("transition %s has no recipient", transition.Id)
-	}
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
-	recipientPublicKey := currentInstance.FindPublicKeyByParticipant(transition.Recipient)
 	var messageToSend domain.Message
 	if cmd.BytesMessage != nil {
 		messageToSend = domain.NewBytesMessage(cmd.BytesMessage)
 	} else {
 		messageToSend = domain.NewIntegerMessage(*cmd.IntegerMessage)
 	}
-	service.MessageService.SaveMessage(messageToSend)
-	service.InstanceService.SaveInstance(nextInstance)
-
+	nextInstance, err := currentInstance.SendMessage(transition, constraintInput, messageToSend.Hash.Hash)
+	if err != nil {
+		return SentMessageEvent{}, err
+	}
+	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	recipientPublicKey := currentInstance.FindPublicKeyByParticipant(transition.Recipient)
 	plaintext := message.SerializeMessage(messageToSend)
 	ciphertext := plaintext.Encrypt(privateKey, recipientPublicKey)
 
 	senderSignature := nextInstance.Sign(privateKey)
+
+	service.MessageService.SaveMessage(messageToSend)
+	service.InstanceService.SaveInstance(nextInstance)
 
 	return SentMessageEvent{
 		Model:            cmd.Model,

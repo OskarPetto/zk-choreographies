@@ -52,7 +52,17 @@ func (instance Instance) ExecuteTransition(transition Transition, input Constrai
 	return instance, nil
 }
 
-func (instance Instance) SetMessageHash(transition Transition, messageHash Hash) Instance {
+func (instance Instance) SendMessage(transition Transition, input ConstraintInput, messageHash Hash) (Instance, error) {
+	if !isTransitionExecutable(instance, transition, input) {
+		return Instance{}, fmt.Errorf("transition %s is not executable", transition.Id)
+	}
+	if transition.Message == EmptyMessageId {
+		return Instance{}, fmt.Errorf("transition %s does not send any message", transition.Id)
+	}
+	if transition.Recipient == EmptyParticipantId {
+		return Instance{}, fmt.Errorf("transition %s has no recipient", transition.Id)
+	}
+	instance.updateTokenCounts(transition)
 	messageHashes := make([]Hash, len(instance.MessageHashes))
 	copy(messageHashes[:], instance.MessageHashes[:])
 	if transition.Message != EmptyMessageId {
@@ -61,7 +71,7 @@ func (instance Instance) SetMessageHash(transition Transition, messageHash Hash)
 	instance.MessageHashes = messageHashes
 	instance.CreatedAt = time.Now().Unix()
 	instance.UpdateHash()
-	return instance
+	return instance, nil
 }
 
 func (instance *Instance) updateTokenCounts(transition Transition) {

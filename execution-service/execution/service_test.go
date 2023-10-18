@@ -91,9 +91,12 @@ func TestSendMessageTransition2(t *testing.T) {
 	assert.Equal(t, cmd.Model, event.Model)
 	assert.Equal(t, cmd.Instance, event.CurrentInstance)
 	assert.Equal(t, cmd.Transition, event.Transition)
-	instance := event.NextInstance
-	_, err = instanceService.FindInstanceById(instance.Id())
+	nextInstance := event.NextInstance
+	_, err = instanceService.FindInstanceById(nextInstance.Id())
 	assert.Nil(t, err)
+	transition, err := model.FindTransitionById(cmd.Transition)
+	assert.Nil(t, err)
+	assert.NotEqual(t, currentInstance.MessageHashes[transition.Message], nextInstance.MessageHashes[transition.Message])
 	signature := event.SenderSignature
 	assert.True(t, signature.Verify())
 	ciphertext := event.EncryptedMessage
