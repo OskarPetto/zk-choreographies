@@ -31,7 +31,7 @@ interface ConstraintMapping {
 
 @Injectable()
 export class ChoreographyMapper {
-  constructor(private constraintParser: ConstraintParser) {}
+  constructor(private constraintParser: ConstraintParser) { }
   toModel(xmlString: string, choreography: Choreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
@@ -168,7 +168,9 @@ export class ChoreographyMapper {
     const map: Map<BpmnMessageId, MessageId> = new Map();
     let index = 0;
     for (const message of messages.sort()) {
-      map.set(message.id, index++);
+      if (message.name !== undefined) {
+        map.set(message.id, index++);
+      }
     }
     return map;
   }

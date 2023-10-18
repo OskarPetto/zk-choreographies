@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xs="http://www.w3.org/2001/XMLSchema" id="_tTv5YOycEeiHGOQ2NkJZNQ" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn2:message id="Message_06qmdwl" />
   <bpmn2:message id="Message_01mfvqd" name="payment" />
   <bpmn2:message id="Message_0h51380" name="price" />
   <bpmn2:message id="Message_1rnq4x3" name="pizza" />
@@ -9,6 +10,7 @@
     <bpmn2:participant id="Participant_06qakjv" name="Customer" />
     <bpmn2:participant id="Participant_0mgz9si" name="Pizza Place" />
     <bpmn2:participant id="Participant_0537iz2" name="Delivery Boy" />
+    <bpmn2:messageFlow id="MessageFlow_1uvby4m" sourceRef="Participant_0537iz2" targetRef="Participant_0mgz9si" messageRef="Message_06qmdwl" />
     <bpmn2:messageFlow id="MessageFlow_0bvcvmm" sourceRef="Participant_06qakjv" targetRef="Participant_0537iz2" messageRef="Message_01mfvqd" />
     <bpmn2:messageFlow id="MessageFlow_0ct3pjm" sourceRef="Participant_0mgz9si" targetRef="Participant_06qakjv" messageRef="Message_0h51380" />
     <bpmn2:messageFlow id="MessageFlow_03drbju" sourceRef="Participant_0537iz2" targetRef="Participant_06qakjv" messageRef="Message_1rnq4x3" />
@@ -31,6 +33,7 @@
       <bpmn2:outgoing>SequenceFlow_0esuuaj</bpmn2:outgoing>
       <bpmn2:participantRef>Participant_0mgz9si</bpmn2:participantRef>
       <bpmn2:participantRef>Participant_0537iz2</bpmn2:participantRef>
+      <bpmn2:messageFlowRef>MessageFlow_1uvby4m</bpmn2:messageFlowRef>
       <bpmn2:messageFlowRef>MessageFlow_0dnembp</bpmn2:messageFlowRef>
     </bpmn2:choreographyTask>
     <bpmn2:sequenceFlow id="SequenceFlow_036yo13" sourceRef="ChoreographyTask_0hy9n0g" targetRef="ChoreographyTask_1m3qduh" />
