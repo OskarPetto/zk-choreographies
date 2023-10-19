@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Model, PlaceId, Transition, TransitionType } from './model';
+import { Constraint } from 'src/constraint/constraint';
 
 @Injectable()
 export class ModelReducer {
@@ -10,10 +11,10 @@ export class ModelReducer {
         case TransitionType.REQUIRED:
           break;
         case TransitionType.OPTIONAL_OUTGOING:
-          this.removeTransitionAndOutgoingPlaces(newModel, transition);
+          this.removeTransition(newModel, transition, transition.outgoingPlaces, transition.incomingPlaces);
           break;
         case TransitionType.OPTIONAL_INCOMING:
-          this.removeTransitionAndIncomingPlaces(newModel, transition);
+          this.removeTransition(newModel, transition, transition.incomingPlaces, transition.outgoingPlaces);
           break;
         case undefined:
           throw Error(`Model has already been reduced`);
@@ -60,9 +61,11 @@ export class ModelReducer {
     return [...new Set(places)].sort((a, b) => a - b);
   }
 
-  private removeTransitionAndOutgoingPlaces(
+  private removeTransition(
     model: Model,
     transitionToRemove: Transition,
+    placesToRemove: PlaceId[],
+    placesToKeep: PlaceId[]
   ) {
     for (const transition of model.transitions) {
       if (transition.id === transitionToRemove.id) {
@@ -70,16 +73,16 @@ export class ModelReducer {
       }
       const incomingIntersect = this.intersect(
         transition.incomingPlaces,
-        transitionToRemove.outgoingPlaces,
+        placesToRemove,
       );
       if (incomingIntersect.length > 0) {
         transition.incomingPlaces = this.setMinus(
           transition.incomingPlaces,
-          transitionToRemove.outgoingPlaces,
+          placesToRemove,
         );
         transition.incomingPlaces = this.union(
           transition.incomingPlaces,
-          transitionToRemove.incomingPlaces,
+          placesToKeep,
         );
         if (transitionToRemove.constraint) {
           if (transition.constraint) {
@@ -93,62 +96,19 @@ export class ModelReducer {
       }
       const outgoingIntersect = this.intersect(
         transition.outgoingPlaces,
-        transitionToRemove.outgoingPlaces,
+        placesToRemove,
       );
       if (outgoingIntersect.length > 0) {
         transition.outgoingPlaces = this.setMinus(
           transition.outgoingPlaces,
-          transitionToRemove.outgoingPlaces,
+          placesToRemove,
         );
         transition.outgoingPlaces = this.union(
           transition.outgoingPlaces,
-          transitionToRemove.incomingPlaces,
+          placesToKeep,
         );
       }
     }
-    model.transitions = model.transitions.filter(
-      (t) => t.id !== transitionToRemove.id,
-    );
-  }
-
-  private removeTransitionAndIncomingPlaces(
-    model: Model,
-    transitionToRemove: Transition,
-  ) {
-    for (const transition of model.transitions) {
-      if (transition.id === transitionToRemove.id) {
-        continue;
-      }
-      const outgoingIntersect = this.intersect(
-        transition.outgoingPlaces,
-        transitionToRemove.incomingPlaces,
-      );
-      if (outgoingIntersect.length > 0) {
-        transition.outgoingPlaces = this.setMinus(
-          transition.outgoingPlaces,
-          transitionToRemove.incomingPlaces,
-        );
-        transition.outgoingPlaces = this.union(
-          transition.outgoingPlaces,
-          transitionToRemove.outgoingPlaces,
-        );
-      }
-      const incomingIntersect = this.intersect(
-        transition.incomingPlaces,
-        transitionToRemove.incomingPlaces,
-      );
-      if (incomingIntersect.length > 0) {
-        transition.incomingPlaces = this.setMinus(
-          transition.incomingPlaces,
-          transitionToRemove.incomingPlaces,
-        );
-        transition.incomingPlaces = this.union(
-          transition.incomingPlaces,
-          transitionToRemove.outgoingPlaces,
-        );
-      }
-    }
-
     model.transitions = model.transitions.filter(
       (t) => t.id !== transitionToRemove.id,
     );
