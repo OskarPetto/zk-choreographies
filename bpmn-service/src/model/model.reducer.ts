@@ -67,10 +67,10 @@ export class ModelReducer {
     placesToRemove: PlaceId[],
     placesToKeep: PlaceId[]
   ) {
+    model.transitions = model.transitions.filter(
+      (t) => t.id !== transitionToRemove.id,
+    );
     for (const transition of model.transitions) {
-      if (transition.id === transitionToRemove.id) {
-        continue;
-      }
       const incomingIntersect = this.intersect(
         transition.incomingPlaces,
         placesToRemove,
@@ -109,9 +109,6 @@ export class ModelReducer {
         );
       }
     }
-    model.transitions = model.transitions.filter(
-      (t) => t.id !== transitionToRemove.id,
-    );
   }
 
   private setMinus(places1: PlaceId[], places2: PlaceId[]): PlaceId[] {
