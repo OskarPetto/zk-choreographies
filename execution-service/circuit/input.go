@@ -39,8 +39,12 @@ type Instance struct {
 }
 
 type ConstraintInput struct {
-	IntegerMessages [domain.MaxConstraintMessageCount]frontend.Variable
-	Salts           [domain.MaxConstraintMessageCount]frontend.Variable
+	Messages [domain.MaxConstraintMessageCount]Message
+}
+
+type Message struct {
+	IntegerMessage frontend.Variable
+	Salt           frontend.Variable
 }
 
 type Constraint struct {
@@ -288,20 +292,23 @@ func fromConstraint(constraint domain.Constraint) Constraint {
 	}
 }
 
-func FromConstraintInput(input domain.ConstraintInput) ConstraintInput {
-	var integerMessages [domain.MaxConstraintMessageCount]frontend.Variable
-	var salts [domain.MaxConstraintMessageCount]frontend.Variable
-	for i, message := range input.Messages {
-		integerMessages[i] = message.IntegerMessage
-		salts[i] = fromBytes(message.Hash.Salt)
+func FromConstraintInput(constraintInput domain.ConstraintInput) ConstraintInput {
+	var messages [domain.MaxConstraintMessageCount]Message
+	for i, message := range constraintInput.Messages {
+		messages[i] = fromMessage(message)
 	}
-	for i := len(input.Messages); i < domain.MaxConstraintMessageCount; i++ {
-		integerMessages[i] = domain.EmptyIntegerMessage
-		salts[i] = 0
+	for i := len(constraintInput.Messages); i < domain.MaxConstraintMessageCount; i++ {
+		messages[i] = fromMessage(domain.EmptyMessage())
 	}
 	return ConstraintInput{
-		IntegerMessages: integerMessages,
-		Salts:           salts,
+		Messages: messages,
+	}
+}
+
+func fromMessage(message domain.Message) Message {
+	return Message{
+		IntegerMessage: message.IntegerMessage,
+		Salt:           fromBytes(message.Hash.Salt),
 	}
 }
 

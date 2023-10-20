@@ -96,14 +96,13 @@ func (circuit *TransitionCircuit) findConstraintInputMessageIds(api frontend.API
 	for i := 0; i < domain.MaxConstraintMessageCount; i++ {
 		messageIds[i] = domain.EmptyMessageId
 	}
-	for i, integerMessage := range circuit.ConstraintInput.IntegerMessages {
-		salt := circuit.ConstraintInput.Salts[i]
+	for _, message := range circuit.ConstraintInput.Messages {
 		mimc, err := mimc.NewMiMC(api)
 		if err != nil {
 			return ConstraintMessageIds{}, err
 		}
-		mimc.Write(integerMessage)
-		mimc.Write(salt)
+		mimc.Write(message.IntegerMessage)
+		mimc.Write(message.Salt)
 		messageHash := mimc.Sum()
 
 		for messageId, messageHashForMessageId := range circuit.CurrentInstance.MessageHashes {
@@ -248,8 +247,8 @@ func evaluateConstraint(api frontend.API, constraint Constraint, input Constrain
 		messageIdsMatch := equals(api, expectedMessageId, messageId)
 
 		allMessageIdsMatch = api.And(allMessageIdsMatch, api.Or(coefficientIsZero, messageIdsMatch))
-		integerMessage := input.IntegerMessages[i]
-		lhs = api.MulAcc(lhs, coefficient, integerMessage)
+		message := input.Messages[i]
+		lhs = api.MulAcc(lhs, coefficient, message.IntegerMessage)
 	}
 
 	comparator := cmp.NewBoundedComparator(api, big.NewInt(1<<32-1), false)
