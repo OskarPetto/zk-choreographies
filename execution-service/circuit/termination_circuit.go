@@ -33,7 +33,7 @@ func NewTerminationCircuit() TerminationCircuit {
 }
 
 func (circuit *TerminationCircuit) Define(api frontend.API) error {
-	err := checkModelHash(api, circuit.Model)
+	err := checkModelHash(api, circuit.Model, circuit.Instance)
 	if err != nil {
 		return err
 	}

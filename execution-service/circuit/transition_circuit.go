@@ -58,7 +58,7 @@ func NewTransitionCircuit() TransitionCircuit {
 }
 
 func (circuit *TransitionCircuit) Define(api frontend.API) error {
-	err := checkModelHash(api, circuit.Model)
+	err := checkModelHash(api, circuit.Model, circuit.CurrentInstance)
 	if err != nil {
 		return err
 	}

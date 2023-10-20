@@ -19,11 +19,6 @@ type PublicHash struct {
 	Salt frontend.Variable
 }
 
-type PrivateHash struct {
-	Hash frontend.Variable
-	Salt frontend.Variable
-}
-
 type MerkleProof struct {
 	MerkleProof merkle.MerkleProof
 	Index       frontend.Variable
@@ -66,7 +61,7 @@ type Transition struct {
 }
 
 type Model struct {
-	Hash             PrivateHash
+	Salt             frontend.Variable
 	PlaceCount       frontend.Variable
 	ParticipantCount frontend.Variable
 	MessageCount     frontend.Variable
@@ -181,7 +176,7 @@ func FromModel(model domain.Model) Model {
 		transitionTree.Push(hash.Value[:])
 	}
 	return Model{
-		Hash:             toPrivateHash(model.Hash),
+		Salt:             fromBytes(model.Hash.Salt),
 		PlaceCount:       model.PlaceCount,
 		ParticipantCount: model.ParticipantCount,
 		MessageCount:     model.MessageCount,
@@ -312,13 +307,6 @@ func FromConstraintInput(input domain.ConstraintInput) ConstraintInput {
 
 func toPublicHash(hash domain.SaltedHash) PublicHash {
 	return PublicHash{
-		Hash: fromHash(hash.Hash),
-		Salt: fromBytes(hash.Salt),
-	}
-}
-
-func toPrivateHash(hash domain.SaltedHash) PrivateHash {
-	return PrivateHash{
 		Hash: fromHash(hash.Hash),
 		Salt: fromBytes(hash.Salt),
 	}

@@ -26,7 +26,7 @@ func NewInstantiationCircuit() InstantiationCircuit {
 }
 
 func (circuit *InstantiationCircuit) Define(api frontend.API) error {
-	err := checkModelHash(api, circuit.Model)
+	err := checkModelHash(api, circuit.Model, circuit.Instance)
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,6 @@ func (circuit *InstantiationCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	api.AssertIsEqual(circuit.Model.Hash.Hash, circuit.Instance.Model)
 	checkAuthentication(api, circuit.Authentication, circuit.Instance)
 	circuit.checkTokenCounts(api)
 	circuit.checkMessageHashes(api)

@@ -11,7 +11,7 @@ import (
 const emptyMessageHash = 0
 const outOfBoundsMessageHash = 1
 
-func checkModelHash(api frontend.API, model Model) error {
+func checkModelHash(api frontend.API, model Model, instance Instance) error {
 	mimc, err := mimc.NewMiMC(api)
 	if err != nil {
 		return err
@@ -24,9 +24,9 @@ func checkModelHash(api frontend.API, model Model) error {
 	}
 	mimc.Write(model.EndPlaceRoot)
 	mimc.Write(model.TransitionRoot)
-	mimc.Write(model.Hash.Salt)
+	mimc.Write(model.Salt)
 	result := mimc.Sum()
-	api.AssertIsEqual(result, model.Hash.Hash)
+	api.AssertIsEqual(result, instance.Model)
 	return nil
 }
 
