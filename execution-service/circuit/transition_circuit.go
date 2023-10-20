@@ -70,6 +70,7 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
+	api.AssertIsEqual(circuit.CurrentInstance.Model, circuit.NextInstance.Model)
 	err = checkAuthentication(api, circuit.SenderAuthentication, circuit.NextInstance)
 	if err != nil {
 		return err
@@ -78,8 +79,7 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	api.AssertIsEqual(circuit.CurrentInstance.Model, circuit.NextInstance.Model)
-	circuit.comparePublicKeys(api)
+	api.AssertIsEqual(circuit.CurrentInstance.PublicKeyRoot, circuit.NextInstance.PublicKeyRoot)
 	tokenCountChanges := circuit.compareTokenCounts(api)
 	addedMessageId := circuit.findAddedMessageId(api)
 	constraintInputMessageIds, err := circuit.findConstraintInputMessageIds(api)
@@ -118,10 +118,6 @@ func (circuit *TransitionCircuit) findConstraintInputMessageIds(api frontend.API
 	return ConstraintMessageIds{
 		MessageIds: messageIds,
 	}, nil
-}
-
-func (circuit *TransitionCircuit) comparePublicKeys(api frontend.API) {
-	api.AssertIsEqual(circuit.CurrentInstance.PublicKeyRoot, circuit.NextInstance.PublicKeyRoot)
 }
 
 func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCountChanges {
