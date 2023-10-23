@@ -71,5 +71,5 @@ func TestProveTermination(t *testing.T) {
 
 	jsonBytes, _ := json.Marshal(proofs)
 	byteBuffer := bytes.NewBuffer(jsonBytes)
-	files.WriteFile(byteBuffer, "../../solidity/test/proof.json")
+	files.WriteFile(byteBuffer, "../../solidity/test/proofs.json")
 }

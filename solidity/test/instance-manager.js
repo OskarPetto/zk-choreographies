@@ -1,5 +1,5 @@
 const fs = require('fs');
-const proofsString = fs.readFileSync('test/proof.json');
+const proofsString = fs.readFileSync('test/proofs.json');
 const proofs = JSON.parse(proofsString);
 
 const InstantiationVerifier = artifacts.require("InstantiationVerifier");
