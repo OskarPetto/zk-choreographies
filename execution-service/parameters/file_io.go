@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
 func writePrivateFile(writeable io.WriterTo, filename string) {
@@ -55,5 +57,9 @@ func getPrivatePath(filename string) string {
 }
 
 func getFilePath() string {
-	return "/home/opetto/uni/zk-choreographies/files/"
+	wd, _ := os.Getwd()
+	for !strings.HasSuffix(wd, "execution-service") {
+		wd = filepath.Dir(wd)
+	}
+	return wd + "/files/"
 }

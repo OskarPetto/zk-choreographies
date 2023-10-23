@@ -89,6 +89,6 @@ func generateProvingKey(cs constraint.ConstraintSystem, pkFilename string, vkFil
 	contract = strings.Replace(contract, "Verifier", contractName, 1)
 	byteBuffer = new(bytes.Buffer)
 	byteBuffer.Write([]byte(contract))
-	writePublicFile(byteBuffer, "../../solidity/contracts/"+vkFilename)
+	writeFile(byteBuffer, "../../solidity/contracts/"+vkFilename)
 	return pk
 }
