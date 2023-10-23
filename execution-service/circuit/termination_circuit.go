@@ -6,6 +6,7 @@ import (
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/accumulator/merkle"
 	"github.com/consensys/gnark/std/hash/mimc"
+	"github.com/consensys/gnark/std/selector"
 )
 
 type TerminationCircuit struct {
@@ -53,13 +54,7 @@ func (circuit *TerminationCircuit) checkTokenCounts(api frontend.API) error {
 	circuit.EndPlaceProof.CheckRootHash(api, circuit.Model.EndPlaceRoot)
 	circuit.EndPlaceProof.VerifyProof(api, mimc)
 	endPlace := circuit.EndPlaceProof.MerkleProof.Path[0]
-
-	var atLeastOneEndPlaceHasTokenCountOne frontend.Variable = 0
-	for placeId, tokenCount := range circuit.Instance.TokenCounts {
-		tokenCountIsOne := equals(api, tokenCount, 1)
-		isEndPlace := equals(api, placeId, endPlace)
-		atLeastOneEndPlaceHasTokenCountOne = api.Or(atLeastOneEndPlaceHasTokenCountOne, api.And(isEndPlace, tokenCountIsOne))
-	}
-	api.AssertIsEqual(1, atLeastOneEndPlaceHasTokenCountOne)
+	tokenCount := selector.Mux(api, endPlace, circuit.Instance.TokenCounts[:]...)
+	api.AssertIsEqual(1, tokenCount)
 	return nil
 }
