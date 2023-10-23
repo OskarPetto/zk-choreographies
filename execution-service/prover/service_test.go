@@ -1,11 +1,12 @@
 package prover_test
 
 import (
+	"bytes"
 	"encoding/json"
+	"execution-service/files"
 	"execution-service/parameters"
 	"execution-service/prover"
 	"execution-service/testdata"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -68,6 +69,7 @@ func TestProveTermination(t *testing.T) {
 	assert.Nil(t, err)
 	proofs = append(proofs, proof.ToJson())
 
-	bytes, _ := json.Marshal(proofs)
-	fmt.Println(string(bytes))
+	jsonBytes, _ := json.Marshal(proofs)
+	byteBuffer := bytes.NewBuffer(jsonBytes)
+	files.WriteFile(byteBuffer, "../../solidity/test/proof.json")
 }

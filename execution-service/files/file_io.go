@@ -1,4 +1,4 @@
-package parameters
+package files
 
 import (
 	"execution-service/utils"
@@ -9,27 +9,27 @@ import (
 	"strings"
 )
 
-func writePrivateFile(writeable io.WriterTo, filename string) {
+func WritePrivateFile(writeable io.WriterTo, filename string) {
 	path := getPrivatePath(filename)
-	writeFile(writeable, path)
+	WriteFile(writeable, path)
 }
 
-func readPrivateFile(readable io.ReaderFrom, filename string) error {
+func ReadPrivateFile(readable io.ReaderFrom, filename string) error {
 	path := getPrivatePath(filename)
 	return readFile(readable, path)
 }
 
-func writePublicFile(writeable io.WriterTo, filename string) {
+func WritePublicFile(writeable io.WriterTo, filename string) {
 	path := getPublicPath(filename)
-	writeFile(writeable, path)
+	WriteFile(writeable, path)
 }
 
-func readPublicFile(readable io.ReaderFrom, filename string) error {
+func ReadPublicFile(readable io.ReaderFrom, filename string) error {
 	path := getPublicPath(filename)
 	return readFile(readable, path)
 }
 
-func writeFile(writeable io.WriterTo, path string) {
+func WriteFile(writeable io.WriterTo, path string) {
 	file, err := os.Create(path)
 	utils.PanicOnError(err)
 	defer file.Close()

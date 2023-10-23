@@ -1,3 +1,4 @@
 contracts/InstantiationVerifier.sol
 contracts/TransitionVerifier.sol
 contracts/TerminationVerifier.sol
+test/proof.json
