@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"execution-service/circuit"
 	"execution-service/utils"
+	"strings"
 
 	"github.com/consensys/gnark-crypto/ecc"
 	"github.com/consensys/gnark/backend/groth16"
@@ -22,9 +23,9 @@ const terminationCsFilename = "termination.constraint_system"
 const instantiationPkFilename = "instantiation.proving_key"
 const transitionPkFilename = "transition.proving_key"
 const terminationPkFilename = "termination.proving_key"
-const instantiationVkFilename = "instantiation.sol"
-const transitionVkFilename = "transition.sol"
-const terminationVkFilename = "termination.sol"
+const instantiationVkFilename = "InstantiationVerifier.sol"
+const transitionVkFilename = "TransitionVerifier.sol"
+const terminationVkFilename = "TerminationVerifier.sol"
 
 type ProverParameters struct {
 	CsInstantiation constraint.ConstraintSystem
@@ -83,6 +84,11 @@ func generateProvingKey(cs constraint.ConstraintSystem, pkFilename string, vkFil
 	writePublicFile(pk, pkFilename)
 	byteBuffer := new(bytes.Buffer)
 	vk.ExportSolidity(byteBuffer)
-	writePublicFile(byteBuffer, vkFilename)
+	contract := byteBuffer.String()
+	contractName := strings.Replace(vkFilename, ".sol", "", 1)
+	contract = strings.Replace(contract, "Verifier", contractName, 1)
+	byteBuffer = new(bytes.Buffer)
+	byteBuffer.Write([]byte(contract))
+	writePublicFile(byteBuffer, "../../solidity/contracts/"+vkFilename)
 	return pk
 }
