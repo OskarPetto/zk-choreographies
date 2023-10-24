@@ -130,7 +130,7 @@ func TestReceiveMessageTransition2(t *testing.T) {
 		Identity:         *states[2].Recipient,
 		NextInstance:     nextInstance,
 		SenderSignature:  senderSignature,
-		EncryptedMessage: ciphertext,
+		EncryptedMessage: &ciphertext,
 	}
 	_, err := executionService.ReceiveMessage(cmd)
 	assert.Nil(t, err)

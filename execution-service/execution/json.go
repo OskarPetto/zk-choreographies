@@ -57,7 +57,7 @@ type sentMessageEventJson struct {
 	Transition       string                  `json:"transition"`
 	NextInstance     instance.InstanceJson   `json:"nextInstance"`
 	SenderSignature  signature.SignatureJson `json:"senderSignature"`
-	EncryptedMessage message.CiphertextJson  `json:"encryptedMessage"`
+	EncryptedMessage *message.CiphertextJson `json:"encryptedMessage,omitempty"`
 }
 
 type receiveMessageCommandJson struct {
@@ -66,7 +66,7 @@ type receiveMessageCommandJson struct {
 	Transition       string                  `json:"transition"`
 	NextInstance     instance.InstanceJson   `json:"nextInstance"`
 	SenderSignature  signature.SignatureJson `json:"senderSignature"`
-	EncryptedMessage message.CiphertextJson  `json:"encryptedMessage"`
+	EncryptedMessage *message.CiphertextJson `json:"encryptedMessage,omitempty"`
 	Identity         uint                    `json:"identity"`
 }
 
@@ -137,10 +137,15 @@ func (cmd *receiveMessageCommandJson) ToExecutionCommand() (ReceiveMessageComman
 	if err != nil {
 		return ReceiveMessageCommand{}, err
 	}
-	encryptedMessage, err := cmd.EncryptedMessage.ToCiphertext()
-	if err != nil {
-		return ReceiveMessageCommand{}, err
+	var encryptedMessage *domain.Ciphertext
+	if cmd.EncryptedMessage != nil {
+		tmp, err := cmd.EncryptedMessage.ToCiphertext()
+		if err != nil {
+			return ReceiveMessageCommand{}, err
+		}
+		encryptedMessage = &tmp
 	}
+
 	return ReceiveMessageCommand{
 		Model:            cmd.Model,
 		CurrentInstance:  cmd.CurrentInstance,
@@ -173,13 +178,19 @@ func TerminatedInstanceEventToJson(event TerminatedInstanceEvent) terminatedInst
 }
 
 func SentMessageEventToJson(event SentMessageEvent) sentMessageEventJson {
+	var encryptedMessage *message.CiphertextJson
+	if event.EncryptedMessage != nil {
+		tmp := message.ToCiphertextJson(*event.EncryptedMessage)
+		encryptedMessage = &tmp
+	}
+
 	return sentMessageEventJson{
 		Model:            event.Model,
 		CurrentInstance:  event.CurrentInstance,
 		Transition:       event.Transition,
 		NextInstance:     instance.ToJson(event.NextInstance),
 		SenderSignature:  signature.ToJson(event.SenderSignature),
-		EncryptedMessage: message.ToCiphertextJson(event.EncryptedMessage),
+		EncryptedMessage: encryptedMessage,
 	}
 }
 

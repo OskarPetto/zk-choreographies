@@ -53,7 +53,7 @@ type SentMessageEvent struct {
 	Transition       domain.TransitionId
 	NextInstance     domain.Instance
 	SenderSignature  domain.Signature
-	EncryptedMessage domain.Ciphertext
+	EncryptedMessage *domain.Ciphertext
 }
 
 type ReceiveMessageCommand struct {
@@ -63,7 +63,7 @@ type ReceiveMessageCommand struct {
 	Identity         domain.IdentityId
 	NextInstance     domain.Instance
 	SenderSignature  domain.Signature
-	EncryptedMessage domain.Ciphertext
+	EncryptedMessage *domain.Ciphertext
 }
 
 type ReceivedMessageEvent struct {
