@@ -4,6 +4,7 @@ import (
 	"execution-service/domain"
 	"execution-service/hash"
 	"execution-service/utils"
+	"fmt"
 	"time"
 )
 
@@ -11,6 +12,7 @@ type CiphertextJson struct {
 	Value     string `json:"value"`
 	Sender    string `json:"sender"`
 	Recipient string `json:"recipient"`
+	Salt      string `json:"salt"`
 }
 
 type MessageJson struct {
@@ -83,6 +85,13 @@ func (json *CiphertextJson) ToCiphertext() (domain.Ciphertext, error) {
 	if err != nil {
 		return domain.Ciphertext{}, err
 	}
+	salt, err := utils.StringToBytes(json.Salt)
+	if err != nil {
+		return domain.Ciphertext{}, err
+	}
+	if len(salt) != domain.SaltSize {
+		return domain.Ciphertext{}, fmt.Errorf("salt has wrong size")
+	}
 	return domain.Ciphertext{
 		Value: value,
 		Sender: domain.PublicKey{
@@ -91,6 +100,7 @@ func (json *CiphertextJson) ToCiphertext() (domain.Ciphertext, error) {
 		Recipient: domain.PublicKey{
 			Value: recipient,
 		},
+		Salt: [domain.SaltSize]byte(salt),
 	}, nil
 }
 
@@ -98,9 +108,11 @@ func ToCiphertextJson(encryptedState domain.Ciphertext) CiphertextJson {
 	value := utils.BytesToString(encryptedState.Value)
 	sender := utils.BytesToString(encryptedState.Sender.Value)
 	recipient := utils.BytesToString(encryptedState.Recipient.Value)
+	salt := utils.BytesToString(encryptedState.Salt[:])
 	return CiphertextJson{
 		Value:     value,
 		Sender:    sender,
 		Recipient: recipient,
+		Salt:      salt,
 	}
 }
