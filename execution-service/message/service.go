@@ -1,6 +1,7 @@
 package message
 
 import (
+	"bytes"
 	"execution-service/domain"
 	"execution-service/instance"
 	"execution-service/utils"
@@ -70,9 +71,13 @@ func (service *MessageService) FindConstraintInput(constraint domain.Constraint,
 	return constraintInput, nil
 }
 
-func (service *MessageService) ImportMessage(message domain.Message) error {
+func (service *MessageService) ImportMessage(instance domain.Instance, transition domain.Transition, message domain.Message) error {
 	if !message.HasValidHash() {
 		return fmt.Errorf("message %s has invalid hash", message.Hash.String())
+	}
+	messageHash := instance.MessageHashes[transition.Message]
+	if !bytes.Equal(messageHash.Value[:], message.Hash.Hash.Value[:]) {
+		return fmt.Errorf("message %s is not in instance %s", message.Hash.String(), instance.Hash.String())
 	}
 	service.SaveMessage(message)
 	return nil

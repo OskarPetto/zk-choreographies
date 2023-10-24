@@ -218,7 +218,7 @@ func (service *ExecutionService) ReceiveMessage(cmd ReceiveMessageCommand) (Rece
 	if err != nil {
 		return ReceivedMessageEvent{}, err
 	}
-	err = service.MessageService.ImportMessage(receivedMessage)
+	err = service.MessageService.ImportMessage(cmd.NextInstance, transition, receivedMessage)
 	if err != nil {
 		return ReceivedMessageEvent{}, err
 	}
