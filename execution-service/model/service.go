@@ -1,18 +1,22 @@
 package model
 
 import (
+	"bytes"
 	"execution-service/domain"
+	"execution-service/instance"
 	"fmt"
 	"sort"
 )
 
 type ModelService struct {
-	models map[domain.ModelId]domain.Model
+	models          map[domain.ModelId]domain.Model
+	InstanceService instance.InstanceService
 }
 
-func NewModelService() ModelService {
+func NewModelService(instanceService instance.InstanceService) ModelService {
 	return ModelService{
-		models: make(map[string]domain.Model),
+		models:          make(map[string]domain.Model),
+		InstanceService: instanceService,
 	}
 }
 
@@ -35,11 +39,18 @@ func (service *ModelService) FindAllModels() []domain.Model {
 	return models
 }
 
-func (service *ModelService) ImportModel(model domain.Model) error {
-	if !model.HasValidHash() {
-		return fmt.Errorf("model %s has invalid hash", model.Id())
+func (service *ModelService) ImportModel(cmd ImportModelCommand) error {
+	if !cmd.Model.HasValidHash() {
+		return fmt.Errorf("model %s has invalid hash", cmd.Model.Id())
 	}
-	service.models[model.Id()] = model
+	if !bytes.Equal(cmd.Instance.Model.Value[:], cmd.Model.Hash.Hash.Value[:]) {
+		return fmt.Errorf("model %s does not fit instance %s", cmd.Model.Id(), cmd.Instance.Id())
+	}
+	err := service.InstanceService.ImportInstance(cmd.Instance)
+	if err != nil {
+		return err
+	}
+	service.models[cmd.Model.Id()] = cmd.Model
 	return nil
 }
 

@@ -1,21 +1,30 @@
 package model_test
 
 import (
+	"execution-service/instance"
 	"execution-service/model"
+	"execution-service/parameters"
 	"execution-service/testdata"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var modelService = model.NewModelService()
+var signatureParameters = parameters.NewSignatureParameters()
+var instanceService = instance.NewInstanceService()
+var modelService = model.NewModelService(instanceService)
+var states = testdata.GetModel2States(signatureParameters)
 
 func TestImportModel(t *testing.T) {
-	model := testdata.GetModel2()
-	modelService.ImportModel(model)
-	modelResult, err := modelService.FindModelById(model.Id())
+	domainModel := states[0].Model
+	cmd := model.ImportModelCommand{
+		Model:    domainModel,
+		Instance: states[0].Instance,
+	}
+	modelService.ImportModel(cmd)
+	modelResult, err := modelService.FindModelById(domainModel.Id())
 	assert.Nil(t, err)
-	assert.Equal(t, model.Hash, modelResult.Hash)
+	assert.Equal(t, domainModel.Hash, modelResult.Hash)
 }
 
 func TestCreateModel(t *testing.T) {

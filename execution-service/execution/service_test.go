@@ -3,6 +3,7 @@ package execution_test
 import (
 	"execution-service/execution"
 	"execution-service/message"
+	"execution-service/model"
 	"execution-service/prover"
 	"execution-service/testdata"
 	"testing"
@@ -32,8 +33,12 @@ var messageService = executionService.MessageService
 var states = testdata.GetModel2States(executionService.SignatureParameters)
 
 func TestInitialization(t *testing.T) {
+	modelService.ImportModel(model.ImportModelCommand{
+		Model:    states[0].Model,
+		Instance: states[0].Instance,
+	})
+
 	for _, state := range states {
-		modelService.ImportModel(state.Model)
 		instanceService.ImportInstance(state.Instance)
 		if state.Message != nil {
 			messageService.SaveMessage(*state.Message)

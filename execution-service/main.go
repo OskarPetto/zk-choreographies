@@ -13,11 +13,11 @@ import (
 
 var signatureParameters = parameters.NewSignatureParameters()
 
-var modelService = model.NewModelService()
-var modelController = model.NewModelController(modelService)
-
-var instanceService = instance.NewInstanceService(modelService)
+var instanceService = instance.NewInstanceService()
 var instanceController = instance.NewInstanceController(instanceService)
+
+var modelService = model.NewModelService(instanceService)
+var modelController = model.NewModelController(modelService)
 
 var messageService = message.NewMessageService(instanceService)
 var messageController = message.NewMessageController(messageService)

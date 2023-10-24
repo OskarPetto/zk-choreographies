@@ -20,8 +20,8 @@ type ExecutionService struct {
 }
 
 func InitializeExecutionService(proverService prover.IProverService) ExecutionService {
-	modelService := model.NewModelService()
-	instanceService := instance.NewInstanceService(modelService)
+	instanceService := instance.NewInstanceService()
+	modelService := model.NewModelService(instanceService)
 	messageService := message.NewMessageService(instanceService)
 	signatureParameters := parameters.NewSignatureParameters()
 	return NewExecutionService(modelService, instanceService, messageService, proverService, signatureParameters)

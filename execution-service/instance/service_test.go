@@ -3,7 +3,6 @@ package instance_test
 import (
 	"execution-service/domain"
 	"execution-service/instance"
-	"execution-service/model"
 	"execution-service/parameters"
 	"execution-service/testdata"
 	"execution-service/utils"
@@ -15,8 +14,7 @@ import (
 var signatureParameters parameters.SignatureParameters = parameters.NewSignatureParameters()
 var states = testdata.GetModel2States(signatureParameters)
 
-var modelService = model.NewModelService()
-var instanceService = instance.NewInstanceService(modelService)
+var instanceService = instance.NewInstanceService()
 
 func TestFindInstancesByModel(t *testing.T) {
 	instance := states[0].Instance
@@ -33,15 +31,7 @@ func TestFindInstanceById(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestImportInstanceWithoutModel(t *testing.T) {
-	instance := states[0].Instance
-	err := instanceService.ImportInstance(instance)
-	assert.NotNil(t, err)
-}
-
-func TestImportInstanceWithModel(t *testing.T) {
-	model := states[0].Model
-	modelService.ImportModel(model)
+func TestImportInstance(t *testing.T) {
 	instance := states[0].Instance
 	err := instanceService.ImportInstance(instance)
 	assert.Nil(t, err)

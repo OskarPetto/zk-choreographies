@@ -3,6 +3,7 @@ package model
 import (
 	"execution-service/domain"
 	"execution-service/hash"
+	"execution-service/instance"
 	"fmt"
 	"time"
 )
@@ -35,6 +36,11 @@ type ModelJson struct {
 	EndPlaces        []uint              `json:"endPlaces"`
 	Transitions      []TransitionJson    `json:"transitions"`
 	CreatedAt        time.Time           `json:"createdAt"`
+}
+
+type ImportModelCommandJson struct {
+	Model    ModelJson             `json:"model"`
+	Instance instance.InstanceJson `json:"instance"`
 }
 
 func (model *ModelJson) id() string {
@@ -273,4 +279,19 @@ func isValidOparator(oparator uint) bool {
 		}
 	}
 	return false
+}
+
+func (cmd ImportModelCommandJson) ToModelCommand() (ImportModelCommand, error) {
+	model, err := cmd.Model.ToModel()
+	if err != nil {
+		return ImportModelCommand{}, err
+	}
+	instance, err := cmd.Instance.ToInstance()
+	if err != nil {
+		return ImportModelCommand{}, err
+	}
+	return ImportModelCommand{
+		Model:    model,
+		Instance: instance,
+	}, nil
 }
