@@ -17,39 +17,34 @@ contract InstanceManager {
     event Termination(uint instance);
 
     constructor(
-        address _instantiationVerifier,
-        address _transitionVerifier,
-        address _terminationVerifier
+        address _instantiation,
+        address _transition,
+        address _termination
     ) {
-        instantiationVerifier = InstantiationVerifier(_instantiationVerifier);
-        transitionVerifier = TransitionVerifier(_transitionVerifier);
-        terminationVerifier = TerminationVerifier(_terminationVerifier);
+        instantiationVerifier = InstantiationVerifier(_instantiation);
+        transitionVerifier = TransitionVerifier(_transition);
+        terminationVerifier = TerminationVerifier(_termination);
     }
 
-    function instantiate(uint[8] memory proof, uint instance) public {
-        require(instances[instance] == false);
-        instantiationVerifier.verifyProof(proof, [instance]);
-        instances[instance] = true;
-        emit Instantiation(instance);
+    function instantiate(uint[8] memory proof, uint next) public {
+        require(instances[next] == false);
+        instantiationVerifier.verifyProof(proof, [next]);
+        instances[next] = true;
+        emit Instantiation(next);
     }
 
-    function transition(
-        uint[8] memory proof,
-        uint currentInstance,
-        uint nextInstance
-    ) public {
-        require(instances[currentInstance] == true);
-        transitionVerifier.verifyProof(proof, [currentInstance, nextInstance]);
-        instances[currentInstance] = false;
-        instances[nextInstance] = true;
-        emit Transition(currentInstance, nextInstance);
+    function transition(uint[8] memory proof, uint current, uint next) public {
+        require(instances[current] == true);
+        transitionVerifier.verifyProof(proof, [current, next]);
+        delete instances[current];
+        instances[next] = true;
+        emit Transition(current, next);
     }
 
-    function terminate(uint[8] memory proof, uint instance) public {
-        require(instances[instance] == true);
-        terminationVerifier.verifyProof(proof, [instance]);
-
-        delete instances[instance];
-        emit Termination(instance);
+    function terminate(uint[8] memory proof, uint current) public {
+        require(instances[current] == true);
+        terminationVerifier.verifyProof(proof, [current]);
+        delete instances[current];
+        emit Termination(current);
     }
 }
