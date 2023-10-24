@@ -23,6 +23,7 @@ type Ciphertext struct {
 	Value     []byte
 	Sender    PublicKey
 	Recipient PublicKey
+	Salt      [SaltSize]byte
 }
 
 func (ciphertext *Ciphertext) Decrypt(privateKey *eddsa.PrivateKey) (Plaintext, error) {
@@ -30,7 +31,7 @@ func (ciphertext *Ciphertext) Decrypt(privateKey *eddsa.PrivateKey) (Plaintext, 
 	if !bytes.Equal(publicKey[:], ciphertext.Recipient.Value) {
 		return Plaintext{}, fmt.Errorf("ciphertext is meant for %s", utils.BytesToString(publicKey[:]))
 	}
-	secretKey := ecdh(privateKey, ciphertext.Sender)
+	secretKey := ecdh(privateKey, ciphertext.Sender, ciphertext.Salt)
 
 	aes, err := aes.NewCipher(secretKey)
 	utils.PanicOnError(err)
@@ -55,7 +56,8 @@ func (ciphertext *Ciphertext) Decrypt(privateKey *eddsa.PrivateKey) (Plaintext, 
 }
 
 func (plaintext *Plaintext) Encrypt(sender *eddsa.PrivateKey, recipient PublicKey) Ciphertext {
-	secretKey := ecdh(sender, recipient)
+	salt := randomFrSizedBytes()
+	secretKey := ecdh(sender, recipient, salt)
 
 	aes, err := aes.NewCipher(secretKey)
 	utils.PanicOnError(err)
@@ -72,10 +74,11 @@ func (plaintext *Plaintext) Encrypt(sender *eddsa.PrivateKey, recipient PublicKe
 		Value:     ciphertext,
 		Sender:    NewPublicKey(sender.PublicKey),
 		Recipient: recipient,
+		Salt:      salt,
 	}
 }
 
-func ecdh(privateKey *eddsa.PrivateKey, publicKey PublicKey) []byte {
+func ecdh(privateKey *eddsa.PrivateKey, publicKey PublicKey, salt [SaltSize]byte) []byte {
 	privateKeyBytes := privateKey.Bytes()
 	scalarBytes := privateKeyBytes[fr.Bytes : 2*fr.Bytes]
 	scalar := new(big.Int).SetBytes(scalarBytes)
@@ -84,6 +87,7 @@ func ecdh(privateKey *eddsa.PrivateKey, publicKey PublicKey) []byte {
 	var sharedSecret twistededwards.PointAffine
 	sharedSecret.ScalarMultiplication(&eddsaPublicKey.A, scalar)
 	sharedSecretBytes := sharedSecret.X.Bytes()
-	secretKey := sha256.Sum256(sharedSecretBytes[:])
+	input := append(sharedSecretBytes[:], salt[:]...)
+	secretKey := sha256.Sum256(input)
 	return secretKey[:]
 }
