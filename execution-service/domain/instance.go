@@ -42,33 +42,26 @@ func (instance *Instance) Id() InstanceId {
 	return instance.Hash.String()
 }
 
-func (instance Instance) ExecuteTransition(transition Transition, input ConstraintInput) (Instance, error) {
+func (instance Instance) ExecuteTransition(transition Transition, input ConstraintInput, message *Message) (Instance, error) {
 	if !isTransitionExecutable(instance, transition, input) {
 		return Instance{}, fmt.Errorf("transition %s is not executable", transition.Id)
 	}
-	instance.updateTokenCounts(transition)
-	instance.CreatedAt = time.Now().Unix()
-	instance.UpdateHash()
-	return instance, nil
-}
-
-func (instance Instance) SendMessage(transition Transition, input ConstraintInput, messageHash Hash) (Instance, error) {
-	if !isTransitionExecutable(instance, transition, input) {
-		return Instance{}, fmt.Errorf("transition %s is not executable", transition.Id)
+	if transition.Message != EmptyMessageId && message == nil {
+		return Instance{}, fmt.Errorf("transition %s requires a message", transition.Id)
 	}
-	if transition.Message == EmptyMessageId {
+	if transition.Message == EmptyMessageId && message != nil {
 		return Instance{}, fmt.Errorf("transition %s does not send any message", transition.Id)
 	}
-	if transition.Recipient == EmptyParticipantId {
-		return Instance{}, fmt.Errorf("transition %s has no recipient", transition.Id)
-	}
 	instance.updateTokenCounts(transition)
-	messageHashes := make([]Hash, len(instance.MessageHashes))
-	copy(messageHashes[:], instance.MessageHashes[:])
-	if transition.Message != EmptyMessageId {
-		messageHashes[transition.Message] = messageHash
+	if message != nil {
+		messageHash := message.Hash.Hash
+		messageHashes := make([]Hash, len(instance.MessageHashes))
+		copy(messageHashes[:], instance.MessageHashes[:])
+		if transition.Message != EmptyMessageId {
+			messageHashes[transition.Message] = messageHash
+		}
+		instance.MessageHashes = messageHashes
 	}
-	instance.MessageHashes = messageHashes
 	instance.CreatedAt = time.Now().Unix()
 	instance.UpdateHash()
 	return instance, nil

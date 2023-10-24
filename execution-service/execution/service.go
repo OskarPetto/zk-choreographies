@@ -79,7 +79,7 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return ExecutedTransitionEvent{}, err
 	}
-	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput)
+	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput, nil)
 	if err != nil {
 		return ExecutedTransitionEvent{}, err
 	}
@@ -160,34 +160,21 @@ func (service *ExecutionService) SendMessage(cmd SendMessageCommand) (SentMessag
 
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 
-	if messageToSend == nil {
-		nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput)
-		if err != nil {
-			return SentMessageEvent{}, err
-		}
-		senderSignature := nextInstance.Sign(privateKey)
-		service.InstanceService.SaveInstance(nextInstance)
-
-		return SentMessageEvent{
-			Model:            cmd.Model,
-			CurrentInstance:  cmd.Instance,
-			Transition:       cmd.Transition,
-			NextInstance:     nextInstance,
-			SenderSignature:  senderSignature,
-			EncryptedMessage: nil,
-		}, nil
-	}
-
-	nextInstance, err := currentInstance.SendMessage(transition, constraintInput, messageToSend.Hash.Hash)
+	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput, messageToSend)
 	if err != nil {
 		return SentMessageEvent{}, err
 	}
-	recipientPublicKey := currentInstance.FindPublicKeyByParticipant(transition.Recipient)
-	plaintext := message.SerializeMessage(*messageToSend)
-	ciphertext := plaintext.Encrypt(privateKey, recipientPublicKey)
 	senderSignature := nextInstance.Sign(privateKey)
 
-	service.MessageService.SaveMessage(*messageToSend)
+	var ciphertext *domain.Ciphertext
+	if messageToSend != nil {
+		recipientPublicKey := currentInstance.FindPublicKeyByParticipant(transition.Recipient)
+		plaintext := message.SerializeMessage(*messageToSend)
+		tmp := plaintext.Encrypt(privateKey, recipientPublicKey)
+		ciphertext = &tmp
+		service.MessageService.SaveMessage(*messageToSend)
+	}
+
 	service.InstanceService.SaveInstance(nextInstance)
 
 	return SentMessageEvent{
@@ -196,7 +183,7 @@ func (service *ExecutionService) SendMessage(cmd SendMessageCommand) (SentMessag
 		Transition:       cmd.Transition,
 		NextInstance:     nextInstance,
 		SenderSignature:  senderSignature,
-		EncryptedMessage: &ciphertext,
+		EncryptedMessage: ciphertext,
 	}, nil
 }
 

@@ -17,7 +17,7 @@ func TestExecuteTransition0(t *testing.T) {
 	state1 := states[1]
 
 	constraintInput := domain.EmptyConstraintInput()
-	result, err := state0.Instance.ExecuteTransition(state0.Model.Transitions[0], constraintInput)
+	result, err := state0.Instance.ExecuteTransition(state0.Model.Transitions[0], constraintInput, nil)
 	assert.Nil(t, err)
 	assert.Equal(t, state1.Instance.TokenCounts, result.TokenCounts)
 	assert.Equal(t, state1.Instance.PublicKeys, result.PublicKeys)
@@ -25,13 +25,13 @@ func TestExecuteTransition0(t *testing.T) {
 	assert.NotEqual(t, state0.Instance.Hash, result.Hash)
 }
 
-func TestSendMessageTransition2(t *testing.T) {
+func TestExecuteTransition2(t *testing.T) {
 	state1 := states[1]
 	state2 := states[2]
 	transition := state1.Model.Transitions[2]
-	messageHash := state2.Instance.MessageHashes[transition.Message]
+	message := state2.Message
 	constraintInput := domain.EmptyConstraintInput()
-	result, err := state1.Instance.SendMessage(transition, constraintInput, messageHash)
+	result, err := state1.Instance.ExecuteTransition(transition, constraintInput, message)
 	assert.Nil(t, err)
 	assert.Equal(t, state2.Instance.TokenCounts, result.TokenCounts)
 	assert.Equal(t, state2.Instance.PublicKeys, result.PublicKeys)
