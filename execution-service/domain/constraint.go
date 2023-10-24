@@ -8,7 +8,7 @@ import (
 type IntegerType = int32
 
 const EmptyIntegerMessage = IntegerType(math.MinInt32)
-const MaxConstraintMessageCount = 2
+const MaxConstraintMessageCount = 4
 
 type ComparisonOperator = uint8
 

@@ -65,9 +65,6 @@ export class ConstraintParser {
       }
     }
     resultingParts.push({ constant: c });
-    if (resultingParts.length > 3) {
-      throw Error('not implemented');
-    }
 
     const offset = resultingParts[resultingParts.length - 1].constant;
     const coefficients = [];
