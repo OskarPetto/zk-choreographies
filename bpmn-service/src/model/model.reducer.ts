@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Model, PlaceId, Transition, TransitionType } from './model';
-import { Constraint } from 'src/constraint/constraint';
 
 @Injectable()
 export class ModelReducer {
@@ -11,10 +10,20 @@ export class ModelReducer {
         case TransitionType.REQUIRED:
           break;
         case TransitionType.OPTIONAL_OUTGOING:
-          this.removeTransition(newModel, transition, transition.outgoingPlaces, transition.incomingPlaces);
+          this.removeTransition(
+            newModel,
+            transition,
+            transition.outgoingPlaces,
+            transition.incomingPlaces,
+          );
           break;
         case TransitionType.OPTIONAL_INCOMING:
-          this.removeTransition(newModel, transition, transition.incomingPlaces, transition.outgoingPlaces);
+          this.removeTransition(
+            newModel,
+            transition,
+            transition.incomingPlaces,
+            transition.outgoingPlaces,
+          );
           break;
         case undefined:
           throw Error(`Model has already been reduced`);
@@ -65,7 +74,7 @@ export class ModelReducer {
     model: Model,
     transitionToRemove: Transition,
     placesToRemove: PlaceId[],
-    placesToKeep: PlaceId[]
+    placesToKeep: PlaceId[],
   ) {
     model.transitions = model.transitions.filter(
       (t) => t.id !== transitionToRemove.id,
@@ -84,14 +93,12 @@ export class ModelReducer {
           transition.incomingPlaces,
           placesToKeep,
         );
-        if (transitionToRemove.constraint) {
-          if (transition.constraint) {
-            throw Error(
-              `Cannot reduce model because transition ${transition.id} already has constraint`,
-            );
-          } else {
-            transition.constraint = transitionToRemove.constraint;
-          }
+        if (!transition.constraint) {
+          transition.constraint = transitionToRemove.constraint;
+        } else if (transitionToRemove.constraint) {
+          throw Error(
+            `Cannot reduce model because transitions ${transition.id} and ${transitionToRemove.id} both have a constraint`,
+          );
         }
       }
       const outgoingIntersect = this.intersect(
