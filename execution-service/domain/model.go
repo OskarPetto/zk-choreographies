@@ -1,18 +1,20 @@
 package domain
 
 import (
+	"bytes"
 	"fmt"
 	"math"
 	"time"
 )
 
-const MaxPlaceCount = 128
-const MaxMessageCount = 128
-const MaxTransitionCount = 256
-const MaxParticipantCount = 32
-const MaxStartPlaceCount = 2
+const MaxPlaceCount = 256
+const MaxParticipantCount = 256
+const MaxMessageCount = 256
+const MaxStartPlaceCount = 4
 const MaxEndPlaceCount = 16
-const MaxBranchingFactor = 4
+const MaxTransitionCount = 256
+const MaxBranchingFactor = 8
+const MaxConstraintMessageCount = 4
 
 var MaxParticipantDepth = int(math.Log2(MaxParticipantCount))
 var MaxTransitionDepth = int(math.Log2(MaxTransitionCount))
@@ -21,12 +23,36 @@ var MaxEndPlaceDepth = int(math.Log2(MaxEndPlaceCount))
 type PlaceId = uint16
 type ParticipantId = uint16
 type ModelMessageId = uint16
+type IntegerType = int32
+type ComparisonOperator = uint8
+type ModelId = string
+type TransitionId = string
+
+const (
+	OperatorEqual              = 0
+	OperatorGreaterThan        = 1
+	OperatorLessThan           = 2
+	OperatorGreaterThanOrEqual = 3
+	OperatorLessThanOrEqual    = 4
+)
+
+var ValidComparisonOperators = []ComparisonOperator{OperatorEqual, OperatorGreaterThan, OperatorLessThan, OperatorGreaterThanOrEqual, OperatorLessThanOrEqual}
 
 const OutOfBoundsPlaceId = PlaceId(MaxPlaceCount)
 const EmptyParticipantId = ParticipantId(MaxParticipantCount)
 const EmptyMessageId = ModelMessageId(MaxMessageCount)
 
-type TransitionId = string
+type Model struct {
+	Hash             SaltedHash
+	Source           string
+	PlaceCount       uint16
+	ParticipantCount uint16
+	MessageCount     uint16
+	StartPlaces      []PlaceId
+	EndPlaces        []PlaceId
+	Transitions      []Transition
+	CreatedAt        int64
+}
 
 type Transition struct {
 	Id             TransitionId
@@ -37,6 +63,18 @@ type Transition struct {
 	Recipient      ParticipantId
 	Message        ModelMessageId
 	Constraint     Constraint
+}
+
+// ax + by + c = 0
+type Constraint struct {
+	Coefficients       []IntegerType
+	MessageIds         []ModelMessageId
+	Offset             IntegerType
+	ComparisonOperator ComparisonOperator
+}
+
+type ConstraintInput struct {
+	Messages []Message
 }
 
 func OutOfBoundsTransition() Transition {
@@ -50,18 +88,14 @@ func OutOfBoundsTransition() Transition {
 	}
 }
 
-type ModelId = string
+func EmptyConstraint() Constraint {
+	return Constraint{}
+}
 
-type Model struct {
-	Hash             SaltedHash
-	Source           string
-	PlaceCount       uint16
-	ParticipantCount uint16
-	MessageCount     uint16
-	StartPlaces      []PlaceId
-	EndPlaces        []PlaceId
-	Transitions      []Transition
-	CreatedAt        int64
+func EmptyConstraintInput() ConstraintInput {
+	return ConstraintInput{
+		Messages: make([]Message, 0),
+	}
 }
 
 func (model *Model) Id() ModelId {
@@ -127,4 +161,39 @@ func intersect(set1 []PlaceId, set2 []PlaceId) []PlaceId {
 		}
 	}
 	return result
+}
+
+func (instance *Instance) EvaluateConstraint(constraint Constraint, input ConstraintInput) bool {
+	if len(constraint.MessageIds) != len(input.Messages) {
+		return false
+	}
+	lhs := constraint.Offset
+	for i, message := range input.Messages {
+		hash := message.Hash.Hash
+		messageId := EmptyMessageId
+		for i, messageHash := range instance.MessageHashes {
+			if bytes.Equal(hash.Value[:], messageHash.Value[:]) {
+				messageId = ModelMessageId(i)
+				break
+			}
+		}
+		if constraint.Coefficients[i] != 0 && messageId != constraint.MessageIds[i] {
+			return false
+		}
+		lhs += constraint.Coefficients[i] * input.Messages[i].IntegerMessage
+	}
+
+	switch constraint.ComparisonOperator {
+	case OperatorEqual:
+		return lhs == 0
+	case OperatorGreaterThan:
+		return lhs > 0
+	case OperatorLessThan:
+		return lhs < 0
+	case OperatorGreaterThanOrEqual:
+		return lhs >= 0
+	case OperatorLessThanOrEqual:
+		return lhs <= 0
+	}
+	return false
 }
