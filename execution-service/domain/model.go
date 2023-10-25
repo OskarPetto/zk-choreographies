@@ -7,14 +7,25 @@ import (
 	"time"
 )
 
-const MaxPlaceCount = 256
-const MaxParticipantCount = 256
-const MaxMessageCount = 256
-const MaxStartPlaceCount = 4
-const MaxEndPlaceCount = 16
-const MaxTransitionCount = 256
-const MaxBranchingFactor = 8
-const MaxConstraintMessageCount = 4
+const BasePlaceCount = 16
+const BaseParticipantCount = 16
+const BaseMessageCount = 16
+const BaseStartPlaceCount = 1
+const BaseEndPlaceCount = 2
+const BaseTransitionCount = 16
+const BaseBranchingFactor = 2
+const BaseConstraintMessageCount = 2
+
+const factor = 1
+
+const MaxPlaceCount = BasePlaceCount * factor
+const MaxParticipantCount = BaseParticipantCount * factor
+const MaxMessageCount = BaseMessageCount * factor
+const MaxStartPlaceCount = BaseStartPlaceCount * factor
+const MaxEndPlaceCount = BaseEndPlaceCount * factor
+const MaxTransitionCount = BaseTransitionCount * factor
+const MaxBranchingFactor = BaseBranchingFactor * factor
+const MaxConstraintMessageCount = BaseConstraintMessageCount * factor
 
 var MaxParticipantDepth = int(math.Log2(MaxParticipantCount))
 var MaxTransitionDepth = int(math.Log2(MaxTransitionCount))
