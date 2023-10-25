@@ -9,6 +9,17 @@ import (
 
 const PublicKeySize = 32
 
+type InstanceId = string
+
+type Instance struct {
+	Hash          SaltedHash
+	Model         Hash
+	TokenCounts   []int8
+	PublicKeys    []PublicKey
+	MessageHashes []Hash
+	CreatedAt     int64
+}
+
 type PublicKey struct {
 	Value []byte
 }
@@ -25,17 +36,6 @@ func NewPublicKey(eddsaPub eddsa.PublicKey) PublicKey {
 	return PublicKey{
 		Value: eddsaPub.Bytes(),
 	}
-}
-
-type InstanceId = string
-
-type Instance struct {
-	Hash          SaltedHash
-	Model         Hash
-	TokenCounts   []int8
-	PublicKeys    []PublicKey
-	MessageHashes []Hash
-	CreatedAt     int64
 }
 
 func (instance *Instance) Id() InstanceId {
