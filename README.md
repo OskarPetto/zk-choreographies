@@ -1,7 +1,7 @@
 # ZK-Choreographies
 
 ## Execution-Service
-To generate proving keys and smart contracts `cd` to the execution-service and run 
+To generate proving keys and the verifier smart contracts `cd` to the execution-service and run 
 ``` 
 go test  ./... -v -count=1
 ```
