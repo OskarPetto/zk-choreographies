@@ -19,7 +19,9 @@ contract('InstanceManager', (accounts) => {
     const instantiationProof = firstProof.value;
     const instance = firstProof.input[0]
 
-    await instanceManager.instantiate(instantiationProof, instance);
+    const receipt = await instanceManager.instantiate(instantiationProof, instance);
+
+    console.log(`gas used: ${receipt.receipt.gasUsed}`);
 
     const isStored = await instanceManager.instances(instance);
     assert.equal(isStored, true, "instance was stored");
@@ -35,7 +37,9 @@ contract('InstanceManager', (accounts) => {
 
 
     await instanceManager.instantiate(terminationProof, instance); // uses mock
-    await instanceManager.terminate(terminationProof, instance);
+    const receipt = await instanceManager.terminate(terminationProof, instance);
+
+    console.log(`gas used: ${receipt.receipt.gasUsed}`);
 
     const isStored = await instanceManager.instances(instance);
     assert.equal(isStored, false, "instance was deleted");
@@ -51,7 +55,9 @@ contract('InstanceManager', (accounts) => {
     const nextInstance = secondProof.input[1]
 
     await instanceManager.instantiate(transitionProof, currentInstance); // uses mock
-    await instanceManager.transition(transitionProof, currentInstance, nextInstance);
+    const receipt = await instanceManager.transition(transitionProof, currentInstance, nextInstance);
+
+    console.log(`gas used: ${receipt.receipt.gasUsed}`);
 
     let isCurrentInstanceStored = await instanceManager.instances(currentInstance);
     assert.equal(isCurrentInstanceStored, false, "currentInstance was deleted");
