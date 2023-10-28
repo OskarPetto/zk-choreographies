@@ -13,8 +13,8 @@ const BaseMessageCount = 16
 const BaseStartPlaceCount = 1
 const BaseEndPlaceCount = 2
 const BaseTransitionCount = 16
-const BaseBranchingFactor = 2
-const BaseConstraintMessageCount = 2
+const BaseBranchingFactor = 4
+const BaseConstraintMessageCount = 4
 
 const factor = 1
 
@@ -24,8 +24,8 @@ const MaxMessageCount = BaseMessageCount * factor
 const MaxStartPlaceCount = BaseStartPlaceCount * factor
 const MaxEndPlaceCount = BaseEndPlaceCount * factor
 const MaxTransitionCount = BaseTransitionCount * factor
-const MaxBranchingFactor = BaseBranchingFactor * factor
-const MaxConstraintMessageCount = BaseConstraintMessageCount * factor
+const MaxBranchingFactor = BaseBranchingFactor
+const MaxConstraintMessageCount = BaseConstraintMessageCount
 
 var MaxParticipantDepth = int(math.Log2(MaxParticipantCount))
 var MaxTransitionDepth = int(math.Log2(MaxTransitionCount))

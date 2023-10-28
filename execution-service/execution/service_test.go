@@ -2,7 +2,6 @@ package execution_test
 
 import (
 	"execution-service/execution"
-	"execution-service/message"
 	"execution-service/model"
 	"execution-service/prover"
 	"execution-service/testdata"
@@ -104,12 +103,8 @@ func TestSendMessageTransition2(t *testing.T) {
 	assert.NotEqual(t, currentInstance.MessageHashes[transition.Message], nextInstance.MessageHashes[transition.Message])
 	signature := event.SenderSignature
 	assert.True(t, signature.Verify())
-	ciphertext := event.EncryptedMessage
-	plaintext, err := ciphertext.Decrypt(executionService.SignatureParameters.GetPrivateKeyForIdentity(1))
 	assert.Nil(t, err)
-	message, err := message.DeserializeMessage(plaintext)
-	assert.Nil(t, err)
-	_, err = messageService.FindMessageById(message.Id())
+	_, err = messageService.FindMessageById(event.Message.Id())
 	assert.Nil(t, err)
 }
 
@@ -118,19 +113,16 @@ func TestReceiveMessageTransition2(t *testing.T) {
 	model := states[2].Model
 	nextInstance := states[2].Instance
 	senderSignature := states[2].SenderSignature
-	recipientSignature := states[2].RecipientSignature
 	domainMessage := states[2].Message
-	plaintext := message.SerializeMessage(*domainMessage)
-	ciphertext := plaintext.Encrypt(executionService.SignatureParameters.GetPrivateKeyForIdentity(0), recipientSignature.PublicKey)
 
 	cmd := execution.ReceiveMessageCommand{
-		Model:            model.Id(),
-		CurrentInstance:  currentInstance.Id(),
-		Transition:       model.Transitions[2].Id,
-		Identity:         *states[2].Recipient,
-		NextInstance:     nextInstance,
-		SenderSignature:  senderSignature,
-		EncryptedMessage: &ciphertext,
+		Model:           model.Id(),
+		CurrentInstance: currentInstance.Id(),
+		Transition:      model.Transitions[2].Id,
+		Identity:        *states[2].Recipient,
+		NextInstance:    nextInstance,
+		SenderSignature: senderSignature,
+		Message:         domainMessage,
 	}
 	_, err := executionService.ReceiveMessage(cmd)
 	assert.Nil(t, err)

@@ -48,22 +48,22 @@ type SendMessageCommand struct {
 }
 
 type SentMessageEvent struct {
-	Model            domain.ModelId
-	CurrentInstance  domain.InstanceId
-	Transition       domain.TransitionId
-	NextInstance     domain.Instance
-	SenderSignature  domain.Signature
-	EncryptedMessage *domain.Ciphertext
+	Model           domain.ModelId
+	CurrentInstance domain.InstanceId
+	Transition      domain.TransitionId
+	NextInstance    domain.Instance
+	SenderSignature domain.Signature
+	Message         *domain.Message
 }
 
 type ReceiveMessageCommand struct {
-	Model            domain.ModelId
-	CurrentInstance  domain.InstanceId
-	Transition       domain.TransitionId
-	Identity         domain.IdentityId
-	NextInstance     domain.Instance
-	SenderSignature  domain.Signature
-	EncryptedMessage *domain.Ciphertext
+	Model           domain.ModelId
+	CurrentInstance domain.InstanceId
+	Transition      domain.TransitionId
+	Identity        domain.IdentityId
+	NextInstance    domain.Instance
+	SenderSignature domain.Signature
+	Message         *domain.Message
 }
 
 type ReceivedMessageEvent struct {

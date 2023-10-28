@@ -52,22 +52,22 @@ type sendMessageCommandJson struct {
 }
 
 type sentMessageEventJson struct {
-	Model            string                  `json:"model"`
-	CurrentInstance  string                  `json:"currentInstance"`
-	Transition       string                  `json:"transition"`
-	NextInstance     instance.InstanceJson   `json:"nextInstance"`
-	SenderSignature  signature.SignatureJson `json:"senderSignature"`
-	EncryptedMessage *message.CiphertextJson `json:"encryptedMessage,omitempty"`
+	Model           string                  `json:"model"`
+	CurrentInstance string                  `json:"currentInstance"`
+	Transition      string                  `json:"transition"`
+	NextInstance    instance.InstanceJson   `json:"nextInstance"`
+	SenderSignature signature.SignatureJson `json:"senderSignature"`
+	Message         *message.MessageJson    `json:"message,omitempty"`
 }
 
 type receiveMessageCommandJson struct {
-	Model            string                  `json:"model"`
-	CurrentInstance  string                  `json:"currentInstance"`
-	Transition       string                  `json:"transition"`
-	NextInstance     instance.InstanceJson   `json:"nextInstance"`
-	SenderSignature  signature.SignatureJson `json:"senderSignature"`
-	EncryptedMessage *message.CiphertextJson `json:"encryptedMessage,omitempty"`
-	Identity         uint                    `json:"identity"`
+	Model           string                  `json:"model"`
+	CurrentInstance string                  `json:"currentInstance"`
+	Transition      string                  `json:"transition"`
+	NextInstance    instance.InstanceJson   `json:"nextInstance"`
+	SenderSignature signature.SignatureJson `json:"senderSignature"`
+	Message         *message.MessageJson    `json:"message,omitempty"`
+	Identity        uint                    `json:"identity"`
 }
 
 type receivedMessageEventJson struct {
@@ -137,23 +137,23 @@ func (cmd *receiveMessageCommandJson) ToExecutionCommand() (ReceiveMessageComman
 	if err != nil {
 		return ReceiveMessageCommand{}, err
 	}
-	var encryptedMessage *domain.Ciphertext
-	if cmd.EncryptedMessage != nil {
-		tmp, err := cmd.EncryptedMessage.ToCiphertext()
+	var message *domain.Message
+	if cmd.Message != nil {
+		tmp, err := cmd.Message.ToMessage()
 		if err != nil {
 			return ReceiveMessageCommand{}, err
 		}
-		encryptedMessage = &tmp
+		message = &tmp
 	}
 
 	return ReceiveMessageCommand{
-		Model:            cmd.Model,
-		CurrentInstance:  cmd.CurrentInstance,
-		Transition:       cmd.Transition,
-		Identity:         cmd.Identity,
-		NextInstance:     nextInstance,
-		SenderSignature:  senderSignature,
-		EncryptedMessage: encryptedMessage,
+		Model:           cmd.Model,
+		CurrentInstance: cmd.CurrentInstance,
+		Transition:      cmd.Transition,
+		Identity:        cmd.Identity,
+		NextInstance:    nextInstance,
+		SenderSignature: senderSignature,
+		Message:         message,
 	}, nil
 }
 
@@ -178,19 +178,19 @@ func TerminatedInstanceEventToJson(event TerminatedInstanceEvent) terminatedInst
 }
 
 func SentMessageEventToJson(event SentMessageEvent) sentMessageEventJson {
-	var encryptedMessage *message.CiphertextJson
-	if event.EncryptedMessage != nil {
-		tmp := message.ToCiphertextJson(*event.EncryptedMessage)
-		encryptedMessage = &tmp
+	var domainMessage *message.MessageJson
+	if event.Message != nil {
+		tmp := message.MessageToJson(*event.Message)
+		domainMessage = &tmp
 	}
 
 	return sentMessageEventJson{
-		Model:            event.Model,
-		CurrentInstance:  event.CurrentInstance,
-		Transition:       event.Transition,
-		NextInstance:     instance.ToJson(event.NextInstance),
-		SenderSignature:  signature.ToJson(event.SenderSignature),
-		EncryptedMessage: encryptedMessage,
+		Model:           event.Model,
+		CurrentInstance: event.CurrentInstance,
+		Transition:      event.Transition,
+		NextInstance:    instance.ToJson(event.NextInstance),
+		SenderSignature: signature.ToJson(event.SenderSignature),
+		Message:         domainMessage,
 	}
 }
 
