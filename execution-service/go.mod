@@ -39,7 +39,7 @@ require (
 	github.com/consensys/bavard v0.1.13 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
-	github.com/google/pprof v0.0.0-20230926050212-f7f687d19a98 // indirect
+	github.com/google/pprof v0.0.0-20231023181126-ff6d637d2a7b // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
