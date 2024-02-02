@@ -11,4 +11,4 @@ import { ConstraintModule } from 'src/constraint/constraint.module';
   controllers: [ChoreographyController],
   providers: [ChoreographyMapper, ChoreographyParser, ChoreographyService],
 })
-export class ChoreographyModule {}
+export class ChoreographyModule { }

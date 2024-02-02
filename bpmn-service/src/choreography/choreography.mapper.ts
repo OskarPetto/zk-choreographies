@@ -31,7 +31,7 @@ interface ConstraintMapping {
 
 @Injectable()
 export class ChoreographyMapper {
-  constructor(private constraintParser: ConstraintParser) {}
+  constructor(private constraintParser: ConstraintParser) { }
   toModel(xmlString: string, choreography: Choreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
@@ -105,7 +105,7 @@ export class ChoreographyMapper {
     this.addConstraints(transitions, constraintMapping);
 
     return {
-      source: xmlString,
+      source: '', //xmlString,
       placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length + 2,
       participantCount: relevantParticipants.length,
       messageCount: messageIds.size,
