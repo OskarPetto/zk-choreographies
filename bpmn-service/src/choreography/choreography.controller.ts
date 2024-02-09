@@ -22,7 +22,7 @@ export class ChoreographyController {
 
   @Get()
   async findAllChoreographies(): Promise<Choreography[]> {
-    this.logger.log('Received TransformChoreographyCommand');
+    this.logger.log('Find all choreographies');
     return this.choreographyService.findAllChoreographies();
   }
 }
