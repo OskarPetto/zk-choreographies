@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Logger } from '@nestjs/common';
 import { ChoreographyService } from './choreography.service';
-import { Model } from 'src/model/model';
+import { SaltedHash } from 'src/domain/execution';
 
 export class TransformChoreographyCommand {
   xmlString: string;
@@ -14,7 +14,7 @@ export class ChoreographyController {
   @Post()
   async transformChoreography(
     @Body() cmd: TransformChoreographyCommand,
-  ): Promise<Model> {
+  ): Promise<SaltedHash> {
     this.logger.log('Received TransformChoreographyCommand');
     return this.choreographyService.transformChoreography(cmd.xmlString);
   }

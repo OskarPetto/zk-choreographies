@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Constraint } from './constraint';
-import { MessageId as BpmnMessageId } from 'src/choreography/choreography';
-import { MessageId } from 'src/model/model';
+import { Constraint } from '../domain/constraint';
+import { MessageId as BpmnMessageId } from 'src/domain/choreography';
+import { MessageId } from 'src/domain/model';
 /* eslint @typescript-eslint/no-var-requires: "off" */
 const esprima = require('esprima');
 

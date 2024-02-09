@@ -70,6 +70,7 @@ export interface ChoreographyTask {
 
 export interface Choreography {
   id: string;
+  modelId?: string;
   startEvents: StartEvent[];
   endEvents: EndEvent[];
   participants: Participant[];

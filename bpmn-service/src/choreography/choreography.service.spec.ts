@@ -8,17 +8,19 @@ import { ModelReducer } from '../model/model.reducer';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
 import { ConstraintModule } from 'src/constraint/constraint.module';
+import { ExecutionGateway } from 'src/execution/execution.gateway';
 
 describe('ChoreographyService', () => {
   let choreographyService: ChoreographyService;
   let choreographyParser: ChoreographyParser;
   let choreographyMapper: ChoreographyMapper;
   let modelReducer: ModelReducer;
+  let executionGateway: ExecutionGateway;
   const xmlString = TestdataProvider.readBpmn('example_choreography');
   const definitions = TestdataProvider.getDefinitions2();
   const model2Reduced = TestdataProvider.getModel2Reduced();
   const model2 = TestdataProvider.getModel2();
-
+  const saltedHash = TestdataProvider.getSaltedHash()
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [],
@@ -27,6 +29,7 @@ describe('ChoreographyService', () => {
         ChoreographyParser,
         ChoreographyMapper,
         ModelReducer,
+        ExecutionGateway
       ],
       imports: [HttpModule, ConfigModule, ConstraintModule],
     }).compile();
@@ -36,6 +39,7 @@ describe('ChoreographyService', () => {
     choreographyParser = moduleRef.get<ChoreographyParser>(ChoreographyParser);
     choreographyMapper = moduleRef.get<ChoreographyMapper>(ChoreographyMapper);
     modelReducer = moduleRef.get<ModelReducer>(ModelReducer);
+    executionGateway = moduleRef.get<ExecutionGateway>(ExecutionGateway);
   });
 
   describe('importBpmnProcess', () => {
@@ -49,9 +53,12 @@ describe('ChoreographyService', () => {
       when(jest.spyOn(modelReducer, 'reduceModel'))
         .calledWith(model2)
         .mockReturnValue(model2Reduced);
+      when(jest.spyOn(executionGateway, 'createModel'))
+        .calledWith(model2Reduced)
+        .mockResolvedValue(Promise.resolve(saltedHash));
 
-      const result = choreographyService.transformChoreography(xmlString);
-      expect(result).toEqual(model2Reduced);
+      const result = await choreographyService.transformChoreography(xmlString);
+      expect(result).toEqual(saltedHash);
     });
   });
 });

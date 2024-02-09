@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Model, TransitionType } from '../../src/model/model';
-import { Definitions, GatewayType } from 'src/choreography/choreography';
+import { Model, TransitionType } from 'src/domain/model';
+import { Definitions, GatewayType } from 'src/domain/choreography';
+import { SaltedHash } from 'src/domain/execution';
 
 function readTextFile(filename: string) {
   const filePath = path.join(process.cwd(), filename);
@@ -234,7 +235,6 @@ export class TestdataProvider {
 
   static getModel2(): Model {
     return {
-      source: 'test',
       placeCount: 19,
       participantCount: 3,
       messageCount: 10,
@@ -408,7 +408,6 @@ export class TestdataProvider {
 
   static getModel2Reduced(): Model {
     return {
-      source: 'test',
       placeCount: 13,
       participantCount: 3,
       messageCount: 10,
@@ -529,6 +528,13 @@ export class TestdataProvider {
           },
         },
       ],
+    };
+  }
+
+  static getSaltedHash(): SaltedHash {
+    return {
+      hash: '1212312',
+      salt: '12312312'
     };
   }
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Model, PlaceId, Transition, TransitionType } from './model';
+import { Model, PlaceId, Transition, TransitionType } from '../domain/model';
 
 @Injectable()
 export class ModelReducer {
@@ -28,6 +28,7 @@ export class ModelReducer {
         case undefined:
           throw Error(`Model has already been reduced`);
       }
+      transition.type = undefined;
     }
     this.repairPlaceIds(newModel);
     return newModel;
@@ -41,7 +42,6 @@ export class ModelReducer {
       placeMap.set(place, index++);
     }
     for (const transition of model.transitions) {
-      transition.type = undefined;
       transition.incomingPlaces = transition.incomingPlaces.map(
         (place) => placeMap.get(place)!,
       );
@@ -148,7 +148,6 @@ export class ModelReducer {
     );
 
     return {
-      source: model.source,
       placeCount: model.placeCount,
       participantCount: model.participantCount,
       messageCount: model.messageCount,

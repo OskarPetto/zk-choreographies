@@ -13,7 +13,7 @@ import {
   MessageId as BpmnMessageId,
   Message,
   Choreography,
-} from './choreography';
+} from '../domain/choreography';
 import {
   Model,
   ParticipantId,
@@ -21,7 +21,7 @@ import {
   PlaceId,
   Transition,
   TransitionType,
-} from '../model/model';
+} from '../domain/model';
 import { ConstraintParser } from 'src/constraint/constraint.parser';
 
 interface ConstraintMapping {
@@ -105,7 +105,6 @@ export class ChoreographyMapper {
     this.addConstraints(transitions, constraintMapping);
 
     return {
-      source: '', //xmlString,
       placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length + 2,
       participantCount: relevantParticipants.length,
       messageCount: messageIds.size,

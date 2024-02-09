@@ -1,4 +1,4 @@
-import { Constraint } from 'src/constraint/constraint';
+import { Constraint } from "./constraint";
 
 export type PlaceId = number;
 export type ParticipantId = number;
@@ -24,7 +24,6 @@ export interface Transition {
 }
 
 export interface Model {
-  source: string;
   placeCount: number;
   participantCount: number;
   messageCount: number;

@@ -54,10 +54,10 @@ func (service *ModelService) ImportModel(cmd ImportModelCommand) error {
 	return nil
 }
 
-func (service *ModelService) CreateModel(model domain.Model) domain.Model {
+func (service *ModelService) CreateModel(model domain.Model) domain.SaltedHash {
 	model.UpdateHash()
 	service.models[model.Id()] = model
-	return model
+	return model.Hash
 }
 
 func (service *ModelService) DeleteModel(model domain.Model) {

@@ -1,4 +1,4 @@
-import { MessageId } from 'src/model/model';
+import { MessageId } from "./model";
 
 export interface Constraint {
   coefficients: number[];

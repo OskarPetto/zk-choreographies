@@ -30,5 +30,5 @@ func TestImportModel(t *testing.T) {
 func TestCreateModel(t *testing.T) {
 	model := testdata.GetModel2()
 	modelResult := modelService.CreateModel(model)
-	assert.NotEqual(t, model.Hash, modelResult.Hash)
+	assert.NotEqual(t, model.Hash, modelResult)
 }

@@ -13,7 +13,7 @@ import {
   ExclusiveGateway,
   ParallelGateway,
   LoopType,
-} from './choreography';
+} from '../domain/choreography';
 
 @Injectable()
 export class ChoreographyParser {

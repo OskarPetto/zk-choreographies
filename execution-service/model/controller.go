@@ -1,6 +1,7 @@
 package model
 
 import (
+	"execution-service/hash"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -66,5 +67,5 @@ func (controller *ModelController) CreateModel(c *gin.Context) {
 		return
 	}
 	result := controller.modelService.CreateModel(model)
-	c.IndentedJSON(http.StatusOK, ToJson(result))
+	c.IndentedJSON(http.StatusOK, hash.ToJson(result))
 }
