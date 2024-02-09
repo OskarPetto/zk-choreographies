@@ -1,4 +1,4 @@
-import { Constraint } from "./constraint";
+import { Constraint } from './constraint';
 
 export type PlaceId = number;
 export type ParticipantId = number;

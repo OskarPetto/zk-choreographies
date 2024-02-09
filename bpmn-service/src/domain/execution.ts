@@ -1,4 +1,4 @@
 export interface SaltedHash {
-  hash: string,
-  salt: string
+  hash: string;
+  salt: string;
 }

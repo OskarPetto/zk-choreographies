@@ -1,19 +1,91 @@
 import { Injectable } from '@nestjs/common';
 import { XMLParser } from 'fast-xml-parser';
-import {
-  Definitions,
-  SequenceFlow,
-  Message,
-  Choreography,
-  Participant,
-  StartEvent,
-  EndEvent,
-  GatewayType,
-  ChoreographyTask,
-  ExclusiveGateway,
-  ParallelGateway,
-  LoopType,
-} from '../domain/choreography';
+import { BpmnMessageId } from 'src/domain/choreography';
+
+export type SequenceFlowId = string;
+
+export interface SequenceFlow {
+  id: SequenceFlowId;
+  name?: string;
+}
+
+export interface StartEvent {
+  id: string;
+  name?: string;
+  outgoing: SequenceFlowId;
+}
+
+export interface EndEvent {
+  id: string;
+  name?: string;
+  incoming: SequenceFlowId;
+}
+
+export enum GatewayType {
+  SPLIT,
+  JOIN,
+}
+
+export interface ExclusiveGateway {
+  id: string;
+  type: GatewayType;
+  incoming: SequenceFlowId[];
+  outgoing: SequenceFlowId[];
+}
+
+export interface ParallelGateway {
+  id: string;
+  type: GatewayType;
+  incoming: SequenceFlowId[];
+  outgoing: SequenceFlowId[];
+}
+
+export interface Message {
+  id: BpmnMessageId;
+  name: string;
+}
+
+export type ParticipantId = string;
+
+export interface Participant {
+  id: ParticipantId;
+  name: string;
+}
+
+export enum LoopType {
+  STANDARD,
+  MULTI_INSTANCE_SEQUENTIAL,
+  MULTI_INSTANCE_PARALLEL,
+}
+
+export interface ChoreographyTask {
+  id: string;
+  name?: string;
+  incoming: SequenceFlowId;
+  outgoing: SequenceFlowId;
+  initiatingParticipant: ParticipantId;
+  respondingParticipant: ParticipantId;
+  initialMessage?: BpmnMessageId;
+  responseMessage?: BpmnMessageId;
+  loopType?: LoopType;
+}
+
+export interface ParsedChoreography {
+  id: string;
+  modelId?: string;
+  startEvents: StartEvent[];
+  endEvents: EndEvent[];
+  participants: Participant[];
+  choreographyTasks: ChoreographyTask[];
+  exclusiveGateways: ExclusiveGateway[];
+  parallelGateways: ParallelGateway[];
+  sequenceFlows: SequenceFlow[];
+  messages: Message[];
+}
+
+export interface Definitions {
+  choreographies: ParsedChoreography[];
+}
 
 @Injectable()
 export class ChoreographyParser {
@@ -62,7 +134,7 @@ export class ChoreographyParser {
     };
   }
 
-  parseChoreographies(definitions: any): Choreography[] {
+  parseChoreographies(definitions: any): ParsedChoreography[] {
     const choreographies = definitions[this.choreographyTag];
     const messages = this.parseMessages(definitions);
     return choreographies.map((choreography: any) =>
@@ -78,7 +150,10 @@ export class ChoreographyParser {
     }));
   }
 
-  parseChoreography(choreography: any, messages: Message[]): Choreography {
+  parseChoreography(
+    choreography: any,
+    messages: Message[],
+  ): ParsedChoreography {
     const sequenceFlows = this.parseSequenceFlows(choreography);
     const participants = this.parseParticipants(choreography);
     const startEvents = this.parseStartEvents(choreography);

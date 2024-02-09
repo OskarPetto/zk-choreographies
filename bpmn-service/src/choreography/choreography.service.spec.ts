@@ -20,7 +20,7 @@ describe('ChoreographyService', () => {
   const definitions = TestdataProvider.getDefinitions2();
   const model2Reduced = TestdataProvider.getModel2Reduced();
   const model2 = TestdataProvider.getModel2();
-  const saltedHash = TestdataProvider.getSaltedHash()
+  const saltedHash = TestdataProvider.getSaltedHash();
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [],
@@ -29,7 +29,7 @@ describe('ChoreographyService', () => {
         ChoreographyParser,
         ChoreographyMapper,
         ModelReducer,
-        ExecutionGateway
+        ExecutionGateway,
       ],
       imports: [HttpModule, ConfigModule, ConstraintModule],
     }).compile();
@@ -48,7 +48,7 @@ describe('ChoreographyService', () => {
         .calledWith(xmlString)
         .mockReturnValue(definitions);
       when(jest.spyOn(choreographyMapper, 'toModel'))
-        .calledWith(xmlString, definitions.choreographies[0])
+        .calledWith(definitions.choreographies[0])
         .mockReturnValue(model2);
       when(jest.spyOn(modelReducer, 'reduceModel'))
         .calledWith(model2)
@@ -58,7 +58,10 @@ describe('ChoreographyService', () => {
         .mockResolvedValue(Promise.resolve(saltedHash));
 
       const result = await choreographyService.transformChoreography(xmlString);
-      expect(result).toEqual(saltedHash);
+      expect(result).toEqual({
+        id: saltedHash.hash,
+        xmlString: xmlString,
+      });
     });
   });
 });

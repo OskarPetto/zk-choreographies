@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Model, TransitionType } from 'src/domain/model';
-import { Definitions, GatewayType } from 'src/domain/choreography';
+import { Definitions, GatewayType } from 'src/choreography/choreography.parser';
 import { SaltedHash } from 'src/domain/execution';
 
 function readTextFile(filename: string) {
@@ -534,7 +534,7 @@ export class TestdataProvider {
   static getSaltedHash(): SaltedHash {
     return {
       hash: '1212312',
-      salt: '12312312'
+      salt: '12312312',
     };
   }
 

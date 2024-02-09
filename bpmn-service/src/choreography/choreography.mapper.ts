@@ -1,20 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import {
-  ChoreographyTask,
-  EndEvent,
-  ExclusiveGateway,
-  GatewayType,
-  ParallelGateway,
-  Participant,
-  SequenceFlow,
-  SequenceFlowId,
-  StartEvent,
-  ParticipantId as BpmnParticipantId,
-  MessageId as BpmnMessageId,
-  Message,
-  Choreography,
-} from '../domain/choreography';
-import {
   Model,
   ParticipantId,
   MessageId,
@@ -23,6 +8,20 @@ import {
   TransitionType,
 } from '../domain/model';
 import { ConstraintParser } from 'src/constraint/constraint.parser';
+import {
+  ParsedChoreography,
+  SequenceFlow,
+  SequenceFlowId,
+  Message,
+  Participant,
+  StartEvent,
+  EndEvent,
+  ParallelGateway,
+  GatewayType,
+  ExclusiveGateway,
+  ChoreographyTask,
+} from './choreography.parser';
+import { BpmnMessageId, BpmnParticipantId } from 'src/domain/choreography';
 
 interface ConstraintMapping {
   sequenceFlowNames: Map<PlaceId, string | undefined>;
@@ -31,8 +30,8 @@ interface ConstraintMapping {
 
 @Injectable()
 export class ChoreographyMapper {
-  constructor(private constraintParser: ConstraintParser) { }
-  toModel(xmlString: string, choreography: Choreography): Model {
+  constructor(private constraintParser: ConstraintParser) {}
+  toModel(choreography: ParsedChoreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
     );

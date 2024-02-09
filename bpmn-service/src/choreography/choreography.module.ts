@@ -12,4 +12,4 @@ import { ExecutionModule } from 'src/execution/execution.module';
   controllers: [ChoreographyController],
   providers: [ChoreographyMapper, ChoreographyParser, ChoreographyService],
 })
-export class ChoreographyModule { }
+export class ChoreographyModule {}

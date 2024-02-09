@@ -6,5 +6,6 @@ import { HttpModule } from '@nestjs/axios';
   imports: [HttpModule],
   controllers: [],
   providers: [ExecutionGateway],
+  exports: [ExecutionGateway],
 })
-export class ExecutionModule { }
+export class ExecutionModule {}

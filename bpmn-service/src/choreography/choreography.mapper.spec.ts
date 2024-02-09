@@ -15,10 +15,7 @@ describe('ChoreographyMapper', () => {
 
   describe('toModel', () => {
     it('should map bpmn choreography correctly', () => {
-      const result = choreographyMapper.toModel(
-        'test',
-        definitions2.choreographies[0],
-      );
+      const result = choreographyMapper.toModel(definitions2.choreographies[0]);
       expect(result).toEqual(model2);
     });
   });

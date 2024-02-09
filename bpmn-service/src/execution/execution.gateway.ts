@@ -1,15 +1,20 @@
-import { HttpService } from "@nestjs/axios";
-import { Injectable } from "@nestjs/common";
-import { AxiosResponse } from "axios";
-import { Observable, firstValueFrom } from "rxjs";
-import { SaltedHash } from "../domain/execution";
-import { Model } from "src/domain/model";
+import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
+import { Observable, firstValueFrom, map } from 'rxjs';
+import { SaltedHash } from '../domain/execution';
+import { Model } from 'src/domain/model';
 
 @Injectable()
 export class ExecutionGateway {
-  constructor(private readonly httpService: HttpService) { }
+  constructor(private readonly httpService: HttpService) {}
 
   async createModel(model: Model): Promise<SaltedHash> {
-    return await firstValueFrom(this.httpService.post('http://localhost:8080/models', model)).data;
+    const response: Observable<any> = this.httpService.post(
+      'http://127.0.0.1:8080/models',
+      model,
+    );
+    return await firstValueFrom(
+      response.pipe(map((res: any) => res.data as SaltedHash)),
+    );
   }
 }

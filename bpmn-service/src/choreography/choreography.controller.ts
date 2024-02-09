@@ -1,6 +1,6 @@
-import { Controller, Post, Body, Logger } from '@nestjs/common';
+import { Controller, Post, Body, Logger, Get } from '@nestjs/common';
 import { ChoreographyService } from './choreography.service';
-import { SaltedHash } from 'src/domain/execution';
+import { Choreography } from 'src/domain/choreography';
 
 export class TransformChoreographyCommand {
   xmlString: string;
@@ -10,12 +10,19 @@ export class TransformChoreographyCommand {
 export class ChoreographyController {
   private readonly logger = new Logger(ChoreographyController.name);
 
-  constructor(private choreographyService: ChoreographyService) { }
+  constructor(private choreographyService: ChoreographyService) {}
+
   @Post()
   async transformChoreography(
     @Body() cmd: TransformChoreographyCommand,
-  ): Promise<SaltedHash> {
+  ): Promise<Choreography> {
     this.logger.log('Received TransformChoreographyCommand');
     return this.choreographyService.transformChoreography(cmd.xmlString);
+  }
+
+  @Get()
+  async findAllChoreographies(): Promise<Choreography[]> {
+    this.logger.log('Received TransformChoreographyCommand');
+    return this.choreographyService.findAllChoreographies();
   }
 }

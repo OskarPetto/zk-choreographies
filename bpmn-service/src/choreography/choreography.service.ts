@@ -3,32 +3,36 @@ import { ChoreographyParser } from './choreography.parser';
 import { ChoreographyMapper } from './choreography.mapper';
 import { ModelReducer } from '../model/model.reducer';
 import { ExecutionGateway } from 'src/execution/execution.gateway';
-import { firstValueFrom } from 'rxjs';
-import { SaltedHash } from 'src/domain/execution';
 import { Choreography } from 'src/domain/choreography';
-import { AxiosResponse } from 'axios';
 
 @Injectable()
 export class ChoreographyService {
-  choreographies: Map<string, Choreography>
+  choreographies: Map<string, Choreography>;
 
   constructor(
     private choreographyParser: ChoreographyParser,
     private choreographyMapper: ChoreographyMapper,
     private modelReducer: ModelReducer,
-    private executionGateway: ExecutionGateway
+    private executionGateway: ExecutionGateway,
   ) {
     this.choreographies = new Map();
   }
 
-  async transformChoreography(xmlString: string): Promise<SaltedHash> {
+  async transformChoreography(xmlString: string): Promise<Choreography> {
     const definitions = this.choreographyParser.parseBpmn(xmlString);
-    const choreography = definitions.choreographies[0];
-    const model = this.choreographyMapper.toModel(xmlString, choreography);
+    const parsedChoreography = definitions.choreographies[0];
+    const model = this.choreographyMapper.toModel(parsedChoreography);
     const reducedModel = this.modelReducer.reduceModel(model);
     const saltedHash = await this.executionGateway.createModel(reducedModel);
-    choreography.modelId = saltedHash.hash;
+    const choreography = {
+      id: saltedHash.hash,
+      xmlString: xmlString,
+    };
     this.choreographies.set(choreography.id, choreography);
-    return saltedHash;
+    return choreography;
+  }
+
+  findAllChoreographies(): Choreography[] {
+    return [...this.choreographies.values()];
   }
 }
