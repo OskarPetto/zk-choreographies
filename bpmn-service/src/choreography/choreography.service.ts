@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ChoreographyParser } from './choreography.parser';
 import { ChoreographyMapper } from './choreography.mapper';
 import { ModelReducer } from '../model/model.reducer';
@@ -7,6 +7,8 @@ import { Choreography } from 'src/domain/choreography';
 
 @Injectable()
 export class ChoreographyService {
+  private readonly logger = new Logger(ChoreographyService.name);
+
   choreographies: Map<string, Choreography>;
 
   constructor(
@@ -29,6 +31,7 @@ export class ChoreographyService {
       xmlString: xmlString,
     };
     this.choreographies.set(choreography.id, choreography);
+    this.logger.log(`Created choreography ${choreography.id}`)
     return choreography;
   }
 

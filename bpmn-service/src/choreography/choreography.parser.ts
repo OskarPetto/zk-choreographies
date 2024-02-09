@@ -81,6 +81,7 @@ export interface ParsedChoreography {
   parallelGateways: ParallelGateway[];
   sequenceFlows: SequenceFlow[];
   messages: Message[];
+  exclusiveGatewayPairs: string[][];
 }
 
 export interface Definitions {
@@ -98,6 +99,7 @@ export class ChoreographyParser {
   private readonly startEventTag = 'bpmn2:startEvent';
   private readonly endEventTag = 'bpmn2:endEvent';
   private readonly exclusiveGatewayTag = 'bpmn2:exclusiveGateway';
+  private readonly eventBasedGatewayTag = 'bpmn2:eventBasedGateway';
   private readonly parallelGatewayTag = 'bpmn2:parallelGateway';
   private readonly choreographyTaskTag = 'bpmn2:choreographyTask';
   private readonly incomingTag = 'bpmn2:incoming';
@@ -117,6 +119,7 @@ export class ChoreographyParser {
         this.endEventTag,
         this.choreographyTaskTag,
         this.exclusiveGatewayTag,
+        this.eventBasedGatewayTag,
         this.parallelGatewayTag,
         this.incomingTag,
         this.outgoingTag,
@@ -176,6 +179,10 @@ export class ChoreographyParser {
             choreographyTask.respondingParticipant === participant.id,
         ),
     );
+
+    const exclusiveGatewayPairs =
+      this.findExclusiveGatewayPairs(exclusiveGateways);
+
     return {
       id: choreography.id,
       sequenceFlows,
@@ -186,7 +193,31 @@ export class ChoreographyParser {
       parallelGateways,
       choreographyTasks,
       messages: relevantMessages,
+      exclusiveGatewayPairs,
     };
+  }
+
+  findExclusiveGatewayPairs(exclusiveGateways: ExclusiveGateway[]): string[][] {
+    const exclusiveGatewayPairs: string[][] = [];
+    exclusiveGateways.forEach((exclusiveGateways1) => {
+      exclusiveGateways.forEach((exclusiveGateways2) => {
+        if (exclusiveGateways1.type == exclusiveGateways2.type) {
+          return;
+        }
+        exclusiveGateways2.incoming.forEach((incoming) => {
+          exclusiveGateways1.outgoing.forEach((outgoing) => {
+            if (incoming === outgoing) {
+              exclusiveGatewayPairs.push([
+                exclusiveGateways1.id,
+                exclusiveGateways2.id,
+                incoming,
+              ]);
+            }
+          });
+        });
+      });
+    });
+    return exclusiveGatewayPairs;
   }
 
   parseSequenceFlows(choreography: any): SequenceFlow[] {
@@ -225,7 +256,11 @@ export class ChoreographyParser {
   }
 
   private parseExclusiveGateways(choreography: any): ExclusiveGateway[] {
-    const exclusiveGateways = choreography[this.exclusiveGatewayTag];
+    const eventBasedGateways = choreography[this.eventBasedGatewayTag];
+    const exclusiveGateways = [
+      ...eventBasedGateways,
+      ...choreography[this.exclusiveGatewayTag],
+    ];
     if (!exclusiveGateways) {
       return [];
     }

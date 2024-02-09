@@ -2,6 +2,7 @@ package model
 
 import (
 	"execution-service/hash"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -63,6 +64,7 @@ func (controller *ModelController) CreateModel(c *gin.Context) {
 	}
 	model, err := modelJson.ToModel()
 	if err != nil {
+		fmt.Printf("Error creating model: %+v\n", err)
 		c.Status(http.StatusBadRequest)
 		return
 	}

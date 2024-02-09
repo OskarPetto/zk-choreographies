@@ -30,7 +30,7 @@ interface ConstraintMapping {
 
 @Injectable()
 export class ChoreographyMapper {
-  constructor(private constraintParser: ConstraintParser) {}
+  constructor(private constraintParser: ConstraintParser) { }
   toModel(choreography: ParsedChoreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
@@ -81,6 +81,11 @@ export class ChoreographyMapper {
         ),
     );
 
+    this.fixTransitionsOfExclusiveGatewayPairs(
+      exclusiveGatewayTransitions,
+      choreography.exclusiveGatewayPairs,
+    );
+
     const transitions = [
       ...startTransitions,
       ...endTransitions,
@@ -115,6 +120,27 @@ export class ChoreographyMapper {
       ),
       transitions,
     };
+  }
+
+  fixTransitionsOfExclusiveGatewayPairs(
+    exclusiveGatewayTransitions: Transition[],
+    exclusiveGatewayPairs: string[][],
+  ) {
+    exclusiveGatewayPairs.forEach((exclusiveGatewayPair) => {
+      const concatinatedId1 = `${exclusiveGatewayPair[0]}_${exclusiveGatewayPair[2]}`;
+      const concatinatedId2 = `${exclusiveGatewayPair[1]}_${exclusiveGatewayPair[2]}`;
+      const transition = exclusiveGatewayTransitions.find(
+        (exclusiveGatewayTransition) => {
+          return (
+            exclusiveGatewayTransition.id === concatinatedId1 ||
+            exclusiveGatewayTransition.id === concatinatedId2
+          );
+        },
+      );
+      if (transition != null) {
+        transition.type = TransitionType.REQUIRED;
+      }
+    });
   }
 
   private createSequenceFlowMapping(
