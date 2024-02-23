@@ -31,7 +31,7 @@ export class ChoreographyService {
       xmlString: xmlString,
     };
     this.choreographies.set(choreography.id, choreography);
-    this.logger.log(`Created choreography ${choreography.id}`)
+    this.logger.log(`Created choreography ${choreography.id}`);
     return choreography;
   }
 

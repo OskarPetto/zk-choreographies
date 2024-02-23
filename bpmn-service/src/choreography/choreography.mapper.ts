@@ -30,7 +30,7 @@ interface ConstraintMapping {
 
 @Injectable()
 export class ChoreographyMapper {
-  constructor(private constraintParser: ConstraintParser) { }
+  constructor(private constraintParser: ConstraintParser) {}
   toModel(choreography: ParsedChoreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
@@ -48,7 +48,6 @@ export class ChoreographyMapper {
           sequenceFlowPlaceIds,
           participantIds,
           messageIds,
-          additionalPlaceIds,
         ),
     );
 
@@ -96,7 +95,9 @@ export class ChoreographyMapper {
     const relevantParticipants = [...participantIds.values()].filter(
       (participantId) =>
         choreographyTaskTransitions.some(
-          (choreographyTask) => choreographyTask.sender === participantId,
+          (choreographyTask) =>
+            choreographyTask.initiatingParticipant === participantId ||
+            choreographyTask.respondingParticipant === participantId,
         ),
     );
 
@@ -107,9 +108,8 @@ export class ChoreographyMapper {
       messageIds,
     );
     this.addConstraints(transitions, constraintMapping);
-
     return {
-      placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length + 2,
+      placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length,
       participantCount: relevantParticipants.length,
       messageCount: messageIds.size,
       startPlaces: startTransitions.flatMap(
@@ -205,11 +205,13 @@ export class ChoreographyMapper {
     additionalPlaceIds: PlaceId[],
   ): Transition {
     const outgoingPlaceId = sequenceFlowPlaceIds.get(startEvent.outgoing)!;
+    const newPlaceId = sequenceFlowPlaceIds.size + additionalPlaceIds.length;
+    additionalPlaceIds.push(newPlaceId);
     return {
       id: startEvent.id,
       type: TransitionType.REQUIRED,
       name: startEvent.name,
-      incomingPlaces: [sequenceFlowPlaceIds.size + additionalPlaceIds.length],
+      incomingPlaces: [newPlaceId],
       outgoingPlaces: [outgoingPlaceId],
     };
   }
@@ -220,15 +222,15 @@ export class ChoreographyMapper {
     additionalPlaceIds: PlaceId[],
   ): Transition[] {
     const incomingPlaceId = sequenceFlowPlaceIds.get(endEvent.incoming)!;
+    const newPlaceId = sequenceFlowPlaceIds.size + additionalPlaceIds.length;
+    additionalPlaceIds.push(newPlaceId);
     return [
       {
         id: endEvent.id,
         type: TransitionType.REQUIRED,
         name: endEvent.name,
         incomingPlaces: [incomingPlaceId],
-        outgoingPlaces: [
-          sequenceFlowPlaceIds.size + additionalPlaceIds.length + 1,
-        ],
+        outgoingPlaces: [newPlaceId],
       },
     ];
   }
@@ -312,7 +314,6 @@ export class ChoreographyMapper {
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
     participantIds: Map<BpmnParticipantId, ParticipantId>,
     messageIds: Map<BpmnMessageId, MessageId>,
-    additionalPlaceIds: PlaceId[],
   ): Transition[] {
     const incomingPlaceId = sequenceFlowPlaceIds.get(
       choreographyTask.incoming,
@@ -328,54 +329,26 @@ export class ChoreographyMapper {
       choreographyTask.respondingParticipant,
     );
 
-    const initialMessage = choreographyTask.initialMessage
+    const initiatingMessageId = choreographyTask.initialMessage
       ? messageIds.get(choreographyTask.initialMessage)
       : undefined;
-    const responseMessage = choreographyTask.responseMessage
+    const respondingMessageId = choreographyTask.responseMessage
       ? messageIds.get(choreographyTask.responseMessage)
       : undefined;
 
-    if (initialMessage != undefined && responseMessage != undefined) {
-      const additionalPlaceId =
-        sequenceFlowPlaceIds.size + additionalPlaceIds.length;
-      additionalPlaceIds.push(additionalPlaceId);
-
-      return [
-        {
-          id: `${choreographyTask.id}_0`,
-          type: TransitionType.REQUIRED,
-          name: choreographyTask.name,
-          incomingPlaces: [incomingPlaceId],
-          outgoingPlaces: [additionalPlaceId],
-          sender: initiatingParticipantId,
-          recipient: respondingParticipantId,
-          message: initialMessage,
-        },
-        {
-          id: `${choreographyTask.id}_1`,
-          type: TransitionType.REQUIRED,
-          name: choreographyTask.name,
-          incomingPlaces: [additionalPlaceId],
-          outgoingPlaces: [outgoingPlaceId],
-          sender: respondingParticipantId,
-          recipient: initiatingParticipantId,
-          message: responseMessage,
-        },
-      ];
-    } else {
-      return [
-        {
-          id: choreographyTask.id,
-          type: TransitionType.REQUIRED,
-          name: choreographyTask.name,
-          incomingPlaces: [incomingPlaceId],
-          outgoingPlaces: [outgoingPlaceId],
-          sender: initiatingParticipantId,
-          recipient: respondingParticipantId,
-          message: initialMessage,
-        },
-      ];
-    }
+    return [
+      {
+        id: choreographyTask.id,
+        type: TransitionType.REQUIRED,
+        name: choreographyTask.name,
+        incomingPlaces: [incomingPlaceId],
+        outgoingPlaces: [outgoingPlaceId],
+        initiatingParticipant: initiatingParticipantId,
+        respondingParticipant: respondingParticipantId,
+        initiatingMessage: initiatingMessageId,
+        respondingMessage: respondingMessageId,
+      },
+    ];
   }
 
   addConstraints(

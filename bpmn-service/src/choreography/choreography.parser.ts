@@ -256,19 +256,17 @@ export class ChoreographyParser {
   }
 
   private parseExclusiveGateways(choreography: any): ExclusiveGateway[] {
-    const eventBasedGateways = choreography[this.eventBasedGatewayTag];
-    const exclusiveGateways = [
-      ...eventBasedGateways,
-      ...choreography[this.exclusiveGatewayTag],
-    ];
-    if (!exclusiveGateways) {
+    const eventBasedGateways = choreography[this.eventBasedGatewayTag] ?? [];
+    const exclusiveGateways = choreography[this.exclusiveGatewayTag] ?? [];
+    const gateways = [...eventBasedGateways, ...exclusiveGateways];
+    if (!gateways) {
       return [];
     }
-    return exclusiveGateways.map((exclusiveGateway: any) => {
-      const incoming: any[] = exclusiveGateway[this.incomingTag];
-      const outgoing: any[] = exclusiveGateway[this.outgoingTag];
+    return gateways.map((gateway: any) => {
+      const incoming: any[] = gateway[this.incomingTag];
+      const outgoing: any[] = gateway[this.outgoingTag];
       return {
-        id: exclusiveGateway.id,
+        id: gateway.id,
         type: incoming.length > 1 ? GatewayType.JOIN : GatewayType.SPLIT,
         incoming,
         outgoing,

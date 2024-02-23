@@ -6,7 +6,7 @@ import { Model } from 'src/domain/model';
 
 @Injectable()
 export class ExecutionGateway {
-  constructor(private readonly httpService: HttpService) { }
+  constructor(private readonly httpService: HttpService) {}
 
   async createModel(model: Model): Promise<SaltedHash> {
     const response: Observable<any> = this.httpService.post(
@@ -19,7 +19,8 @@ export class ExecutionGateway {
         catchError((error: any) => {
           console.error('Error creating model:', error.response.config.data);
           return throwError('Failed to create model. Please try again.'); // You can customize this error message
-        })),
+        }),
+      ),
     );
   }
 }
