@@ -1,6 +1,6 @@
 package utils
 
-import "encoding/base64"
+import "encoding/base32"
 
 func PanicOnError(err error) {
 	if err != nil {
@@ -9,9 +9,9 @@ func PanicOnError(err error) {
 }
 
 func BytesToString(bytes []byte) string {
-	return base64.StdEncoding.EncodeToString(bytes)
+	return base32.StdEncoding.EncodeToString(bytes)
 }
 
 func StringToBytes(value string) ([]byte, error) {
-	return base64.StdEncoding.DecodeString(value)
+	return base32.StdEncoding.DecodeString(value)
 }
