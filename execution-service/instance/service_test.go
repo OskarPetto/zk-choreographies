@@ -18,7 +18,7 @@ var instanceService = instance.NewInstanceService()
 
 func TestFindInstancesByModel(t *testing.T) {
 	instance := states[0].Instance
-	instanceService.SaveInstance(instance)
+	instanceService.ImportInstance(instance)
 	modelId := utils.BytesToString(instance.Model.Value[:])
 	result := instanceService.FindInstancesByModel(modelId)
 	assert.Equal(t, 1, len(result))
@@ -26,7 +26,7 @@ func TestFindInstancesByModel(t *testing.T) {
 
 func TestFindInstanceById(t *testing.T) {
 	instance := states[0].Instance
-	instanceService.SaveInstance(instance)
+	instanceService.ImportInstance(instance)
 	_, err := instanceService.FindInstanceById(instance.Id())
 	assert.Nil(t, err)
 }
@@ -39,7 +39,7 @@ func TestImportInstance(t *testing.T) {
 
 func TestImportInstanceInvalidHash(t *testing.T) {
 	instance := states[0].Instance
-	instance.Hash = domain.SaltedHash{}
+	instance.SaltedHash = domain.SaltedHash{}
 	err := instanceService.ImportInstance(instance)
 	assert.NotNil(t, err)
 }

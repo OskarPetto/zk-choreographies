@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 
@@ -12,7 +13,7 @@ const PublicKeySize = 32
 type InstanceId = string
 
 type Instance struct {
-	Hash          SaltedHash
+	SaltedHash    SaltedHash
 	Model         Hash
 	TokenCounts   []int8
 	PublicKeys    []PublicKey
@@ -39,26 +40,37 @@ func NewPublicKey(eddsaPub eddsa.PublicKey) PublicKey {
 }
 
 func (instance *Instance) Id() InstanceId {
-	return instance.Hash.String()
+	return instance.SaltedHash.String()
 }
 
-func (instance Instance) ExecuteTransition(transition Transition, input ConstraintInput, message *Message) (Instance, error) {
-	if !isTransitionExecutable(instance, transition, input) {
-		return Instance{}, fmt.Errorf("transition %s is not executable", transition.Id)
+func (instance Instance) ExecuteTransition(transition Transition, input ConstraintInput, initiatingMessage *Message, respondingMessage *Message) (Instance, error) {
+	err := validateTransitionExecutable(instance, transition, input)
+	if err != nil {
+		return Instance{}, err
 	}
-	if transition.Message != EmptyMessageId && message == nil {
-		return Instance{}, fmt.Errorf("transition %s requires a message", transition.Id)
+	if transition.InitiatingMessage != EmptyMessageId && initiatingMessage == nil {
+		return Instance{}, fmt.Errorf("transition %s requires a initiating message", transition.Id)
 	}
-	if transition.Message == EmptyMessageId && message != nil {
-		return Instance{}, fmt.Errorf("transition %s does not send any message", transition.Id)
+	if transition.InitiatingMessage == EmptyMessageId && initiatingMessage != nil {
+		return Instance{}, fmt.Errorf("transition %s does not send any initiating message", transition.Id)
+	}
+	if transition.RespondingMessage != EmptyMessageId && respondingMessage == nil {
+		return Instance{}, fmt.Errorf("transition %s requires a responding message", transition.Id)
+	}
+	if transition.RespondingMessage == EmptyMessageId && respondingMessage != nil {
+		return Instance{}, fmt.Errorf("transition %s does not send any responding message", transition.Id)
 	}
 	instance.updateTokenCounts(transition)
-	if message != nil {
-		messageHash := message.Hash.Hash
+	if initiatingMessage != nil {
 		messageHashes := make([]Hash, len(instance.MessageHashes))
 		copy(messageHashes[:], instance.MessageHashes[:])
-		if transition.Message != EmptyMessageId {
-			messageHashes[transition.Message] = messageHash
+		if transition.InitiatingMessage != EmptyMessageId {
+			initiatingMessageHash := initiatingMessage.Hash.Hash
+			messageHashes[transition.InitiatingMessage] = initiatingMessageHash
+		}
+		if transition.RespondingMessage != EmptyMessageId {
+			respondingMessageHash := respondingMessage.Hash.Hash
+			messageHashes[transition.RespondingMessage] = respondingMessageHash
 		}
 		instance.MessageHashes = messageHashes
 	}
@@ -79,13 +91,13 @@ func (instance *Instance) updateTokenCounts(transition Transition) {
 	instance.TokenCounts = tokenCounts
 }
 
-func isTransitionExecutable(instance Instance, transition Transition, input ConstraintInput) bool {
+func validateTransitionExecutable(instance Instance, transition Transition, input ConstraintInput) error {
 	for _, incomingPlaceId := range transition.IncomingPlaces {
 		if instance.TokenCounts[incomingPlaceId] < 1 {
-			return false
+			return fmt.Errorf("transition %s is not executable because there are not enough tokens", transition.Id)
 		}
 	}
-	return instance.EvaluateConstraint(transition.Constraint, input)
+	return validateConstraint(instance, transition, input)
 }
 
 func (instance *Instance) FindMessageHashById(id ModelMessageId) Hash {
@@ -94,4 +106,44 @@ func (instance *Instance) FindMessageHashById(id ModelMessageId) Hash {
 
 func (instance *Instance) FindPublicKeyByParticipant(id ParticipantId) PublicKey {
 	return instance.PublicKeys[id]
+}
+
+func validateConstraint(instance Instance, transition Transition, input ConstraintInput) error {
+	constraint := transition.Constraint
+	if len(constraint.MessageIds) != len(input.Messages) {
+		return fmt.Errorf("transition %s is not executable because number of constraint inputs differs from the number of messages in the constraint", transition.Id)
+	}
+	lhs := constraint.Offset
+	for i, message := range input.Messages {
+		hash := message.Hash.Hash
+		messageId := EmptyMessageId
+		for i, messageHash := range instance.MessageHashes {
+			if bytes.Equal(hash.Value[:], messageHash.Value[:]) {
+				messageId = ModelMessageId(i)
+				break
+			}
+		}
+		if constraint.Coefficients[i] != 0 && messageId != constraint.MessageIds[i] {
+			return fmt.Errorf("transition %s is not executable because the wrong constraint inputs have been provided", transition.Id)
+		}
+		lhs += constraint.Coefficients[i] * input.Messages[i].IntegerMessage
+	}
+
+	var result bool
+	switch constraint.ComparisonOperator {
+	case OperatorEqual:
+		result = lhs == 0
+	case OperatorGreaterThan:
+		result = lhs > 0
+	case OperatorLessThan:
+		result = lhs < 0
+	case OperatorGreaterThanOrEqual:
+		result = lhs >= 0
+	case OperatorLessThanOrEqual:
+		result = lhs <= 0
+	}
+	if !result {
+		return fmt.Errorf("transition %s is not executable because the constraint evaluates to false", transition.Id)
+	}
+	return nil
 }

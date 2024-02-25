@@ -17,7 +17,7 @@ var terminationStates = testdata.GetModel2States(signatureParameters)
 func TestTermination(t *testing.T) {
 	model := terminationStates[len(terminationStates)-1].Model
 	instance := terminationStates[len(terminationStates)-1].Instance
-	signature := terminationStates[len(terminationStates)-1].SenderSignature
+	signature := terminationStates[len(terminationStates)-1].InitiatingParticipantSignature
 
 	witness := circuit.TerminationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -35,7 +35,7 @@ func TestTermination(t *testing.T) {
 func TestTermination_InvalidModelHash(t *testing.T) {
 	model := terminationStates[len(terminationStates)-1].Model
 	instance := terminationStates[len(terminationStates)-1].Instance
-	signature := terminationStates[len(terminationStates)-1].SenderSignature
+	signature := terminationStates[len(terminationStates)-1].InitiatingParticipantSignature
 
 	model.Hash = domain.SaltedHash{}
 
@@ -54,7 +54,7 @@ func TestTermination_InvalidInstanceHash(t *testing.T) {
 	model := terminationStates[len(terminationStates)-1].Model
 	instance := terminationStates[len(terminationStates)-1].Instance
 
-	instance.Hash = domain.SaltedHash{}
+	instance.SaltedHash = domain.SaltedHash{}
 	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 
 	witness := circuit.TerminationCircuit{
@@ -71,7 +71,7 @@ func TestTermination_InvalidInstanceHash(t *testing.T) {
 func TestTermination_InvalidTokenCounts(t *testing.T) {
 	model := terminationStates[len(terminationStates)-2].Model
 	instance := terminationStates[len(terminationStates)-2].Instance
-	signature := terminationStates[len(terminationStates)-2].SenderSignature
+	signature := terminationStates[len(terminationStates)-2].InitiatingParticipantSignature
 
 	witness := circuit.TerminationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -87,7 +87,7 @@ func TestTermination_InvalidTokenCounts(t *testing.T) {
 func TestTermination_InvalidSignature(t *testing.T) {
 	model := terminationStates[len(terminationStates)-1].Model
 	instance := terminationStates[len(terminationStates)-1].Instance
-	signature := terminationStates[len(terminationStates)-2].SenderSignature
+	signature := terminationStates[len(terminationStates)-2].InitiatingParticipantSignature
 
 	witness := circuit.TerminationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -103,7 +103,7 @@ func TestTermination_InvalidSignature(t *testing.T) {
 func TestTermination_NotAParticipant(t *testing.T) {
 	model := terminationStates[len(terminationStates)-1].Model
 	instance := terminationStates[len(terminationStates)-1].Instance
-	authentication := circuit.ToAuthentication(instance, terminationStates[len(terminationStates)-1].SenderSignature)
+	authentication := circuit.ToAuthentication(instance, terminationStates[len(terminationStates)-1].InitiatingParticipantSignature)
 	authentication.MerkleProof.Index = 1
 
 	witness := circuit.TerminationCircuit{

@@ -3,285 +3,66 @@ package testdata
 import (
 	"execution-service/domain"
 	"execution-service/parameters"
-	"time"
+	"execution-service/utils"
 )
 
 type State struct {
-	Instance           domain.Instance
-	Model              domain.Model
-	SenderSignature    domain.Signature
-	RecipientSignature *domain.Signature
-	Transition         domain.Transition
-	Sender             domain.IdentityId
-	Recipient          *domain.IdentityId
-	ConstraintInput    domain.ConstraintInput
-	Message            *domain.Message
+	Instance                       domain.Instance
+	Model                          domain.Model
+	InitiatingParticipantSignature domain.Signature
+	RespondingParticipantSignature *domain.Signature
+	Transition                     domain.Transition
+	InitiatingParticipant          domain.IdentityId
+	RespondingParticipant          *domain.IdentityId
+	ConstraintInput                domain.ConstraintInput
+	InitiatingMessage              *domain.Message
+	RespondingMessage              *domain.Message
 }
 
 func GetModel2States(signatureParameters parameters.SignatureParameters) []State {
 	model2 := GetModel2()
-	order := domain.NewIntegerMessage(2)
-	stock := domain.NewIntegerMessage(20)
-	confirm := domain.NewBytesMessage([]byte("confirm"))
-	invoice := domain.NewBytesMessage([]byte("invoice"))
-	shippingAddress := domain.NewBytesMessage([]byte("shipping_address"))
-	product := domain.NewBytesMessage([]byte("product"))
-	payment := domain.NewBytesMessage([]byte("payment"))
 
-	identity0 := domain.IdentityId(0)
-	identity1 := domain.IdentityId(1)
+	state0 := instantiateModel(signatureParameters, model2)
+	state1 := executeTransition(signatureParameters, model2, 0, state0.Instance, nil, nil, nil)
+	order := domain.NewIntegerMessage(state1.Instance, 2)
+	stock := domain.NewIntegerMessage(state1.Instance, 20)
+	state2 := executeTransition(signatureParameters, model2, 2, state1.Instance, nil, &order, &stock)
+	confirm := domain.NewBytesMessage(state2.Instance, []byte("confirm"))
+	constraintInput1 := domain.ConstraintInput{
+		Messages: []domain.Message{
+			order, stock,
+		},
+	}
+	state3 := executeTransition(signatureParameters, model2, 7, state2.Instance, &constraintInput1, &confirm, nil)
+	invoice := domain.NewBytesMessage(state3.Instance, []byte("invoice"))
+	payment := domain.NewBytesMessage(state3.Instance, []byte("payment"))
+	state4 := executeTransition(signatureParameters, model2, 6, state3.Instance, nil, &invoice, &payment)
+	shippingAddress := domain.NewBytesMessage(state4.Instance, []byte("shipping_address"))
+	product := domain.NewBytesMessage(state4.Instance, []byte("product"))
+	state5 := executeTransition(signatureParameters, model2, 5, state4.Instance, nil, &shippingAddress, &product)
+	state6 := executeTransition(signatureParameters, model2, 1, state5.Instance, nil, nil, nil)
+
 	return []State{
-		getModelState(
-			signatureParameters,
-			model2,
-			domain.MaxTransitionCount,
-			[]domain.PlaceId{11},
-			[]domain.Hash{
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-			},
-			domain.EmptyConstraintInput(),
-			0,
-			nil,
-			nil,
-		),
-		getModelState(
-			signatureParameters,
-			model2,
-			0,
-			[]domain.PlaceId{0},
-			[]domain.Hash{
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-			},
-			domain.EmptyConstraintInput(),
-			0,
-			nil,
-			nil,
-		),
-		getModelState(
-			signatureParameters,
-			model2,
-			2,
-			[]domain.PlaceId{7},
-			[]domain.Hash{
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				order.Hash.Hash,
-			},
-			domain.EmptyConstraintInput(),
-			0,
-			&identity1,
-			&order,
-		),
-		getModelState(
-			signatureParameters,
-			model2,
-			3,
-			[]domain.PlaceId{1},
-			[]domain.Hash{
-				stock.Hash.Hash,
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				order.Hash.Hash,
-			},
-			domain.EmptyConstraintInput(),
-			1,
-			&identity0,
-			&stock,
-		),
-		getModelState(
-			signatureParameters,
-			model2,
-			11,
-			[]domain.PlaceId{2, 3},
-			[]domain.Hash{
-				stock.Hash.Hash,
-				confirm.Hash.Hash,
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				order.Hash.Hash,
-			},
-			domain.ConstraintInput{
-				Messages: []domain.Message{
-					order, stock,
-				},
-			},
-			1,
-			&identity0,
-			&confirm,
-		),
-		getModelState(
-			signatureParameters,
-			model2,
-			9,
-			[]domain.PlaceId{2, 10},
-			[]domain.Hash{
-				stock.Hash.Hash,
-				confirm.Hash.Hash,
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				invoice.Hash.Hash,
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				order.Hash.Hash,
-			},
-			domain.EmptyConstraintInput(),
-			1,
-			&identity0,
-			&invoice,
-		),
-		getModelState(
-			signatureParameters,
-			model2,
-			10,
-			[]domain.PlaceId{2, 5},
-			[]domain.Hash{
-				stock.Hash.Hash,
-				confirm.Hash.Hash,
-				payment.Hash.Hash,
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				invoice.Hash.Hash,
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				order.Hash.Hash,
-			},
-			domain.EmptyConstraintInput(),
-			0,
-			&identity1,
-			&payment,
-		),
-		getModelState(
-			signatureParameters,
-			model2,
-			7,
-			[]domain.PlaceId{9, 5},
-			[]domain.Hash{
-				stock.Hash.Hash,
-				confirm.Hash.Hash,
-				payment.Hash.Hash,
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				invoice.Hash.Hash,
-				shippingAddress.Hash.Hash,
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				order.Hash.Hash,
-			},
-			domain.EmptyConstraintInput(),
-			0,
-			&identity1,
-			&shippingAddress,
-		),
-		getModelState(
-			signatureParameters,
-			model2,
-			8,
-			[]domain.PlaceId{4, 5},
-			[]domain.Hash{
-				stock.Hash.Hash,
-				confirm.Hash.Hash,
-				payment.Hash.Hash,
-				product.Hash.Hash,
-				domain.EmptyHash(),
-				invoice.Hash.Hash,
-				shippingAddress.Hash.Hash,
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				order.Hash.Hash,
-			},
-			domain.EmptyConstraintInput(),
-			1,
-			&identity0,
-			&product,
-		),
-		getModelState(
-			signatureParameters,
-			model2,
-			1,
-			[]domain.PlaceId{12},
-			[]domain.Hash{
-				stock.Hash.Hash,
-				confirm.Hash.Hash,
-				payment.Hash.Hash,
-				product.Hash.Hash,
-				domain.EmptyHash(),
-				invoice.Hash.Hash,
-				shippingAddress.Hash.Hash,
-				domain.EmptyHash(),
-				domain.EmptyHash(),
-				order.Hash.Hash,
-			},
-			domain.EmptyConstraintInput(),
-			0,
-			nil,
-			nil,
-		),
+		state0, state1, state2, state3, state4, state5, state6,
 	}
 }
 
-func getModelState(signatureParameters parameters.SignatureParameters, model domain.Model, transitionIndex uint, activePlaces []domain.PlaceId, hashes []domain.Hash, constraintInput domain.ConstraintInput, sender domain.IdentityId, recipient *domain.IdentityId, message *domain.Message) State {
-	tokenCounts := make([]int8, model.PlaceCount)
-	for _, placeId := range activePlaces {
-		tokenCounts[placeId] = 1
-	}
+func instantiateModel(signatureParameters parameters.SignatureParameters, model domain.Model) State {
 	publicKeys := signatureParameters.GetPublicKeys(int(model.ParticipantCount))
-	messageHashes := make([]domain.Hash, model.MessageCount)
-	copy(messageHashes, hashes)
-	instance := domain.Instance{
-		Model:         model.Hash.Hash,
-		TokenCounts:   tokenCounts,
-		PublicKeys:    publicKeys,
-		MessageHashes: messageHashes,
-		CreatedAt:     time.Now().Unix(),
+	instance, err := model.Instantiate(publicKeys)
+	utils.PanicOnError(err)
+
+	initiatingParticipantPrivateKey := signatureParameters.GetPrivateKeyForIdentity(0)
+	initiatingParticipantSignature := instance.Sign(initiatingParticipantPrivateKey)
+	return State{
+		Model:                          model,
+		Instance:                       instance,
+		Transition:                     domain.OutOfBoundsTransition(),
+		InitiatingParticipantSignature: initiatingParticipantSignature,
 	}
-	instance.UpdateHash()
-	senderPrivateKey := signatureParameters.GetPrivateKeyForIdentity(sender)
-	senderSignature := instance.Sign(senderPrivateKey)
-	var recipientSignature *domain.Signature
-	if recipient != nil {
-		recipientPrivateKey := signatureParameters.GetPrivateKeyForIdentity(*recipient)
-		tmp := instance.Sign(recipientPrivateKey)
-		recipientSignature = &tmp
-	}
+}
+
+func executeTransition(signatureParameters parameters.SignatureParameters, model domain.Model, transitionIndex uint, currentInstance domain.Instance, constraintInput *domain.ConstraintInput, initiatingMessage *domain.Message, respondingMessage *domain.Message) State {
 
 	var transition domain.Transition
 	if transitionIndex < domain.MaxTransitionCount {
@@ -289,15 +70,42 @@ func getModelState(signatureParameters parameters.SignatureParameters, model dom
 	} else {
 		transition = domain.OutOfBoundsTransition()
 	}
+	constraintInputNotNull := domain.EmptyConstraintInput()
+	if constraintInput != nil {
+		constraintInputNotNull = *constraintInput
+	}
+
+	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInputNotNull, initiatingMessage, respondingMessage)
+	utils.PanicOnError(err)
+
+	initiatingParticipant := uint(0)
+	if transition.InitiatingParticipant != domain.EmptyParticipantId {
+		initiatingParticipant = uint(transition.InitiatingParticipant)
+	}
+	initiatingParticipantPrivateKey := signatureParameters.GetPrivateKeyForIdentity(initiatingParticipant)
+	initiatingParticipantSignature := nextInstance.Sign(initiatingParticipantPrivateKey)
+
+	var respondingParticipant *uint
+	var respondingParticipantSignature *domain.Signature
+
+	if transition.RespondingParticipant != domain.EmptyParticipantId {
+		tmp1 := uint(transition.RespondingParticipant)
+		respondingParticipant = &tmp1
+		respondingParticipantPrivateKey := signatureParameters.GetPrivateKeyForIdentity(*respondingParticipant)
+		tmp2 := nextInstance.Sign(respondingParticipantPrivateKey)
+		respondingParticipantSignature = &tmp2
+	}
+
 	return State{
-		Model:              model,
-		Instance:           instance,
-		Transition:         transition,
-		SenderSignature:    senderSignature,
-		RecipientSignature: recipientSignature,
-		Sender:             sender,
-		Recipient:          recipient,
-		ConstraintInput:    constraintInput,
-		Message:            message,
+		Model:                          model,
+		Instance:                       nextInstance,
+		Transition:                     transition,
+		InitiatingParticipantSignature: initiatingParticipantSignature,
+		RespondingParticipantSignature: respondingParticipantSignature,
+		InitiatingParticipant:          initiatingParticipant,
+		RespondingParticipant:          respondingParticipant,
+		ConstraintInput:                constraintInputNotNull,
+		InitiatingMessage:              initiatingMessage,
+		RespondingMessage:              respondingMessage,
 	}
 }

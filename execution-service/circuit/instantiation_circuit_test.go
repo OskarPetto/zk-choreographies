@@ -20,7 +20,7 @@ var instantiationStates = testdata.GetModel2States(signatureParameters)
 func TestInstantiation(t *testing.T) {
 	model := instantiationStates[0].Model
 	instance := instantiationStates[0].Instance
-	signature := instantiationStates[0].SenderSignature
+	signature := instantiationStates[0].InitiatingParticipantSignature
 
 	witness := circuit.InstantiationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -37,7 +37,7 @@ func TestInstantiation(t *testing.T) {
 func TestInstantiation_InvalidModelHash(t *testing.T) {
 	model := instantiationStates[0].Model
 	instance := instantiationStates[0].Instance
-	signature := instantiationStates[0].SenderSignature
+	signature := instantiationStates[0].InitiatingParticipantSignature
 
 	model.Hash = domain.SaltedHash{}
 
@@ -55,7 +55,7 @@ func TestInstantiation_InvalidInstanceHash(t *testing.T) {
 	model := instantiationStates[0].Model
 	instance := instantiationStates[0].Instance
 
-	instance.Hash = domain.SaltedHash{}
+	instance.SaltedHash = domain.SaltedHash{}
 	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 
 	witness := circuit.InstantiationCircuit{
@@ -71,7 +71,7 @@ func TestInstantiation_InvalidInstanceHash(t *testing.T) {
 func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
 	model := instantiationStates[1].Model
 	instance := instantiationStates[1].Instance
-	signature := instantiationStates[1].SenderSignature
+	signature := instantiationStates[1].InitiatingParticipantSignature
 
 	witness := circuit.InstantiationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -86,7 +86,7 @@ func TestInstantiation_InvalidTokenCounts1(t *testing.T) {
 func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
 	model := instantiationStates[len(instantiationStates)-1].Model
 	instance := instantiationStates[len(instantiationStates)-1].Instance
-	signature := instantiationStates[len(instantiationStates)-1].SenderSignature
+	signature := instantiationStates[len(instantiationStates)-1].InitiatingParticipantSignature
 
 	witness := circuit.InstantiationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -101,7 +101,7 @@ func TestInstantiation_InvalidTokenCounts2(t *testing.T) {
 func TestInstantiation_InvalidSignature(t *testing.T) {
 	model := instantiationStates[0].Model
 	instance := instantiationStates[0].Instance
-	signature := instantiationStates[1].SenderSignature
+	signature := instantiationStates[1].InitiatingParticipantSignature
 
 	witness := circuit.InstantiationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -116,7 +116,7 @@ func TestInstantiation_InvalidSignature(t *testing.T) {
 func TestInstantiation_NotAParticipant(t *testing.T) {
 	model := instantiationStates[0].Model
 	instance := instantiationStates[0].Instance
-	authentication := circuit.ToAuthentication(instance, instantiationStates[0].SenderSignature)
+	authentication := circuit.ToAuthentication(instance, instantiationStates[0].InitiatingParticipantSignature)
 	authentication.MerkleProof.Index = 1
 
 	witness := circuit.InstantiationCircuit{
@@ -133,7 +133,7 @@ func TestInstantiation_InvalidMessageHashes(t *testing.T) {
 	model := instantiationStates[0].Model
 	instance := instantiationStates[0].Instance
 
-	instance.MessageHashes[0] = domain.NewBytesMessage([]byte("invalid")).Hash.Hash
+	instance.MessageHashes[0] = domain.NewBytesMessage(instance, []byte("invalid")).Hash.Hash
 	instance.UpdateHash()
 	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
 

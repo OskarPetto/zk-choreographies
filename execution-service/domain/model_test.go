@@ -16,11 +16,11 @@ func TestInstantiateModel(t *testing.T) {
 	assert.Equal(t, state0.Instance.PublicKeys, result.PublicKeys)
 	assert.Equal(t, state0.Instance.MessageHashes, result.MessageHashes)
 	assert.Equal(t, state0.Model.Hash.Hash, result.Model)
-	assert.NotEqual(t, state0.Instance.Hash, result.Hash)
+	assert.NotEqual(t, state0.Instance.SaltedHash, result.SaltedHash)
 }
 
 func TestFindTransitionById(t *testing.T) {
-	id := "ChoreographyTask_0kp4flv_0"
+	id := "ChoreographyTask_0kp4flv"
 	model := states[0].Model
 	transition, err := model.FindTransitionById(id)
 	assert.Nil(t, err)

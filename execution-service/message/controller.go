@@ -21,7 +21,7 @@ func (controller *MessageController) FindMessagesByInstance(c *gin.Context) {
 	instances := controller.messageService.FindMessagesByInstance(instanceId)
 	jsonMessages := make([]MessageJson, len(instances))
 	for i, instance := range instances {
-		jsonMessages[i] = MessageToJson(instance)
+		jsonMessages[i] = ToJson(instance)
 	}
 	c.IndentedJSON(http.StatusOK, jsonMessages)
 }
@@ -33,5 +33,5 @@ func (controller *MessageController) FindMessageById(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 		return
 	}
-	c.IndentedJSON(http.StatusOK, MessageToJson(message))
+	c.IndentedJSON(http.StatusOK, ToJson(message))
 }

@@ -47,10 +47,10 @@ func (service *InstanceService) ImportInstance(instance domain.Instance) error {
 	if !instance.HasValidHash() {
 		return fmt.Errorf("instance %s has invalid hash", instance.Id())
 	}
-	service.SaveInstance(instance)
+	service.saveInstance(instance)
 	return nil
 }
 
-func (service *InstanceService) SaveInstance(instance domain.Instance) {
+func (service *InstanceService) saveInstance(instance domain.Instance) {
 	service.instances[instance.Id()] = instance
 }

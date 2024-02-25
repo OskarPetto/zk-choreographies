@@ -12,16 +12,12 @@ import (
 
 var signatureParameters = parameters.NewSignatureParameters()
 var instanceService = instance.NewInstanceService()
-var modelService = model.NewModelService(instanceService)
+var modelService = model.NewModelService()
 var states = testdata.GetModel2States(signatureParameters)
 
 func TestImportModel(t *testing.T) {
 	domainModel := states[0].Model
-	cmd := model.ImportModelCommand{
-		Model:    domainModel,
-		Instance: states[0].Instance,
-	}
-	modelService.ImportModel(cmd)
+	modelService.ImportModel(domainModel)
 	modelResult, err := modelService.FindModelById(domainModel.Id())
 	assert.Nil(t, err)
 	assert.Equal(t, domainModel.Hash, modelResult.Hash)

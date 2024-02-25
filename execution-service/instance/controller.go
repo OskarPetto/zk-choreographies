@@ -35,22 +35,3 @@ func (controller *InstanceController) FindInstancesByModel(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, jsonInstances)
 }
-
-func (controller *InstanceController) ImportInstance(c *gin.Context) {
-	var instanceJson InstanceJson
-	if err := c.BindJSON(&instanceJson); err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	instance, err := instanceJson.ToInstance()
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	err = controller.instanceService.ImportInstance(instance)
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	c.Status(http.StatusOK)
-}

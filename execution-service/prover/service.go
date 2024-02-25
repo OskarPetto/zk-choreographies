@@ -48,25 +48,25 @@ func (service ProverService) ProveInstantiation(cmd ProveInstantiationCommand) (
 	if err != nil {
 		return Proof{}, err
 	}
-	return toProof(groth16Proof, cmd.Instance.Hash.Hash)
+	return toProof(groth16Proof, cmd.Instance.SaltedHash.Hash)
 }
 
 func (service ProverService) ProveTransition(cmd ProveTransitionCommand) (Proof, error) {
 
-	senderAuthentication := circuit.ToAuthentication(cmd.NextInstance, cmd.SenderSignature)
+	senderAuthentication := circuit.ToAuthentication(cmd.NextInstance, cmd.InitiatingParticipantSignature)
 	recipientAuthentication := senderAuthentication
-	if cmd.RecipientSignature != nil {
-		recipientAuthentication = circuit.ToAuthentication(cmd.NextInstance, *cmd.RecipientSignature)
+	if cmd.RespondingParticipantSignature != nil {
+		recipientAuthentication = circuit.ToAuthentication(cmd.NextInstance, *cmd.RespondingParticipantSignature)
 	}
 
 	assignment := &circuit.TransitionCircuit{
-		Model:                   circuit.FromModel(cmd.Model),
-		CurrentInstance:         circuit.FromInstance(cmd.CurrentInstance),
-		NextInstance:            circuit.FromInstance(cmd.NextInstance),
-		Transition:              circuit.ToTransition(cmd.Model, cmd.Transition),
-		SenderAuthentication:    senderAuthentication,
-		RecipientAuthentication: recipientAuthentication,
-		ConstraintInput:         circuit.FromConstraintInput(cmd.ConstraintInput),
+		Model:                               circuit.FromModel(cmd.Model),
+		CurrentInstance:                     circuit.FromInstance(cmd.CurrentInstance),
+		NextInstance:                        circuit.FromInstance(cmd.NextInstance),
+		Transition:                          circuit.ToTransition(cmd.Model, cmd.Transition),
+		InitiatingParticipantAuthentication: senderAuthentication,
+		RespondingParticipantAuthentication: recipientAuthentication,
+		ConstraintInput:                     circuit.FromConstraintInput(cmd.ConstraintInput),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {
@@ -77,7 +77,7 @@ func (service ProverService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 		return Proof{}, err
 	}
 
-	return toProof(proof, cmd.CurrentInstance.Hash.Hash, cmd.NextInstance.Hash.Hash)
+	return toProof(proof, cmd.CurrentInstance.SaltedHash.Hash, cmd.NextInstance.SaltedHash.Hash)
 }
 
 func (service ProverService) ProveTermination(cmd ProveTerminationCommand) (Proof, error) {
@@ -96,5 +96,5 @@ func (service ProverService) ProveTermination(cmd ProveTerminationCommand) (Proo
 	if err != nil {
 		return Proof{}, err
 	}
-	return toProof(proof, cmd.Instance.Hash.Hash)
+	return toProof(proof, cmd.Instance.SaltedHash.Hash)
 }

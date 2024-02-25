@@ -21,8 +21,8 @@ type ExecutionService struct {
 
 func InitializeExecutionService(proverService prover.IProverService) ExecutionService {
 	instanceService := instance.NewInstanceService()
-	modelService := model.NewModelService(instanceService)
-	messageService := message.NewMessageService(instanceService)
+	modelService := model.NewModelService()
+	messageService := message.NewMessageService()
 	signatureParameters := parameters.NewSignatureParameters()
 	return NewExecutionService(modelService, instanceService, messageService, proverService, signatureParameters)
 }
@@ -71,6 +71,9 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return ExecutedTransitionEvent{}, err
 	}
+	if !bytes.Equal(currentInstance.Model.Value[:], model.Hash.Hash.Value[:]) {
+		return ExecutedTransitionEvent{}, fmt.Errorf("instance %s is not of model %s", cmd.Instance, cmd.Model)
+	}
 	transition, err := model.FindTransitionById(cmd.Transition)
 	if err != nil {
 		return ExecutedTransitionEvent{}, err
@@ -79,19 +82,22 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return ExecutedTransitionEvent{}, err
 	}
-	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput, nil)
+	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput, nil, nil)
 	if err != nil {
 		return ExecutedTransitionEvent{}, err
 	}
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	if privateKey == nil {
+		return ExecutedTransitionEvent{}, fmt.Errorf("private key does not exist for identity %d", cmd.Identity)
+	}
 	senderSignature := nextInstance.Sign(privateKey)
 	proof, err := service.ProverService.ProveTransition(prover.ProveTransitionCommand{
-		Model:           model,
-		CurrentInstance: currentInstance,
-		NextInstance:    nextInstance,
-		Transition:      transition,
-		SenderSignature: senderSignature,
-		ConstraintInput: constraintInput,
+		Model:                          model,
+		CurrentInstance:                currentInstance,
+		NextInstance:                   nextInstance,
+		Transition:                     transition,
+		InitiatingParticipantSignature: senderSignature,
+		ConstraintInput:                constraintInput,
 	})
 	if err != nil {
 		return ExecutedTransitionEvent{}, err
@@ -106,14 +112,17 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	}, nil
 }
 
-func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand) (TerminatedInstanceEvent, error) {
+func (service *ExecutionService) ProveTermination(cmd ProveTerminationCommand) (ProvedTerminationEvent, error) {
 	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
-		return TerminatedInstanceEvent{}, err
+		return ProvedTerminationEvent{}, err
 	}
 	instance, err := service.InstanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
-		return TerminatedInstanceEvent{}, err
+		return ProvedTerminationEvent{}, err
+	}
+	if !bytes.Equal(instance.Model.Value[:], model.Hash.Hash.Value[:]) {
+		return ProvedTerminationEvent{}, fmt.Errorf("instance %s is not of model %s", cmd.Instance, cmd.Model)
 	}
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	proof, err := service.ProverService.ProveTermination(prover.ProveTerminationCommand{
@@ -122,111 +131,165 @@ func (service *ExecutionService) TerminateInstance(cmd TerminateInstanceCommand)
 		Signature: instance.Sign(privateKey),
 	})
 	if err != nil {
-		return TerminatedInstanceEvent{}, err
+		return ProvedTerminationEvent{}, err
 	}
-	return TerminatedInstanceEvent{
+	return ProvedTerminationEvent{
 		Proof: proof,
 	}, nil
 }
 
-func (service *ExecutionService) SendMessage(cmd SendMessageCommand) (SentMessageEvent, error) {
+func (service *ExecutionService) CreateInitiatingMessage(cmd CreateInitiatingMessageCommand) (CreatedInitiatingMessageEvent, error) {
 	model, err := service.ModelService.FindModelById(cmd.Model)
 	if err != nil {
-		return SentMessageEvent{}, err
+		return CreatedInitiatingMessageEvent{}, err
 	}
 	currentInstance, err := service.InstanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
-		return SentMessageEvent{}, err
+		return CreatedInitiatingMessageEvent{}, err
+	}
+	if !bytes.Equal(currentInstance.Model.Value[:], model.Hash.Hash.Value[:]) {
+		return CreatedInitiatingMessageEvent{}, fmt.Errorf("instance %s is not of model %s", cmd.Instance, cmd.Model)
 	}
 	transition, err := model.FindTransitionById(cmd.Transition)
 	if err != nil {
-		return SentMessageEvent{}, err
+		return CreatedInitiatingMessageEvent{}, err
 	}
-	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
-	if err != nil {
-		return SentMessageEvent{}, err
+	if transition.InitiatingMessage == domain.EmptyMessageId {
+		return CreatedInitiatingMessageEvent{}, fmt.Errorf("transition %s of model %s does not have InitiatingMessage", cmd.Transition, cmd.Model)
 	}
-	if !bytes.Equal(currentInstance.Model.Value[:], model.Hash.Hash.Value[:]) {
-		return SentMessageEvent{}, fmt.Errorf("instance %s is not of model %s", cmd.Instance, cmd.Model)
-	}
-	var messageToSend *domain.Message
+	var initiatingMessage domain.Message
 	if cmd.BytesMessage != nil {
-		tmp := domain.NewBytesMessage(cmd.BytesMessage)
-		messageToSend = &tmp
+		initiatingMessage = domain.NewBytesMessage(currentInstance, cmd.BytesMessage)
 	} else if cmd.IntegerMessage != nil {
-		tmp := domain.NewIntegerMessage(*cmd.IntegerMessage)
-		messageToSend = &tmp
+		initiatingMessage = domain.NewIntegerMessage(currentInstance, *cmd.IntegerMessage)
+	} else {
+		return CreatedInitiatingMessageEvent{}, fmt.Errorf("neither bytes nor integer message was provided for createInitiatingMessage of instance %s", cmd.Instance)
 	}
-
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
-
-	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput, messageToSend)
-	if err != nil {
-		return SentMessageEvent{}, err
-	}
-	senderSignature := nextInstance.Sign(privateKey)
-
-	if messageToSend != nil {
-		service.MessageService.SaveMessage(*messageToSend)
-	}
-
-	service.InstanceService.SaveInstance(nextInstance)
-
-	return SentMessageEvent{
-		Model:           cmd.Model,
-		CurrentInstance: cmd.Instance,
-		Transition:      cmd.Transition,
-		NextInstance:    nextInstance,
-		SenderSignature: senderSignature,
-		Message:         messageToSend,
+	service.MessageService.ImportMessage(initiatingMessage)
+	return CreatedInitiatingMessageEvent{
+		Model:              model,
+		CurrentInstance:    currentInstance,
+		Transition:         cmd.Transition,
+		InintiatingMessage: initiatingMessage,
 	}, nil
 }
 
-func (service *ExecutionService) ReceiveMessage(cmd ReceiveMessageCommand) (ReceivedMessageEvent, error) {
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
-
-	receivedMessage := cmd.Message
-
-	model, err := service.ModelService.FindModelById(cmd.Model)
-	if err != nil {
-		return ReceivedMessageEvent{}, err
+func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingMessageCommand) (ReceivedInitiatingMessageEvent, error) {
+	currentInstance := cmd.CurrentInstance
+	model := cmd.Model
+	initiatingMessage := cmd.InitiatingMessage
+	if !bytes.Equal(currentInstance.Model.Value[:], model.Hash.Hash.Value[:]) {
+		return ReceivedInitiatingMessageEvent{}, fmt.Errorf("instance %s is not of model %s", currentInstance.Id(), model.Id())
 	}
-	currentInstance, err := service.InstanceService.FindInstanceById(cmd.CurrentInstance)
+	err := service.ModelService.ImportModel(model)
 	if err != nil {
-		return ReceivedMessageEvent{}, err
+		return ReceivedInitiatingMessageEvent{}, err
+	}
+	err = service.InstanceService.ImportInstance(currentInstance)
+	if err != nil {
+		return ReceivedInitiatingMessageEvent{}, err
 	}
 	transition, err := model.FindTransitionById(cmd.Transition)
 	if err != nil {
-		return ReceivedMessageEvent{}, err
+		return ReceivedInitiatingMessageEvent{}, err
 	}
+	if !bytes.Equal(initiatingMessage.Instance.Value[:], currentInstance.SaltedHash.Hash.Value[:]) {
+		return ReceivedInitiatingMessageEvent{}, fmt.Errorf("message %s is not of instance %s", initiatingMessage.Id(), currentInstance.Id())
+	}
+	err = service.MessageService.ImportMessage(initiatingMessage)
+	if err != nil {
+		return ReceivedInitiatingMessageEvent{}, err
+	}
+	var respondingMessage *domain.Message
+	if cmd.BytesMessage != nil {
+		tmp := domain.NewBytesMessage(currentInstance, cmd.BytesMessage)
+		respondingMessage = &tmp
+	} else if cmd.IntegerMessage != nil {
+		tmp := domain.NewIntegerMessage(currentInstance, *cmd.IntegerMessage)
+		respondingMessage = &tmp
+	}
+	if respondingMessage != nil {
+		service.MessageService.ImportMessage(*respondingMessage)
+	}
+
 	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
 	if err != nil {
-		return ReceivedMessageEvent{}, err
+		return ReceivedInitiatingMessageEvent{}, err
 	}
-	recipientSignature := cmd.NextInstance.Sign(privateKey)
-	proof, err := service.ProverService.ProveTransition(prover.ProveTransitionCommand{
-		Model:              model,
-		CurrentInstance:    currentInstance,
-		NextInstance:       cmd.NextInstance,
-		Transition:         transition,
-		SenderSignature:    cmd.SenderSignature,
-		RecipientSignature: &recipientSignature,
-		ConstraintInput:    constraintInput,
-	})
+	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput, &initiatingMessage, respondingMessage)
 	if err != nil {
-		return ReceivedMessageEvent{}, err
+		return ReceivedInitiatingMessageEvent{}, err
 	}
-	if receivedMessage != nil {
-		err = service.MessageService.ImportMessage(cmd.NextInstance, transition, *receivedMessage)
-		if err != nil {
-			return ReceivedMessageEvent{}, err
-		}
+
+	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	if privateKey == nil {
+		return ReceivedInitiatingMessageEvent{}, fmt.Errorf("private key does not exist for identity %d", cmd.Identity)
+	}
+	respondingParticipantSignature := nextInstance.Sign(privateKey)
+
+	return ReceivedInitiatingMessageEvent{
+		Model:                          model.Id(),
+		CurrentInstance:                currentInstance.Id(),
+		Transition:                     cmd.Transition,
+		InitiatingMessage:              initiatingMessage.Id(),
+		NextInstance:                   nextInstance,
+		RespondingMessage:              respondingMessage,
+		RespondingParticipantSignature: respondingParticipantSignature,
+	}, nil
+}
+
+func (service *ExecutionService) ProveMessageExchange(cmd ProveMessageExchangeCommand) (ProvedMessageExchangeEvent, error) {
+	model, err := service.ModelService.FindModelById(cmd.Model)
+	if err != nil {
+		return ProvedMessageExchangeEvent{}, err
+	}
+	currentInstance, err := service.InstanceService.FindInstanceById(cmd.CurrentInstance)
+	if err != nil {
+		return ProvedMessageExchangeEvent{}, err
+	}
+	transition, err := model.FindTransitionById(cmd.Transition)
+	if err != nil {
+		return ProvedMessageExchangeEvent{}, err
+	}
+	nextInstance := cmd.NextInstance
+	if !bytes.Equal(nextInstance.Model.Value[:], model.Hash.Hash.Value[:]) {
+		return ProvedMessageExchangeEvent{}, fmt.Errorf("next instance %s is not of model %s", cmd.CurrentInstance, cmd.Model)
 	}
 	err = service.InstanceService.ImportInstance(cmd.NextInstance)
 	if err != nil {
-		return ReceivedMessageEvent{}, err
+		return ProvedMessageExchangeEvent{}, err
 	}
-	return ReceivedMessageEvent{
-		Proof: proof,
+	if cmd.RespondingMessage != nil {
+		err = service.MessageService.ImportMessage(*cmd.RespondingMessage)
+		if err != nil {
+			return ProvedMessageExchangeEvent{}, err
+		}
+	}
+	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
+	if err != nil {
+		return ProvedMessageExchangeEvent{}, err
+	}
+
+	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	if privateKey == nil {
+		return ProvedMessageExchangeEvent{}, fmt.Errorf("private key does not exist for identity %d", cmd.Identity)
+	}
+	initiatingParticipantSignature := nextInstance.Sign(privateKey)
+	proof, err := service.ProverService.ProveTransition(prover.ProveTransitionCommand{
+		Model:                          model,
+		CurrentInstance:                currentInstance,
+		NextInstance:                   nextInstance,
+		Transition:                     transition,
+		InitiatingParticipantSignature: initiatingParticipantSignature,
+		RespondingParticipantSignature: &cmd.RespondingParticipantSignature,
+		ConstraintInput:                constraintInput,
+	})
+	if err != nil {
+		return ProvedMessageExchangeEvent{}, err
+	}
+	return ProvedMessageExchangeEvent{
+		Proof:    proof,
+		Instance: nextInstance,
 	}, nil
+
 }

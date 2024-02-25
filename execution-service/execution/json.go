@@ -4,6 +4,7 @@ import (
 	"execution-service/domain"
 	"execution-service/instance"
 	"execution-service/message"
+	"execution-service/model"
 	"execution-service/prover"
 	"execution-service/signature"
 	"execution-service/utils"
@@ -32,46 +33,65 @@ type executedTransitionEventJson struct {
 	Proof    prover.ProofJson      `json:"proof"`
 }
 
-type terminateInstanceCommandJson struct {
+type proveTerminationCommandJson struct {
 	Model    string `json:"model"`
 	Instance string `json:"instance"`
 	Identity uint   `json:"identity"`
 }
 
-type terminatedInstanceEventJson struct {
+type provedTerminationEventJson struct {
 	Proof prover.ProofJson `json:"proof"`
 }
 
-type sendMessageCommandJson struct {
+type createInitiatingMessageCommandJson struct {
 	Model          string `json:"model"`
 	Instance       string `json:"instance"`
 	Transition     string `json:"transition"`
-	Identity       uint   `json:"identity"`
 	BytesMessage   []byte `json:"bytesMessage,omitempty"`
 	IntegerMessage *uint  `json:"integerMessage,omitempty"`
 }
 
-type sentMessageEventJson struct {
-	Model           string                  `json:"model"`
-	CurrentInstance string                  `json:"currentInstance"`
-	Transition      string                  `json:"transition"`
-	NextInstance    instance.InstanceJson   `json:"nextInstance"`
-	SenderSignature signature.SignatureJson `json:"senderSignature"`
-	Message         *message.MessageJson    `json:"message,omitempty"`
+type createdInitiatingMessageEventJson struct {
+	Model             model.ModelJson       `json:"model"`
+	CurrentInstance   instance.InstanceJson `json:"currentInstance"`
+	Transition        string                `json:"transition"`
+	InitiatingMessage message.MessageJson   `json:"initiatingMessage"`
 }
 
-type receiveMessageCommandJson struct {
-	Model           string                  `json:"model"`
-	CurrentInstance string                  `json:"currentInstance"`
-	Transition      string                  `json:"transition"`
-	NextInstance    instance.InstanceJson   `json:"nextInstance"`
-	SenderSignature signature.SignatureJson `json:"senderSignature"`
-	Message         *message.MessageJson    `json:"message,omitempty"`
-	Identity        uint                    `json:"identity"`
+type receiveInitiatingMessageCommandJson struct {
+	Model             model.ModelJson       `json:"model"`
+	CurrentInstance   instance.InstanceJson `json:"currentInstance"`
+	Transition        string                `json:"transition"`
+	InitiatingMessage message.MessageJson   `json:"initiatingMessage"`
+	Identity          uint                  `json:"identity"`
+	BytesMessage      []byte                `json:"bytesMessage,omitempty"`
+	IntegerMessage    *uint                 `json:"integerMessage,omitempty"`
 }
 
-type receivedMessageEventJson struct {
-	Proof prover.ProofJson `json:"proof"`
+type receivedInitiatingMessageEventJson struct {
+	Model                          string                  `json:"model"`
+	CurrentInstance                string                  `json:"currentInstance"`
+	Transition                     string                  `json:"transition"`
+	InitiatingMessage              string                  `json:"initiatingMessage"`
+	NextInstance                   instance.InstanceJson   `json:"nextInstance"`
+	RespondingMessage              *message.MessageJson    `json:"respondingMessage,omitempty"`
+	RespondingParticipantSignature signature.SignatureJson `json:"respondingParticipantSignature"`
+}
+
+type proveMessageExchangeCommandJson struct {
+	Model                          string                  `json:"model"`
+	CurrentInstance                string                  `json:"currentInstance"`
+	Transition                     string                  `json:"transition"`
+	InitiatingMessage              string                  `json:"initiatingMessage"`
+	Identity                       uint                    `json:"identity"`
+	NextInstance                   instance.InstanceJson   `json:"nextInstance"`
+	RespondingMessage              *message.MessageJson    `json:"respondingMessage,omitempty"`
+	RespondingParticipantSignature signature.SignatureJson `json:"respondingParticipantSignature"`
+}
+
+type provedMessageExchangeEventJson struct {
+	Instance instance.InstanceJson `json:"instance"`
+	Proof    prover.ProofJson      `json:"proof"`
 }
 
 func (cmd *instantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCommand, error) {
@@ -101,15 +121,15 @@ func (cmd *executeTransitionCommandJson) ToExecutionCommand() (ExecuteTransition
 	}, nil
 }
 
-func (cmd *terminateInstanceCommandJson) ToExecutionCommand() (TerminateInstanceCommand, error) {
-	return TerminateInstanceCommand{
+func (cmd *proveTerminationCommandJson) ToExecutionCommand() (ProveTerminationCommand, error) {
+	return ProveTerminationCommand{
 		Model:    cmd.Model,
 		Instance: cmd.Instance,
 		Identity: cmd.Identity,
 	}, nil
 }
 
-func (cmd *sendMessageCommandJson) ToExecutionCommand() (SendMessageCommand, error) {
+func (cmd *createInitiatingMessageCommandJson) ToExecutionCommand() (CreateInitiatingMessageCommand, error) {
 	var bytesMessage []byte = nil
 	var integerMessage *domain.IntegerType = nil
 	if cmd.BytesMessage != nil {
@@ -118,42 +138,73 @@ func (cmd *sendMessageCommandJson) ToExecutionCommand() (SendMessageCommand, err
 		tmp := domain.IntegerType(*cmd.IntegerMessage)
 		integerMessage = &tmp
 	}
-	return SendMessageCommand{
+	return CreateInitiatingMessageCommand{
 		Model:          cmd.Model,
 		Instance:       cmd.Instance,
 		Transition:     cmd.Transition,
-		Identity:       cmd.Identity,
 		BytesMessage:   bytesMessage,
 		IntegerMessage: integerMessage,
 	}, nil
 }
 
-func (cmd *receiveMessageCommandJson) ToExecutionCommand() (ReceiveMessageCommand, error) {
+func (cmd *receiveInitiatingMessageCommandJson) ToExecutionCommand() (ReceiveInitiatingMessageCommand, error) {
+	model, err := cmd.Model.ToModel()
+	if err != nil {
+		return ReceiveInitiatingMessageCommand{}, err
+	}
+	currentInstance, err := cmd.CurrentInstance.ToInstance()
+	if err != nil {
+		return ReceiveInitiatingMessageCommand{}, err
+	}
+	initiatingMessage, err := cmd.InitiatingMessage.ToMessage()
+	if err != nil {
+		return ReceiveInitiatingMessageCommand{}, err
+	}
+	var bytesMessage []byte = nil
+	var integerMessage *domain.IntegerType = nil
+	if cmd.BytesMessage != nil {
+		bytesMessage = cmd.BytesMessage
+	} else {
+		tmp := domain.IntegerType(*cmd.IntegerMessage)
+		integerMessage = &tmp
+	}
+	return ReceiveInitiatingMessageCommand{
+		Model:             model,
+		CurrentInstance:   currentInstance,
+		Transition:        cmd.Transition,
+		Identity:          cmd.Identity,
+		InitiatingMessage: initiatingMessage,
+		IntegerMessage:    integerMessage,
+		BytesMessage:      bytesMessage,
+	}, nil
+}
+
+func (cmd *proveMessageExchangeCommandJson) ToExecutionCommand() (ProveMessageExchangeCommand, error) {
 	nextInstance, err := cmd.NextInstance.ToInstance()
 	if err != nil {
-		return ReceiveMessageCommand{}, err
+		return ProveMessageExchangeCommand{}, err
 	}
-	senderSignature, err := cmd.SenderSignature.ToSignature()
-	if err != nil {
-		return ReceiveMessageCommand{}, err
-	}
-	var message *domain.Message
-	if cmd.Message != nil {
-		tmp, err := cmd.Message.ToMessage()
+	var respondingMessage *domain.Message
+	if cmd.RespondingMessage != nil {
+		tmp, err := cmd.RespondingMessage.ToMessage()
 		if err != nil {
-			return ReceiveMessageCommand{}, err
+			return ProveMessageExchangeCommand{}, err
 		}
-		message = &tmp
+		respondingMessage = &tmp
 	}
-
-	return ReceiveMessageCommand{
-		Model:           cmd.Model,
-		CurrentInstance: cmd.CurrentInstance,
-		Transition:      cmd.Transition,
-		Identity:        cmd.Identity,
-		NextInstance:    nextInstance,
-		SenderSignature: senderSignature,
-		Message:         message,
+	respondingParticipantSignature, err := cmd.RespondingParticipantSignature.ToSignature()
+	if err != nil {
+		return ProveMessageExchangeCommand{}, err
+	}
+	return ProveMessageExchangeCommand{
+		Model:                          cmd.Model,
+		CurrentInstance:                cmd.CurrentInstance,
+		Transition:                     cmd.Transition,
+		Identity:                       cmd.Identity,
+		InitiatingMessage:              cmd.InitiatingMessage,
+		NextInstance:                   nextInstance,
+		RespondingMessage:              respondingMessage,
+		RespondingParticipantSignature: respondingParticipantSignature,
 	}, nil
 }
 
@@ -171,31 +222,41 @@ func ExecutedTransitionEventToJson(event ExecutedTransitionEvent) executedTransi
 	}
 }
 
-func TerminatedInstanceEventToJson(event TerminatedInstanceEvent) terminatedInstanceEventJson {
-	return terminatedInstanceEventJson{
+func TerminatedInstanceEventToJson(event ProvedTerminationEvent) provedTerminationEventJson {
+	return provedTerminationEventJson{
 		Proof: event.Proof.ToJson(),
 	}
 }
 
-func SentMessageEventToJson(event SentMessageEvent) sentMessageEventJson {
-	var domainMessage *message.MessageJson
-	if event.Message != nil {
-		tmp := message.MessageToJson(*event.Message)
-		domainMessage = &tmp
-	}
-
-	return sentMessageEventJson{
-		Model:           event.Model,
-		CurrentInstance: event.CurrentInstance,
-		Transition:      event.Transition,
-		NextInstance:    instance.ToJson(event.NextInstance),
-		SenderSignature: signature.ToJson(event.SenderSignature),
-		Message:         domainMessage,
+func CreatedInitiatingMessageEventToJson(event CreatedInitiatingMessageEvent) createdInitiatingMessageEventJson {
+	return createdInitiatingMessageEventJson{
+		Model:             model.ToJson(event.Model),
+		CurrentInstance:   instance.ToJson(event.CurrentInstance),
+		Transition:        event.Transition,
+		InitiatingMessage: message.ToJson(event.InintiatingMessage),
 	}
 }
 
-func ReceivedMessageEventToJson(event ReceivedMessageEvent) receivedMessageEventJson {
-	return receivedMessageEventJson{
-		Proof: event.Proof.ToJson(),
+func ReceivedInitiatingMessageEventToJson(event ReceivedInitiatingMessageEvent) receivedInitiatingMessageEventJson {
+	var respondingMessage *message.MessageJson
+	if event.RespondingMessage != nil {
+		tmp := message.ToJson(*event.RespondingMessage)
+		respondingMessage = &tmp
+	}
+	return receivedInitiatingMessageEventJson{
+		Model:                          event.Model,
+		CurrentInstance:                event.CurrentInstance,
+		Transition:                     event.Transition,
+		InitiatingMessage:              event.InitiatingMessage,
+		NextInstance:                   instance.ToJson(event.NextInstance),
+		RespondingMessage:              respondingMessage,
+		RespondingParticipantSignature: signature.ToJson(event.RespondingParticipantSignature),
+	}
+}
+
+func ProvedMessageExchangeEventToJson(event ProvedMessageExchangeEvent) provedMessageExchangeEventJson {
+	return provedMessageExchangeEventJson{
+		Instance: instance.ToJson(event.Instance),
+		Proof:    event.Proof.ToJson(),
 	}
 }

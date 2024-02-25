@@ -2,7 +2,6 @@ package execution_test
 
 import (
 	"execution-service/execution"
-	"execution-service/model"
 	"execution-service/prover"
 	"execution-service/testdata"
 	"testing"
@@ -32,22 +31,19 @@ var messageService = executionService.MessageService
 var states = testdata.GetModel2States(executionService.SignatureParameters)
 
 func TestInitialization(t *testing.T) {
-	modelService.ImportModel(model.ImportModelCommand{
-		Model:    states[0].Model,
-		Instance: states[0].Instance,
-	})
+	modelService.ImportModel(states[0].Model)
 
 	for _, state := range states {
 		instanceService.ImportInstance(state.Instance)
-		if state.Message != nil {
-			messageService.SaveMessage(*state.Message)
+		if state.InitiatingMessage != nil {
+			messageService.ImportMessage(*state.InitiatingMessage)
 		}
 	}
 }
 
 func TestInstantiateModel(t *testing.T) {
 	model := states[0].Model
-	identity := states[0].Sender
+	identity := states[0].InitiatingParticipant
 	publicKeys := states[0].Instance.PublicKeys
 	event, err := executionService.InstantiateModel(execution.InstantiateModelCommand{
 		Model:      model.Id(),
@@ -62,7 +58,7 @@ func TestInstantiateModel(t *testing.T) {
 
 func TestExecuteTransition0(t *testing.T) {
 	model := states[0].Model
-	identity := states[0].Sender
+	identity := states[0].InitiatingParticipant
 	currentInstance := states[0].Instance
 
 	event, err := executionService.ExecuteTransition(execution.ExecuteTransitionCommand{
@@ -77,62 +73,74 @@ func TestExecuteTransition0(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestSendMessageTransition2(t *testing.T) {
+func TestCreateInitiatingMessageTransition2(t *testing.T) {
 	model := states[1].Model
-	identity := states[1].Sender
 	currentInstance := states[1].Instance
 
-	cmd := execution.SendMessageCommand{
+	cmd := execution.CreateInitiatingMessageCommand{
 		Model:        model.Id(),
 		Instance:     currentInstance.Id(),
 		Transition:   model.Transitions[2].Id,
-		Identity:     identity,
 		BytesMessage: []byte("test"),
 	}
 
-	event, err := executionService.SendMessage(cmd)
+	event, err := executionService.CreateInitiatingMessage(cmd)
 	assert.Nil(t, err)
-	assert.Equal(t, cmd.Model, event.Model)
-	assert.Equal(t, cmd.Instance, event.CurrentInstance)
+	assert.Equal(t, cmd.Model, event.Model.Id())
+	assert.Equal(t, cmd.Instance, event.CurrentInstance.Id())
 	assert.Equal(t, cmd.Transition, event.Transition)
-	nextInstance := event.NextInstance
-	_, err = instanceService.FindInstanceById(nextInstance.Id())
-	assert.Nil(t, err)
-	transition, err := model.FindTransitionById(cmd.Transition)
-	assert.Nil(t, err)
-	assert.NotEqual(t, currentInstance.MessageHashes[transition.Message], nextInstance.MessageHashes[transition.Message])
-	signature := event.SenderSignature
-	assert.True(t, signature.Verify())
-	assert.Nil(t, err)
-	_, err = messageService.FindMessageById(event.Message.Id())
-	assert.Nil(t, err)
+	assert.Equal(t, cmd.BytesMessage, event.InintiatingMessage.BytesMessage)
 }
 
-func TestReceiveMessageTransition2(t *testing.T) {
+func TestReceiveInitiatingMessageTransition2(t *testing.T) {
 	currentInstance := states[1].Instance
-	model := states[2].Model
-	nextInstance := states[2].Instance
-	senderSignature := states[2].SenderSignature
-	domainMessage := states[2].Message
-
-	cmd := execution.ReceiveMessageCommand{
-		Model:           model.Id(),
-		CurrentInstance: currentInstance.Id(),
-		Transition:      model.Transitions[2].Id,
-		Identity:        *states[2].Recipient,
-		NextInstance:    nextInstance,
-		SenderSignature: senderSignature,
-		Message:         domainMessage,
+	model := states[1].Model
+	initiatingMessage := *states[2].InitiatingMessage
+	integerMessage := states[2].RespondingMessage.IntegerMessage
+	cmd := execution.ReceiveInitiatingMessageCommand{
+		Model:             model,
+		CurrentInstance:   currentInstance,
+		Transition:        model.Transitions[2].Id,
+		Identity:          *states[2].RespondingParticipant,
+		InitiatingMessage: initiatingMessage,
+		IntegerMessage:    &integerMessage,
 	}
-	_, err := executionService.ReceiveMessage(cmd)
+	event, err := executionService.ReceiveInitiatingMessage(cmd)
 	assert.Nil(t, err)
+	assert.Equal(t, cmd.Model.Id(), event.Model)
+	assert.Equal(t, cmd.CurrentInstance.Id(), event.CurrentInstance)
+	assert.Equal(t, cmd.Transition, event.Transition)
+
+	respondingMessage, err := messageService.FindMessageById(event.RespondingMessage.Id())
+	assert.Nil(t, err)
+	assert.Equal(t, respondingMessage, *event.RespondingMessage)
+	assert.Equal(t, integerMessage, event.RespondingMessage.IntegerMessage)
 }
 
-func TestTerminateInstance(t *testing.T) {
+func TestProveMessageExchangeTransition2(t *testing.T) {
+	currentInstance := states[1].Instance
+	model := states[1].Model
+	initiatingMessage := *states[2].InitiatingMessage
+	cmd := execution.ProveMessageExchangeCommand{
+		Model:                          model.Id(),
+		CurrentInstance:                currentInstance.Id(),
+		Transition:                     model.Transitions[2].Id,
+		Identity:                       *states[2].RespondingParticipant,
+		InitiatingMessage:              initiatingMessage.Id(),
+		NextInstance:                   states[2].Instance,
+		RespondingMessage:              states[2].RespondingMessage,
+		RespondingParticipantSignature: *states[2].RespondingParticipantSignature,
+	}
+	event, err := executionService.ProveMessageExchange(cmd)
+	assert.Nil(t, err)
+	assert.Equal(t, cmd.NextInstance, event.Instance)
+}
+
+func TestProveTermination(t *testing.T) {
 	model := states[len(states)-1].Model
 	instance := states[len(states)-1].Instance
-	identity := states[len(states)-1].Sender
-	_, err := executionService.TerminateInstance(execution.TerminateInstanceCommand{
+	identity := states[len(states)-1].InitiatingParticipant
+	_, err := executionService.ProveTermination(execution.ProveTerminationCommand{
 		Model:    model.Id(),
 		Instance: instance.Id(),
 		Identity: identity,

@@ -28,44 +28,63 @@ type ExecutedTransitionEvent struct {
 	Proof    prover.Proof
 }
 
-type TerminateInstanceCommand struct {
+type ProveTerminationCommand struct {
 	Model    domain.ModelId
 	Instance domain.InstanceId
 	Identity domain.IdentityId
 }
 
-type TerminatedInstanceEvent struct {
+type ProvedTerminationEvent struct {
 	Proof prover.Proof
 }
 
-type SendMessageCommand struct {
+type CreateInitiatingMessageCommand struct {
 	Model          domain.ModelId
 	Instance       domain.InstanceId
 	Transition     domain.TransitionId
-	Identity       domain.IdentityId
 	BytesMessage   []byte
 	IntegerMessage *domain.IntegerType
 }
 
-type SentMessageEvent struct {
-	Model           domain.ModelId
-	CurrentInstance domain.InstanceId
-	Transition      domain.TransitionId
-	NextInstance    domain.Instance
-	SenderSignature domain.Signature
-	Message         *domain.Message
+type CreatedInitiatingMessageEvent struct {
+	Model              domain.Model
+	CurrentInstance    domain.Instance
+	Transition         domain.TransitionId
+	InintiatingMessage domain.Message
 }
 
-type ReceiveMessageCommand struct {
-	Model           domain.ModelId
-	CurrentInstance domain.InstanceId
-	Transition      domain.TransitionId
-	Identity        domain.IdentityId
-	NextInstance    domain.Instance
-	SenderSignature domain.Signature
-	Message         *domain.Message
+type ReceiveInitiatingMessageCommand struct {
+	Model             domain.Model
+	CurrentInstance   domain.Instance
+	Transition        domain.TransitionId
+	Identity          domain.IdentityId
+	InitiatingMessage domain.Message
+	BytesMessage      []byte
+	IntegerMessage    *domain.IntegerType
 }
 
-type ReceivedMessageEvent struct {
-	Proof prover.Proof
+type ReceivedInitiatingMessageEvent struct {
+	Model                          domain.ModelId
+	CurrentInstance                domain.InstanceId
+	Transition                     domain.TransitionId
+	InitiatingMessage              domain.MessageId
+	NextInstance                   domain.Instance
+	RespondingMessage              *domain.Message
+	RespondingParticipantSignature domain.Signature
+}
+
+type ProveMessageExchangeCommand struct {
+	Model                          domain.ModelId
+	CurrentInstance                domain.InstanceId
+	Transition                     domain.TransitionId
+	Identity                       domain.IdentityId
+	InitiatingMessage              domain.MessageId
+	NextInstance                   domain.Instance
+	RespondingMessage              *domain.Message
+	RespondingParticipantSignature domain.Signature
+}
+
+type ProvedMessageExchangeEvent struct {
+	Instance domain.Instance
+	Proof    prover.Proof
 }

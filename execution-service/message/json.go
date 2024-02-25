@@ -14,7 +14,7 @@ type MessageJson struct {
 	CreatedAt      time.Time           `json:"createdAt"`
 }
 
-func MessageToJson(message domain.Message) MessageJson {
+func ToJson(message domain.Message) MessageJson {
 	messageJson := MessageJson{
 		Hash:      hash.ToJson(message.Hash),
 		CreatedAt: time.Unix(message.CreatedAt, 0),

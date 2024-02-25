@@ -1,22 +1,18 @@
 package model
 
 import (
-	"bytes"
 	"execution-service/domain"
-	"execution-service/instance"
 	"fmt"
 	"sort"
 )
 
 type ModelService struct {
-	models          map[domain.ModelId]domain.Model
-	InstanceService instance.InstanceService
+	models map[domain.ModelId]domain.Model
 }
 
-func NewModelService(instanceService instance.InstanceService) ModelService {
+func NewModelService() ModelService {
 	return ModelService{
-		models:          make(map[string]domain.Model),
-		InstanceService: instanceService,
+		models: make(map[string]domain.Model),
 	}
 }
 
@@ -39,27 +35,24 @@ func (service *ModelService) FindAllModels() []domain.Model {
 	return models
 }
 
-func (service *ModelService) ImportModel(cmd ImportModelCommand) error {
-	if !cmd.Model.HasValidHash() {
-		return fmt.Errorf("model %s has invalid hash", cmd.Model.Id())
+func (service *ModelService) ImportModel(model domain.Model) error {
+	if !model.HasValidHash() {
+		return fmt.Errorf("model %s has invalid hash", model.Id())
 	}
-	if !bytes.Equal(cmd.Instance.Model.Value[:], cmd.Model.Hash.Hash.Value[:]) {
-		return fmt.Errorf("model %s does not fit instance %s", cmd.Model.Id(), cmd.Instance.Id())
-	}
-	err := service.InstanceService.ImportInstance(cmd.Instance)
-	if err != nil {
-		return err
-	}
-	service.models[cmd.Model.Id()] = cmd.Model
+	service.saveModel(model)
 	return nil
 }
 
 func (service *ModelService) CreateModel(model domain.Model) domain.SaltedHash {
 	model.UpdateHash()
-	service.models[model.Id()] = model
+	service.saveModel(model)
 	return model.Hash
 }
 
 func (service *ModelService) DeleteModel(model domain.Model) {
 	delete(service.models, model.Id())
+}
+
+func (service *ModelService) saveModel(model domain.Model) {
+	service.models[model.Id()] = model
 }

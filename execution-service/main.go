@@ -16,10 +16,10 @@ var signatureParameters = parameters.NewSignatureParameters()
 var instanceService = instance.NewInstanceService()
 var instanceController = instance.NewInstanceController(instanceService)
 
-var modelService = model.NewModelService(instanceService)
+var modelService = model.NewModelService()
 var modelController = model.NewModelController(modelService)
 
-var messageService = message.NewMessageService(instanceService)
+var messageService = message.NewMessageService()
 var messageController = message.NewMessageController(messageService)
 
 var proofParameters = parameters.NewProverParameters()
@@ -35,20 +35,19 @@ func main() {
 	router.POST("/models", modelController.CreateModel)
 	router.GET("/models", modelController.FindAllModels)
 	router.GET("/models/:modelId", modelController.FindModelById)
-	router.PUT("/models", modelController.ImportModel)
-
 	router.GET("/models/:modelId/instances", instanceController.FindInstancesByModel)
-	router.GET("/instances/:instanceId", instanceController.FindInstanceById)
-	router.PUT("/instances", instanceController.ImportInstance)
 
+	router.GET("/instances/:instanceId", instanceController.FindInstanceById)
 	router.GET("/instances/:instanceId/messages", messageController.FindMessagesByInstance)
+
 	router.GET("/messages/:messageId", messageController.FindMessageById)
 
-	router.POST("/execution/instantiation", executionController.InstantiateModel)
-	router.POST("/execution/transition", executionController.ExecuteTransition)
-	router.POST("/execution/termination", executionController.TerminateInstance)
-	router.POST("/execution/send", executionController.SendMessage)
-	router.POST("/execution/receive", executionController.ReceiveMessage)
+	router.POST("/execution/instantiateModel", executionController.InstantiateModel)
+	router.POST("/execution/executeTransition", executionController.ExecuteTransition)
+	router.POST("/execution/proveTermination", executionController.ProveTermination)
+	router.POST("/execution/createInitiatingMessage", executionController.CreateInitiatingMessage)
+	router.POST("/execution/receiveInitiatingMessage", executionController.ReceiveInitiatingMessage)
+	router.POST("/execution/proveMessageExchange", executionController.ProveMessageExchange)
 
 	router.Run("localhost:8080")
 }

@@ -13,6 +13,7 @@ describe('ReductionService', () => {
   describe('reduceModel', () => {
     it('should reduce model correctly', () => {
       const result = modelReducer.reduceModel(model2);
+      console.log(JSON.stringify(result));
       expect(result).toEqual(model2Reduced);
     });
   });

@@ -68,9 +68,9 @@ func (transition Transition) ComputeHash() Hash {
 	for i := len(transition.OutgoingPlaces); i < MaxBranchingFactor; i++ {
 		hashUint16(mimc, OutOfBoundsPlaceId)
 	}
-	hashUint16(mimc, transition.Sender)
-	hashUint16(mimc, transition.Recipient)
-	hashUint16(mimc, transition.Message)
+	hashUint16(mimc, transition.InitiatingParticipant)
+	hashUint16(mimc, transition.RespondingParticipant)
+	hashUint16(mimc, transition.InitiatingMessage)
 	for _, coefficient := range transition.Constraint.Coefficients {
 		hashInt64(mimc, int64(coefficient))
 	}
@@ -138,13 +138,13 @@ func (model Model) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
 }
 
 func (instance Instance) HasValidHash() bool {
-	computedHash := instance.ComputeHash(instance.Hash.Salt)
-	return bytes.Equal(computedHash.Hash.Value[:], instance.Hash.Hash.Value[:])
+	computedHash := instance.ComputeHash(instance.SaltedHash.Salt)
+	return bytes.Equal(computedHash.Hash.Value[:], instance.SaltedHash.Hash.Value[:])
 }
 
 func (instance *Instance) UpdateHash() {
 	salt := randomFieldElement("instance")
-	instance.Hash = instance.ComputeHash(salt)
+	instance.SaltedHash = instance.ComputeHash(salt)
 }
 
 func (instance Instance) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
@@ -197,6 +197,7 @@ func (message Message) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
 	}
 	mimc := mimc.NewMiMC()
 	hashInt64(mimc, int64(message.IntegerMessage))
+	mimc.Write(message.Instance.Value[:])
 	mimc.Write(salt[:])
 	return SaltedHash{
 		Hash: computeHash(mimc),
@@ -207,6 +208,7 @@ func (message Message) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
 func hashBytesMessage(message Message, salt [fr.Bytes]byte) SaltedHash {
 	input := make([]byte, len(message.BytesMessage))
 	copy(input, message.BytesMessage)
+	input = append(input, message.Instance.Value[:]...)
 	input = append(input, salt[:]...)
 	bytesHash := sha256.Sum256(input)
 	return SaltedHash{

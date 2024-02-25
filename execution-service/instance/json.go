@@ -33,7 +33,7 @@ func ToJson(instance domain.Instance) InstanceJson {
 	}
 	return InstanceJson{
 		Id:            instance.Id(),
-		Hash:          hash.ToJson(instance.Hash),
+		Hash:          hash.ToJson(instance.SaltedHash),
 		Model:         utils.BytesToString(instance.Model.Value[:]),
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
@@ -89,7 +89,7 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 	}
 	modelFixedSize := [domain.HashSize]byte(model)
 	return domain.Instance{
-		Hash: hash,
+		SaltedHash: hash,
 		Model: domain.Hash{
 			Value: modelFixedSize,
 		},

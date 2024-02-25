@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"bytes"
 	"fmt"
 	"math"
 	"time"
@@ -55,7 +54,6 @@ const EmptyMessageId = ModelMessageId(MaxMessageCount)
 
 type Model struct {
 	Hash             SaltedHash
-	Source           string
 	PlaceCount       uint16
 	ParticipantCount uint16
 	MessageCount     uint16
@@ -66,14 +64,15 @@ type Model struct {
 }
 
 type Transition struct {
-	Id             TransitionId
-	Name           string
-	IncomingPlaces []PlaceId
-	OutgoingPlaces []PlaceId
-	Sender         ParticipantId
-	Recipient      ParticipantId
-	Message        ModelMessageId
-	Constraint     Constraint
+	Id                    TransitionId
+	Name                  string
+	IncomingPlaces        []PlaceId
+	OutgoingPlaces        []PlaceId
+	InitiatingParticipant ParticipantId
+	RespondingParticipant ParticipantId
+	InitiatingMessage     ModelMessageId
+	RespondingMessage     ModelMessageId
+	Constraint            Constraint
 }
 
 // ax + by + c = 0
@@ -90,17 +89,20 @@ type ConstraintInput struct {
 
 func OutOfBoundsTransition() Transition {
 	return Transition{
-		IncomingPlaces: make([]PlaceId, 0),
-		OutgoingPlaces: make([]PlaceId, 0),
-		Sender:         EmptyParticipantId,
-		Recipient:      EmptyParticipantId,
-		Message:        EmptyMessageId,
-		Constraint:     EmptyConstraint(),
+		IncomingPlaces:        make([]PlaceId, 0),
+		OutgoingPlaces:        make([]PlaceId, 0),
+		InitiatingParticipant: EmptyParticipantId,
+		RespondingParticipant: EmptyParticipantId,
+		InitiatingMessage:     EmptyMessageId,
+		Constraint:            EmptyConstraint(),
 	}
 }
 
 func EmptyConstraint() Constraint {
-	return Constraint{}
+	return Constraint{
+		Coefficients: make([]IntegerType, 0),
+		MessageIds:   make([]ModelMessageId, 0),
+	}
 }
 
 func EmptyConstraintInput() ConstraintInput {
@@ -152,8 +154,8 @@ func (model *Model) FindNextParticipants(transition Transition) []ParticipantId 
 	participants := make([]ParticipantId, 0)
 	for _, nextTransition := range model.Transitions {
 		intersection := intersect(transition.OutgoingPlaces, nextTransition.IncomingPlaces)
-		if len(intersection) > 0 && nextTransition.Sender != EmptyParticipantId {
-			participants = append(participants, nextTransition.Sender)
+		if len(intersection) > 0 && nextTransition.InitiatingParticipant != EmptyParticipantId {
+			participants = append(participants, nextTransition.InitiatingParticipant)
 		}
 	}
 	return participants
@@ -172,39 +174,4 @@ func intersect(set1 []PlaceId, set2 []PlaceId) []PlaceId {
 		}
 	}
 	return result
-}
-
-func (instance *Instance) EvaluateConstraint(constraint Constraint, input ConstraintInput) bool {
-	if len(constraint.MessageIds) != len(input.Messages) {
-		return false
-	}
-	lhs := constraint.Offset
-	for i, message := range input.Messages {
-		hash := message.Hash.Hash
-		messageId := EmptyMessageId
-		for i, messageHash := range instance.MessageHashes {
-			if bytes.Equal(hash.Value[:], messageHash.Value[:]) {
-				messageId = ModelMessageId(i)
-				break
-			}
-		}
-		if constraint.Coefficients[i] != 0 && messageId != constraint.MessageIds[i] {
-			return false
-		}
-		lhs += constraint.Coefficients[i] * input.Messages[i].IntegerMessage
-	}
-
-	switch constraint.ComparisonOperator {
-	case OperatorEqual:
-		return lhs == 0
-	case OperatorGreaterThan:
-		return lhs > 0
-	case OperatorLessThan:
-		return lhs < 0
-	case OperatorGreaterThanOrEqual:
-		return lhs >= 0
-	case OperatorLessThanOrEqual:
-		return lhs <= 0
-	}
-	return false
 }

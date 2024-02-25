@@ -3,38 +3,33 @@ package message
 import (
 	"bytes"
 	"execution-service/domain"
-	"execution-service/instance"
 	"execution-service/utils"
 	"fmt"
 	"sort"
 )
 
 type MessageService struct {
-	InstanceService instance.InstanceService
-	messages        map[string]domain.Message
+	messages map[string]domain.Message
 }
 
-func NewMessageService(instanceService instance.InstanceService) MessageService {
+func NewMessageService() MessageService {
 	return MessageService{
-		messages:        make(map[string]domain.Message),
-		InstanceService: instanceService,
+		messages: make(map[string]domain.Message),
 	}
 }
 
-func (service *MessageService) SaveMessage(message domain.Message) {
+func (service *MessageService) saveMessage(message domain.Message) {
 	service.messages[message.Id()] = message
 }
 
-func (service *MessageService) FindMessagesByInstance(instanceId domain.InstanceId) []domain.Message {
-	instance, err := service.InstanceService.FindInstanceById(instanceId)
+func (service *MessageService) FindMessagesByInstance(instance domain.InstanceId) []domain.Message {
+	instanceHash, err := utils.StringToBytes(instance)
 	if err != nil {
 		return []domain.Message{}
 	}
 	messages := make([]domain.Message, 0, len(service.messages))
-	for _, messageHash := range instance.MessageHashes {
-		messageId := utils.BytesToString(messageHash.Value[:])
-		message, err := service.FindMessageById(messageId)
-		if err != nil {
+	for _, message := range service.messages {
+		if bytes.Equal(message.Instance.Value[:], instanceHash) {
 			messages = append(messages, message)
 		}
 	}
@@ -71,14 +66,10 @@ func (service *MessageService) FindConstraintInput(constraint domain.Constraint,
 	return constraintInput, nil
 }
 
-func (service *MessageService) ImportMessage(instance domain.Instance, transition domain.Transition, message domain.Message) error {
+func (service *MessageService) ImportMessage(message domain.Message) error {
 	if !message.HasValidHash() {
 		return fmt.Errorf("message %s has invalid hash", message.Hash.String())
 	}
-	messageHash := instance.MessageHashes[transition.Message]
-	if !bytes.Equal(messageHash.Value[:], message.Hash.Hash.Value[:]) {
-		return fmt.Errorf("message %s is not in instance %s", message.Hash.String(), instance.Hash.String())
-	}
-	service.SaveMessage(message)
+	service.saveMessage(message)
 	return nil
 }

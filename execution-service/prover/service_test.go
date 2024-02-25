@@ -24,7 +24,7 @@ func TestInitializeProofService(t *testing.T) {
 func TestProveInstantiation(t *testing.T) {
 	instance := states[0].Instance
 	model := states[0].Model
-	signature := states[0].SenderSignature
+	signature := states[0].InitiatingParticipantSignature
 
 	proof, err := proofService.ProveInstantiation(prover.ProveInstantiationCommand{
 		Model:     model,
@@ -39,18 +39,18 @@ func TestProveTransition0(t *testing.T) {
 	model := states[0].Model
 	currentInstance := states[0].Instance
 	nextInstance := states[1].Instance
-	senderSignature := states[1].SenderSignature
-	recipientSignature := states[1].RecipientSignature
+	senderSignature := states[1].InitiatingParticipantSignature
+	recipientSignature := states[1].RespondingParticipantSignature
 	constraintInput := states[1].ConstraintInput
 
 	proof, err := proofService.ProveTransition(prover.ProveTransitionCommand{
-		Model:              model,
-		CurrentInstance:    currentInstance,
-		NextInstance:       nextInstance,
-		Transition:         model.Transitions[0],
-		SenderSignature:    senderSignature,
-		RecipientSignature: recipientSignature,
-		ConstraintInput:    constraintInput,
+		Model:                          model,
+		CurrentInstance:                currentInstance,
+		NextInstance:                   nextInstance,
+		Transition:                     model.Transitions[0],
+		InitiatingParticipantSignature: senderSignature,
+		RespondingParticipantSignature: recipientSignature,
+		ConstraintInput:                constraintInput,
 	})
 	assert.Nil(t, err)
 	proofs = append(proofs, proof.ToJson())
@@ -59,7 +59,7 @@ func TestProveTransition0(t *testing.T) {
 func TestProveTermination(t *testing.T) {
 	instance := states[len(states)-1].Instance
 	model := states[len(states)-1].Model
-	signature := states[len(states)-1].SenderSignature
+	signature := states[len(states)-1].InitiatingParticipantSignature
 
 	proof, err := proofService.ProveTermination(prover.ProveTerminationCommand{
 		Model:     model,

@@ -16,14 +16,15 @@ type ConstraintJson struct {
 }
 
 type TransitionJson struct {
-	Id             string          `json:"id"`
-	Name           string          `json:"name"`
-	IncomingPlaces []uint          `json:"incomingPlaces"`
-	OutgoingPlaces []uint          `json:"outgoingPlaces"`
-	Sender         *uint           `json:"sender,omitempty"`
-	Recipient      *uint           `json:"recipient,omitempty"`
-	Message        *uint           `json:"message,omitempty"`
-	Contraint      *ConstraintJson `json:"constraint,omitempty"`
+	Id                    string          `json:"id"`
+	Name                  string          `json:"name"`
+	IncomingPlaces        []uint          `json:"incomingPlaces"`
+	OutgoingPlaces        []uint          `json:"outgoingPlaces"`
+	InitiatingParticipant *uint           `json:"initiatingParticipant,omitempty"`
+	RespondingParticipant *uint           `json:"respondingParticipant,omitempty"`
+	InitiatingMessage     *uint           `json:"initiatingMessage,omitempty"`
+	RespondingMessage     *uint           `json:"respondingMessage,omitempty"`
+	Contraint             *ConstraintJson `json:"constraint,omitempty"`
 }
 
 type ModelJson struct {
@@ -97,7 +98,6 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 	}
 	return domain.Model{
 		Hash:             hash,
-		Source:           model.Source,
 		PlaceCount:       uint16(model.PlaceCount),
 		ParticipantCount: uint16(model.ParticipantCount),
 		MessageCount:     uint16(model.MessageCount),
@@ -123,22 +123,29 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 		outgoingPlaces[i] = domain.PlaceId(transition.OutgoingPlaces[i])
 	}
 	initiatingParticipant := domain.EmptyParticipantId
-	if transition.Sender != nil {
-		initiatingParticipant = uint16(*transition.Sender)
+	if transition.InitiatingParticipant != nil {
+		initiatingParticipant = uint16(*transition.InitiatingParticipant)
 	}
 	respondingParticipant := domain.EmptyParticipantId
-	if transition.Recipient != nil {
-		respondingParticipant = uint16(*transition.Recipient)
+	if transition.RespondingParticipant != nil {
+		respondingParticipant = uint16(*transition.RespondingParticipant)
 	}
 	if initiatingParticipant > domain.MaxParticipantCount || respondingParticipant > domain.MaxParticipantCount {
 		return domain.Transition{}, fmt.Errorf("transition %s has invalid participant", transition.Id)
 	}
-	message := domain.EmptyMessageId
-	if transition.Message != nil {
-		message = uint16(*transition.Message)
+	initiatingMessage := domain.EmptyMessageId
+	if transition.InitiatingMessage != nil {
+		initiatingMessage = uint16(*transition.InitiatingMessage)
 	}
-	if message > domain.MaxMessageCount {
-		return domain.Transition{}, fmt.Errorf("transition %s has invalid message", transition.Id)
+	if initiatingMessage > domain.MaxMessageCount {
+		return domain.Transition{}, fmt.Errorf("transition %s has invalid initiating message", transition.Id)
+	}
+	respondingMessage := domain.EmptyMessageId
+	if transition.RespondingMessage != nil {
+		respondingMessage = uint16(*transition.RespondingMessage)
+	}
+	if respondingMessage > domain.MaxMessageCount {
+		return domain.Transition{}, fmt.Errorf("transition %s has invalid responding message", transition.Id)
 	}
 	var constraint domain.Constraint
 	if transition.Contraint != nil {
@@ -152,14 +159,15 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 	}
 
 	return domain.Transition{
-		Id:             transition.Id,
-		Name:           transition.Name,
-		IncomingPlaces: incomingPlaces,
-		OutgoingPlaces: outgoingPlaces,
-		Sender:         domain.ParticipantId(initiatingParticipant),
-		Recipient:      domain.ParticipantId(respondingParticipant),
-		Message:        domain.ModelMessageId(message),
-		Constraint:     constraint,
+		Id:                    transition.Id,
+		Name:                  transition.Name,
+		IncomingPlaces:        incomingPlaces,
+		OutgoingPlaces:        outgoingPlaces,
+		InitiatingParticipant: domain.ParticipantId(initiatingParticipant),
+		RespondingParticipant: domain.ParticipantId(respondingParticipant),
+		InitiatingMessage:     domain.ModelMessageId(initiatingMessage),
+		RespondingMessage:     domain.ModelMessageId(respondingMessage),
+		Constraint:            constraint,
 	}, nil
 }
 
@@ -210,7 +218,6 @@ func ToJson(model domain.Model) ModelJson {
 	}
 	return ModelJson{
 		Hash:             hash.ToJson(model.Hash),
-		Source:           model.Source,
 		PlaceCount:       uint(model.PlaceCount),
 		ParticipantCount: uint(model.ParticipantCount),
 		MessageCount:     uint(model.MessageCount),
@@ -236,19 +243,23 @@ func transitionToJson(transition domain.Transition) TransitionJson {
 		IncomingPlaces: incomingPlaces,
 		OutgoingPlaces: outgoingPlaces,
 	}
-	if transition.Sender != domain.EmptyParticipantId {
-		tmp := uint(transition.Sender)
-		jsonTransition.Sender = &tmp
+	if transition.InitiatingParticipant != domain.EmptyParticipantId {
+		tmp := uint(transition.InitiatingParticipant)
+		jsonTransition.InitiatingParticipant = &tmp
 	}
-	if transition.Recipient != domain.EmptyParticipantId {
-		tmp := uint(transition.Recipient)
-		jsonTransition.Recipient = &tmp
+	if transition.RespondingParticipant != domain.EmptyParticipantId {
+		tmp := uint(transition.RespondingParticipant)
+		jsonTransition.RespondingParticipant = &tmp
 	}
-	if transition.Message != domain.EmptyMessageId {
-		tmp := uint(transition.Message)
-		jsonTransition.Message = &tmp
+	if transition.InitiatingMessage != domain.EmptyMessageId {
+		tmp := uint(transition.InitiatingMessage)
+		jsonTransition.InitiatingMessage = &tmp
 	}
-	if transition.Constraint.Coefficients != nil {
+	if transition.RespondingMessage != domain.EmptyMessageId {
+		tmp := uint(transition.RespondingMessage)
+		jsonTransition.RespondingMessage = &tmp
+	}
+	if len(transition.Constraint.Coefficients) > 0 {
 		tmp := constraintToJson(transition.Constraint)
 		jsonTransition.Contraint = &tmp
 	}

@@ -37,25 +37,6 @@ func (controller *ModelController) FindAllModels(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, jsonModels)
 }
 
-func (controller *ModelController) ImportModel(c *gin.Context) {
-	var cmdJson ImportModelCommandJson
-	if err := c.BindJSON(&cmdJson); err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	cmd, err := cmdJson.ToModelCommand()
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	err = controller.modelService.ImportModel(cmd)
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-	c.Status(http.StatusOK)
-}
-
 func (controller *ModelController) CreateModel(c *gin.Context) {
 	var modelJson ModelJson
 	if err := c.BindJSON(&modelJson); err != nil {
