@@ -1,5 +1,5 @@
 import requests
-import json
+import base64
 
 filename = '../bpmn-service/test/data/BikeRental_example.bpmn'
 bpmnString = ''
@@ -42,4 +42,24 @@ executedTransitionEvent = response.json()
 instance1 = executedTransitionEvent['instance']
 proof1 = executedTransitionEvent['proof']
 
-print(instance1)
+
+response = requests.post('http://localhost:8080/execution/executeTransition', json=executeTransitionCommand)
+executedTransitionEvent = response.json()
+
+instance1 = executedTransitionEvent['instance']
+proof1 = executedTransitionEvent['proof']
+
+createInitiatingMessageCommand = {
+    'model': modelId,
+    'instance': instance1['id'],
+    'transition': model['transitions'][15]['id'],
+    'bytesMessage': base64.b32encode(bytearray("mountain_bike", 'ascii')).decode('utf-8'),
+    'identity': 0
+}
+
+response = requests.post('http://localhost:8080/execution/createInitiatingMessage', json=createInitiatingMessageCommand)
+createdInitiatingMessageEvent = response.json()
+
+initiatingMessage = createdInitiatingMessageEvent['initiatingMessage']
+
+print(initiatingMessage)

@@ -44,11 +44,11 @@ type provedTerminationEventJson struct {
 }
 
 type createInitiatingMessageCommandJson struct {
-	Model          string `json:"model"`
-	Instance       string `json:"instance"`
-	Transition     string `json:"transition"`
-	BytesMessage   []byte `json:"bytesMessage,omitempty"`
-	IntegerMessage *uint  `json:"integerMessage,omitempty"`
+	Model          string  `json:"model"`
+	Instance       string  `json:"instance"`
+	Transition     string  `json:"transition"`
+	BytesMessage   *string `json:"bytesMessage,omitempty"`
+	IntegerMessage *uint   `json:"integerMessage,omitempty"`
 }
 
 type createdInitiatingMessageEventJson struct {
@@ -64,7 +64,7 @@ type receiveInitiatingMessageCommandJson struct {
 	Transition        string                `json:"transition"`
 	InitiatingMessage message.MessageJson   `json:"initiatingMessage"`
 	Identity          uint                  `json:"identity"`
-	BytesMessage      []byte                `json:"bytesMessage,omitempty"`
+	BytesMessage      *string               `json:"bytesMessage,omitempty"`
 	IntegerMessage    *uint                 `json:"integerMessage,omitempty"`
 }
 
@@ -133,7 +133,12 @@ func (cmd *createInitiatingMessageCommandJson) ToExecutionCommand() (CreateIniti
 	var bytesMessage []byte = nil
 	var integerMessage *domain.IntegerType = nil
 	if cmd.BytesMessage != nil {
-		bytesMessage = cmd.BytesMessage
+		tmp := *cmd.BytesMessage
+		var err error
+		bytesMessage, err = utils.StringToBytes(tmp)
+		if err != nil {
+			return CreateInitiatingMessageCommand{}, err
+		}
 	} else {
 		tmp := domain.IntegerType(*cmd.IntegerMessage)
 		integerMessage = &tmp
@@ -163,7 +168,12 @@ func (cmd *receiveInitiatingMessageCommandJson) ToExecutionCommand() (ReceiveIni
 	var bytesMessage []byte = nil
 	var integerMessage *domain.IntegerType = nil
 	if cmd.BytesMessage != nil {
-		bytesMessage = cmd.BytesMessage
+		tmp := *cmd.BytesMessage
+		var err error
+		bytesMessage, err = utils.StringToBytes(tmp)
+		if err != nil {
+			return ReceiveInitiatingMessageCommand{}, err
+		}
 	} else {
 		tmp := domain.IntegerType(*cmd.IntegerMessage)
 		integerMessage = &tmp
