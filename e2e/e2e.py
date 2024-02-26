@@ -24,8 +24,22 @@ instantiateModelCommand = {
 }
 
 response = requests.post('http://localhost:8080/execution/instantiateModel', json=instantiateModelCommand)
-print(response.reason)
 instantiatedModelEvent = response.json()
 
-instanceId0 = instantiatedModelEvent['id']
-print(instantiatedModelEvent)
+instance0 = instantiatedModelEvent['instance']
+proof0 = instantiatedModelEvent['proof']
+
+executeTransitionCommand = {
+    'model': modelId,
+    'instance': instance0['id'],
+    'transition': model['transitions'][0]['id'],
+    'identity': 0
+}
+
+response = requests.post('http://localhost:8080/execution/executeTransition', json=executeTransitionCommand)
+executedTransitionEvent = response.json()
+
+instance1 = executedTransitionEvent['instance']
+proof1 = executedTransitionEvent['proof']
+
+print(instance1)
