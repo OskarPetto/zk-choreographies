@@ -20,6 +20,7 @@ func (controller *InstanceController) FindInstanceById(c *gin.Context) {
 	instanceId := c.Param("instanceId")
 	instance, err := controller.instanceService.FindInstanceById(instanceId)
 	if err != nil {
+		c.Error(err)
 		c.Status(http.StatusNotFound)
 		return
 	}

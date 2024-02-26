@@ -7,6 +7,7 @@ import (
 	"execution-service/model"
 	"execution-service/parameters"
 	"execution-service/prover"
+	"execution-service/signature"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,9 +29,13 @@ var proverService = prover.NewProverService(proofParameters)
 var executionService = execution.NewExecutionService(modelService, instanceService, messageService, proverService, signatureParameters)
 var executionController = execution.NewExecutionController(executionService)
 
+var signatureController = signature.NewSignatureController(signatureParameters)
+
 func main() {
 
 	router := gin.Default()
+
+	router.GET("/publicKeys", signatureController.GetPublicKeys)
 
 	router.POST("/models", modelController.CreateModel)
 	router.GET("/models", modelController.FindAllModels)

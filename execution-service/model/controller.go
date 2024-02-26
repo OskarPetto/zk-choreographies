@@ -2,7 +2,6 @@ package model
 
 import (
 	"execution-service/hash"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,6 +21,7 @@ func (controller *ModelController) FindModelById(c *gin.Context) {
 	modelId := c.Param("modelId")
 	model, err := controller.modelService.FindModelById(modelId)
 	if err != nil {
+		c.Error(err)
 		c.Status(http.StatusNotFound)
 		return
 	}
@@ -40,12 +40,13 @@ func (controller *ModelController) FindAllModels(c *gin.Context) {
 func (controller *ModelController) CreateModel(c *gin.Context) {
 	var modelJson ModelJson
 	if err := c.BindJSON(&modelJson); err != nil {
+		c.Error(err)
 		c.Status(http.StatusBadRequest)
 		return
 	}
 	model, err := modelJson.ToModel()
 	if err != nil {
-		fmt.Printf("Error creating model: %+v\n", err)
+		c.Error(err)
 		c.Status(http.StatusBadRequest)
 		return
 	}

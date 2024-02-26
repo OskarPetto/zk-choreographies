@@ -11,6 +11,14 @@ type SignatureJson struct {
 	PublicKey string `json:"publicKey"`
 }
 
+func toStringArray(publicKeys []domain.PublicKey) []string {
+	publicKeyStrings := make([]string, 0)
+	for _, publicKey := range publicKeys {
+		publicKeyStrings = append(publicKeyStrings, utils.BytesToString(publicKey.Value))
+	}
+	return publicKeyStrings
+}
+
 func ToJson(signature domain.Signature) SignatureJson {
 	return SignatureJson{
 		Value:     utils.BytesToString(signature.Value),

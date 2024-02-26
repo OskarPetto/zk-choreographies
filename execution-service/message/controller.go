@@ -30,6 +30,7 @@ func (controller *MessageController) FindMessageById(c *gin.Context) {
 	messageId := c.Param("messageId")
 	message, err := controller.messageService.FindMessageById(messageId)
 	if err != nil {
+		c.Error(err)
 		c.Status(http.StatusNotFound)
 		return
 	}
