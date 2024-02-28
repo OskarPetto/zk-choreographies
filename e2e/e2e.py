@@ -42,16 +42,9 @@ executedTransitionEvent = response.json()
 instance1 = executedTransitionEvent['instance']
 proof1 = executedTransitionEvent['proof']
 
-
-response = requests.post('http://localhost:8080/execution/executeTransition', json=executeTransitionCommand)
-executedTransitionEvent = response.json()
-
-instance2 = executedTransitionEvent['instance']
-proof2 = executedTransitionEvent['proof']
-
 createInitiatingMessageCommand = {
     'model': modelId,
-    'instance': instance2['id'],
+    'instance': instance1['id'],
     'transition': model['transitions'][15]['id'],
     'bytesMessage': base64.b32encode(bytearray("mountain_bike", 'ascii')).decode('utf-8'),
     'identity': 1
@@ -64,7 +57,7 @@ initiatingMessage = createdInitiatingMessageEvent['initiatingMessage']
 
 receiveInitiatingMessageCommand = {
     'model': model,
-    'instance': instance2,
+    'instance': instance1,
     'transition': model['transitions'][15]['id'],
     'initiatingMessage': initiatingMessage,
     'identity': 0
@@ -73,20 +66,22 @@ receiveInitiatingMessageCommand = {
 response = requests.post('http://localhost:8080/execution/receiveInitiatingMessage', json=receiveInitiatingMessageCommand)
 receivedInitiatingMessageEvent = response.json()
 
-instance3 = receivedInitiatingMessageEvent['nextInstance']
+instance2 = receivedInitiatingMessageEvent['nextInstance']
 respondingParticipantSignature = receivedInitiatingMessageEvent['respondingParticipantSignature']
 
 proveMessageExchangeCommand = {
     'model': modelId,
-    'currentInstance': instance2['id'],
+    'currentInstance': instance1['id'],
     'transition': model['transitions'][15]['id'],
     'initiatingMessage': initiatingMessage['id'],
     'identity': 1,
-    'nextInstance': instance3,
+    'nextInstance': instance2,
     'respondingParticipantSignature': respondingParticipantSignature
 }
 
 response = requests.post('http://localhost:8080/execution/proveMessageExchange', json=proveMessageExchangeCommand)
 provedMessageExchangeEvent = response.json()
 
-print(provedMessageExchangeEvent)
+proof2 = provedMessageExchangeEvent['proof']
+
+print(proof2)
