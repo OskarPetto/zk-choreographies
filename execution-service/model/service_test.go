@@ -20,11 +20,11 @@ func TestImportModel(t *testing.T) {
 	modelService.ImportModel(domainModel)
 	modelResult, err := modelService.FindModelById(domainModel.Id())
 	assert.Nil(t, err)
-	assert.Equal(t, domainModel.Hash, modelResult.Hash)
+	assert.Equal(t, domainModel.SaltedHash, modelResult.SaltedHash)
 }
 
 func TestCreateModel(t *testing.T) {
 	model := testdata.GetModel2()
 	modelResult := modelService.CreateModel(model)
-	assert.NotEqual(t, model.Hash, modelResult)
+	assert.NotEqual(t, model.SaltedHash, modelResult)
 }

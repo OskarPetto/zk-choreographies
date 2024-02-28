@@ -28,7 +28,8 @@ type TransitionJson struct {
 }
 
 type ModelJson struct {
-	Hash             hash.SaltedHashJson `json:"hash"`
+	Id               string              `json:"id"`
+	SaltedHash       hash.SaltedHashJson `json:"saltedHash"`
 	Source           string              `json:"source"`
 	PlaceCount       uint                `json:"placeCount"`
 	ParticipantCount uint                `json:"participantCount"`
@@ -45,7 +46,7 @@ type ImportModelCommandJson struct {
 }
 
 func (model *ModelJson) id() string {
-	return model.Hash.Hash
+	return model.SaltedHash.Hash
 }
 
 func (model *ModelJson) ToModel() (domain.Model, error) {
@@ -92,12 +93,12 @@ func (model *ModelJson) ToModel() (domain.Model, error) {
 			return domain.Model{}, err
 		}
 	}
-	hash, err := model.Hash.ToHash()
+	hash, err := model.SaltedHash.ToHash()
 	if err != nil {
 		return domain.Model{}, fmt.Errorf("model '%s' has invalid hash", model.id())
 	}
 	return domain.Model{
-		Hash:             hash,
+		SaltedHash:       hash,
 		PlaceCount:       uint16(model.PlaceCount),
 		ParticipantCount: uint16(model.ParticipantCount),
 		MessageCount:     uint16(model.MessageCount),
@@ -217,7 +218,8 @@ func ToJson(model domain.Model) ModelJson {
 		transitions[i] = transitionToJson(transition)
 	}
 	return ModelJson{
-		Hash:             hash.ToJson(model.Hash),
+		Id:               model.Id(),
+		SaltedHash:       hash.ToJson(model.SaltedHash),
 		PlaceCount:       uint(model.PlaceCount),
 		ParticipantCount: uint(model.ParticipantCount),
 		MessageCount:     uint(model.MessageCount),

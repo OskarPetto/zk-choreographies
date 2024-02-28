@@ -39,7 +39,7 @@ func TestInstantiation_InvalidModelHash(t *testing.T) {
 	instance := instantiationStates[0].Instance
 	signature := instantiationStates[0].InitiatingParticipantSignature
 
-	model.Hash = domain.SaltedHash{}
+	model.SaltedHash = domain.SaltedHash{}
 
 	witness := circuit.InstantiationCircuit{
 		Instance:       circuit.FromInstance(instance),

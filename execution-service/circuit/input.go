@@ -182,7 +182,7 @@ func FromModel(model domain.Model) Model {
 		transitionTree.Push(hash.Value[:])
 	}
 	return Model{
-		Salt:             fromBytes(model.Hash.Salt),
+		Salt:             fromBytes(model.SaltedHash.Salt),
 		PlaceCount:       model.PlaceCount,
 		ParticipantCount: model.ParticipantCount,
 		MessageCount:     model.MessageCount,

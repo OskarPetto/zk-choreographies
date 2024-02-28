@@ -77,7 +77,7 @@ func TestTransition_InvalidModelHash(t *testing.T) {
 	senderSignature := transitionStates[1].InitiatingParticipantSignature
 	constraintInput := transitionStates[1].ConstraintInput
 
-	model.Hash = domain.SaltedHash{}
+	model.SaltedHash = domain.SaltedHash{}
 
 	witness := circuit.TransitionCircuit{
 		Model:                               circuit.FromModel(model),

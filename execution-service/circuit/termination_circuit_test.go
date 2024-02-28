@@ -37,7 +37,7 @@ func TestTermination_InvalidModelHash(t *testing.T) {
 	instance := terminationStates[len(terminationStates)-1].Instance
 	signature := terminationStates[len(terminationStates)-1].InitiatingParticipantSignature
 
-	model.Hash = domain.SaltedHash{}
+	model.SaltedHash = domain.SaltedHash{}
 
 	witness := circuit.TerminationCircuit{
 		Instance:       circuit.FromInstance(instance),

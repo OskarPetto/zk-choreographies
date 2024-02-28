@@ -46,7 +46,7 @@ func (service *ModelService) ImportModel(model domain.Model) error {
 func (service *ModelService) CreateModel(model domain.Model) domain.SaltedHash {
 	model.UpdateHash()
 	service.saveModel(model)
-	return model.Hash
+	return model.SaltedHash
 }
 
 func (service *ModelService) DeleteModel(model domain.Model) {

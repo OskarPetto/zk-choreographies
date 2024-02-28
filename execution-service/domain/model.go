@@ -53,7 +53,7 @@ const EmptyParticipantId = ParticipantId(MaxParticipantCount)
 const EmptyMessageId = ModelMessageId(MaxMessageCount)
 
 type Model struct {
-	Hash             SaltedHash
+	SaltedHash       SaltedHash
 	PlaceCount       uint16
 	ParticipantCount uint16
 	MessageCount     uint16
@@ -112,7 +112,7 @@ func EmptyConstraintInput() ConstraintInput {
 }
 
 func (model *Model) Id() ModelId {
-	return model.Hash.String()
+	return model.SaltedHash.String()
 }
 
 func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
@@ -131,7 +131,7 @@ func (model *Model) Instantiate(publicKeys []PublicKey) (Instance, error) {
 		messageHashes[i] = EmptyHash()
 	}
 	instance := Instance{
-		Model:         model.Hash.Hash,
+		Model:         model.SaltedHash.Hash,
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
 		MessageHashes: messageHashes,

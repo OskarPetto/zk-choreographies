@@ -8,7 +8,8 @@ import (
 )
 
 type MessageJson struct {
-	Hash           hash.SaltedHashJson `json:"hash"`
+	Id             string              `json:"id"`
+	SaltedHash     hash.SaltedHashJson `json:"saltedHash"`
 	Instance       string              `json:"instance"`
 	IntegerMessage *int                `json:"integerMessage,omitempty"`
 	BytesMessage   string              `json:"bytesMessage,omitempty"`
@@ -17,9 +18,10 @@ type MessageJson struct {
 
 func ToJson(message domain.Message) MessageJson {
 	messageJson := MessageJson{
-		Hash:      hash.ToJson(message.Hash),
-		Instance:  utils.BytesToString(message.Instance.Value[:]),
-		CreatedAt: time.Unix(message.CreatedAt, 0),
+		Id:         message.Id(),
+		SaltedHash: hash.ToJson(message.Hash),
+		Instance:   utils.BytesToString(message.Instance.Value[:]),
+		CreatedAt:  time.Unix(message.CreatedAt, 0),
 	}
 	if message.IsBytesMessage() {
 		messageJson.BytesMessage = utils.BytesToString(message.BytesMessage)
@@ -31,7 +33,7 @@ func ToJson(message domain.Message) MessageJson {
 }
 
 func (messageJson *MessageJson) ToMessage() (domain.Message, error) {
-	hash, err := messageJson.Hash.ToHash()
+	hash, err := messageJson.SaltedHash.ToHash()
 	if err != nil {
 		return domain.EmptyMessage(), err
 	}

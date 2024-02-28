@@ -10,7 +10,7 @@ import (
 
 type InstanceJson struct {
 	Id            string              `json:"id"`
-	Hash          hash.SaltedHashJson `json:"hash"`
+	SaltedHash    hash.SaltedHashJson `json:"saltedHash"`
 	Model         string              `json:"model"`
 	TokenCounts   []int               `json:"tokenCounts"`
 	PublicKeys    []string            `json:"publicKeys"`
@@ -33,7 +33,7 @@ func ToJson(instance domain.Instance) InstanceJson {
 	}
 	return InstanceJson{
 		Id:            instance.Id(),
-		Hash:          hash.ToJson(instance.SaltedHash),
+		SaltedHash:    hash.ToJson(instance.SaltedHash),
 		Model:         utils.BytesToString(instance.Model.Value[:]),
 		TokenCounts:   tokenCounts,
 		PublicKeys:    publicKeys,
@@ -79,7 +79,7 @@ func (json *InstanceJson) ToInstance() (domain.Instance, error) {
 			Value: [domain.HashSize]byte(hash),
 		}
 	}
-	hash, err := json.Hash.ToHash()
+	hash, err := json.SaltedHash.ToHash()
 	if err != nil {
 		return domain.Instance{}, fmt.Errorf("instance %s has invalid hash", json.Id)
 	}

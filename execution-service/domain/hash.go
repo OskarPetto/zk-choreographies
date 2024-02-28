@@ -89,13 +89,13 @@ func (transition Transition) ComputeHash() Hash {
 }
 
 func (model Model) HasValidHash() bool {
-	computedHash := model.ComputeHash(model.Hash.Salt)
-	return bytes.Equal(computedHash.Hash.Value[:], model.Hash.Hash.Value[:])
+	computedHash := model.ComputeHash(model.SaltedHash.Salt)
+	return bytes.Equal(computedHash.Hash.Value[:], model.SaltedHash.Hash.Value[:])
 }
 
 func (model *Model) UpdateHash() {
 	salt := randomFieldElement("model")
-	model.Hash = model.ComputeHash(salt)
+	model.SaltedHash = model.ComputeHash(salt)
 }
 
 func (model Model) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
