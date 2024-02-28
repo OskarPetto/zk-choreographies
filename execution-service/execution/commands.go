@@ -88,3 +88,13 @@ type ProvedMessageExchangeEvent struct {
 	Instance domain.Instance
 	Proof    prover.Proof
 }
+
+type FakeTransitionCommand struct {
+	Model    domain.ModelId
+	Instance domain.InstanceId
+	Identity domain.IdentityId
+}
+
+type FakedTransitionEvent struct {
+	Proof prover.Proof
+}

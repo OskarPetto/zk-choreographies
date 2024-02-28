@@ -293,3 +293,32 @@ func (service *ExecutionService) ProveMessageExchange(cmd ProveMessageExchangeCo
 	}, nil
 
 }
+
+func (service *ExecutionService) FakeTransition(cmd FakeTransitionCommand) (FakedTransitionEvent, error) {
+	model, err := service.ModelService.FindModelById(cmd.Model)
+	if err != nil {
+		return FakedTransitionEvent{}, err
+	}
+	instance, err := service.InstanceService.FindInstanceById(cmd.Instance)
+	if err != nil {
+		return FakedTransitionEvent{}, err
+	}
+	if !bytes.Equal(instance.Model.Value[:], model.SaltedHash.Hash.Value[:]) {
+		return FakedTransitionEvent{}, fmt.Errorf("instance %s is not of model %s", cmd.Instance, cmd.Model)
+	}
+	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	proof, err := service.ProverService.ProveTransition(prover.ProveTransitionCommand{
+		Model:                          model,
+		CurrentInstance:                instance,
+		NextInstance:                   instance,
+		Transition:                     model.Transitions[0],
+		InitiatingParticipantSignature: instance.Sign(privateKey),
+		ConstraintInput:                domain.EmptyConstraintInput(),
+	})
+	if err != nil {
+		return FakedTransitionEvent{}, err
+	}
+	return FakedTransitionEvent{
+		Proof: proof,
+	}, nil
+}

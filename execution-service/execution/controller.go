@@ -153,3 +153,26 @@ func (controller *ExecutionController) ProveMessageExchange(c *gin.Context) {
 	jsonEvent := ProvedMessageExchangeEventToJson(event)
 	c.IndentedJSON(http.StatusOK, jsonEvent)
 }
+
+func (controller *ExecutionController) FakeTransition(c *gin.Context) {
+	var jsonCmd fakeTransitionCommandJson
+	if err := c.BindJSON(&jsonCmd); err != nil {
+		c.Error(err)
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	cmd, err := jsonCmd.ToExecutionCommand()
+	if err != nil {
+		c.Error(err)
+		c.Status(http.StatusBadRequest)
+		return
+	}
+	event, err := controller.executionService.FakeTransition(cmd)
+	if err != nil {
+		c.Error(err)
+		c.Status(http.StatusForbidden)
+		return
+	}
+	jsonEvent := FakedTransitionEventToJson(event)
+	c.IndentedJSON(http.StatusOK, jsonEvent)
+}

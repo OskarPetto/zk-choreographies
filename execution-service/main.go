@@ -53,6 +53,7 @@ func main() {
 	router.POST("/execution/createInitiatingMessage", executionController.CreateInitiatingMessage)
 	router.POST("/execution/receiveInitiatingMessage", executionController.ReceiveInitiatingMessage)
 	router.POST("/execution/proveMessageExchange", executionController.ProveMessageExchange)
+	router.POST("/execution/fakeTransition", executionController.FakeTransition)
 
 	router.Run("localhost:8080")
 }

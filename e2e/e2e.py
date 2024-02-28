@@ -84,4 +84,15 @@ provedMessageExchangeEvent = response.json()
 
 proof2 = provedMessageExchangeEvent['proof']
 
-print(proof2)
+fakeTransitionCommand = {
+    'model': modelId,
+    'instance': instance2['id'],
+    'identity': 0,
+}
+
+response = requests.post('http://localhost:8080/execution/fakeTransition', json=fakeTransitionCommand)
+fakedTransitionEvent = response.json()
+
+proof3 = fakedTransitionEvent['proof']
+
+print(proof3)

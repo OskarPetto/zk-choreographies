@@ -94,6 +94,16 @@ type provedMessageExchangeEventJson struct {
 	Proof    prover.ProofJson      `json:"proof"`
 }
 
+type fakeTransitionCommandJson struct {
+	Model    string `json:"model"`
+	Instance string `json:"instance"`
+	Identity uint   `json:"identity"`
+}
+
+type fakedTransitionEventjson struct {
+	Proof prover.ProofJson `json:"proof"`
+}
+
 func (cmd *instantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCommand, error) {
 	publicKeys := make([]domain.PublicKey, len(cmd.PublicKeys))
 	for i, publicKey := range cmd.PublicKeys {
@@ -218,6 +228,14 @@ func (cmd *proveMessageExchangeCommandJson) ToExecutionCommand() (ProveMessageEx
 	}, nil
 }
 
+func (cmd *fakeTransitionCommandJson) ToExecutionCommand() (FakeTransitionCommand, error) {
+	return FakeTransitionCommand{
+		Model:    cmd.Model,
+		Instance: cmd.Instance,
+		Identity: cmd.Identity,
+	}, nil
+}
+
 func InstatiatedModelEventToJson(event InstantiatedModelEvent) instantiatedModelEventJson {
 	return instantiatedModelEventJson{
 		Instance: instance.ToJson(event.Instance),
@@ -268,5 +286,11 @@ func ProvedMessageExchangeEventToJson(event ProvedMessageExchangeEvent) provedMe
 	return provedMessageExchangeEventJson{
 		Instance: instance.ToJson(event.Instance),
 		Proof:    event.Proof.ToJson(),
+	}
+}
+
+func FakedTransitionEventToJson(event FakedTransitionEvent) fakedTransitionEventjson {
+	return fakedTransitionEventjson{
+		Proof: event.Proof.ToJson(),
 	}
 }
