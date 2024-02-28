@@ -15,7 +15,7 @@ const BaseTransitionCount = 16
 const BaseBranchingFactor = 4
 const BaseConstraintMessageCount = 4
 
-const factor = 8
+const factor = 4
 
 const MaxPlaceCount = BasePlaceCount * factor
 const MaxParticipantCount = BaseParticipantCount * factor

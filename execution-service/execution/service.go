@@ -175,7 +175,7 @@ func (service *ExecutionService) CreateInitiatingMessage(cmd CreateInitiatingMes
 }
 
 func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingMessageCommand) (ReceivedInitiatingMessageEvent, error) {
-	currentInstance := cmd.CurrentInstance
+	currentInstance := cmd.Instance
 	model := cmd.Model
 	initiatingMessage := cmd.InitiatingMessage
 	if !bytes.Equal(currentInstance.Model.Value[:], model.Hash.Hash.Value[:]) {

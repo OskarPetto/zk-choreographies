@@ -55,7 +55,7 @@ type CreatedInitiatingMessageEvent struct {
 
 type ReceiveInitiatingMessageCommand struct {
 	Model             domain.Model
-	CurrentInstance   domain.Instance
+	Instance          domain.Instance
 	Transition        domain.TransitionId
 	Identity          domain.IdentityId
 	InitiatingMessage domain.Message

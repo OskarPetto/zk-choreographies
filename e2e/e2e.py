@@ -62,4 +62,16 @@ createdInitiatingMessageEvent = response.json()
 
 initiatingMessage = createdInitiatingMessageEvent['initiatingMessage']
 
-print(initiatingMessage)
+receiveInitiatingMessageCommand = {
+    'model': model,
+    'instance': instance1,
+    'transition': model['transitions'][15]['id'],
+    'initiatingMessage': initiatingMessage,
+    'identity': 0
+}
+
+response = requests.post('http://localhost:8080/execution/receiveInitiatingMessage', json=receiveInitiatingMessageCommand)
+receivedInitiatingMessageEvent = response.json()
+
+
+print(receivedInitiatingMessageEvent)

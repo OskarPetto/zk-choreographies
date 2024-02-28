@@ -99,7 +99,7 @@ func TestReceiveInitiatingMessageTransition2(t *testing.T) {
 	integerMessage := states[2].RespondingMessage.IntegerMessage
 	cmd := execution.ReceiveInitiatingMessageCommand{
 		Model:             model,
-		CurrentInstance:   currentInstance,
+		Instance:          currentInstance,
 		Transition:        model.Transitions[2].Id,
 		Identity:          *states[2].RespondingParticipant,
 		InitiatingMessage: initiatingMessage,
@@ -108,7 +108,7 @@ func TestReceiveInitiatingMessageTransition2(t *testing.T) {
 	event, err := executionService.ReceiveInitiatingMessage(cmd)
 	assert.Nil(t, err)
 	assert.Equal(t, cmd.Model.Id(), event.Model)
-	assert.Equal(t, cmd.CurrentInstance.Id(), event.CurrentInstance)
+	assert.Equal(t, cmd.Instance.Id(), event.CurrentInstance)
 	assert.Equal(t, cmd.Transition, event.Transition)
 
 	respondingMessage, err := messageService.FindMessageById(event.RespondingMessage.Id())

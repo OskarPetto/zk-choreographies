@@ -5,6 +5,8 @@ import (
 	"execution-service/circuit"
 	"execution-service/files"
 	"execution-service/utils"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/consensys/gnark-crypto/ecc"
@@ -90,6 +92,8 @@ func generateProvingKey(cs constraint.ConstraintSystem, pkFilename string, vkFil
 	contract = strings.Replace(contract, "Verifier", contractName, 1)
 	byteBuffer = new(bytes.Buffer)
 	byteBuffer.Write([]byte(contract))
-	files.WriteFile(byteBuffer, "../../solidity/contracts/"+vkFilename)
+	_, caller, _, _ := runtime.Caller(0)
+	rootPath := filepath.Join(filepath.Dir(caller), "../..")
+	files.WriteFile(byteBuffer, rootPath+"/solidity/contracts/"+vkFilename)
 	return pk
 }
