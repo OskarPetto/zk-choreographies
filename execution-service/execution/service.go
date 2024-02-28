@@ -168,24 +168,24 @@ func (service *ExecutionService) CreateInitiatingMessage(cmd CreateInitiatingMes
 	service.MessageService.ImportMessage(initiatingMessage)
 	return CreatedInitiatingMessageEvent{
 		Model:              model,
-		CurrentInstance:    currentInstance,
+		Instance:           currentInstance,
 		Transition:         cmd.Transition,
 		InintiatingMessage: initiatingMessage,
 	}, nil
 }
 
 func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingMessageCommand) (ReceivedInitiatingMessageEvent, error) {
-	currentInstance := cmd.Instance
+	instance := cmd.Instance
 	model := cmd.Model
 	initiatingMessage := cmd.InitiatingMessage
-	if !bytes.Equal(currentInstance.Model.Value[:], model.Hash.Hash.Value[:]) {
-		return ReceivedInitiatingMessageEvent{}, fmt.Errorf("instance %s is not of model %s", currentInstance.Id(), model.Id())
+	if !bytes.Equal(instance.Model.Value[:], model.Hash.Hash.Value[:]) {
+		return ReceivedInitiatingMessageEvent{}, fmt.Errorf("instance %s is not of model %s", instance.Id(), model.Id())
 	}
 	err := service.ModelService.ImportModel(model)
 	if err != nil {
 		return ReceivedInitiatingMessageEvent{}, err
 	}
-	err = service.InstanceService.ImportInstance(currentInstance)
+	err = service.InstanceService.ImportInstance(instance)
 	if err != nil {
 		return ReceivedInitiatingMessageEvent{}, err
 	}
@@ -193,8 +193,8 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 	if err != nil {
 		return ReceivedInitiatingMessageEvent{}, err
 	}
-	if !bytes.Equal(initiatingMessage.Instance.Value[:], currentInstance.SaltedHash.Hash.Value[:]) {
-		return ReceivedInitiatingMessageEvent{}, fmt.Errorf("message %s is not of instance %s", initiatingMessage.Id(), currentInstance.Id())
+	if !bytes.Equal(initiatingMessage.Instance.Value[:], instance.SaltedHash.Hash.Value[:]) {
+		return ReceivedInitiatingMessageEvent{}, fmt.Errorf("message %s is not of instance %s", initiatingMessage.Id(), instance.Id())
 	}
 	err = service.MessageService.ImportMessage(initiatingMessage)
 	if err != nil {
@@ -202,21 +202,21 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 	}
 	var respondingMessage *domain.Message
 	if cmd.BytesMessage != nil {
-		tmp := domain.NewBytesMessage(currentInstance, cmd.BytesMessage)
+		tmp := domain.NewBytesMessage(instance, cmd.BytesMessage)
 		respondingMessage = &tmp
 	} else if cmd.IntegerMessage != nil {
-		tmp := domain.NewIntegerMessage(currentInstance, *cmd.IntegerMessage)
+		tmp := domain.NewIntegerMessage(instance, *cmd.IntegerMessage)
 		respondingMessage = &tmp
 	}
 	if respondingMessage != nil {
 		service.MessageService.ImportMessage(*respondingMessage)
 	}
 
-	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
+	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, instance)
 	if err != nil {
 		return ReceivedInitiatingMessageEvent{}, err
 	}
-	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput, &initiatingMessage, respondingMessage)
+	nextInstance, err := instance.ExecuteTransition(transition, constraintInput, &initiatingMessage, respondingMessage)
 	if err != nil {
 		return ReceivedInitiatingMessageEvent{}, err
 	}
@@ -229,7 +229,7 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 
 	return ReceivedInitiatingMessageEvent{
 		Model:                          model.Id(),
-		CurrentInstance:                currentInstance.Id(),
+		CurrentInstance:                instance.Id(),
 		Transition:                     cmd.Transition,
 		InitiatingMessage:              initiatingMessage.Id(),
 		NextInstance:                   nextInstance,

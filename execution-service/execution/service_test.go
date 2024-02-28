@@ -87,7 +87,7 @@ func TestCreateInitiatingMessageTransition2(t *testing.T) {
 	event, err := executionService.CreateInitiatingMessage(cmd)
 	assert.Nil(t, err)
 	assert.Equal(t, cmd.Model, event.Model.Id())
-	assert.Equal(t, cmd.Instance, event.CurrentInstance.Id())
+	assert.Equal(t, cmd.Instance, event.Instance.Id())
 	assert.Equal(t, cmd.Transition, event.Transition)
 	assert.Equal(t, cmd.BytesMessage, event.InintiatingMessage.BytesMessage)
 }

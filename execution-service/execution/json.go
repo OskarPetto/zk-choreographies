@@ -53,7 +53,7 @@ type createInitiatingMessageCommandJson struct {
 
 type createdInitiatingMessageEventJson struct {
 	Model             model.ModelJson       `json:"model"`
-	CurrentInstance   instance.InstanceJson `json:"currentInstance"`
+	Instance          instance.InstanceJson `json:"instance"`
 	Transition        string                `json:"transition"`
 	InitiatingMessage message.MessageJson   `json:"initiatingMessage"`
 }
@@ -174,7 +174,7 @@ func (cmd *receiveInitiatingMessageCommandJson) ToExecutionCommand() (ReceiveIni
 		if err != nil {
 			return ReceiveInitiatingMessageCommand{}, err
 		}
-	} else {
+	} else if cmd.IntegerMessage != nil {
 		tmp := domain.IntegerType(*cmd.IntegerMessage)
 		integerMessage = &tmp
 	}
@@ -241,7 +241,7 @@ func TerminatedInstanceEventToJson(event ProvedTerminationEvent) provedTerminati
 func CreatedInitiatingMessageEventToJson(event CreatedInitiatingMessageEvent) createdInitiatingMessageEventJson {
 	return createdInitiatingMessageEventJson{
 		Model:             model.ToJson(event.Model),
-		CurrentInstance:   instance.ToJson(event.CurrentInstance),
+		Instance:          instance.ToJson(event.Instance),
 		Transition:        event.Transition,
 		InitiatingMessage: message.ToJson(event.InintiatingMessage),
 	}
