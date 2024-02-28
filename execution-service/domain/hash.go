@@ -39,8 +39,12 @@ func OutOfBoundsHash() Hash {
 	return hash
 }
 
+func (hash *Hash) String() HashId {
+	return utils.BytesToString(hash.Value[:])
+}
+
 func (hash *SaltedHash) String() HashId {
-	return utils.BytesToString(hash.Hash.Value[:])
+	return hash.Hash.String()
 }
 
 func (publicKey PublicKey) ComputeHash() Hash {

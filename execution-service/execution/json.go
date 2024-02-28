@@ -22,7 +22,6 @@ type instantiatedModelEventJson struct {
 }
 
 type executeTransitionCommandJson struct {
-	Model      string `json:"model"`
 	Instance   string `json:"instance"`
 	Transition string `json:"transition"`
 	Identity   uint   `json:"identity"`
@@ -34,7 +33,6 @@ type executedTransitionEventJson struct {
 }
 
 type proveTerminationCommandJson struct {
-	Model    string `json:"model"`
 	Instance string `json:"instance"`
 	Identity uint   `json:"identity"`
 }
@@ -44,7 +42,6 @@ type provedTerminationEventJson struct {
 }
 
 type createInitiatingMessageCommandJson struct {
-	Model          string  `json:"model"`
 	Instance       string  `json:"instance"`
 	Transition     string  `json:"transition"`
 	BytesMessage   *string `json:"bytesMessage,omitempty"`
@@ -79,7 +76,6 @@ type receivedInitiatingMessageEventJson struct {
 }
 
 type proveMessageExchangeCommandJson struct {
-	Model                          string                  `json:"model"`
 	CurrentInstance                string                  `json:"currentInstance"`
 	Transition                     string                  `json:"transition"`
 	InitiatingMessage              string                  `json:"initiatingMessage"`
@@ -95,7 +91,6 @@ type provedMessageExchangeEventJson struct {
 }
 
 type fakeTransitionCommandJson struct {
-	Model    string `json:"model"`
 	Instance string `json:"instance"`
 	Identity uint   `json:"identity"`
 }
@@ -124,7 +119,6 @@ func (cmd *instantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCo
 
 func (cmd *executeTransitionCommandJson) ToExecutionCommand() (ExecuteTransitionCommand, error) {
 	return ExecuteTransitionCommand{
-		Model:      cmd.Model,
 		Instance:   cmd.Instance,
 		Transition: cmd.Transition,
 		Identity:   cmd.Identity,
@@ -133,7 +127,6 @@ func (cmd *executeTransitionCommandJson) ToExecutionCommand() (ExecuteTransition
 
 func (cmd *proveTerminationCommandJson) ToExecutionCommand() (ProveTerminationCommand, error) {
 	return ProveTerminationCommand{
-		Model:    cmd.Model,
 		Instance: cmd.Instance,
 		Identity: cmd.Identity,
 	}, nil
@@ -154,7 +147,6 @@ func (cmd *createInitiatingMessageCommandJson) ToExecutionCommand() (CreateIniti
 		integerMessage = &tmp
 	}
 	return CreateInitiatingMessageCommand{
-		Model:          cmd.Model,
 		Instance:       cmd.Instance,
 		Transition:     cmd.Transition,
 		BytesMessage:   bytesMessage,
@@ -217,7 +209,6 @@ func (cmd *proveMessageExchangeCommandJson) ToExecutionCommand() (ProveMessageEx
 		return ProveMessageExchangeCommand{}, err
 	}
 	return ProveMessageExchangeCommand{
-		Model:                          cmd.Model,
 		CurrentInstance:                cmd.CurrentInstance,
 		Transition:                     cmd.Transition,
 		Identity:                       cmd.Identity,
@@ -230,7 +221,6 @@ func (cmd *proveMessageExchangeCommandJson) ToExecutionCommand() (ProveMessageEx
 
 func (cmd *fakeTransitionCommandJson) ToExecutionCommand() (FakeTransitionCommand, error) {
 	return FakeTransitionCommand{
-		Model:    cmd.Model,
 		Instance: cmd.Instance,
 		Identity: cmd.Identity,
 	}, nil

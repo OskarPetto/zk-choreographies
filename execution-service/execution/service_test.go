@@ -62,7 +62,6 @@ func TestExecuteTransition0(t *testing.T) {
 	currentInstance := states[0].Instance
 
 	event, err := executionService.ExecuteTransition(execution.ExecuteTransitionCommand{
-		Model:      model.Id(),
 		Instance:   currentInstance.Id(),
 		Transition: model.Transitions[0].Id,
 		Identity:   identity,
@@ -78,7 +77,6 @@ func TestCreateInitiatingMessageTransition2(t *testing.T) {
 	currentInstance := states[1].Instance
 
 	cmd := execution.CreateInitiatingMessageCommand{
-		Model:        model.Id(),
 		Instance:     currentInstance.Id(),
 		Transition:   model.Transitions[2].Id,
 		BytesMessage: []byte("test"),
@@ -86,7 +84,7 @@ func TestCreateInitiatingMessageTransition2(t *testing.T) {
 
 	event, err := executionService.CreateInitiatingMessage(cmd)
 	assert.Nil(t, err)
-	assert.Equal(t, cmd.Model, event.Model.Id())
+	assert.Equal(t, currentInstance.Model.String(), event.Model.Id())
 	assert.Equal(t, cmd.Instance, event.Instance.Id())
 	assert.Equal(t, cmd.Transition, event.Transition)
 	assert.Equal(t, cmd.BytesMessage, event.InintiatingMessage.BytesMessage)
@@ -122,7 +120,6 @@ func TestProveMessageExchangeTransition2(t *testing.T) {
 	model := states[1].Model
 	initiatingMessage := *states[2].InitiatingMessage
 	cmd := execution.ProveMessageExchangeCommand{
-		Model:                          model.Id(),
 		CurrentInstance:                currentInstance.Id(),
 		Transition:                     model.Transitions[2].Id,
 		Identity:                       *states[2].RespondingParticipant,
@@ -137,11 +134,9 @@ func TestProveMessageExchangeTransition2(t *testing.T) {
 }
 
 func TestProveTermination(t *testing.T) {
-	model := states[len(states)-1].Model
 	instance := states[len(states)-1].Instance
 	identity := states[len(states)-1].InitiatingParticipant
 	_, err := executionService.ProveTermination(execution.ProveTerminationCommand{
-		Model:    model.Id(),
 		Instance: instance.Id(),
 		Identity: identity,
 	})

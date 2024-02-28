@@ -30,7 +30,6 @@ instance0 = instantiatedModelEvent['instance']
 proof0 = instantiatedModelEvent['proof']
 
 executeTransitionCommand = {
-    'model': modelId,
     'instance': instance0['id'],
     'transition': model['transitions'][0]['id'],
     'identity': 0
@@ -43,7 +42,6 @@ instance1 = executedTransitionEvent['instance']
 proof1 = executedTransitionEvent['proof']
 
 createInitiatingMessageCommand = {
-    'model': modelId,
     'instance': instance1['id'],
     'transition': model['transitions'][15]['id'],
     'bytesMessage': base64.b32encode(bytearray("mountain_bike", 'ascii')).decode('utf-8'),
@@ -70,7 +68,6 @@ instance2 = receivedInitiatingMessageEvent['nextInstance']
 respondingParticipantSignature = receivedInitiatingMessageEvent['respondingParticipantSignature']
 
 proveMessageExchangeCommand = {
-    'model': modelId,
     'currentInstance': instance1['id'],
     'transition': model['transitions'][15]['id'],
     'initiatingMessage': initiatingMessage['id'],
@@ -85,7 +82,6 @@ provedMessageExchangeEvent = response.json()
 proof2 = provedMessageExchangeEvent['proof']
 
 fakeTransitionCommand = {
-    'model': modelId,
     'instance': instance2['id'],
     'identity': 0,
 }

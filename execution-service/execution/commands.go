@@ -17,7 +17,6 @@ type InstantiatedModelEvent struct {
 }
 
 type ExecuteTransitionCommand struct {
-	Model      domain.ModelId
 	Instance   domain.InstanceId
 	Transition domain.TransitionId
 	Identity   domain.IdentityId
@@ -29,7 +28,6 @@ type ExecutedTransitionEvent struct {
 }
 
 type ProveTerminationCommand struct {
-	Model    domain.ModelId
 	Instance domain.InstanceId
 	Identity domain.IdentityId
 }
@@ -39,7 +37,6 @@ type ProvedTerminationEvent struct {
 }
 
 type CreateInitiatingMessageCommand struct {
-	Model          domain.ModelId
 	Instance       domain.InstanceId
 	Transition     domain.TransitionId
 	BytesMessage   []byte
@@ -74,7 +71,6 @@ type ReceivedInitiatingMessageEvent struct {
 }
 
 type ProveMessageExchangeCommand struct {
-	Model                          domain.ModelId
 	CurrentInstance                domain.InstanceId
 	Transition                     domain.TransitionId
 	Identity                       domain.IdentityId
@@ -90,7 +86,6 @@ type ProvedMessageExchangeEvent struct {
 }
 
 type FakeTransitionCommand struct {
-	Model    domain.ModelId
 	Instance domain.InstanceId
 	Identity domain.IdentityId
 }

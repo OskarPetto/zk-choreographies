@@ -63,16 +63,13 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 }
 
 func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand) (ExecutedTransitionEvent, error) {
-	model, err := service.ModelService.FindModelById(cmd.Model)
-	if err != nil {
-		return ExecutedTransitionEvent{}, err
-	}
 	currentInstance, err := service.InstanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
 		return ExecutedTransitionEvent{}, err
 	}
-	if !bytes.Equal(currentInstance.Model.Value[:], model.SaltedHash.Hash.Value[:]) {
-		return ExecutedTransitionEvent{}, fmt.Errorf("instance %s is not of model %s", cmd.Instance, cmd.Model)
+	model, err := service.ModelService.FindModelById(currentInstance.Model.String())
+	if err != nil {
+		return ExecutedTransitionEvent{}, err
 	}
 	transition, err := model.FindTransitionById(cmd.Transition)
 	if err != nil {
@@ -113,16 +110,13 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 }
 
 func (service *ExecutionService) ProveTermination(cmd ProveTerminationCommand) (ProvedTerminationEvent, error) {
-	model, err := service.ModelService.FindModelById(cmd.Model)
-	if err != nil {
-		return ProvedTerminationEvent{}, err
-	}
 	instance, err := service.InstanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
 		return ProvedTerminationEvent{}, err
 	}
-	if !bytes.Equal(instance.Model.Value[:], model.SaltedHash.Hash.Value[:]) {
-		return ProvedTerminationEvent{}, fmt.Errorf("instance %s is not of model %s", cmd.Instance, cmd.Model)
+	model, err := service.ModelService.FindModelById(instance.Model.String())
+	if err != nil {
+		return ProvedTerminationEvent{}, err
 	}
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	proof, err := service.ProverService.ProveTermination(prover.ProveTerminationCommand{
@@ -139,23 +133,20 @@ func (service *ExecutionService) ProveTermination(cmd ProveTerminationCommand) (
 }
 
 func (service *ExecutionService) CreateInitiatingMessage(cmd CreateInitiatingMessageCommand) (CreatedInitiatingMessageEvent, error) {
-	model, err := service.ModelService.FindModelById(cmd.Model)
-	if err != nil {
-		return CreatedInitiatingMessageEvent{}, err
-	}
 	currentInstance, err := service.InstanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
 		return CreatedInitiatingMessageEvent{}, err
 	}
-	if !bytes.Equal(currentInstance.Model.Value[:], model.SaltedHash.Hash.Value[:]) {
-		return CreatedInitiatingMessageEvent{}, fmt.Errorf("instance %s is not of model %s", cmd.Instance, cmd.Model)
+	model, err := service.ModelService.FindModelById(currentInstance.Model.String())
+	if err != nil {
+		return CreatedInitiatingMessageEvent{}, err
 	}
 	transition, err := model.FindTransitionById(cmd.Transition)
 	if err != nil {
 		return CreatedInitiatingMessageEvent{}, err
 	}
 	if transition.InitiatingMessage == domain.EmptyMessageId {
-		return CreatedInitiatingMessageEvent{}, fmt.Errorf("transition %s of model %s does not have InitiatingMessage", cmd.Transition, cmd.Model)
+		return CreatedInitiatingMessageEvent{}, fmt.Errorf("transition %s of model %s does not have an InitiatingMessage", transition.Id, model.Id())
 	}
 	var initiatingMessage domain.Message
 	if cmd.BytesMessage != nil {
@@ -181,6 +172,9 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 	if !bytes.Equal(instance.Model.Value[:], model.SaltedHash.Hash.Value[:]) {
 		return ReceivedInitiatingMessageEvent{}, fmt.Errorf("instance %s is not of model %s", instance.Id(), model.Id())
 	}
+	if !bytes.Equal(initiatingMessage.Instance.Value[:], instance.SaltedHash.Hash.Value[:]) {
+		return ReceivedInitiatingMessageEvent{}, fmt.Errorf("message %s is not of instance %s", initiatingMessage.Id(), instance.Id())
+	}
 	err := service.ModelService.ImportModel(model)
 	if err != nil {
 		return ReceivedInitiatingMessageEvent{}, err
@@ -192,9 +186,6 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 	transition, err := model.FindTransitionById(cmd.Transition)
 	if err != nil {
 		return ReceivedInitiatingMessageEvent{}, err
-	}
-	if !bytes.Equal(initiatingMessage.Instance.Value[:], instance.SaltedHash.Hash.Value[:]) {
-		return ReceivedInitiatingMessageEvent{}, fmt.Errorf("message %s is not of instance %s", initiatingMessage.Id(), instance.Id())
 	}
 	err = service.MessageService.ImportMessage(initiatingMessage)
 	if err != nil {
@@ -239,11 +230,12 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 }
 
 func (service *ExecutionService) ProveMessageExchange(cmd ProveMessageExchangeCommand) (ProvedMessageExchangeEvent, error) {
-	model, err := service.ModelService.FindModelById(cmd.Model)
+	nextInstance := cmd.NextInstance
+	currentInstance, err := service.InstanceService.FindInstanceById(cmd.CurrentInstance)
 	if err != nil {
 		return ProvedMessageExchangeEvent{}, err
 	}
-	currentInstance, err := service.InstanceService.FindInstanceById(cmd.CurrentInstance)
+	model, err := service.ModelService.FindModelById(currentInstance.Model.String())
 	if err != nil {
 		return ProvedMessageExchangeEvent{}, err
 	}
@@ -251,15 +243,14 @@ func (service *ExecutionService) ProveMessageExchange(cmd ProveMessageExchangeCo
 	if err != nil {
 		return ProvedMessageExchangeEvent{}, err
 	}
-	nextInstance := cmd.NextInstance
-	if !bytes.Equal(nextInstance.Model.Value[:], model.SaltedHash.Hash.Value[:]) {
-		return ProvedMessageExchangeEvent{}, fmt.Errorf("next instance %s is not of model %s", cmd.CurrentInstance, cmd.Model)
-	}
 	err = service.InstanceService.ImportInstance(cmd.NextInstance)
 	if err != nil {
 		return ProvedMessageExchangeEvent{}, err
 	}
 	if cmd.RespondingMessage != nil {
+		if cmd.InitiatingMessage == cmd.RespondingMessage.Id() {
+			return ProvedMessageExchangeEvent{}, fmt.Errorf("initiating and responding message must not be the same")
+		}
 		err = service.MessageService.ImportMessage(*cmd.RespondingMessage)
 		if err != nil {
 			return ProvedMessageExchangeEvent{}, err
@@ -269,7 +260,6 @@ func (service *ExecutionService) ProveMessageExchange(cmd ProveMessageExchangeCo
 	if err != nil {
 		return ProvedMessageExchangeEvent{}, err
 	}
-
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	if privateKey == nil {
 		return ProvedMessageExchangeEvent{}, fmt.Errorf("private key does not exist for identity %d", cmd.Identity)
@@ -295,18 +285,18 @@ func (service *ExecutionService) ProveMessageExchange(cmd ProveMessageExchangeCo
 }
 
 func (service *ExecutionService) FakeTransition(cmd FakeTransitionCommand) (FakedTransitionEvent, error) {
-	model, err := service.ModelService.FindModelById(cmd.Model)
-	if err != nil {
-		return FakedTransitionEvent{}, err
-	}
 	instance, err := service.InstanceService.FindInstanceById(cmd.Instance)
 	if err != nil {
 		return FakedTransitionEvent{}, err
 	}
-	if !bytes.Equal(instance.Model.Value[:], model.SaltedHash.Hash.Value[:]) {
-		return FakedTransitionEvent{}, fmt.Errorf("instance %s is not of model %s", cmd.Instance, cmd.Model)
+	model, err := service.ModelService.FindModelById(instance.Model.String())
+	if err != nil {
+		return FakedTransitionEvent{}, err
 	}
 	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	if privateKey == nil {
+		return FakedTransitionEvent{}, fmt.Errorf("private key does not exist for identity %d", cmd.Identity)
+	}
 	proof, err := service.ProverService.ProveTransition(prover.ProveTransitionCommand{
 		Model:                          model,
 		CurrentInstance:                instance,
