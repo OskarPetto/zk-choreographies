@@ -93,16 +93,16 @@ func (transition Transition) ComputeHash() Hash {
 }
 
 func (model Model) HasValidHash() bool {
-	computedHash := model.ComputeHash(model.SaltedHash.Salt)
+	computedHash := model.computeHash(model.SaltedHash.Salt)
 	return bytes.Equal(computedHash.Hash.Value[:], model.SaltedHash.Hash.Value[:])
 }
 
 func (model *Model) UpdateHash() {
 	salt := randomFieldElement("model")
-	model.SaltedHash = model.ComputeHash(salt)
+	model.SaltedHash = model.computeHash(salt)
 }
 
-func (model Model) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
+func (model Model) computeHash(salt [fr.Bytes]byte) SaltedHash {
 	mimc := mimc.NewMiMC()
 	hashUint16(mimc, model.PlaceCount)
 	hashUint16(mimc, model.ParticipantCount)
@@ -142,16 +142,16 @@ func (model Model) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
 }
 
 func (instance Instance) HasValidHash() bool {
-	computedHash := instance.ComputeHash(instance.SaltedHash.Salt)
+	computedHash := instance.computeHash(instance.SaltedHash.Salt)
 	return bytes.Equal(computedHash.Hash.Value[:], instance.SaltedHash.Hash.Value[:])
 }
 
 func (instance *Instance) UpdateHash() {
 	salt := randomFieldElement("instance")
-	instance.SaltedHash = instance.ComputeHash(salt)
+	instance.SaltedHash = instance.computeHash(salt)
 }
 
-func (instance Instance) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
+func (instance Instance) computeHash(salt [fr.Bytes]byte) SaltedHash {
 	mimc := mimc.NewMiMC()
 	mimc.Write(instance.Model.Value[:])
 	for _, tokenCount := range instance.TokenCounts {
@@ -186,16 +186,16 @@ func (instance Instance) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
 }
 
 func (message Message) HasValidHash() bool {
-	computedHash := message.ComputeHash(message.Hash.Salt)
+	computedHash := message.computeHash(message.Hash.Salt)
 	return bytes.Equal(computedHash.Hash.Value[:], message.Hash.Hash.Value[:])
 }
 
 func (message *Message) UpdateHash() {
 	salt := randomFieldElement("message")
-	message.Hash = message.ComputeHash(salt)
+	message.Hash = message.computeHash(salt)
 }
 
-func (message Message) ComputeHash(salt [fr.Bytes]byte) SaltedHash {
+func (message Message) computeHash(salt [fr.Bytes]byte) SaltedHash {
 	if message.IsBytesMessage() {
 		return hashBytesMessage(message, salt)
 	}

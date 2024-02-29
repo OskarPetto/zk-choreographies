@@ -43,6 +43,11 @@ func (instance *Instance) Id() InstanceId {
 	return instance.SaltedHash.String()
 }
 
+func (instance Instance) FakeTransition() Instance {
+	instance.UpdateHash()
+	return instance
+}
+
 func (instance Instance) ExecuteTransition(transition Transition, input ConstraintInput, initiatingMessage *Message, respondingMessage *Message) (Instance, error) {
 	err := validateTransitionExecutable(instance, transition, input)
 	if err != nil {

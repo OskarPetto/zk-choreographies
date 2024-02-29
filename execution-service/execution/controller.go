@@ -35,7 +35,7 @@ func (controller *ExecutionController) InstantiateModel(c *gin.Context) {
 		c.Status(http.StatusForbidden)
 		return
 	}
-	jsonEvent := InstatiatedModelEventToJson(event)
+	jsonEvent := UpdatedInstanceEventToJson(event)
 	c.IndentedJSON(http.StatusOK, jsonEvent)
 }
 
@@ -58,7 +58,7 @@ func (controller *ExecutionController) ExecuteTransition(c *gin.Context) {
 		c.Status(http.StatusForbidden)
 		return
 	}
-	jsonEvent := ExecutedTransitionEventToJson(event)
+	jsonEvent := UpdatedInstanceEventToJson(event)
 	c.IndentedJSON(http.StatusOK, jsonEvent)
 }
 
@@ -150,7 +150,7 @@ func (controller *ExecutionController) ProveMessageExchange(c *gin.Context) {
 		c.Status(http.StatusForbidden)
 		return
 	}
-	jsonEvent := ProvedMessageExchangeEventToJson(event)
+	jsonEvent := UpdatedInstanceEventToJson(event)
 	c.IndentedJSON(http.StatusOK, jsonEvent)
 }
 
@@ -173,6 +173,6 @@ func (controller *ExecutionController) FakeTransition(c *gin.Context) {
 		c.Status(http.StatusForbidden)
 		return
 	}
-	jsonEvent := FakedTransitionEventToJson(event)
+	jsonEvent := UpdatedInstanceEventToJson(event)
 	c.IndentedJSON(http.StatusOK, jsonEvent)
 }

@@ -24,10 +24,10 @@ instantiateModelCommand = {
 }
 
 response = requests.post('http://localhost:8080/execution/instantiateModel', json=instantiateModelCommand)
-instantiatedModelEvent = response.json()
+instanceCreatedEvent = response.json()
 
-instance0 = instantiatedModelEvent['instance']
-proof0 = instantiatedModelEvent['proof']
+instance0 = instanceCreatedEvent['instance']
+proof0 = instanceCreatedEvent['proof']
 
 executeTransitionCommand = {
     'instance': instance0['id'],
@@ -36,10 +36,10 @@ executeTransitionCommand = {
 }
 
 response = requests.post('http://localhost:8080/execution/executeTransition', json=executeTransitionCommand)
-executedTransitionEvent = response.json()
+instanceCreatedEvent = response.json()
 
-instance1 = executedTransitionEvent['instance']
-proof1 = executedTransitionEvent['proof']
+instance1 = instanceCreatedEvent['instance']
+proof1 = instanceCreatedEvent['proof']
 
 createInitiatingMessageCommand = {
     'instance': instance1['id'],
@@ -49,9 +49,9 @@ createInitiatingMessageCommand = {
 }
 
 response = requests.post('http://localhost:8080/execution/createInitiatingMessage', json=createInitiatingMessageCommand)
-createdInitiatingMessageEvent = response.json()
+initiatingMessageCreatedEvent = response.json()
 
-initiatingMessage = createdInitiatingMessageEvent['initiatingMessage']
+initiatingMessage = initiatingMessageCreatedEvent['initiatingMessage']
 
 receiveInitiatingMessageCommand = {
     'model': model,
@@ -62,10 +62,10 @@ receiveInitiatingMessageCommand = {
 }
 
 response = requests.post('http://localhost:8080/execution/receiveInitiatingMessage', json=receiveInitiatingMessageCommand)
-receivedInitiatingMessageEvent = response.json()
+initiatingMessageReceivedEvent = response.json()
 
-instance2 = receivedInitiatingMessageEvent['nextInstance']
-respondingParticipantSignature = receivedInitiatingMessageEvent['respondingParticipantSignature']
+instance2 = initiatingMessageReceivedEvent['nextInstance']
+respondingParticipantSignature = initiatingMessageReceivedEvent['respondingParticipantSignature']
 
 proveMessageExchangeCommand = {
     'currentInstance': instance1['id'],
@@ -77,9 +77,9 @@ proveMessageExchangeCommand = {
 }
 
 response = requests.post('http://localhost:8080/execution/proveMessageExchange', json=proveMessageExchangeCommand)
-provedMessageExchangeEvent = response.json()
+instanceCreatedEvent = response.json()
 
-proof2 = provedMessageExchangeEvent['proof']
+proof2 = instanceCreatedEvent['proof']
 
 fakeTransitionCommand = {
     'instance': instance2['id'],
@@ -87,8 +87,9 @@ fakeTransitionCommand = {
 }
 
 response = requests.post('http://localhost:8080/execution/fakeTransition', json=fakeTransitionCommand)
-fakedTransitionEvent = response.json()
+instanceCreatedEvent = response.json()
 
-proof3 = fakedTransitionEvent['proof']
+instance3 = instanceCreatedEvent['instance']
+proof3 = instanceCreatedEvent['proof']
 
-print(proof3)
+print(instance3)

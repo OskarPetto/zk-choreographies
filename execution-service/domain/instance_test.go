@@ -39,3 +39,10 @@ func TestExecuteTransition2(t *testing.T) {
 	assert.Equal(t, state2.Instance.MessageHashes, result.MessageHashes)
 	assert.NotEqual(t, state1.Instance.SaltedHash, result.SaltedHash)
 }
+
+func TestFakeTransition(t *testing.T) {
+	state1 := states[1]
+	instance1 := state1.Instance
+	instance2 := instance1.FakeTransition()
+	assert.NotEqual(t, instance1.Id(), instance2.Id())
+}

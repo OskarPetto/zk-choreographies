@@ -10,26 +10,21 @@ import (
 	"execution-service/utils"
 )
 
+type updatedInstanceEventJson struct {
+	Instance instance.InstanceJson `json:"instance"`
+	Proof    prover.ProofJson      `json:"proof"`
+}
+
 type instantiateModelCommandJson struct {
 	Model      string   `json:"model"`
 	PublicKeys []string `json:"publicKeys"`
 	Identity   uint     `json:"identity"`
 }
 
-type instantiatedModelEventJson struct {
-	Instance instance.InstanceJson `json:"instance"`
-	Proof    prover.ProofJson      `json:"proof"`
-}
-
 type executeTransitionCommandJson struct {
 	Instance   string `json:"instance"`
 	Transition string `json:"transition"`
 	Identity   uint   `json:"identity"`
-}
-
-type executedTransitionEventJson struct {
-	Instance instance.InstanceJson `json:"instance"`
-	Proof    prover.ProofJson      `json:"proof"`
 }
 
 type proveTerminationCommandJson struct {
@@ -85,18 +80,9 @@ type proveMessageExchangeCommandJson struct {
 	RespondingParticipantSignature signature.SignatureJson `json:"respondingParticipantSignature"`
 }
 
-type provedMessageExchangeEventJson struct {
-	Instance instance.InstanceJson `json:"instance"`
-	Proof    prover.ProofJson      `json:"proof"`
-}
-
 type fakeTransitionCommandJson struct {
 	Instance string `json:"instance"`
 	Identity uint   `json:"identity"`
-}
-
-type fakedTransitionEventjson struct {
-	Proof prover.ProofJson `json:"proof"`
 }
 
 func (cmd *instantiateModelCommandJson) ToExecutionCommand() (InstantiateModelCommand, error) {
@@ -226,27 +212,20 @@ func (cmd *fakeTransitionCommandJson) ToExecutionCommand() (FakeTransitionComman
 	}, nil
 }
 
-func InstatiatedModelEventToJson(event InstantiatedModelEvent) instantiatedModelEventJson {
-	return instantiatedModelEventJson{
+func UpdatedInstanceEventToJson(event InstanceCreatedEvent) updatedInstanceEventJson {
+	return updatedInstanceEventJson{
 		Instance: instance.ToJson(event.Instance),
 		Proof:    event.Proof.ToJson(),
 	}
 }
 
-func ExecutedTransitionEventToJson(event ExecutedTransitionEvent) executedTransitionEventJson {
-	return executedTransitionEventJson{
-		Instance: instance.ToJson(event.Instance),
-		Proof:    event.Proof.ToJson(),
-	}
-}
-
-func TerminatedInstanceEventToJson(event ProvedTerminationEvent) provedTerminationEventJson {
+func TerminatedInstanceEventToJson(event TerminationProvedEvent) provedTerminationEventJson {
 	return provedTerminationEventJson{
 		Proof: event.Proof.ToJson(),
 	}
 }
 
-func CreatedInitiatingMessageEventToJson(event CreatedInitiatingMessageEvent) createdInitiatingMessageEventJson {
+func CreatedInitiatingMessageEventToJson(event InitiatingMessageCreatedEvent) createdInitiatingMessageEventJson {
 	return createdInitiatingMessageEventJson{
 		Model:             model.ToJson(event.Model),
 		Instance:          instance.ToJson(event.Instance),
@@ -255,7 +234,7 @@ func CreatedInitiatingMessageEventToJson(event CreatedInitiatingMessageEvent) cr
 	}
 }
 
-func ReceivedInitiatingMessageEventToJson(event ReceivedInitiatingMessageEvent) receivedInitiatingMessageEventJson {
+func ReceivedInitiatingMessageEventToJson(event InitiatingMessageReceivedEvent) receivedInitiatingMessageEventJson {
 	var respondingMessage *message.MessageJson
 	if event.RespondingMessage != nil {
 		tmp := message.ToJson(*event.RespondingMessage)
@@ -269,18 +248,5 @@ func ReceivedInitiatingMessageEventToJson(event ReceivedInitiatingMessageEvent) 
 		NextInstance:                   instance.ToJson(event.NextInstance),
 		RespondingMessage:              respondingMessage,
 		RespondingParticipantSignature: signature.ToJson(event.RespondingParticipantSignature),
-	}
-}
-
-func ProvedMessageExchangeEventToJson(event ProvedMessageExchangeEvent) provedMessageExchangeEventJson {
-	return provedMessageExchangeEventJson{
-		Instance: instance.ToJson(event.Instance),
-		Proof:    event.Proof.ToJson(),
-	}
-}
-
-func FakedTransitionEventToJson(event FakedTransitionEvent) fakedTransitionEventjson {
-	return fakedTransitionEventjson{
-		Proof: event.Proof.ToJson(),
 	}
 }

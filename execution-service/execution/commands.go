@@ -5,15 +5,15 @@ import (
 	"execution-service/prover"
 )
 
+type InstanceCreatedEvent struct {
+	Instance domain.Instance
+	Proof    prover.Proof
+}
+
 type InstantiateModelCommand struct {
 	Model      domain.ModelId
 	PublicKeys []domain.PublicKey
 	Identity   domain.IdentityId
-}
-
-type InstantiatedModelEvent struct {
-	Instance domain.Instance
-	Proof    prover.Proof
 }
 
 type ExecuteTransitionCommand struct {
@@ -22,17 +22,12 @@ type ExecuteTransitionCommand struct {
 	Identity   domain.IdentityId
 }
 
-type ExecutedTransitionEvent struct {
-	Instance domain.Instance
-	Proof    prover.Proof
-}
-
 type ProveTerminationCommand struct {
 	Instance domain.InstanceId
 	Identity domain.IdentityId
 }
 
-type ProvedTerminationEvent struct {
+type TerminationProvedEvent struct {
 	Proof prover.Proof
 }
 
@@ -43,7 +38,7 @@ type CreateInitiatingMessageCommand struct {
 	IntegerMessage *domain.IntegerType
 }
 
-type CreatedInitiatingMessageEvent struct {
+type InitiatingMessageCreatedEvent struct {
 	Model              domain.Model
 	Instance           domain.Instance
 	Transition         domain.TransitionId
@@ -60,7 +55,7 @@ type ReceiveInitiatingMessageCommand struct {
 	IntegerMessage    *domain.IntegerType
 }
 
-type ReceivedInitiatingMessageEvent struct {
+type InitiatingMessageReceivedEvent struct {
 	Model                          domain.ModelId
 	CurrentInstance                domain.InstanceId
 	Transition                     domain.TransitionId
@@ -80,16 +75,7 @@ type ProveMessageExchangeCommand struct {
 	RespondingParticipantSignature domain.Signature
 }
 
-type ProvedMessageExchangeEvent struct {
-	Instance domain.Instance
-	Proof    prover.Proof
-}
-
 type FakeTransitionCommand struct {
 	Instance domain.InstanceId
 	Identity domain.IdentityId
-}
-
-type FakedTransitionEvent struct {
-	Proof prover.Proof
 }
