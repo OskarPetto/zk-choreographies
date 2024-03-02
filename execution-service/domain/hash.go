@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"execution-service/utils"
+	"fmt"
 	"hash"
 
 	"github.com/consensys/gnark-crypto/accumulator/merkletree"
@@ -92,9 +93,12 @@ func (transition Transition) ComputeHash() Hash {
 	return computeHash(mimc)
 }
 
-func (model Model) HasValidHash() bool {
+func (model Model) ValidateHash() error {
 	computedHash := model.computeHash(model.SaltedHash.Salt)
-	return bytes.Equal(computedHash.Hash.Value[:], model.SaltedHash.Hash.Value[:])
+	if !bytes.Equal(computedHash.Hash.Value[:], model.SaltedHash.Hash.Value[:]) {
+		return fmt.Errorf("model %s has invalid hash", model.Id())
+	}
+	return nil
 }
 
 func (model *Model) UpdateHash() {
@@ -141,9 +145,12 @@ func (model Model) computeHash(salt [fr.Bytes]byte) SaltedHash {
 	}
 }
 
-func (instance Instance) HasValidHash() bool {
+func (instance Instance) ValidateHash() error {
 	computedHash := instance.computeHash(instance.SaltedHash.Salt)
-	return bytes.Equal(computedHash.Hash.Value[:], instance.SaltedHash.Hash.Value[:])
+	if !bytes.Equal(computedHash.Hash.Value[:], instance.SaltedHash.Hash.Value[:]) {
+		return fmt.Errorf("instance %s has invalid hash", instance.Id())
+	}
+	return nil
 }
 
 func (instance *Instance) UpdateHash() {
@@ -185,9 +192,12 @@ func (instance Instance) computeHash(salt [fr.Bytes]byte) SaltedHash {
 	}
 }
 
-func (message Message) HasValidHash() bool {
+func (message Message) ValidateHash() error {
 	computedHash := message.computeHash(message.Hash.Salt)
-	return bytes.Equal(computedHash.Hash.Value[:], message.Hash.Hash.Value[:])
+	if !bytes.Equal(computedHash.Hash.Value[:], message.Hash.Hash.Value[:]) {
+		return fmt.Errorf("message %s has invalid hash", message.Id())
+	}
+	return nil
 }
 
 func (message *Message) UpdateHash() {

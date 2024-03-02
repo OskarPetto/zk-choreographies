@@ -67,8 +67,9 @@ func (service *MessageService) FindConstraintInput(constraint domain.Constraint,
 }
 
 func (service *MessageService) ImportMessage(message domain.Message) error {
-	if !message.HasValidHash() {
-		return fmt.Errorf("message %s has invalid hash", message.Hash.String())
+	err := message.ValidateHash()
+	if err != nil {
+		return err
 	}
 	service.saveMessage(message)
 	return nil

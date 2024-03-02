@@ -101,7 +101,8 @@ func TestTransition_InvalidInstanceHash(t *testing.T) {
 	constraintInput := transitionStates[1].ConstraintInput
 
 	nextInstance.SaltedHash = domain.SaltedHash{}
-	nextSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
+	sk, _ := signatureParameters.GetPrivateKeyForIdentity(0)
+	nextSignature := nextInstance.Sign(sk)
 
 	witness := circuit.TransitionCircuit{
 		Model:                               circuit.FromModel(model),
@@ -220,10 +221,12 @@ func TestTransition_OverwrittenMessageHash(t *testing.T) {
 	transition := transitionStates[3].Transition
 	constraintInput := transitionStates[3].ConstraintInput
 
-	nextInstance.MessageHashes[8] = domain.NewBytesMessage(currentInstance, []byte("Not a purchase order")).Hash.Hash
+	nextInstance.MessageHashes[8] = domain.Hash{Value: [domain.HashSize]byte{1, 2, 3}}
 	nextInstance.UpdateHash()
-	senderSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
-	recipientSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(1))
+	sk0, _ := signatureParameters.GetPrivateKeyForIdentity(0)
+	sk1, _ := signatureParameters.GetPrivateKeyForIdentity(1)
+	senderSignature := nextInstance.Sign(sk0)
+	recipientSignature := nextInstance.Sign(sk1)
 
 	witness := circuit.TransitionCircuit{
 		Model:                               circuit.FromModel(model),
@@ -246,8 +249,10 @@ func TestTransition_OtherParticipant(t *testing.T) {
 	transition := transitionStates[3].Transition
 	constraintInput := transitionStates[3].ConstraintInput
 
-	senderSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
-	recipientSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
+	sk0, _ := signatureParameters.GetPrivateKeyForIdentity(0)
+	sk1, _ := signatureParameters.GetPrivateKeyForIdentity(1)
+	senderSignature := nextInstance.Sign(sk0)
+	recipientSignature := nextInstance.Sign(sk1)
 
 	witness := circuit.TransitionCircuit{
 		Model:                               circuit.FromModel(model),
@@ -272,7 +277,7 @@ func TestTransition_InvalidConstraintInput(t *testing.T) {
 	recipientSignature := *transitionStates[3].RespondingParticipantSignature
 
 	constraintInput := transitionStates[3].ConstraintInput
-	constraintInput.Messages[0] = domain.NewIntegerMessage(currentInstance, 1)
+	constraintInput.Messages[0], _ = domain.NewInitiatingIntegerMessage(currentInstance, transition, 1)
 
 	witness := circuit.TransitionCircuit{
 		Model:                               circuit.FromModel(model),
@@ -291,9 +296,10 @@ func TestTransition_InvalidConstraintInput(t *testing.T) {
 func TestTransition_InvalidMessageForConstraint(t *testing.T) {
 	model := transitionStates[2].Model
 	currentInstance := transitionStates[2].Instance
-	order := domain.NewIntegerMessage(currentInstance, 6)
-	stock := domain.NewIntegerMessage(currentInstance, 4)
+	transition := transitionStates[3].Transition
 
+	order, _ := domain.NewInitiatingIntegerMessage(currentInstance, transition, 6)
+	stock, _ := domain.NewInitiatingIntegerMessage(currentInstance, transition, 4)
 	currentInstance.MessageHashes[9] = order.Hash.Hash
 	currentInstance.MessageHashes[0] = stock.Hash.Hash
 	currentInstance.UpdateHash()
@@ -301,9 +307,10 @@ func TestTransition_InvalidMessageForConstraint(t *testing.T) {
 	nextInstance.MessageHashes[9] = order.Hash.Hash
 	nextInstance.MessageHashes[0] = stock.Hash.Hash
 	nextInstance.UpdateHash()
-	transition := transitionStates[3].Transition
-	senderSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(1))
-	recipientSignature := nextInstance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
+	sk0, _ := signatureParameters.GetPrivateKeyForIdentity(0)
+	sk1, _ := signatureParameters.GetPrivateKeyForIdentity(1)
+	senderSignature := nextInstance.Sign(sk1)
+	recipientSignature := nextInstance.Sign(sk0)
 
 	constraintInput := transitionStates[3].ConstraintInput
 	constraintInput.Messages[0] = order

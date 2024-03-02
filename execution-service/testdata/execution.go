@@ -24,21 +24,28 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 
 	state0 := instantiateModel(signatureParameters, model2)
 	state1 := executeTransition(signatureParameters, model2, 0, state0.Instance, nil, nil, nil)
-	order := domain.NewIntegerMessage(state1.Instance, 2)
-	stock := domain.NewIntegerMessage(state1.Instance, 20)
+	order, err := domain.NewInitiatingIntegerMessage(state1.Instance, model2.Transitions[2], 2)
+	utils.PanicOnError(err)
+	stock, err := domain.NewRespondingIntegerMessage(state1.Instance, model2.Transitions[2], 20)
+	utils.PanicOnError(err)
 	state2 := executeTransition(signatureParameters, model2, 2, state1.Instance, nil, &order, &stock)
-	confirm := domain.NewBytesMessage(state2.Instance, []byte("confirm"))
+	confirm, err := domain.NewInitiatingBytesMessage(state2.Instance, model2.Transitions[7], []byte("confirm"))
+	utils.PanicOnError(err)
 	constraintInput1 := domain.ConstraintInput{
 		Messages: []domain.Message{
 			order, stock,
 		},
 	}
 	state3 := executeTransition(signatureParameters, model2, 7, state2.Instance, &constraintInput1, &confirm, nil)
-	invoice := domain.NewBytesMessage(state3.Instance, []byte("invoice"))
-	payment := domain.NewBytesMessage(state3.Instance, []byte("payment"))
+	invoice, err := domain.NewInitiatingBytesMessage(state3.Instance, model2.Transitions[6], []byte("invoice"))
+	utils.PanicOnError(err)
+	payment, err := domain.NewRespondingBytesMessage(state3.Instance, model2.Transitions[6], []byte("payment"))
+	utils.PanicOnError(err)
 	state4 := executeTransition(signatureParameters, model2, 6, state3.Instance, nil, &invoice, &payment)
-	shippingAddress := domain.NewBytesMessage(state4.Instance, []byte("shipping_address"))
-	product := domain.NewBytesMessage(state4.Instance, []byte("product"))
+	shippingAddress, err := domain.NewInitiatingBytesMessage(state4.Instance, model2.Transitions[5], []byte("shipping_address"))
+	utils.PanicOnError(err)
+	product, err := domain.NewInitiatingBytesMessage(state4.Instance, model2.Transitions[5], []byte("product"))
+	utils.PanicOnError(err)
 	state5 := executeTransition(signatureParameters, model2, 5, state4.Instance, nil, &shippingAddress, &product)
 	state6 := executeTransition(signatureParameters, model2, 1, state5.Instance, nil, nil, nil)
 
@@ -52,7 +59,8 @@ func instantiateModel(signatureParameters parameters.SignatureParameters, model 
 	instance, err := model.Instantiate(publicKeys)
 	utils.PanicOnError(err)
 
-	initiatingParticipantPrivateKey := signatureParameters.GetPrivateKeyForIdentity(0)
+	initiatingParticipantPrivateKey, err := signatureParameters.GetPrivateKeyForIdentity(0)
+	utils.PanicOnError(err)
 	initiatingParticipantSignature := instance.Sign(initiatingParticipantPrivateKey)
 	return State{
 		Model:                          model,
@@ -82,7 +90,8 @@ func executeTransition(signatureParameters parameters.SignatureParameters, model
 	if transition.InitiatingParticipant != domain.EmptyParticipantId {
 		initiatingParticipant = uint(transition.InitiatingParticipant)
 	}
-	initiatingParticipantPrivateKey := signatureParameters.GetPrivateKeyForIdentity(initiatingParticipant)
+	initiatingParticipantPrivateKey, err := signatureParameters.GetPrivateKeyForIdentity(initiatingParticipant)
+	utils.PanicOnError(err)
 	initiatingParticipantSignature := nextInstance.Sign(initiatingParticipantPrivateKey)
 
 	var respondingParticipant *uint
@@ -91,7 +100,8 @@ func executeTransition(signatureParameters parameters.SignatureParameters, model
 	if transition.RespondingParticipant != domain.EmptyParticipantId {
 		tmp1 := uint(transition.RespondingParticipant)
 		respondingParticipant = &tmp1
-		respondingParticipantPrivateKey := signatureParameters.GetPrivateKeyForIdentity(*respondingParticipant)
+		respondingParticipantPrivateKey, err := signatureParameters.GetPrivateKeyForIdentity(*respondingParticipant)
+		utils.PanicOnError(err)
 		tmp2 := nextInstance.Sign(respondingParticipantPrivateKey)
 		respondingParticipantSignature = &tmp2
 	}

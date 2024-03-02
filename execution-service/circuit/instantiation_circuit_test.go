@@ -56,7 +56,8 @@ func TestInstantiation_InvalidInstanceHash(t *testing.T) {
 	instance := instantiationStates[0].Instance
 
 	instance.SaltedHash = domain.SaltedHash{}
-	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
+	pk, _ := signatureParameters.GetPrivateKeyForIdentity(0)
+	signature := instance.Sign(pk)
 
 	witness := circuit.InstantiationCircuit{
 		Instance:       circuit.FromInstance(instance),
@@ -133,9 +134,10 @@ func TestInstantiation_InvalidMessageHashes(t *testing.T) {
 	model := instantiationStates[0].Model
 	instance := instantiationStates[0].Instance
 
-	instance.MessageHashes[0] = domain.NewBytesMessage(instance, []byte("invalid")).Hash.Hash
+	instance.MessageHashes[0] = domain.Hash{Value: [32]byte{0, 1, 2, 3}}
 	instance.UpdateHash()
-	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
+	sk, _ := signatureParameters.GetPrivateKeyForIdentity(0)
+	signature := instance.Sign(sk)
 
 	witness := circuit.InstantiationCircuit{
 		Instance:       circuit.FromInstance(instance),

@@ -46,7 +46,10 @@ func (service *ExecutionService) InstantiateModel(cmd InstantiateModelCommand) (
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	privateKey, err := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	if privateKey == nil {
+		return InstanceCreatedEvent{}, err
+	}
 	proof, err := service.ProverService.ProveInstantiation(prover.ProveInstantiationCommand{
 		Model:     model,
 		Instance:  instance,
@@ -83,9 +86,9 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	privateKey, err := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	if privateKey == nil {
-		return InstanceCreatedEvent{}, fmt.Errorf("private key does not exist for identity %d", cmd.Identity)
+		return InstanceCreatedEvent{}, err
 	}
 	senderSignature := nextInstance.Sign(privateKey)
 	proof, err := service.ProverService.ProveTransition(prover.ProveTransitionCommand{
@@ -118,7 +121,10 @@ func (service *ExecutionService) ProveTermination(cmd ProveTerminationCommand) (
 	if err != nil {
 		return TerminationProvedEvent{}, err
 	}
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	privateKey, err := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	if privateKey == nil {
+		return TerminationProvedEvent{}, err
+	}
 	proof, err := service.ProverService.ProveTermination(prover.ProveTerminationCommand{
 		Model:     model,
 		Instance:  instance,
@@ -150,9 +156,15 @@ func (service *ExecutionService) CreateInitiatingMessage(cmd CreateInitiatingMes
 	}
 	var initiatingMessage domain.Message
 	if cmd.BytesMessage != nil {
-		initiatingMessage = domain.NewBytesMessage(currentInstance, cmd.BytesMessage)
+		initiatingMessage, err = domain.NewInitiatingBytesMessage(currentInstance, transition, cmd.BytesMessage)
+		if err != nil {
+			return InitiatingMessageCreatedEvent{}, err
+		}
 	} else if cmd.IntegerMessage != nil {
-		initiatingMessage = domain.NewIntegerMessage(currentInstance, *cmd.IntegerMessage)
+		initiatingMessage, err = domain.NewInitiatingIntegerMessage(currentInstance, transition, *cmd.IntegerMessage)
+		if err != nil {
+			return InitiatingMessageCreatedEvent{}, err
+		}
 	} else {
 		return InitiatingMessageCreatedEvent{}, fmt.Errorf("neither bytes nor integer message was provided for createInitiatingMessage of instance %s", cmd.Instance)
 	}
@@ -193,10 +205,16 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 	}
 	var respondingMessage *domain.Message
 	if cmd.BytesMessage != nil {
-		tmp := domain.NewBytesMessage(instance, cmd.BytesMessage)
+		tmp, err := domain.NewInitiatingBytesMessage(instance, transition, cmd.BytesMessage)
+		if err != nil {
+			return InitiatingMessageReceivedEvent{}, err
+		}
 		respondingMessage = &tmp
 	} else if cmd.IntegerMessage != nil {
-		tmp := domain.NewIntegerMessage(instance, *cmd.IntegerMessage)
+		tmp, err := domain.NewInitiatingIntegerMessage(instance, transition, *cmd.IntegerMessage)
+		if err != nil {
+			return InitiatingMessageReceivedEvent{}, err
+		}
 		respondingMessage = &tmp
 	}
 	if respondingMessage != nil {
@@ -212,9 +230,9 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 		return InitiatingMessageReceivedEvent{}, err
 	}
 
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	privateKey, err := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	if privateKey == nil {
-		return InitiatingMessageReceivedEvent{}, fmt.Errorf("private key does not exist for identity %d", cmd.Identity)
+		return InitiatingMessageReceivedEvent{}, err
 	}
 	respondingParticipantSignature := nextInstance.Sign(privateKey)
 
@@ -243,14 +261,19 @@ func (service *ExecutionService) ProveMessageExchange(cmd ProveMessageExchangeCo
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}
+	initiatingMessage, err := service.MessageService.FindMessageById(cmd.InitiatingMessage)
+	if err != nil {
+		return InstanceCreatedEvent{}, err
+	}
+	err = cmd.NextInstance.ValidateMessages(transition, &initiatingMessage, cmd.RespondingMessage)
+	if err != nil {
+		return InstanceCreatedEvent{}, err
+	}
 	err = service.InstanceService.ImportInstance(cmd.NextInstance)
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}
 	if cmd.RespondingMessage != nil {
-		if cmd.InitiatingMessage == cmd.RespondingMessage.Id() {
-			return InstanceCreatedEvent{}, fmt.Errorf("initiating and responding message must not be the same")
-		}
 		err = service.MessageService.ImportMessage(*cmd.RespondingMessage)
 		if err != nil {
 			return InstanceCreatedEvent{}, err
@@ -260,9 +283,9 @@ func (service *ExecutionService) ProveMessageExchange(cmd ProveMessageExchangeCo
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	privateKey, err := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	if privateKey == nil {
-		return InstanceCreatedEvent{}, fmt.Errorf("private key does not exist for identity %d", cmd.Identity)
+		return InstanceCreatedEvent{}, err
 	}
 	initiatingParticipantSignature := nextInstance.Sign(privateKey)
 	proof, err := service.ProverService.ProveTransition(prover.ProveTransitionCommand{
@@ -293,9 +316,9 @@ func (service *ExecutionService) FakeTransition(cmd FakeTransitionCommand) (Inst
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}
-	privateKey := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
+	privateKey, err := service.SignatureParameters.GetPrivateKeyForIdentity(cmd.Identity)
 	if privateKey == nil {
-		return InstanceCreatedEvent{}, fmt.Errorf("private key does not exist for identity %d", cmd.Identity)
+		return InstanceCreatedEvent{}, err
 	}
 	instanceWithDifferentHash := instance.FakeTransition()
 	proof, err := service.ProverService.ProveTransition(prover.ProveTransitionCommand{

@@ -45,15 +45,22 @@ func generateSignaturePrivateKey(filename string) *eddsa.PrivateKey {
 	return privateKey
 }
 
-func (service *SignatureParameters) GetPrivateKeyForIdentity(identityId domain.IdentityId) *eddsa.PrivateKey {
-	return service.privateKeys[identityId]
+func (service *SignatureParameters) GetPrivateKeyForIdentity(identityId domain.IdentityId) (*eddsa.PrivateKey, error) {
+	if int(identityId) >= len(service.privateKeys) {
+		return nil, fmt.Errorf("private key does not exist for identity %d", identityId)
+	}
+	return service.privateKeys[identityId], nil
 }
 
 func (service *SignatureParameters) GetPublicKeys(count int) []domain.PublicKey {
 	publicKeys := make([]domain.PublicKey, count)
 	for i := 0; i < count; i++ {
+		publicKey, err := service.GetPrivateKeyForIdentity(uint(i))
+		if err != nil {
+			break
+		}
 		publicKeys[i] = domain.PublicKey{
-			Value: service.GetPrivateKeyForIdentity(uint(i)).PublicKey.Bytes(),
+			Value: publicKey.PublicKey.Bytes(),
 		}
 	}
 	return publicKeys

@@ -36,8 +36,9 @@ func (service *ModelService) FindAllModels() []domain.Model {
 }
 
 func (service *ModelService) ImportModel(model domain.Model) error {
-	if !model.HasValidHash() {
-		return fmt.Errorf("model %s has invalid hash", model.Id())
+	err := model.ValidateHash()
+	if err != nil {
+		return err
 	}
 	service.saveModel(model)
 	return nil

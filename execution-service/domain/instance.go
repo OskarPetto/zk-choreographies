@@ -43,6 +43,39 @@ func (instance *Instance) Id() InstanceId {
 	return instance.SaltedHash.String()
 }
 
+func (instance Instance) ValidateMessages(transition Transition, initiatingMessage *Message, respondingMessage *Message) error {
+	if initiatingMessage != nil && respondingMessage != nil {
+		if initiatingMessage.Id() == respondingMessage.Id() {
+			return fmt.Errorf("InitiatingMessage must not match RespondingMessage")
+		}
+	}
+	if initiatingMessage != nil {
+		if transition.InitiatingMessage == EmptyMessageId {
+			return fmt.Errorf("transition %s does not specify an InitiatingMessage", transition.Id)
+		}
+		err := initiatingMessage.ValidateHash()
+		if err != nil {
+			return err
+		}
+		if !bytes.Equal(instance.MessageHashes[transition.InitiatingMessage].Value[:], initiatingMessage.Hash.Hash.Value[:]) {
+			return fmt.Errorf("instance %s does not contain InitiatingMessage %s", instance.Id(), initiatingMessage.Id())
+		}
+	}
+	if respondingMessage != nil {
+		if transition.RespondingMessage == EmptyMessageId {
+			return fmt.Errorf("transition %s does not specify an RespondingMessage", transition.Id)
+		}
+		err := respondingMessage.ValidateHash()
+		if err != nil {
+			return err
+		}
+		if !bytes.Equal(instance.MessageHashes[transition.RespondingMessage].Value[:], respondingMessage.Hash.Hash.Value[:]) {
+			return fmt.Errorf("instance %s does not contain RespondingMessage %s", instance.Id(), respondingMessage.Id())
+		}
+	}
+	return nil
+}
+
 func (instance Instance) FakeTransition() Instance {
 	instance.UpdateHash()
 	return instance

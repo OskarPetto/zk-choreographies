@@ -44,8 +44,9 @@ func (service *InstanceService) FindInstancesByModel(model domain.ModelId) []dom
 }
 
 func (service *InstanceService) ImportInstance(instance domain.Instance) error {
-	if !instance.HasValidHash() {
-		return fmt.Errorf("instance %s has invalid hash", instance.Id())
+	err := instance.ValidateHash()
+	if err != nil {
+		return err
 	}
 	service.saveInstance(instance)
 	return nil

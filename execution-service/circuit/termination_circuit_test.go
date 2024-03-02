@@ -55,7 +55,8 @@ func TestTermination_InvalidInstanceHash(t *testing.T) {
 	instance := terminationStates[len(terminationStates)-1].Instance
 
 	instance.SaltedHash = domain.SaltedHash{}
-	signature := instance.Sign(signatureParameters.GetPrivateKeyForIdentity(0))
+	sk, _ := signatureParameters.GetPrivateKeyForIdentity(0)
+	signature := instance.Sign(sk)
 
 	witness := circuit.TerminationCircuit{
 		Instance:       circuit.FromInstance(instance),
