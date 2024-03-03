@@ -5,7 +5,6 @@ import (
 
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/std/accumulator/merkle"
-	"github.com/consensys/gnark/std/hash/mimc"
 	"github.com/consensys/gnark/std/selector"
 )
 
@@ -47,12 +46,11 @@ func (circuit *TerminationCircuit) Define(api frontend.API) error {
 }
 
 func (circuit *TerminationCircuit) checkTokenCounts(api frontend.API) error {
-	mimc, err := mimc.NewMiMC(api)
+	circuit.EndPlaceProof.CheckRootHash(api, circuit.Model.EndPlaceRoot)
+	err := circuit.EndPlaceProof.VerifyProof(api)
 	if err != nil {
 		return err
 	}
-	circuit.EndPlaceProof.CheckRootHash(api, circuit.Model.EndPlaceRoot)
-	circuit.EndPlaceProof.VerifyProof(api, mimc)
 	endPlace := circuit.EndPlaceProof.MerkleProof.Path[0]
 	tokenCount := selector.Mux(api, endPlace, circuit.Instance.TokenCounts[:]...)
 	api.AssertIsEqual(1, tokenCount)

@@ -75,13 +75,58 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 		return err
 	}
 	api.AssertIsEqual(circuit.CurrentInstance.PublicKeyRoot, circuit.NextInstance.PublicKeyRoot)
+	err = circuit.checkTransition(api)
+	if err != nil {
+		return err
+	}
 	err = circuit.checkConstraintInput(api)
 	if err != nil {
 		return err
 	}
-	tokenChanges := circuit.checkTokenCounts(api)
+	tokenCountChanges := circuit.checkTokenCounts(api)
 	addedMessageHashes := circuit.checkAddedMessageHashes(api)
-	return circuit.checkTransition(api, tokenChanges, addedMessageHashes)
+	participantsMatch := circuit.checkParticipants(api)
+	constraintSatisfied := evaluateConstraint(api, circuit.Transition.Constraint, circuit.ConstraintInput)
+
+	transitionMatches := api.And(participantsMatch, tokenCountChanges.matchesTransition)
+	transitionMatches = api.And(transitionMatches, addedMessageHashes.matchesTransition)
+	transitionMatches = api.And(transitionMatches, constraintSatisfied)
+
+	noChanges := api.And(tokenCountChanges.noChanges, addedMessageHashes.noChanges)
+
+	api.AssertIsEqual(1, api.Or(transitionMatches, noChanges))
+	return nil
+}
+
+func (circuit *TransitionCircuit) checkTransition(api frontend.API) error {
+	circuit.Transition.MerkleProof.CheckRootHash(api, circuit.Model.TransitionRoot)
+	err := circuit.Transition.MerkleProof.VerifyProof(api)
+	if err != nil {
+		return err
+	}
+	err = checkTransitionHash(api, circuit.Transition.MerkleProof.MerkleProof.Path[0], circuit.Transition)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func checkTransitionHash(api frontend.API, hash frontend.Variable, transition Transition) error {
+	mimc, err := mimc.NewMiMC(api)
+	if err != nil {
+		return err
+	}
+	mimc.Write(transition.IncomingPlaces[:]...)
+	mimc.Write(transition.OutgoingPlaces[:]...)
+	mimc.Write(transition.InitiatingParticipant)
+	mimc.Write(transition.RespondingParticipant)
+	mimc.Write(transition.InitiatingMessage)
+	mimc.Write(transition.Constraint.Coefficients[:]...)
+	mimc.Write(transition.Constraint.MessageIds[:]...)
+	mimc.Write(transition.Constraint.Offset)
+	mimc.Write(transition.Constraint.ComparisonOperator)
+	api.AssertIsEqual(hash, mimc.Sum())
+	return nil
 }
 
 func (circuit *TransitionCircuit) checkConstraintInput(api frontend.API) error {
@@ -185,32 +230,13 @@ func (circuit *TransitionCircuit) checkAddedMessageHashes(api frontend.API) Inte
 	}
 }
 
-func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountChanges IntermediateResult, addedMessageHashes IntermediateResult) error {
-	mimc, err := mimc.NewMiMC(api)
-	if err != nil {
-		return err
-	}
-	circuit.Transition.MerkleProof.CheckRootHash(api, circuit.Model.TransitionRoot)
-	circuit.Transition.MerkleProof.VerifyProof(api, mimc)
-	checkTransitionHash(api, circuit.Transition.MerkleProof.MerkleProof.Path[0], circuit.Transition)
-
+func (circuit *TransitionCircuit) checkParticipants(api frontend.API) frontend.Variable {
 	transition := circuit.Transition
 	senderParticipantId := circuit.InitiatingParticipantAuthentication.MerkleProof.Index
 	recipientParticipantId := circuit.RespondingParticipantAuthentication.MerkleProof.Index
-
 	initiatingParticipantMatches := api.Or(equals(api, transition.InitiatingParticipant, domain.EmptyParticipantId), equals(api, transition.InitiatingParticipant, senderParticipantId))
 	respondingParticipantMatches := api.Or(equals(api, transition.RespondingParticipant, domain.EmptyParticipantId), equals(api, transition.RespondingParticipant, recipientParticipantId))
-	constraintSatisfied := evaluateConstraint(api, transition.Constraint, circuit.ConstraintInput)
-
-	transitionMatches := api.And(initiatingParticipantMatches, respondingParticipantMatches)
-	transitionMatches = api.And(transitionMatches, tokenCountChanges.matchesTransition)
-	transitionMatches = api.And(transitionMatches, addedMessageHashes.matchesTransition)
-	transitionMatches = api.And(transitionMatches, constraintSatisfied)
-
-	noChanges := api.And(tokenCountChanges.noChanges, addedMessageHashes.noChanges)
-
-	api.AssertIsEqual(1, api.Or(transitionMatches, noChanges))
-	return nil
+	return api.And(initiatingParticipantMatches, respondingParticipantMatches)
 }
 
 func evaluateConstraint(api frontend.API, constraint Constraint, input ConstraintInput) frontend.Variable {
@@ -230,22 +256,4 @@ func evaluateConstraint(api frontend.API, constraint Constraint, input Constrain
 	comparisons[4] = api.Or(comparisons[0], comparisons[2])             // lte
 	result := selector.Mux(api, constraint.ComparisonOperator, comparisons[:]...)
 	return result
-}
-
-func checkTransitionHash(api frontend.API, hash frontend.Variable, transition Transition) error {
-	mimc, err := mimc.NewMiMC(api)
-	if err != nil {
-		return err
-	}
-	mimc.Write(transition.IncomingPlaces[:]...)
-	mimc.Write(transition.OutgoingPlaces[:]...)
-	mimc.Write(transition.InitiatingParticipant)
-	mimc.Write(transition.RespondingParticipant)
-	mimc.Write(transition.InitiatingMessage)
-	mimc.Write(transition.Constraint.Coefficients[:]...)
-	mimc.Write(transition.Constraint.MessageIds[:]...)
-	mimc.Write(transition.Constraint.Offset)
-	mimc.Write(transition.Constraint.ComparisonOperator)
-	api.AssertIsEqual(hash, mimc.Sum())
-	return nil
 }

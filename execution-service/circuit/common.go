@@ -46,12 +46,11 @@ func checkInstanceHash(api frontend.API, instance Instance) error {
 }
 
 func checkAuthentication(api frontend.API, authentication Authentication, instance Instance) error {
-	mimc, err := mimc.NewMiMC(api)
+	authentication.MerkleProof.CheckRootHash(api, instance.PublicKeyRoot)
+	err := authentication.MerkleProof.VerifyProof(api)
 	if err != nil {
 		return err
 	}
-	authentication.MerkleProof.CheckRootHash(api, instance.PublicKeyRoot)
-	authentication.MerkleProof.VerifyProof(api, mimc)
 	checkPublicKeyHash(api, authentication.MerkleProof.MerkleProof.Path[0], authentication.PublicKey)
 	return checkSignature(api, authentication, instance)
 }
@@ -88,6 +87,11 @@ func (merkleProof *MerkleProof) CheckRootHash(api frontend.API, hash frontend.Va
 	return equals(api, merkleProof.MerkleProof.RootHash, hash)
 }
 
-func (merkleProof *MerkleProof) VerifyProof(api frontend.API, m mimc.MiMC) {
-	merkleProof.MerkleProof.VerifyProof(api, &m, merkleProof.Index)
+func (merkleProof *MerkleProof) VerifyProof(api frontend.API) error {
+	mimc, err := mimc.NewMiMC(api)
+	if err != nil {
+		return err
+	}
+	merkleProof.MerkleProof.VerifyProof(api, &mimc, merkleProof.Index)
+	return nil
 }
