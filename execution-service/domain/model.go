@@ -6,16 +6,16 @@ import (
 	"time"
 )
 
-const BasePlaceCount = 16
-const BaseParticipantCount = 16
+const BasePlaceCount = 8
+const BaseParticipantCount = 8
 const BaseMessageCount = 16
 const BaseStartPlaceCount = 1
 const BaseEndPlaceCount = 2
-const BaseTransitionCount = 16
+const BaseTransitionCount = 8
 const BaseBranchingFactor = 4
 const BaseMessageCountInConstraints = 4
 
-const factor = 4
+const factor = 8
 
 const MaxPlaceCount = BasePlaceCount * factor
 const MaxParticipantCount = BaseParticipantCount * factor
