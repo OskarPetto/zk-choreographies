@@ -11,19 +11,9 @@ import (
 	"github.com/consensys/gnark/std/selector"
 )
 
-type AddedMessageIds struct {
-	messageIds      [2]frontend.Variable
-	noMessagesAdded frontend.Variable
-}
-
-type TokenCountChanges struct {
-	placesWhereTokenCountDecreases [domain.MaxBranchingFactor]frontend.Variable
-	placesWhereTokenCountIncreases [domain.MaxBranchingFactor]frontend.Variable
-	noChanges                      frontend.Variable
-}
-
-type ConstraintMessageIds struct {
-	MessageIds [domain.MaxMessageCountInConstraints]frontend.Variable
+type IntermediateResult struct {
+	matchesTransition frontend.Variable
+	noChanges         frontend.Variable
 }
 
 type TransitionCircuit struct {
@@ -85,56 +75,43 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 		return err
 	}
 	api.AssertIsEqual(circuit.CurrentInstance.PublicKeyRoot, circuit.NextInstance.PublicKeyRoot)
-	tokenCountChanges := circuit.compareTokenCounts(api)
-	addedMessageIds := circuit.findAddedMessageIds(api)
-	constraintInputMessageIds, err := circuit.findConstraintInputMessageIds(api)
+	err = circuit.checkConstraintInput(api)
 	if err != nil {
 		return err
 	}
-	return circuit.checkTransition(api, tokenCountChanges, addedMessageIds, constraintInputMessageIds)
+	tokenChanges := circuit.checkTokenCounts(api)
+	addedMessageHashes := circuit.checkAddedMessageHashes(api)
+	return circuit.checkTransition(api, tokenChanges, addedMessageHashes)
 }
 
-func (circuit *TransitionCircuit) findConstraintInputMessageIds(api frontend.API) (ConstraintMessageIds, error) {
-	var messageIds [domain.MaxMessageCountInConstraints]frontend.Variable
-	var messageHashesMatchCount frontend.Variable = 0
+func (circuit *TransitionCircuit) checkConstraintInput(api frontend.API) error {
+	for i, referencedMessageId := range circuit.Transition.Constraint.MessageIds {
+		noMessageReferenced := equals(api, referencedMessageId, domain.EmptyMessageId)
+		var messageHash frontend.Variable = emptyMessageHash
+		for messageId, messageHashForMessageId := range circuit.CurrentInstance.MessageHashes {
+			messageIdsMatch := equals(api, messageId, referencedMessageId)
+			messageHash = api.Select(messageIdsMatch, messageHashForMessageId, messageHash)
+		}
 
-	for i := 0; i < domain.MaxMessageCountInConstraints; i++ {
-		messageIds[i] = domain.EmptyMessageId
-	}
-	for _, message := range circuit.ConstraintInput.Messages {
+		providedMessage := circuit.ConstraintInput.Messages[i]
 		mimc, err := mimc.NewMiMC(api)
 		if err != nil {
-			return ConstraintMessageIds{}, err
+			return err
 		}
-		mimc.Write(message.IntegerMessage)
-		mimc.Write(message.Instance)
-		mimc.Write(message.Salt)
-		messageHash := mimc.Sum()
+		mimc.Write(providedMessage.IntegerMessage)
+		mimc.Write(providedMessage.Instance)
+		mimc.Write(providedMessage.Salt)
+		providedMessageHash := mimc.Sum()
+		messageHashesMatch := equals(api, messageHash, providedMessageHash)
 
-		for messageId, messageHashForMessageId := range circuit.CurrentInstance.MessageHashes {
-			messageHashesMatch := equals(api, messageHash, messageHashForMessageId)
-			for i := 0; i < domain.MaxMessageCountInConstraints; i++ {
-				isCorrectIndex := equals(api, messageHashesMatchCount, i)
-				shouldWrite := api.And(isCorrectIndex, messageHashesMatch)
-				messageIds[i] = api.Select(shouldWrite, messageId, messageIds[i])
-			}
-			messageHashesMatchCount = api.Add(messageHashesMatchCount, messageHashesMatch)
-		}
+		api.AssertIsEqual(1, api.Or(noMessageReferenced, messageHashesMatch))
 	}
-	return ConstraintMessageIds{
-		MessageIds: messageIds,
-	}, nil
+	return nil
 }
 
-func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCountChanges {
-	var placesWhereTokenCountDecreases [domain.MaxBranchingFactor]frontend.Variable
-	var placesWhereTokenCountIncreases [domain.MaxBranchingFactor]frontend.Variable
-	for i := 0; i < domain.MaxBranchingFactor; i++ {
-		placesWhereTokenCountDecreases[i] = domain.OutOfBoundsPlaceId
-		placesWhereTokenCountIncreases[i] = domain.OutOfBoundsPlaceId
-	}
-	var tokenCountDecreasesCount frontend.Variable = 0
-	var tokenCountIncreasesCount frontend.Variable = 0
+func (circuit *TransitionCircuit) checkTokenCounts(api frontend.API) IntermediateResult {
+	var noChanges frontend.Variable = 1
+	var tokenCountChangesMatchTransition frontend.Variable = 1
 
 	for placeId := range circuit.CurrentInstance.TokenCounts {
 		currentTokenCount := circuit.CurrentInstance.TokenCounts[placeId]
@@ -147,36 +124,39 @@ func (circuit *TransitionCircuit) compareTokenCounts(api frontend.API) TokenCoun
 
 		tokenCountDecreases := equals(api, tokenChange, -1)
 		tokenCountIncreases := equals(api, tokenChange, 1)
-		api.AssertIsEqual(1, api.Or(api.Or(tokenCountStaysTheSame, tokenCountDecreases), tokenCountIncreases))
 
-		for i := 0; i < domain.MaxBranchingFactor; i++ {
-			isCorrectIndex := equals(api, tokenCountDecreasesCount, i)
-			shouldWrite := api.And(tokenCountDecreases, isCorrectIndex)
-			placesWhereTokenCountDecreases[i] = api.Select(shouldWrite, placeId, placesWhereTokenCountDecreases[i])
+		var isIncomingPlace frontend.Variable = 0
+		for _, incomingPlace := range circuit.Transition.IncomingPlaces {
+			isIncomingPlace = api.Or(isIncomingPlace, equals(api, placeId, incomingPlace))
 		}
-		for i := 0; i < domain.MaxBranchingFactor; i++ {
-			isCorrectIndex := equals(api, tokenCountIncreasesCount, i)
-			shouldWrite := api.And(tokenCountIncreases, isCorrectIndex)
-			placesWhereTokenCountIncreases[i] = api.Select(shouldWrite, placeId, placesWhereTokenCountIncreases[i])
-		}
+		isNotIncomingPlace := api.IsZero(isIncomingPlace)
 
-		tokenCountDecreasesCount = api.Add(tokenCountDecreasesCount, tokenCountDecreases)
-		tokenCountIncreasesCount = api.Add(tokenCountIncreasesCount, tokenCountIncreases)
+		var isOutgoingPlace frontend.Variable = 0
+		for _, outgoingPlace := range circuit.Transition.OutgoingPlaces {
+			isOutgoingPlace = api.Or(isOutgoingPlace, equals(api, placeId, outgoingPlace))
+		}
+		isNotOutgoingPlace := api.IsZero(isOutgoingPlace)
+
+		tokenCountDecreasesAtIncomingPlace := api.Or(isNotIncomingPlace, tokenCountDecreases)
+		tokenCountIncreasesAtOutgoingPlace := api.Or(isNotOutgoingPlace, tokenCountIncreases)
+		tokenCountStaysTheSameAtOtherPlace := api.Or(api.Or(isIncomingPlace, isOutgoingPlace), tokenCountStaysTheSame)
+
+		tokenCountChangesMatchTransition = api.And(tokenCountChangesMatchTransition, tokenCountDecreasesAtIncomingPlace)
+		tokenCountChangesMatchTransition = api.And(tokenCountChangesMatchTransition, tokenCountIncreasesAtOutgoingPlace)
+		tokenCountChangesMatchTransition = api.And(tokenCountChangesMatchTransition, tokenCountStaysTheSameAtOtherPlace)
+
+		noChanges = api.And(noChanges, tokenCountStaysTheSame)
 	}
 
-	api.AssertIsLessOrEqual(tokenCountDecreasesCount, domain.MaxBranchingFactor)
-	api.AssertIsLessOrEqual(tokenCountIncreasesCount, domain.MaxBranchingFactor)
-
-	noChanges := api.And(api.IsZero(tokenCountDecreasesCount), api.IsZero(tokenCountIncreasesCount))
-
-	return TokenCountChanges{
-		placesWhereTokenCountDecreases, placesWhereTokenCountIncreases, noChanges,
+	return IntermediateResult{
+		matchesTransition: tokenCountChangesMatchTransition,
+		noChanges:         noChanges,
 	}
 }
 
-func (circuit *TransitionCircuit) findAddedMessageIds(api frontend.API) AddedMessageIds {
-	var messageHashesAddedCount frontend.Variable = 0
-	addedMessageIds := [2]frontend.Variable{domain.EmptyMessageId, domain.EmptyMessageId}
+func (circuit *TransitionCircuit) checkAddedMessageHashes(api frontend.API) IntermediateResult {
+	var noChanges frontend.Variable = 1
+	var addedMessageHashesMatchTransition frontend.Variable = 1
 
 	for messageId := range circuit.CurrentInstance.MessageHashes {
 		currentMessageHash := circuit.CurrentInstance.MessageHashes[messageId]
@@ -185,24 +165,27 @@ func (circuit *TransitionCircuit) findAddedMessageIds(api frontend.API) AddedMes
 		messageHashesMatch := equals(api, currentMessageHash, nextMessageHash)
 		messageHashAdded := api.IsZero(messageHashesMatch)
 
-		for i := 0; i < 2; i++ {
-			isCorrectIndex := equals(api, messageHashesAddedCount, i)
-			shouldWrite := api.And(messageHashAdded, isCorrectIndex)
-			addedMessageIds[i] = api.Select(shouldWrite, messageId, addedMessageIds[i])
-		}
+		isInitiatingMessage := equals(api, messageId, circuit.Transition.InitiatingMessage)
+		isRespondingMessage := equals(api, messageId, circuit.Transition.RespondingMessage)
 
-		messageHashesAddedCount = api.Add(messageHashesAddedCount, messageHashAdded)
+		messageHashAddedAtInitiatingMessage := api.Or(api.IsZero(isInitiatingMessage), messageHashAdded)
+		messageHashAddedAtRespondingMessage := api.Or(api.IsZero(isRespondingMessage), messageHashAdded)
+		messageHashesMatchAtOtherMessage := api.Or(api.Or(isInitiatingMessage, isRespondingMessage), messageHashesMatch)
+
+		addedMessageHashesMatchTransition = api.And(addedMessageHashesMatchTransition, messageHashAddedAtInitiatingMessage)
+		addedMessageHashesMatchTransition = api.And(addedMessageHashesMatchTransition, messageHashAddedAtRespondingMessage)
+		addedMessageHashesMatchTransition = api.And(addedMessageHashesMatchTransition, messageHashesMatchAtOtherMessage)
+
+		noChanges = api.And(noChanges, messageHashesMatch)
 	}
 
-	api.AssertIsLessOrEqual(messageHashesAddedCount, 2)
-
-	return AddedMessageIds{
-		messageIds:      addedMessageIds,
-		noMessagesAdded: api.IsZero(messageHashesAddedCount),
+	return IntermediateResult{
+		matchesTransition: addedMessageHashesMatchTransition,
+		noChanges:         noChanges,
 	}
 }
 
-func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountChanges TokenCountChanges, addedMessageIds AddedMessageIds, constraintMessageIds ConstraintMessageIds) error {
+func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountChanges IntermediateResult, addedMessageHashes IntermediateResult) error {
 	mimc, err := mimc.NewMiMC(api)
 	if err != nil {
 		return err
@@ -215,49 +198,25 @@ func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountCh
 	senderParticipantId := circuit.InitiatingParticipantAuthentication.MerkleProof.Index
 	recipientParticipantId := circuit.RespondingParticipantAuthentication.MerkleProof.Index
 
-	var tokenCountChangesMatch frontend.Variable = 1
-	for _, incomingPlace := range transition.IncomingPlaces {
-		var tokenCountDecreasesAtIncomingPlace frontend.Variable = 0
-		for _, placeWhereTokenCountDecreases := range tokenCountChanges.placesWhereTokenCountDecreases {
-			tokenCountDecreasesAtIncomingPlace = api.Or(tokenCountDecreasesAtIncomingPlace, equals(api, incomingPlace, placeWhereTokenCountDecreases))
-		}
-		tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountDecreasesAtIncomingPlace)
-	}
-	for _, outgoingPlace := range transition.OutgoingPlaces {
-		var tokenCountIncreasesAtOutgoingPlace frontend.Variable = 0
-		for _, placeWhereTokenCountIncreases := range tokenCountChanges.placesWhereTokenCountIncreases {
-			tokenCountIncreasesAtOutgoingPlace = api.Or(tokenCountIncreasesAtOutgoingPlace, equals(api, outgoingPlace, placeWhereTokenCountIncreases))
-		}
-		tokenCountChangesMatch = api.And(tokenCountChangesMatch, tokenCountIncreasesAtOutgoingPlace)
-	}
-
 	initiatingParticipantMatches := api.Or(equals(api, transition.InitiatingParticipant, domain.EmptyParticipantId), equals(api, transition.InitiatingParticipant, senderParticipantId))
 	respondingParticipantMatches := api.Or(equals(api, transition.RespondingParticipant, domain.EmptyParticipantId), equals(api, transition.RespondingParticipant, recipientParticipantId))
-	messageMatches := addedMessagesMatch(api, transition.InitiatingMessage, transition.RespondingMessage, addedMessageIds)
-	constraintSatisfied := evaluateConstraint(api, transition.Constraint, circuit.ConstraintInput, constraintMessageIds)
+	constraintSatisfied := evaluateConstraint(api, transition.Constraint, circuit.ConstraintInput)
 
 	transitionMatches := api.And(initiatingParticipantMatches, respondingParticipantMatches)
-	transitionMatches = api.And(transitionMatches, tokenCountChangesMatch)
-	transitionMatches = api.And(transitionMatches, messageMatches)
+	transitionMatches = api.And(transitionMatches, tokenCountChanges.matchesTransition)
+	transitionMatches = api.And(transitionMatches, addedMessageHashes.matchesTransition)
 	transitionMatches = api.And(transitionMatches, constraintSatisfied)
 
-	noChanges := api.And(tokenCountChanges.noChanges, addedMessageIds.noMessagesAdded)
+	noChanges := api.And(tokenCountChanges.noChanges, addedMessageHashes.noChanges)
 
 	api.AssertIsEqual(1, api.Or(transitionMatches, noChanges))
 	return nil
 }
 
-func evaluateConstraint(api frontend.API, constraint Constraint, input ConstraintInput, constraintMessageIds ConstraintMessageIds) frontend.Variable {
+func evaluateConstraint(api frontend.API, constraint Constraint, input ConstraintInput) frontend.Variable {
 	lhs := constraint.Offset
-	var allMessageIdsMatch frontend.Variable = 1
-	for i, messageId := range constraint.MessageIds {
+	for i, _ := range constraint.MessageIds {
 		coefficient := constraint.Coefficients[i]
-		expectedMessageId := constraintMessageIds.MessageIds[i]
-
-		coefficientIsZero := api.IsZero(coefficient)
-		messageIdsMatch := equals(api, expectedMessageId, messageId)
-		allMessageIdsMatch = api.And(allMessageIdsMatch, api.Or(coefficientIsZero, messageIdsMatch))
-
 		message := input.Messages[i]
 		lhs = api.MulAcc(lhs, coefficient, message.IntegerMessage)
 	}
@@ -270,7 +229,7 @@ func evaluateConstraint(api frontend.API, constraint Constraint, input Constrain
 	comparisons[3] = api.Or(comparisons[0], comparisons[1])             // gte
 	comparisons[4] = api.Or(comparisons[0], comparisons[2])             // lte
 	result := selector.Mux(api, constraint.ComparisonOperator, comparisons[:]...)
-	return api.And(allMessageIdsMatch, result)
+	return result
 }
 
 func checkTransitionHash(api frontend.API, hash frontend.Variable, transition Transition) error {
@@ -289,11 +248,4 @@ func checkTransitionHash(api frontend.API, hash frontend.Variable, transition Tr
 	mimc.Write(transition.Constraint.ComparisonOperator)
 	api.AssertIsEqual(hash, mimc.Sum())
 	return nil
-}
-
-func addedMessagesMatch(api frontend.API, initiatingMessage frontend.Variable, respondingMessage frontend.Variable, addedMessageIds AddedMessageIds) frontend.Variable {
-	return api.Or(
-		api.And(equals(api, initiatingMessage, addedMessageIds.messageIds[0]), equals(api, respondingMessage, addedMessageIds.messageIds[1])),
-		api.And(equals(api, initiatingMessage, addedMessageIds.messageIds[1]), equals(api, respondingMessage, addedMessageIds.messageIds[0])),
-	)
 }
