@@ -39,7 +39,7 @@ type Instance struct {
 }
 
 type ConstraintInput struct {
-	Messages [domain.MaxConstraintMessageCount]Message
+	Messages [domain.MaxMessageCountInConstraints]Message
 }
 
 type Message struct {
@@ -49,8 +49,8 @@ type Message struct {
 }
 
 type Constraint struct {
-	Coefficients       [domain.MaxConstraintMessageCount]frontend.Variable
-	MessageIds         [domain.MaxConstraintMessageCount]frontend.Variable
+	Coefficients       [domain.MaxMessageCountInConstraints]frontend.Variable
+	MessageIds         [domain.MaxMessageCountInConstraints]frontend.Variable
 	Offset             frontend.Variable
 	ComparisonOperator frontend.Variable
 }
@@ -273,18 +273,18 @@ func ToTransition(model domain.Model, transition domain.Transition) Transition {
 }
 
 func fromConstraint(constraint domain.Constraint) Constraint {
-	var coefficients [domain.MaxConstraintMessageCount]frontend.Variable
+	var coefficients [domain.MaxMessageCountInConstraints]frontend.Variable
 	for i, coefficient := range constraint.Coefficients {
 		coefficients[i] = coefficient
 	}
-	for i := len(constraint.Coefficients); i < domain.MaxConstraintMessageCount; i++ {
+	for i := len(constraint.Coefficients); i < domain.MaxMessageCountInConstraints; i++ {
 		coefficients[i] = 0
 	}
-	var messageIds [domain.MaxConstraintMessageCount]frontend.Variable
+	var messageIds [domain.MaxMessageCountInConstraints]frontend.Variable
 	for i, messageId := range constraint.MessageIds {
 		messageIds[i] = messageId
 	}
-	for i := len(constraint.MessageIds); i < domain.MaxConstraintMessageCount; i++ {
+	for i := len(constraint.MessageIds); i < domain.MaxMessageCountInConstraints; i++ {
 		messageIds[i] = domain.EmptyMessageId
 	}
 	return Constraint{
@@ -296,11 +296,11 @@ func fromConstraint(constraint domain.Constraint) Constraint {
 }
 
 func FromConstraintInput(constraintInput domain.ConstraintInput) ConstraintInput {
-	var messages [domain.MaxConstraintMessageCount]Message
+	var messages [domain.MaxMessageCountInConstraints]Message
 	for i, message := range constraintInput.Messages {
 		messages[i] = fromMessage(message)
 	}
-	for i := len(constraintInput.Messages); i < domain.MaxConstraintMessageCount; i++ {
+	for i := len(constraintInput.Messages); i < domain.MaxMessageCountInConstraints; i++ {
 		messages[i] = fromMessage(domain.EmptyMessage())
 	}
 	return ConstraintInput{

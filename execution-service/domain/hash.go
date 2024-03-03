@@ -79,13 +79,13 @@ func (transition Transition) ComputeHash() Hash {
 	for _, coefficient := range transition.Constraint.Coefficients {
 		hashInt64(mimc, int64(coefficient))
 	}
-	for i := len(transition.Constraint.Coefficients); i < MaxConstraintMessageCount; i++ {
+	for i := len(transition.Constraint.Coefficients); i < MaxMessageCountInConstraints; i++ {
 		hashInt64(mimc, 0)
 	}
 	for _, messageId := range transition.Constraint.MessageIds {
 		hashUint16(mimc, messageId)
 	}
-	for i := len(transition.Constraint.MessageIds); i < MaxConstraintMessageCount; i++ {
+	for i := len(transition.Constraint.MessageIds); i < MaxMessageCountInConstraints; i++ {
 		hashInt64(mimc, int64(EmptyMessageId))
 	}
 	hashInt64(mimc, int64(transition.Constraint.Offset))

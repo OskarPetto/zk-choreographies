@@ -23,7 +23,7 @@ type TokenCountChanges struct {
 }
 
 type ConstraintMessageIds struct {
-	MessageIds [domain.MaxConstraintMessageCount]frontend.Variable
+	MessageIds [domain.MaxMessageCountInConstraints]frontend.Variable
 }
 
 type TransitionCircuit struct {
@@ -95,10 +95,10 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 }
 
 func (circuit *TransitionCircuit) findConstraintInputMessageIds(api frontend.API) (ConstraintMessageIds, error) {
-	var messageIds [domain.MaxConstraintMessageCount]frontend.Variable
+	var messageIds [domain.MaxMessageCountInConstraints]frontend.Variable
 	var messageHashesMatchCount frontend.Variable = 0
 
-	for i := 0; i < domain.MaxConstraintMessageCount; i++ {
+	for i := 0; i < domain.MaxMessageCountInConstraints; i++ {
 		messageIds[i] = domain.EmptyMessageId
 	}
 	for _, message := range circuit.ConstraintInput.Messages {
@@ -113,7 +113,7 @@ func (circuit *TransitionCircuit) findConstraintInputMessageIds(api frontend.API
 
 		for messageId, messageHashForMessageId := range circuit.CurrentInstance.MessageHashes {
 			messageHashesMatch := equals(api, messageHash, messageHashForMessageId)
-			for i := 0; i < domain.MaxConstraintMessageCount; i++ {
+			for i := 0; i < domain.MaxMessageCountInConstraints; i++ {
 				isCorrectIndex := equals(api, messageHashesMatchCount, i)
 				shouldWrite := api.And(isCorrectIndex, messageHashesMatch)
 				messageIds[i] = api.Select(shouldWrite, messageId, messageIds[i])

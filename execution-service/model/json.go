@@ -173,10 +173,10 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 }
 
 func (constraint *ConstraintJson) toConstraint() (domain.Constraint, error) {
-	if len(constraint.Coefficients) > domain.MaxConstraintMessageCount {
+	if len(constraint.Coefficients) > domain.MaxMessageCountInConstraints {
 		return domain.Constraint{}, fmt.Errorf("constraint has too many coefficients")
 	}
-	if len(constraint.MessageIds) > domain.MaxConstraintMessageCount {
+	if len(constraint.MessageIds) > domain.MaxMessageCountInConstraints {
 		return domain.Constraint{}, fmt.Errorf("constraint has too many messageIds")
 	}
 	if len(constraint.MessageIds) != len(constraint.Coefficients) {
