@@ -164,11 +164,8 @@ func (circuit *TransitionCircuit) checkTokenCounts(api frontend.API) Intermediat
 		currentTokenCount := circuit.CurrentInstance.TokenCounts[placeId]
 		nextTokenCount := circuit.NextInstance.TokenCounts[placeId]
 
-		isTokenCount := api.Or(equals(api, nextTokenCount, 0), equals(api, nextTokenCount, 1))
 		tokenChange := api.Sub(nextTokenCount, currentTokenCount)
 		tokenCountStaysTheSame := api.IsZero(tokenChange)
-		api.AssertIsEqual(1, api.Or(isTokenCount, tokenCountStaysTheSame))
-
 		tokenCountDecreases := equals(api, tokenChange, -1)
 		tokenCountIncreases := equals(api, tokenChange, 1)
 
