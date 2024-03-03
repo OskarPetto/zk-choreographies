@@ -215,7 +215,7 @@ func (circuit *TransitionCircuit) checkTransition(api frontend.API, tokenCountCh
 
 func evaluateConstraint(api frontend.API, constraint Constraint, input ConstraintInput) frontend.Variable {
 	lhs := constraint.Offset
-	for i, _ := range constraint.MessageIds {
+	for i := range constraint.MessageIds {
 		coefficient := constraint.Coefficients[i]
 		message := input.Messages[i]
 		lhs = api.MulAcc(lhs, coefficient, message.IntegerMessage)
