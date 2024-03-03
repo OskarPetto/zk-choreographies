@@ -79,17 +79,18 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	if err != nil {
 		return err
 	}
-	err = circuit.checkConstraintInput(api)
-	if err != nil {
-		return err
-	}
 	tokenCountChanges := circuit.checkTokenCounts(api)
 	addedMessageHashes := circuit.checkAddedMessageHashes(api)
 	participantsMatch := circuit.checkParticipants(api)
+	constrainInputsMatch, err := circuit.checkConstraintInput(api)
+	if err != nil {
+		return err
+	}
 	constraintSatisfied := evaluateConstraint(api, circuit.Transition.Constraint, circuit.ConstraintInput)
 
 	transitionMatches := api.And(participantsMatch, tokenCountChanges.matchesTransition)
 	transitionMatches = api.And(transitionMatches, addedMessageHashes.matchesTransition)
+	transitionMatches = api.And(transitionMatches, constrainInputsMatch)
 	transitionMatches = api.And(transitionMatches, constraintSatisfied)
 
 	noChanges := api.And(tokenCountChanges.noChanges, addedMessageHashes.noChanges)
@@ -129,7 +130,8 @@ func checkTransitionHash(api frontend.API, hash frontend.Variable, transition Tr
 	return nil
 }
 
-func (circuit *TransitionCircuit) checkConstraintInput(api frontend.API) error {
+func (circuit *TransitionCircuit) checkConstraintInput(api frontend.API) (frontend.Variable, error) {
+	var constraintInputMatchesTransition frontend.Variable = 1
 	for i, referencedMessageId := range circuit.Transition.Constraint.MessageIds {
 		noMessageReferenced := equals(api, referencedMessageId, domain.EmptyMessageId)
 		var messageHash frontend.Variable = emptyMessageHash
@@ -141,7 +143,7 @@ func (circuit *TransitionCircuit) checkConstraintInput(api frontend.API) error {
 		providedMessage := circuit.ConstraintInput.Messages[i]
 		mimc, err := mimc.NewMiMC(api)
 		if err != nil {
-			return err
+			return 0, err
 		}
 		mimc.Write(providedMessage.IntegerMessage)
 		mimc.Write(providedMessage.Instance)
@@ -149,9 +151,9 @@ func (circuit *TransitionCircuit) checkConstraintInput(api frontend.API) error {
 		providedMessageHash := mimc.Sum()
 		messageHashesMatch := equals(api, messageHash, providedMessageHash)
 
-		api.AssertIsEqual(1, api.Or(noMessageReferenced, messageHashesMatch))
+		constraintInputMatchesTransition = api.And(constraintInputMatchesTransition, api.Or(noMessageReferenced, messageHashesMatch))
 	}
-	return nil
+	return constraintInputMatchesTransition, nil
 }
 
 func (circuit *TransitionCircuit) checkTokenCounts(api frontend.API) IntermediateResult {

@@ -83,8 +83,8 @@ func equals(api frontend.API, a, b frontend.Variable) frontend.Variable {
 	return api.IsZero(api.Sub(a, b))
 }
 
-func (merkleProof *MerkleProof) CheckRootHash(api frontend.API, hash frontend.Variable) frontend.Variable {
-	return equals(api, merkleProof.MerkleProof.RootHash, hash)
+func (merkleProof *MerkleProof) CheckRootHash(api frontend.API, hash frontend.Variable) {
+	api.AssertIsEqual(merkleProof.MerkleProof.RootHash, hash)
 }
 
 func (merkleProof *MerkleProof) VerifyProof(api frontend.API) error {
