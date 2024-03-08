@@ -38,8 +38,8 @@ type Instance struct {
 	MessageHashes [domain.MaxMessageCount]frontend.Variable
 }
 
-type ConstraintInput struct {
-	Messages [domain.MaxMessageCountInConstraints]Message
+type ConditionInput struct {
+	Messages [domain.MaxMessageCountInConditions]Message
 }
 
 type Message struct {
@@ -48,9 +48,9 @@ type Message struct {
 	Salt           frontend.Variable
 }
 
-type Constraint struct {
-	Coefficients       [domain.MaxMessageCountInConstraints]frontend.Variable
-	MessageIds         [domain.MaxMessageCountInConstraints]frontend.Variable
+type Condition struct {
+	Coefficients       [domain.MaxMessageCountInConditions]frontend.Variable
+	MessageIds         [domain.MaxMessageCountInConditions]frontend.Variable
 	Offset             frontend.Variable
 	ComparisonOperator frontend.Variable
 }
@@ -62,7 +62,7 @@ type Transition struct {
 	RespondingParticipant frontend.Variable
 	InitiatingMessage     frontend.Variable
 	RespondingMessage     frontend.Variable
-	Constraint            Constraint
+	Condition             Condition
 	MerkleProof           MerkleProof
 }
 
@@ -264,7 +264,7 @@ func ToTransition(model domain.Model, transition domain.Transition) Transition {
 		RespondingParticipant: transition.RespondingParticipant,
 		InitiatingMessage:     transition.InitiatingMessage,
 		RespondingMessage:     transition.RespondingMessage,
-		Constraint:            fromConstraint(transition.Constraint),
+		Condition:             fromCondition(transition.Condition),
 		MerkleProof: MerkleProof{
 			MerkleProof: merkeProof,
 			Index:       index,
@@ -272,38 +272,38 @@ func ToTransition(model domain.Model, transition domain.Transition) Transition {
 	}
 }
 
-func fromConstraint(constraint domain.Condition) Constraint {
-	var coefficients [domain.MaxMessageCountInConstraints]frontend.Variable
-	for i, coefficient := range constraint.Coefficients {
+func fromCondition(condition domain.Condition) Condition {
+	var coefficients [domain.MaxMessageCountInConditions]frontend.Variable
+	for i, coefficient := range condition.Coefficients {
 		coefficients[i] = coefficient
 	}
-	for i := len(constraint.Coefficients); i < domain.MaxMessageCountInConstraints; i++ {
+	for i := len(condition.Coefficients); i < domain.MaxMessageCountInConditions; i++ {
 		coefficients[i] = 0
 	}
-	var messageIds [domain.MaxMessageCountInConstraints]frontend.Variable
-	for i, messageId := range constraint.MessageIds {
+	var messageIds [domain.MaxMessageCountInConditions]frontend.Variable
+	for i, messageId := range condition.MessageIds {
 		messageIds[i] = messageId
 	}
-	for i := len(constraint.MessageIds); i < domain.MaxMessageCountInConstraints; i++ {
+	for i := len(condition.MessageIds); i < domain.MaxMessageCountInConditions; i++ {
 		messageIds[i] = domain.EmptyMessageId
 	}
-	return Constraint{
+	return Condition{
 		Coefficients:       coefficients,
 		MessageIds:         messageIds,
-		Offset:             constraint.Offset,
-		ComparisonOperator: constraint.ComparisonOperator,
+		Offset:             condition.Offset,
+		ComparisonOperator: condition.ComparisonOperator,
 	}
 }
 
-func FromConstraintInput(constraintInput domain.ConstraintInput) ConstraintInput {
-	var messages [domain.MaxMessageCountInConstraints]Message
-	for i, message := range constraintInput.Messages {
+func FromConditionInput(conditionInput domain.ConditionInput) ConditionInput {
+	var messages [domain.MaxMessageCountInConditions]Message
+	for i, message := range conditionInput.Messages {
 		messages[i] = fromMessage(message)
 	}
-	for i := len(constraintInput.Messages); i < domain.MaxMessageCountInConstraints; i++ {
+	for i := len(conditionInput.Messages); i < domain.MaxMessageCountInConditions; i++ {
 		messages[i] = fromMessage(domain.EmptyMessage())
 	}
-	return ConstraintInput{
+	return ConditionInput{
 		Messages: messages,
 	}
 }

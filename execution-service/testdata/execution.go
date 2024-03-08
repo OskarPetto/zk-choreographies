@@ -14,7 +14,7 @@ type State struct {
 	Transition                     domain.Transition
 	InitiatingParticipant          domain.IdentityId
 	RespondingParticipant          *domain.IdentityId
-	ConstraintInput                domain.ConstraintInput
+	ConditionInput                 domain.ConditionInput
 	InitiatingMessage              *domain.Message
 	RespondingMessage              *domain.Message
 }
@@ -31,12 +31,12 @@ func GetModel2States(signatureParameters parameters.SignatureParameters) []State
 	state2 := executeTransition(signatureParameters, model2, 2, state1.Instance, nil, &order, &stock)
 	confirm, err := domain.NewInitiatingBytesMessage(state2.Instance, model2.Transitions[7], []byte("confirm"))
 	utils.PanicOnError(err)
-	constraintInput1 := domain.ConstraintInput{
+	conditionInput1 := domain.ConditionInput{
 		Messages: []domain.Message{
 			order, stock,
 		},
 	}
-	state3 := executeTransition(signatureParameters, model2, 7, state2.Instance, &constraintInput1, &confirm, nil)
+	state3 := executeTransition(signatureParameters, model2, 7, state2.Instance, &conditionInput1, &confirm, nil)
 	invoice, err := domain.NewInitiatingBytesMessage(state3.Instance, model2.Transitions[6], []byte("invoice"))
 	utils.PanicOnError(err)
 	payment, err := domain.NewRespondingBytesMessage(state3.Instance, model2.Transitions[6], []byte("payment"))
@@ -70,7 +70,7 @@ func instantiateModel(signatureParameters parameters.SignatureParameters, model 
 	}
 }
 
-func executeTransition(signatureParameters parameters.SignatureParameters, model domain.Model, transitionIndex uint, currentInstance domain.Instance, constraintInput *domain.ConstraintInput, initiatingMessage *domain.Message, respondingMessage *domain.Message) State {
+func executeTransition(signatureParameters parameters.SignatureParameters, model domain.Model, transitionIndex uint, currentInstance domain.Instance, conditionInput *domain.ConditionInput, initiatingMessage *domain.Message, respondingMessage *domain.Message) State {
 
 	var transition domain.Transition
 	if transitionIndex < domain.MaxTransitionCount {
@@ -78,12 +78,12 @@ func executeTransition(signatureParameters parameters.SignatureParameters, model
 	} else {
 		transition = domain.OutOfBoundsTransition()
 	}
-	constraintInputNotNull := domain.EmptyConstraintInput()
-	if constraintInput != nil {
-		constraintInputNotNull = *constraintInput
+	conditionInputNotNull := domain.EmptyConditionInput()
+	if conditionInput != nil {
+		conditionInputNotNull = *conditionInput
 	}
 
-	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInputNotNull, initiatingMessage, respondingMessage)
+	nextInstance, err := currentInstance.ExecuteTransition(transition, conditionInputNotNull, initiatingMessage, respondingMessage)
 	utils.PanicOnError(err)
 
 	initiatingParticipant := uint(0)
@@ -114,7 +114,7 @@ func executeTransition(signatureParameters parameters.SignatureParameters, model
 		RespondingParticipantSignature: respondingParticipantSignature,
 		InitiatingParticipant:          initiatingParticipant,
 		RespondingParticipant:          respondingParticipant,
-		ConstraintInput:                constraintInputNotNull,
+		ConditionInput:                 conditionInputNotNull,
 		InitiatingMessage:              initiatingMessage,
 		RespondingMessage:              respondingMessage,
 	}

@@ -66,7 +66,7 @@ func (service ProverService) ProveTransition(cmd ProveTransitionCommand) (Proof,
 		Transition:                          circuit.ToTransition(cmd.Model, cmd.Transition),
 		InitiatingParticipantAuthentication: senderAuthentication,
 		RespondingParticipantAuthentication: recipientAuthentication,
-		ConstraintInput:                     circuit.FromConstraintInput(cmd.ConstraintInput),
+		ConditionInput:                      circuit.FromConditionInput(cmd.ConditionInput),
 	}
 	witness, err := frontend.NewWitness(assignment, ecc.BN254.ScalarField())
 	if err != nil {

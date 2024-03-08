@@ -97,7 +97,7 @@ export class ModelReducer {
           transition.condition = transitionToRemove.condition;
         } else if (transitionToRemove.condition) {
           throw Error(
-            `Cannot reduce model because transitions ${transition.id} and ${transitionToRemove.id} both have a constraint`,
+            `Cannot reduce model because transitions ${transition.id} and ${transitionToRemove.id} both have a condition`,
           );
         }
       }

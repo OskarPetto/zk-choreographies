@@ -19,7 +19,7 @@ func TestTransition_NoChange(t *testing.T) {
 	currentInstance := transitionStates[4].Instance
 	transition := transitionStates[4].Transition
 	signature := transitionStates[4].InitiatingParticipantSignature
-	constraintInput := transitionStates[4].ConstraintInput
+	conditionInput := transitionStates[4].ConditionInput
 
 	witness := circuit.TransitionCircuit{
 		Model:                               circuit.FromModel(model),
@@ -28,7 +28,7 @@ func TestTransition_NoChange(t *testing.T) {
 		Transition:                          circuit.ToTransition(model, transition),
 		InitiatingParticipantAuthentication: circuit.ToAuthentication(currentInstance, signature),
 		RespondingParticipantAuthentication: circuit.ToAuthentication(currentInstance, signature),
-		ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+		ConditionInput:                      circuit.FromConditionInput(conditionInput),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -45,7 +45,7 @@ func TestTransition_Transitions(t *testing.T) {
 		transition := transitionStates[i+1].Transition
 		initiatingParticipantSignature := transitionStates[i+1].InitiatingParticipantSignature
 		respondingParticipantSignature := transitionStates[i+1].RespondingParticipantSignature
-		constraintInput := transitionStates[i+1].ConstraintInput
+		conditionInput := transitionStates[i+1].ConditionInput
 
 		initiatingParticipantAuthentication := circuit.ToAuthentication(nextInstance, initiatingParticipantSignature)
 		respondingParticipantAuthentication := initiatingParticipantAuthentication
@@ -59,7 +59,7 @@ func TestTransition_Transitions(t *testing.T) {
 			Transition:                          circuit.ToTransition(model, transition),
 			InitiatingParticipantAuthentication: initiatingParticipantAuthentication,
 			RespondingParticipantAuthentication: respondingParticipantAuthentication,
-			ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+			ConditionInput:                      circuit.FromConditionInput(conditionInput),
 		}
 
 		err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -75,7 +75,7 @@ func TestTransition_InvalidModelHash(t *testing.T) {
 	nextInstance := transitionStates[1].Instance
 	transition := transitionStates[1].Transition
 	senderSignature := transitionStates[1].InitiatingParticipantSignature
-	constraintInput := transitionStates[1].ConstraintInput
+	conditionInput := transitionStates[1].ConditionInput
 
 	model.SaltedHash = domain.SaltedHash{}
 
@@ -86,7 +86,7 @@ func TestTransition_InvalidModelHash(t *testing.T) {
 		Transition:                          circuit.ToTransition(model, transition),
 		InitiatingParticipantAuthentication: circuit.ToAuthentication(nextInstance, senderSignature),
 		RespondingParticipantAuthentication: circuit.ToAuthentication(nextInstance, senderSignature),
-		ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+		ConditionInput:                      circuit.FromConditionInput(conditionInput),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -98,7 +98,7 @@ func TestTransition_InvalidInstanceHash(t *testing.T) {
 	currentInstance := transitionStates[0].Instance
 	nextInstance := transitionStates[1].Instance
 	transition := transitionStates[1].Transition
-	constraintInput := transitionStates[1].ConstraintInput
+	conditionInput := transitionStates[1].ConditionInput
 
 	nextInstance.SaltedHash = domain.SaltedHash{}
 	sk, _ := signatureParameters.GetPrivateKeyForIdentity(0)
@@ -111,7 +111,7 @@ func TestTransition_InvalidInstanceHash(t *testing.T) {
 		Transition:                          circuit.ToTransition(model, transition),
 		InitiatingParticipantAuthentication: circuit.ToAuthentication(nextInstance, nextSignature),
 		RespondingParticipantAuthentication: circuit.ToAuthentication(nextInstance, nextSignature),
-		ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+		ConditionInput:                      circuit.FromConditionInput(conditionInput),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -125,7 +125,7 @@ func TestTransition_InvalidTokenCounts(t *testing.T) {
 	transition := transitionStates[2].Transition
 	senderSignature := transitionStates[2].InitiatingParticipantSignature
 	recipientSignature := *transitionStates[2].RespondingParticipantSignature
-	constraintInput := transitionStates[2].ConstraintInput
+	conditionInput := transitionStates[2].ConditionInput
 
 	witness := circuit.TransitionCircuit{
 		Model:                               circuit.FromModel(model),
@@ -134,7 +134,7 @@ func TestTransition_InvalidTokenCounts(t *testing.T) {
 		Transition:                          circuit.ToTransition(model, transition),
 		InitiatingParticipantAuthentication: circuit.ToAuthentication(nextInstance, senderSignature),
 		RespondingParticipantAuthentication: circuit.ToAuthentication(nextInstance, recipientSignature),
-		ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+		ConditionInput:                      circuit.FromConditionInput(conditionInput),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -148,7 +148,7 @@ func TestTransition_InvalidSignature(t *testing.T) {
 	transition := transitionStates[1].Transition
 	senderSignature := transitionStates[2].InitiatingParticipantSignature
 	recipientSignature := *transitionStates[2].RespondingParticipantSignature
-	constraintInput := transitionStates[1].ConstraintInput
+	conditionInput := transitionStates[1].ConditionInput
 
 	witness := circuit.TransitionCircuit{
 		Model:                               circuit.FromModel(model),
@@ -157,7 +157,7 @@ func TestTransition_InvalidSignature(t *testing.T) {
 		Transition:                          circuit.ToTransition(model, transition),
 		InitiatingParticipantAuthentication: circuit.ToAuthentication(nextInstance, senderSignature),
 		RespondingParticipantAuthentication: circuit.ToAuthentication(nextInstance, recipientSignature),
-		ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+		ConditionInput:                      circuit.FromConditionInput(conditionInput),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -169,7 +169,7 @@ func TestTransition_NotAParticipant(t *testing.T) {
 	currentInstance := transitionStates[0].Instance
 	nextInstance := transitionStates[1].Instance
 	transition := transitionStates[1].Transition
-	constraintInput := transitionStates[1].ConstraintInput
+	conditionInput := transitionStates[1].ConditionInput
 	authentication := circuit.ToAuthentication(nextInstance, transitionStates[1].InitiatingParticipantSignature)
 	authentication.MerkleProof.Index = 1
 
@@ -180,7 +180,7 @@ func TestTransition_NotAParticipant(t *testing.T) {
 		Transition:                          circuit.ToTransition(model, transition),
 		InitiatingParticipantAuthentication: authentication,
 		RespondingParticipantAuthentication: authentication,
-		ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+		ConditionInput:                      circuit.FromConditionInput(conditionInput),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -193,7 +193,7 @@ func TestTransition_AlteredPublicKeys(t *testing.T) {
 	nextInstance := transitionStates[1].Instance
 	transition := transitionStates[1].Transition
 	senderSignature := transitionStates[1].InitiatingParticipantSignature
-	constraintInput := transitionStates[1].ConstraintInput
+	conditionInput := transitionStates[1].ConditionInput
 
 	otherPublicKeys := signatureParameters.GetPublicKeys(2)
 	currentInstance.PublicKeys[0] = otherPublicKeys[1]
@@ -207,7 +207,7 @@ func TestTransition_AlteredPublicKeys(t *testing.T) {
 		Transition:                          circuit.ToTransition(model, transition),
 		InitiatingParticipantAuthentication: circuit.ToAuthentication(nextInstance, senderSignature),
 		RespondingParticipantAuthentication: circuit.ToAuthentication(nextInstance, senderSignature),
-		ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+		ConditionInput:                      circuit.FromConditionInput(conditionInput),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -219,7 +219,7 @@ func TestTransition_OverwrittenMessageHash(t *testing.T) {
 	currentInstance := transitionStates[2].Instance
 	nextInstance := transitionStates[3].Instance
 	transition := transitionStates[3].Transition
-	constraintInput := transitionStates[3].ConstraintInput
+	conditionInput := transitionStates[3].ConditionInput
 
 	nextInstance.MessageHashes[8] = domain.Hash{Value: [domain.HashSize]byte{1, 2, 3}}
 	nextInstance.UpdateHash()
@@ -235,7 +235,7 @@ func TestTransition_OverwrittenMessageHash(t *testing.T) {
 		Transition:                          circuit.ToTransition(model, transition),
 		InitiatingParticipantAuthentication: circuit.ToAuthentication(nextInstance, senderSignature),
 		RespondingParticipantAuthentication: circuit.ToAuthentication(nextInstance, recipientSignature),
-		ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+		ConditionInput:                      circuit.FromConditionInput(conditionInput),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
@@ -247,7 +247,7 @@ func TestTransition_OtherParticipant(t *testing.T) {
 	currentInstance := transitionStates[2].Instance
 	nextInstance := transitionStates[3].Instance
 	transition := transitionStates[3].Transition
-	constraintInput := transitionStates[3].ConstraintInput
+	conditionInput := transitionStates[3].ConditionInput
 
 	sk0, _ := signatureParameters.GetPrivateKeyForIdentity(0)
 	sk1, _ := signatureParameters.GetPrivateKeyForIdentity(1)
@@ -261,14 +261,14 @@ func TestTransition_OtherParticipant(t *testing.T) {
 		Transition:                          circuit.ToTransition(model, transition),
 		InitiatingParticipantAuthentication: circuit.ToAuthentication(nextInstance, senderSignature),
 		RespondingParticipantAuthentication: circuit.ToAuthentication(nextInstance, recipientSignature),
-		ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+		ConditionInput:                      circuit.FromConditionInput(conditionInput),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
 	assert.NotNil(t, err)
 }
 
-func TestTransition_InvalidConstraintInput(t *testing.T) {
+func TestTransition_InvalidConditionInput(t *testing.T) {
 	model := transitionStates[2].Model
 	currentInstance := transitionStates[2].Instance
 	nextInstance := transitionStates[3].Instance
@@ -276,8 +276,8 @@ func TestTransition_InvalidConstraintInput(t *testing.T) {
 	senderSignature := transitionStates[3].InitiatingParticipantSignature
 	recipientSignature := *transitionStates[3].RespondingParticipantSignature
 
-	constraintInput := transitionStates[3].ConstraintInput
-	constraintInput.Messages[0], _ = domain.NewInitiatingIntegerMessage(currentInstance, transition, 1)
+	conditionInput := transitionStates[3].ConditionInput
+	conditionInput.Messages[0], _ = domain.NewInitiatingIntegerMessage(currentInstance, transition, 1)
 
 	witness := circuit.TransitionCircuit{
 		Model:                               circuit.FromModel(model),
@@ -286,14 +286,14 @@ func TestTransition_InvalidConstraintInput(t *testing.T) {
 		Transition:                          circuit.ToTransition(model, transition),
 		InitiatingParticipantAuthentication: circuit.ToAuthentication(nextInstance, senderSignature),
 		RespondingParticipantAuthentication: circuit.ToAuthentication(nextInstance, recipientSignature),
-		ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+		ConditionInput:                      circuit.FromConditionInput(conditionInput),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())
 	assert.NotNil(t, err)
 }
 
-func TestTransition_InvalidMessageForConstraint(t *testing.T) {
+func TestTransition_InvalidMessageForCondition(t *testing.T) {
 	model := transitionStates[2].Model
 	currentInstance := transitionStates[2].Instance
 	transition := transitionStates[3].Transition
@@ -312,8 +312,8 @@ func TestTransition_InvalidMessageForConstraint(t *testing.T) {
 	senderSignature := nextInstance.Sign(sk1)
 	recipientSignature := nextInstance.Sign(sk0)
 
-	constraintInput := transitionStates[3].ConstraintInput
-	constraintInput.Messages[0] = order
+	conditionInput := transitionStates[3].ConditionInput
+	conditionInput.Messages[0] = order
 
 	witness := circuit.TransitionCircuit{
 		Model:                               circuit.FromModel(model),
@@ -322,7 +322,7 @@ func TestTransition_InvalidMessageForConstraint(t *testing.T) {
 		Transition:                          circuit.ToTransition(model, transition),
 		InitiatingParticipantAuthentication: circuit.ToAuthentication(nextInstance, senderSignature),
 		RespondingParticipantAuthentication: circuit.ToAuthentication(nextInstance, recipientSignature),
-		ConstraintInput:                     circuit.FromConstraintInput(constraintInput),
+		ConditionInput:                      circuit.FromConditionInput(conditionInput),
 	}
 
 	err := test.IsSolved(&transitionCircuit, &witness, ecc.BN254.ScalarField())

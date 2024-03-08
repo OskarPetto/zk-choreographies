@@ -81,7 +81,7 @@ func (instance Instance) FakeTransition() Instance {
 	return instance
 }
 
-func (instance Instance) ExecuteTransition(transition Transition, input ConstraintInput, initiatingMessage *Message, respondingMessage *Message) (Instance, error) {
+func (instance Instance) ExecuteTransition(transition Transition, input ConditionInput, initiatingMessage *Message, respondingMessage *Message) (Instance, error) {
 	err := validateTransitionExecutable(instance, transition, input)
 	if err != nil {
 		return Instance{}, err
@@ -129,13 +129,13 @@ func (instance *Instance) updateTokenCounts(transition Transition) {
 	instance.TokenCounts = tokenCounts
 }
 
-func validateTransitionExecutable(instance Instance, transition Transition, input ConstraintInput) error {
+func validateTransitionExecutable(instance Instance, transition Transition, input ConditionInput) error {
 	for _, incomingPlaceId := range transition.IncomingPlaces {
 		if instance.TokenCounts[incomingPlaceId] < 1 {
 			return fmt.Errorf("transition %s is not executable because there are not enough tokens", transition.Id)
 		}
 	}
-	return validateConstraint(instance, transition, input)
+	return validateCondition(instance, transition, input)
 }
 
 func (instance *Instance) FindMessageHashById(id ModelMessageId) Hash {
@@ -146,12 +146,12 @@ func (instance *Instance) FindPublicKeyByParticipant(id ParticipantId) PublicKey
 	return instance.PublicKeys[id]
 }
 
-func validateConstraint(instance Instance, transition Transition, input ConstraintInput) error {
-	constraint := transition.Constraint
-	if len(constraint.MessageIds) != len(input.Messages) {
-		return fmt.Errorf("transition %s is not executable because number of constraint inputs differs from the number of messages in the constraint", transition.Id)
+func validateCondition(instance Instance, transition Transition, input ConditionInput) error {
+	condition := transition.Condition
+	if len(condition.MessageIds) != len(input.Messages) {
+		return fmt.Errorf("transition %s is not executable because number of condition inputs differs from the number of messages in the condition", transition.Id)
 	}
-	lhs := constraint.Offset
+	lhs := condition.Offset
 	for i, message := range input.Messages {
 		hash := message.Hash.Hash
 		messageId := EmptyMessageId
@@ -161,14 +161,14 @@ func validateConstraint(instance Instance, transition Transition, input Constrai
 				break
 			}
 		}
-		if constraint.Coefficients[i] != 0 && messageId != constraint.MessageIds[i] {
-			return fmt.Errorf("transition %s is not executable because the wrong constraint inputs have been provided", transition.Id)
+		if condition.Coefficients[i] != 0 && messageId != condition.MessageIds[i] {
+			return fmt.Errorf("transition %s is not executable because the wrong condition inputs have been provided", transition.Id)
 		}
-		lhs += constraint.Coefficients[i] * input.Messages[i].IntegerMessage
+		lhs += condition.Coefficients[i] * input.Messages[i].IntegerMessage
 	}
 
 	var result bool
-	switch constraint.ComparisonOperator {
+	switch condition.ComparisonOperator {
 	case OperatorEqual:
 		result = lhs == 0
 	case OperatorGreaterThan:
@@ -181,7 +181,7 @@ func validateConstraint(instance Instance, transition Transition, input Constrai
 		result = lhs <= 0
 	}
 	if !result {
-		return fmt.Errorf("transition %s is not executable because the constraint evaluates to false", transition.Id)
+		return fmt.Errorf("transition %s is not executable because the condition evaluates to false", transition.Id)
 	}
 	return nil
 }

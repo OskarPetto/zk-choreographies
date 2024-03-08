@@ -78,11 +78,11 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}
-	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
+	conditionInput, err := service.MessageService.FindConditionInput(transition.Condition, currentInstance)
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}
-	nextInstance, err := currentInstance.ExecuteTransition(transition, constraintInput, nil, nil)
+	nextInstance, err := currentInstance.ExecuteTransition(transition, conditionInput, nil, nil)
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}
@@ -97,7 +97,7 @@ func (service *ExecutionService) ExecuteTransition(cmd ExecuteTransitionCommand)
 		NextInstance:                   nextInstance,
 		Transition:                     transition,
 		InitiatingParticipantSignature: senderSignature,
-		ConstraintInput:                constraintInput,
+		ConditionInput:                 conditionInput,
 	})
 	if err != nil {
 		return InstanceCreatedEvent{}, err
@@ -221,11 +221,11 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 		service.MessageService.ImportMessage(*respondingMessage)
 	}
 
-	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, instance)
+	conditionInput, err := service.MessageService.FindConditionInput(transition.Condition, instance)
 	if err != nil {
 		return InitiatingMessageReceivedEvent{}, err
 	}
-	nextInstance, err := instance.ExecuteTransition(transition, constraintInput, &initiatingMessage, respondingMessage)
+	nextInstance, err := instance.ExecuteTransition(transition, conditionInput, &initiatingMessage, respondingMessage)
 	if err != nil {
 		return InitiatingMessageReceivedEvent{}, err
 	}
@@ -279,7 +279,7 @@ func (service *ExecutionService) ProveMessageExchange(cmd ProveMessageExchangeCo
 			return InstanceCreatedEvent{}, err
 		}
 	}
-	constraintInput, err := service.MessageService.FindConstraintInput(transition.Constraint, currentInstance)
+	conditionInput, err := service.MessageService.FindConditionInput(transition.Condition, currentInstance)
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}
@@ -295,7 +295,7 @@ func (service *ExecutionService) ProveMessageExchange(cmd ProveMessageExchangeCo
 		Transition:                     transition,
 		InitiatingParticipantSignature: initiatingParticipantSignature,
 		RespondingParticipantSignature: &cmd.RespondingParticipantSignature,
-		ConstraintInput:                constraintInput,
+		ConditionInput:                 conditionInput,
 	})
 	if err != nil {
 		return InstanceCreatedEvent{}, err
@@ -327,7 +327,7 @@ func (service *ExecutionService) FakeTransition(cmd FakeTransitionCommand) (Inst
 		NextInstance:                   instanceWithDifferentHash,
 		Transition:                     model.Transitions[0],
 		InitiatingParticipantSignature: instanceWithDifferentHash.Sign(privateKey),
-		ConstraintInput:                domain.EmptyConstraintInput(),
+		ConditionInput:                 domain.EmptyConditionInput(),
 	})
 	if err != nil {
 		return InstanceCreatedEvent{}, err

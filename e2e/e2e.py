@@ -1,7 +1,7 @@
 import requests
 import base64
 
-filename = '../bpmn-service/test/data/BikeRental_example.bpmn'
+filename = '../bpmn-service/testdata/BikeRental_example.bpmn'
 bpmnString = ''
 
 with open(filename, 'r') as file:

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type ConstraintJson struct {
+type ConditionJson struct {
 	Coefficients       []int  `json:"coefficients"`
 	MessageIds         []uint `json:"messageIds"`
 	Offset             int    `json:"offset"`
@@ -16,15 +16,15 @@ type ConstraintJson struct {
 }
 
 type TransitionJson struct {
-	Id                    string          `json:"id"`
-	Name                  string          `json:"name"`
-	IncomingPlaces        []uint          `json:"incomingPlaces"`
-	OutgoingPlaces        []uint          `json:"outgoingPlaces"`
-	InitiatingParticipant *uint           `json:"initiatingParticipant,omitempty"`
-	RespondingParticipant *uint           `json:"respondingParticipant,omitempty"`
-	InitiatingMessage     *uint           `json:"initiatingMessage,omitempty"`
-	RespondingMessage     *uint           `json:"respondingMessage,omitempty"`
-	Contraint             *ConstraintJson `json:"constraint,omitempty"`
+	Id                    string         `json:"id"`
+	Name                  string         `json:"name"`
+	IncomingPlaces        []uint         `json:"incomingPlaces"`
+	OutgoingPlaces        []uint         `json:"outgoingPlaces"`
+	InitiatingParticipant *uint          `json:"initiatingParticipant,omitempty"`
+	RespondingParticipant *uint          `json:"respondingParticipant,omitempty"`
+	InitiatingMessage     *uint          `json:"initiatingMessage,omitempty"`
+	RespondingMessage     *uint          `json:"respondingMessage,omitempty"`
+	Condition             *ConditionJson `json:"condition,omitempty"`
 }
 
 type ModelJson struct {
@@ -148,15 +148,15 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 	if respondingMessage > domain.MaxMessageCount {
 		return domain.Transition{}, fmt.Errorf("transition %s has invalid responding message", transition.Id)
 	}
-	var constraint domain.Condition
-	if transition.Contraint != nil {
+	var condition domain.Condition
+	if transition.Condition != nil {
 		var err error
-		constraint, err = transition.Contraint.toConstraint()
+		condition, err = transition.Condition.toCondition()
 		if err != nil {
 			return domain.Transition{}, err
 		}
 	} else {
-		constraint = domain.EmptyConstraint()
+		condition = domain.EmptyCondition()
 	}
 
 	return domain.Transition{
@@ -168,39 +168,39 @@ func (transition *TransitionJson) toTransition() (domain.Transition, error) {
 		RespondingParticipant: domain.ParticipantId(respondingParticipant),
 		InitiatingMessage:     domain.ModelMessageId(initiatingMessage),
 		RespondingMessage:     domain.ModelMessageId(respondingMessage),
-		Constraint:            constraint,
+		Condition:             condition,
 	}, nil
 }
 
-func (constraint *ConstraintJson) toConstraint() (domain.Condition, error) {
-	if len(constraint.Coefficients) > domain.MaxMessageCountInConstraints {
-		return domain.Condition{}, fmt.Errorf("constraint has too many coefficients")
+func (condition *ConditionJson) toCondition() (domain.Condition, error) {
+	if len(condition.Coefficients) > domain.MaxMessageCountInConditions {
+		return domain.Condition{}, fmt.Errorf("condition has too many coefficients")
 	}
-	if len(constraint.MessageIds) > domain.MaxMessageCountInConstraints {
-		return domain.Condition{}, fmt.Errorf("constraint has too many messageIds")
+	if len(condition.MessageIds) > domain.MaxMessageCountInConditions {
+		return domain.Condition{}, fmt.Errorf("condition has too many messageIds")
 	}
-	if len(constraint.MessageIds) != len(constraint.Coefficients) {
-		return domain.Condition{}, fmt.Errorf("number of coefficients differs from number of messageIds in constraint")
+	if len(condition.MessageIds) != len(condition.Coefficients) {
+		return domain.Condition{}, fmt.Errorf("number of coefficients differs from number of messageIds in condition")
 	}
-	coefficients := make([]domain.IntegerType, len(constraint.Coefficients))
-	for i, coefficient := range constraint.Coefficients {
+	coefficients := make([]domain.IntegerType, len(condition.Coefficients))
+	for i, coefficient := range condition.Coefficients {
 		coefficients[i] = domain.IntegerType(coefficient)
 	}
-	messageIds := make([]domain.ModelMessageId, len(constraint.MessageIds))
-	for i, messageId := range constraint.MessageIds {
+	messageIds := make([]domain.ModelMessageId, len(condition.MessageIds))
+	for i, messageId := range condition.MessageIds {
 		if messageId > domain.MaxMessageCount {
-			return domain.Condition{}, fmt.Errorf("constraint has invalid messageId")
+			return domain.Condition{}, fmt.Errorf("condition has invalid messageId")
 		}
 		messageIds[i] = domain.ModelMessageId(messageId)
 	}
-	if !isValidOparator(constraint.ComparisonOperator) {
-		return domain.Condition{}, fmt.Errorf("constraint has invalid oparator")
+	if !isValidOparator(condition.ComparisonOperator) {
+		return domain.Condition{}, fmt.Errorf("condition has invalid oparator")
 	}
 	return domain.Condition{
 		Coefficients:       coefficients,
 		MessageIds:         messageIds,
-		Offset:             domain.IntegerType(constraint.Offset),
-		ComparisonOperator: domain.ComparisonOperator(constraint.ComparisonOperator),
+		Offset:             domain.IntegerType(condition.Offset),
+		ComparisonOperator: domain.ComparisonOperator(condition.ComparisonOperator),
 	}, nil
 }
 
@@ -261,27 +261,27 @@ func transitionToJson(transition domain.Transition) TransitionJson {
 		tmp := uint(transition.RespondingMessage)
 		jsonTransition.RespondingMessage = &tmp
 	}
-	if len(transition.Constraint.Coefficients) > 0 {
-		tmp := constraintToJson(transition.Constraint)
-		jsonTransition.Contraint = &tmp
+	if len(transition.Condition.Coefficients) > 0 {
+		tmp := conditionToJson(transition.Condition)
+		jsonTransition.Condition = &tmp
 	}
 	return jsonTransition
 }
 
-func constraintToJson(constraint domain.Condition) ConstraintJson {
-	coefficients := make([]int, len(constraint.Coefficients))
-	for i, coefficient := range constraint.Coefficients {
+func conditionToJson(condition domain.Condition) ConditionJson {
+	coefficients := make([]int, len(condition.Coefficients))
+	for i, coefficient := range condition.Coefficients {
 		coefficients[i] = int(coefficient)
 	}
-	messageIds := make([]uint, len(constraint.MessageIds))
-	for i, messageId := range constraint.MessageIds {
+	messageIds := make([]uint, len(condition.MessageIds))
+	for i, messageId := range condition.MessageIds {
 		messageIds[i] = uint(messageId)
 	}
-	return ConstraintJson{
+	return ConditionJson{
 		Coefficients:       coefficients,
 		MessageIds:         messageIds,
-		Offset:             int(constraint.Offset),
-		ComparisonOperator: uint(constraint.ComparisonOperator),
+		Offset:             int(condition.Offset),
+		ComparisonOperator: uint(condition.ComparisonOperator),
 	}
 }
 

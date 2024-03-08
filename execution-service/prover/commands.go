@@ -17,7 +17,7 @@ type ProveTransitionCommand struct {
 	Transition                     domain.Transition
 	InitiatingParticipantSignature domain.Signature
 	RespondingParticipantSignature *domain.Signature
-	ConstraintInput                domain.ConstraintInput
+	ConditionInput                 domain.ConditionInput
 }
 
 type ProveTerminationCommand struct {

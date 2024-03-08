@@ -23,7 +23,7 @@ type TransitionCircuit struct {
 	Transition                          Transition
 	InitiatingParticipantAuthentication Authentication
 	RespondingParticipantAuthentication Authentication
-	ConstraintInput                     ConstraintInput
+	ConditionInput                      ConditionInput
 }
 
 func NewTransitionCircuit() TransitionCircuit {
@@ -82,16 +82,16 @@ func (circuit *TransitionCircuit) Define(api frontend.API) error {
 	tokenCountChanges := circuit.checkTokenCounts(api)
 	addedMessageHashes := circuit.checkAddedMessageHashes(api)
 	participantsMatch := circuit.checkParticipants(api)
-	constrainInputsMatch, err := circuit.checkConstraintInput(api)
+	constrainInputsMatch, err := circuit.checkConditionInput(api)
 	if err != nil {
 		return err
 	}
-	constraintSatisfied := evaluateConstraint(api, circuit.Transition.Constraint, circuit.ConstraintInput)
+	conditionSatisfied := evaluateCondition(api, circuit.Transition.Condition, circuit.ConditionInput)
 
 	transitionMatches := api.And(participantsMatch, tokenCountChanges.matchesTransition)
 	transitionMatches = api.And(transitionMatches, addedMessageHashes.matchesTransition)
 	transitionMatches = api.And(transitionMatches, constrainInputsMatch)
-	transitionMatches = api.And(transitionMatches, constraintSatisfied)
+	transitionMatches = api.And(transitionMatches, conditionSatisfied)
 
 	noChanges := api.And(tokenCountChanges.noChanges, addedMessageHashes.noChanges)
 
@@ -122,17 +122,17 @@ func checkTransitionHash(api frontend.API, hash frontend.Variable, transition Tr
 	mimc.Write(transition.InitiatingParticipant)
 	mimc.Write(transition.RespondingParticipant)
 	mimc.Write(transition.InitiatingMessage)
-	mimc.Write(transition.Constraint.Coefficients[:]...)
-	mimc.Write(transition.Constraint.MessageIds[:]...)
-	mimc.Write(transition.Constraint.Offset)
-	mimc.Write(transition.Constraint.ComparisonOperator)
+	mimc.Write(transition.Condition.Coefficients[:]...)
+	mimc.Write(transition.Condition.MessageIds[:]...)
+	mimc.Write(transition.Condition.Offset)
+	mimc.Write(transition.Condition.ComparisonOperator)
 	api.AssertIsEqual(hash, mimc.Sum())
 	return nil
 }
 
-func (circuit *TransitionCircuit) checkConstraintInput(api frontend.API) (frontend.Variable, error) {
-	var constraintInputMatchesTransition frontend.Variable = 1
-	for i, referencedMessageId := range circuit.Transition.Constraint.MessageIds {
+func (circuit *TransitionCircuit) checkConditionInput(api frontend.API) (frontend.Variable, error) {
+	var conditionInputMatchesTransition frontend.Variable = 1
+	for i, referencedMessageId := range circuit.Transition.Condition.MessageIds {
 		noMessageReferenced := equals(api, referencedMessageId, domain.EmptyMessageId)
 		var messageHash frontend.Variable = emptyMessageHash
 		for messageId, messageHashForMessageId := range circuit.CurrentInstance.MessageHashes {
@@ -140,7 +140,7 @@ func (circuit *TransitionCircuit) checkConstraintInput(api frontend.API) (fronte
 			messageHash = api.Select(messageIdsMatch, messageHashForMessageId, messageHash)
 		}
 
-		providedMessage := circuit.ConstraintInput.Messages[i]
+		providedMessage := circuit.ConditionInput.Messages[i]
 		mimc, err := mimc.NewMiMC(api)
 		if err != nil {
 			return 0, err
@@ -151,9 +151,9 @@ func (circuit *TransitionCircuit) checkConstraintInput(api frontend.API) (fronte
 		providedMessageHash := mimc.Sum()
 		messageHashesMatch := equals(api, messageHash, providedMessageHash)
 
-		constraintInputMatchesTransition = api.And(constraintInputMatchesTransition, api.Or(noMessageReferenced, messageHashesMatch))
+		conditionInputMatchesTransition = api.And(conditionInputMatchesTransition, api.Or(noMessageReferenced, messageHashesMatch))
 	}
-	return constraintInputMatchesTransition, nil
+	return conditionInputMatchesTransition, nil
 }
 
 func (circuit *TransitionCircuit) checkTokenCounts(api frontend.API) IntermediateResult {
@@ -238,10 +238,10 @@ func (circuit *TransitionCircuit) checkParticipants(api frontend.API) frontend.V
 	return api.And(initiatingParticipantMatches, respondingParticipantMatches)
 }
 
-func evaluateConstraint(api frontend.API, constraint Constraint, input ConstraintInput) frontend.Variable {
-	lhs := constraint.Offset
-	for i := range constraint.MessageIds {
-		coefficient := constraint.Coefficients[i]
+func evaluateCondition(api frontend.API, condition Condition, input ConditionInput) frontend.Variable {
+	lhs := condition.Offset
+	for i := range condition.MessageIds {
+		coefficient := condition.Coefficients[i]
 		message := input.Messages[i]
 		lhs = api.MulAcc(lhs, coefficient, message.IntegerMessage)
 	}
@@ -253,6 +253,6 @@ func evaluateConstraint(api frontend.API, constraint Constraint, input Constrain
 	comparisons[2] = api.IsZero(api.Or(comparisons[0], comparisons[1])) // lt
 	comparisons[3] = api.Or(comparisons[0], comparisons[1])             // gte
 	comparisons[4] = api.Or(comparisons[0], comparisons[2])             // lte
-	result := selector.Mux(api, constraint.ComparisonOperator, comparisons[:]...)
+	result := selector.Mux(api, condition.ComparisonOperator, comparisons[:]...)
 	return result
 }

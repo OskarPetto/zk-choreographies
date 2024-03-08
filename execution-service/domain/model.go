@@ -13,7 +13,7 @@ const BaseStartPlaceCount = 1
 const BaseEndPlaceCount = 2
 const BaseTransitionCount = 16
 const BaseBranchingFactor = 4
-const BaseMessageCountInConstraints = 4
+const BaseMessageCountInConditions = 4
 
 const factor = 8
 
@@ -24,7 +24,7 @@ const MaxStartPlaceCount = BaseStartPlaceCount * factor
 const MaxEndPlaceCount = BaseEndPlaceCount * factor
 const MaxTransitionCount = BaseTransitionCount * factor
 const MaxBranchingFactor = BaseBranchingFactor
-const MaxMessageCountInConstraints = BaseMessageCountInConstraints
+const MaxMessageCountInConditions = BaseMessageCountInConditions
 
 var MaxParticipantDepth = int(math.Log2(MaxParticipantCount))
 var MaxTransitionDepth = int(math.Log2(MaxTransitionCount))
@@ -72,7 +72,7 @@ type Transition struct {
 	RespondingParticipant ParticipantId
 	InitiatingMessage     ModelMessageId
 	RespondingMessage     ModelMessageId
-	Constraint            Condition
+	Condition             Condition
 }
 
 // ax + by + c = 0
@@ -83,7 +83,7 @@ type Condition struct {
 	ComparisonOperator ComparisonOperator
 }
 
-type ConstraintInput struct {
+type ConditionInput struct {
 	Messages []Message
 }
 
@@ -94,19 +94,19 @@ func OutOfBoundsTransition() Transition {
 		InitiatingParticipant: EmptyParticipantId,
 		RespondingParticipant: EmptyParticipantId,
 		InitiatingMessage:     EmptyMessageId,
-		Constraint:            EmptyConstraint(),
+		Condition:             EmptyCondition(),
 	}
 }
 
-func EmptyConstraint() Condition {
+func EmptyCondition() Condition {
 	return Condition{
 		Coefficients: make([]IntegerType, 0),
 		MessageIds:   make([]ModelMessageId, 0),
 	}
 }
 
-func EmptyConstraintInput() ConstraintInput {
-	return ConstraintInput{
+func EmptyConditionInput() ConditionInput {
+	return ConditionInput{
 		Messages: make([]Message, 0),
 	}
 }

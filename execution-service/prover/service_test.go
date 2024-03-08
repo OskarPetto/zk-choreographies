@@ -41,7 +41,7 @@ func TestProveTransition0(t *testing.T) {
 	nextInstance := states[1].Instance
 	senderSignature := states[1].InitiatingParticipantSignature
 	recipientSignature := states[1].RespondingParticipantSignature
-	constraintInput := states[1].ConstraintInput
+	conditionInput := states[1].ConditionInput
 
 	proof, err := proofService.ProveTransition(prover.ProveTransitionCommand{
 		Model:                          model,
@@ -50,7 +50,7 @@ func TestProveTransition0(t *testing.T) {
 		Transition:                     model.Transitions[0],
 		InitiatingParticipantSignature: senderSignature,
 		RespondingParticipantSignature: recipientSignature,
-		ConstraintInput:                constraintInput,
+		ConditionInput:                 conditionInput,
 	})
 	assert.Nil(t, err)
 	proofs = append(proofs, proof.ToJson())

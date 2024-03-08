@@ -76,20 +76,20 @@ func (transition Transition) ComputeHash() Hash {
 	hashUint16(mimc, transition.InitiatingParticipant)
 	hashUint16(mimc, transition.RespondingParticipant)
 	hashUint16(mimc, transition.InitiatingMessage)
-	for _, coefficient := range transition.Constraint.Coefficients {
+	for _, coefficient := range transition.Condition.Coefficients {
 		hashInt64(mimc, int64(coefficient))
 	}
-	for i := len(transition.Constraint.Coefficients); i < MaxMessageCountInConstraints; i++ {
+	for i := len(transition.Condition.Coefficients); i < MaxMessageCountInConditions; i++ {
 		hashInt64(mimc, 0)
 	}
-	for _, messageId := range transition.Constraint.MessageIds {
+	for _, messageId := range transition.Condition.MessageIds {
 		hashUint16(mimc, messageId)
 	}
-	for i := len(transition.Constraint.MessageIds); i < MaxMessageCountInConstraints; i++ {
+	for i := len(transition.Condition.MessageIds); i < MaxMessageCountInConditions; i++ {
 		hashInt64(mimc, int64(EmptyMessageId))
 	}
-	hashInt64(mimc, int64(transition.Constraint.Offset))
-	hashUint16(mimc, uint16(transition.Constraint.ComparisonOperator))
+	hashInt64(mimc, int64(transition.Condition.Offset))
+	hashUint16(mimc, uint16(transition.Condition.ComparisonOperator))
 	return computeHash(mimc)
 }
 

@@ -13,14 +13,14 @@ interface ConditionPart {
 @Injectable()
 export class ConditionParser {
   parseCondition(
-    constraint: string | undefined,
+    condition: string | undefined,
     messageIds: Map<BpmnMessageId, MessageId>,
   ): Condition | undefined {
-    if (constraint === undefined) {
+    if (condition === undefined) {
       return undefined;
     }
     try {
-      const script = esprima.parseScript(constraint);
+      const script = esprima.parseScript(condition);
       if (script.body.length != 1) {
         throw Error('not implemented');
       }
@@ -28,7 +28,7 @@ export class ConditionParser {
       return this.parseBooleanExpression(expression, messageIds);
     } catch (e) {
       console.log(
-        `parsing constraint '${constraint}' resulted in error: ${e.message}`,
+        `parsing condition '${condition}' resulted in error: ${e.message}`,
       );
     }
     return undefined;

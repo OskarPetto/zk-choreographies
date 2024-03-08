@@ -47,23 +47,23 @@ func (service *MessageService) FindMessageById(id domain.MessageId) (domain.Mess
 	return message, nil
 }
 
-func (service *MessageService) FindConstraintInput(constraint domain.Condition, instance domain.Instance) (domain.ConstraintInput, error) {
-	var constraintInput domain.ConstraintInput
-	for i, messageId := range constraint.MessageIds {
-		coefficient := constraint.Coefficients[i]
+func (service *MessageService) FindConditionInput(condition domain.Condition, instance domain.Instance) (domain.ConditionInput, error) {
+	var conditionInput domain.ConditionInput
+	for i, messageId := range condition.MessageIds {
+		coefficient := condition.Coefficients[i]
 		if coefficient != 0 {
 			messageHash := instance.MessageHashes[messageId]
 			messageId := string(messageHash.Value[:])
 			message, err := service.FindMessageById(messageId)
 			if err != nil {
-				return domain.ConstraintInput{}, err
+				return domain.ConditionInput{}, err
 			}
-			constraintInput.Messages[i] = message
+			conditionInput.Messages[i] = message
 		} else {
-			constraintInput.Messages[i] = domain.EmptyMessage()
+			conditionInput.Messages[i] = domain.EmptyMessage()
 		}
 	}
-	return constraintInput, nil
+	return conditionInput, nil
 }
 
 func (service *MessageService) ImportMessage(message domain.Message) error {

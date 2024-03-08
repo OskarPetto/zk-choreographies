@@ -30,7 +30,7 @@ interface ConditionMapping {
 
 @Injectable()
 export class ChoreographyMapper {
-  constructor(private conditionParser: ConditionParser) {}
+  constructor(private conditionParser: ConditionParser) { }
   toModel(choreography: ParsedChoreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
@@ -160,19 +160,19 @@ export class ChoreographyMapper {
     messages: Message[],
     messageIds: Map<BpmnMessageId, MessageId>,
   ): ConditionMapping {
-    const constraintMapping: ConditionMapping = {
+    const conditionMapping: ConditionMapping = {
       sequenceFlowNames: new Map(),
       messageIdPerMessageName: new Map(),
     };
     for (const sequenceFlow of sequenceFlows) {
       const placeId = sequenceFlowPlaceIds.get(sequenceFlow.id)!;
-      constraintMapping.sequenceFlowNames.set(placeId, sequenceFlow.name);
+      conditionMapping.sequenceFlowNames.set(placeId, sequenceFlow.name);
     }
     for (const message of messages) {
       const messageId = messageIds.get(message.id)!;
-      constraintMapping.messageIdPerMessageName.set(message.name, messageId);
+      conditionMapping.messageIdPerMessageName.set(message.name, messageId);
     }
-    return constraintMapping;
+    return conditionMapping;
   }
 
   private createParticipantMapping(
@@ -357,11 +357,11 @@ export class ChoreographyMapper {
         const conditionString =
           conditionMapping.sequenceFlowNames.get(incomingPlace);
         if (conditionString !== undefined) {
-          const constraint = this.conditionParser.parseCondition(
+          const condition = this.conditionParser.parseCondition(
             conditionString,
             conditionMapping.messageIdPerMessageName,
           );
-          transition.condition = constraint;
+          transition.condition = condition;
           break;
         }
       }
