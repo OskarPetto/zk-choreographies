@@ -272,7 +272,7 @@ func ToTransition(model domain.Model, transition domain.Transition) Transition {
 	}
 }
 
-func fromConstraint(constraint domain.Constraint) Constraint {
+func fromConstraint(constraint domain.Condition) Constraint {
 	var coefficients [domain.MaxMessageCountInConstraints]frontend.Variable
 	for i, coefficient := range constraint.Coefficients {
 		coefficients[i] = coefficient

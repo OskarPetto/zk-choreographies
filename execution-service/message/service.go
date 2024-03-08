@@ -47,7 +47,7 @@ func (service *MessageService) FindMessageById(id domain.MessageId) (domain.Mess
 	return message, nil
 }
 
-func (service *MessageService) FindConstraintInput(constraint domain.Constraint, instance domain.Instance) (domain.ConstraintInput, error) {
+func (service *MessageService) FindConstraintInput(constraint domain.Condition, instance domain.Instance) (domain.ConstraintInput, error) {
 	var constraintInput domain.ConstraintInput
 	for i, messageId := range constraint.MessageIds {
 		coefficient := constraint.Coefficients[i]

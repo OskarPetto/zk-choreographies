@@ -72,11 +72,11 @@ type Transition struct {
 	RespondingParticipant ParticipantId
 	InitiatingMessage     ModelMessageId
 	RespondingMessage     ModelMessageId
-	Constraint            Constraint
+	Constraint            Condition
 }
 
 // ax + by + c = 0
-type Constraint struct {
+type Condition struct {
 	Coefficients       []IntegerType
 	MessageIds         []ModelMessageId
 	Offset             IntegerType
@@ -98,8 +98,8 @@ func OutOfBoundsTransition() Transition {
 	}
 }
 
-func EmptyConstraint() Constraint {
-	return Constraint{
+func EmptyConstraint() Condition {
+	return Condition{
 		Coefficients: make([]IntegerType, 0),
 		MessageIds:   make([]ModelMessageId, 0),
 	}

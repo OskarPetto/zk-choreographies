@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { Constraint } from '../domain/constraint';
+import { Condition } from '../domain/condition';
 import { MessageId } from 'src/domain/model';
 import { BpmnMessageId } from 'src/domain/choreography';
 /* eslint @typescript-eslint/no-var-requires: "off" */
 const esprima = require('esprima');
 
-interface ConstraintPart {
+interface ConditionPart {
   constant: number;
   messageId?: number;
 }
 
 @Injectable()
-export class ConstraintParser {
-  parseConstraint(
+export class ConditionParser {
+  parseCondition(
     constraint: string | undefined,
     messageIds: Map<BpmnMessageId, MessageId>,
-  ): Constraint | undefined {
+  ): Condition | undefined {
     if (constraint === undefined) {
       return undefined;
     }
@@ -37,25 +37,25 @@ export class ConstraintParser {
   private parseBooleanExpression(
     expression: any,
     messageIds: Map<BpmnMessageId, MessageId>,
-  ): Constraint {
+  ): Condition {
     if (expression.type !== 'BinaryExpression') {
       throw Error('not implemented');
     }
     const comparisonOperator = this.parseComparisonOperator(
       expression.operator,
     );
-    const leftParts: ConstraintPart[] = this.parseExpression(
+    const leftParts: ConditionPart[] = this.parseExpression(
       expression.left,
       messageIds,
       1,
     );
-    const rightParts: ConstraintPart[] = this.parseExpression(
+    const rightParts: ConditionPart[] = this.parseExpression(
       expression.right,
       messageIds,
       -1,
     );
     const combinedParts = leftParts.concat(rightParts);
-    const resultingParts: ConstraintPart[] = [];
+    const resultingParts: ConditionPart[] = [];
     let c = 0;
     for (const part of combinedParts) {
       if (part.messageId !== undefined) {
@@ -87,7 +87,7 @@ export class ConstraintParser {
     expression: any,
     messageIds: Map<BpmnMessageId, MessageId>,
     factor: number,
-  ): ConstraintPart[] {
+  ): ConditionPart[] {
     if (expression.type == 'Literal') {
       return [
         {

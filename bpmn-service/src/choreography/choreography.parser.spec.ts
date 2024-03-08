@@ -1,4 +1,4 @@
-import { TestdataProvider } from '../../test/data/testdata.provider';
+import { TestdataProvider } from '../../testdata/testdata.provider';
 import { ChoreographyParser } from './choreography.parser';
 
 describe('ChoreographyParser', () => {

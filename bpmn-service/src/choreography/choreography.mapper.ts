@@ -7,7 +7,7 @@ import {
   Transition,
   TransitionType,
 } from '../domain/model';
-import { ConstraintParser } from 'src/constraint/constraint.parser';
+import { ConditionParser } from 'src/condition/condition.parser';
 import {
   ParsedChoreography,
   SequenceFlow,
@@ -23,14 +23,14 @@ import {
 } from './choreography.parser';
 import { BpmnMessageId, BpmnParticipantId } from 'src/domain/choreography';
 
-interface ConstraintMapping {
+interface ConditionMapping {
   sequenceFlowNames: Map<PlaceId, string | undefined>;
   messageIdPerMessageName: Map<string, MessageId>;
 }
 
 @Injectable()
 export class ChoreographyMapper {
-  constructor(private constraintParser: ConstraintParser) {}
+  constructor(private conditionParser: ConditionParser) {}
   toModel(choreography: ParsedChoreography): Model {
     const sequenceFlowPlaceIds = this.createSequenceFlowMapping(
       choreography.sequenceFlows,
@@ -101,13 +101,13 @@ export class ChoreographyMapper {
         ),
     );
 
-    const constraintMapping = this.createConstraintMapping(
+    const conditionMapping = this.createConditionMapping(
       choreography.sequenceFlows,
       sequenceFlowPlaceIds,
       choreography.messages,
       messageIds,
     );
-    this.addConstraints(transitions, constraintMapping);
+    this.addConditions(transitions, conditionMapping);
     return {
       placeCount: sequenceFlowPlaceIds.size + additionalPlaceIds.length,
       participantCount: relevantParticipants.length,
@@ -154,13 +154,13 @@ export class ChoreographyMapper {
     return map;
   }
 
-  private createConstraintMapping(
+  private createConditionMapping(
     sequenceFlows: SequenceFlow[],
     sequenceFlowPlaceIds: Map<SequenceFlowId, PlaceId>,
     messages: Message[],
     messageIds: Map<BpmnMessageId, MessageId>,
-  ): ConstraintMapping {
-    const constraintMapping: ConstraintMapping = {
+  ): ConditionMapping {
+    const constraintMapping: ConditionMapping = {
       sequenceFlowNames: new Map(),
       messageIdPerMessageName: new Map(),
     };
@@ -351,20 +351,17 @@ export class ChoreographyMapper {
     ];
   }
 
-  addConstraints(
-    transitions: Transition[],
-    constraintMapping: ConstraintMapping,
-  ) {
+  addConditions(transitions: Transition[], conditionMapping: ConditionMapping) {
     transitions.forEach((transition) => {
       for (const incomingPlace of transition.incomingPlaces) {
-        const constraintString =
-          constraintMapping.sequenceFlowNames.get(incomingPlace);
-        if (constraintString !== undefined) {
-          const constraint = this.constraintParser.parseConstraint(
-            constraintString,
-            constraintMapping.messageIdPerMessageName,
+        const conditionString =
+          conditionMapping.sequenceFlowNames.get(incomingPlace);
+        if (conditionString !== undefined) {
+          const constraint = this.conditionParser.parseCondition(
+            conditionString,
+            conditionMapping.messageIdPerMessageName,
           );
-          transition.constraint = constraint;
+          transition.condition = constraint;
           break;
         }
       }

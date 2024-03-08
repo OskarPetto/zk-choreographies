@@ -3,12 +3,12 @@ import { Test } from '@nestjs/testing';
 import { ChoreographyService } from './choreography.service';
 import { ChoreographyParser } from './choreography.parser';
 import { ChoreographyMapper } from './choreography.mapper';
-import { TestdataProvider } from '../../test/data/testdata.provider';
+import { TestdataProvider } from '../../testdata/testdata.provider';
 import { ModelReducer } from '../model/model.reducer';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
-import { ConstraintModule } from 'src/constraint/constraint.module';
 import { ExecutionGateway } from 'src/execution/execution.gateway';
+import { ConditionModule } from 'src/condition/condition.module';
 
 describe('ChoreographyService', () => {
   let choreographyService: ChoreographyService;
@@ -31,7 +31,7 @@ describe('ChoreographyService', () => {
         ModelReducer,
         ExecutionGateway,
       ],
-      imports: [HttpModule, ConfigModule, ConstraintModule],
+      imports: [HttpModule, ConfigModule, ConditionModule],
     }).compile();
 
     choreographyService =

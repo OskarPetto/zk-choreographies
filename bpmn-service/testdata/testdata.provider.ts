@@ -16,7 +16,7 @@ function writeTextFile(filename: string, data: string) {
 
 export class TestdataProvider {
   static readBpmn(filename: string): string {
-    return readTextFile(`test/data/${filename}.bpmn`);
+    return readTextFile(`testdata/${filename}.bpmn`);
   }
 
   static writeModel(filename: string, model: Model) {
@@ -312,7 +312,7 @@ export class TestdataProvider {
           respondingParticipant: 2,
           initiatingMessage: 8,
           respondingMessage: 4,
-          constraint: {
+          condition: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,
@@ -360,7 +360,7 @@ export class TestdataProvider {
           initiatingParticipant: 1,
           respondingParticipant: 0,
           initiatingMessage: 1,
-          constraint: {
+          condition: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,
@@ -409,7 +409,7 @@ export class TestdataProvider {
           respondingMessage: 4,
           initiatingParticipant: 1,
           respondingParticipant: 2,
-          constraint: {
+          condition: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,
@@ -453,7 +453,7 @@ export class TestdataProvider {
           initiatingMessage: 1,
           initiatingParticipant: 1,
           respondingParticipant: 0,
-          constraint: {
+          condition: {
             coefficients: [1, -1],
             messageIds: [9, 0],
             offset: 0,

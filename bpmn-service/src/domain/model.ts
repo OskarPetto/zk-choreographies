@@ -1,4 +1,4 @@
-import { Constraint } from './constraint';
+import { Condition } from './condition';
 
 export type PlaceId = number;
 export type ParticipantId = number;
@@ -21,7 +21,7 @@ export interface Transition {
   respondingParticipant?: ParticipantId;
   initiatingMessage?: MessageId;
   respondingMessage?: MessageId;
-  constraint?: Constraint;
+  condition?: Condition;
 }
 
 export interface Model {

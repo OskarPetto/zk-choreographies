@@ -1,6 +1,6 @@
 import { MessageId } from './model';
 
-export interface Constraint {
+export interface Condition {
   coefficients: number[];
   messageIds: MessageId[];
   offset: number;

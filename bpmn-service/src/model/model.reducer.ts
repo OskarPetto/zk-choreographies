@@ -93,9 +93,9 @@ export class ModelReducer {
           transition.incomingPlaces,
           placesToKeep,
         );
-        if (!transition.constraint) {
-          transition.constraint = transitionToRemove.constraint;
-        } else if (transitionToRemove.constraint) {
+        if (!transition.condition) {
+          transition.condition = transitionToRemove.condition;
+        } else if (transitionToRemove.condition) {
           throw Error(
             `Cannot reduce model because transitions ${transition.id} and ${transitionToRemove.id} both have a constraint`,
           );
@@ -142,8 +142,8 @@ export class ModelReducer {
         respondingParticipant: transition.respondingParticipant,
         initiatingMessage: transition.initiatingMessage,
         respondingMessage: transition.respondingMessage,
-        constraint: transition.constraint
-          ? { ...transition.constraint }
+        condition: transition.condition
+          ? { ...transition.condition }
           : undefined,
       }),
     );

@@ -1,5 +1,5 @@
-import { ConstraintParser } from 'src/constraint/constraint.parser';
-import { TestdataProvider } from '../../test/data/testdata.provider';
+import { ConditionParser } from 'src/condition/condition.parser';
+import { TestdataProvider } from '../../testdata/testdata.provider';
 import { ChoreographyMapper } from './choreography.mapper';
 
 describe('ChoreographyMapper', () => {
@@ -8,7 +8,7 @@ describe('ChoreographyMapper', () => {
   const model2 = TestdataProvider.getModel2();
 
   beforeAll(() => {
-    choreographyMapper = new ChoreographyMapper(new ConstraintParser());
+    choreographyMapper = new ChoreographyMapper(new ConditionParser());
     jest.useFakeTimers();
     jest.setSystemTime(TestdataProvider.getDate());
   });

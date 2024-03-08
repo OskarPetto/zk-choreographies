@@ -1,7 +1,7 @@
-import { ConstraintParser } from './constraint.parser';
+import { ConditionParser as ConditionParser } from './condition.parser';
 
 describe('ConstraintParser', () => {
-  let constraintParser: ConstraintParser;
+  let constraintParser: ConditionParser;
   const constraint1 = undefined;
   const constraint2 = 'product not in stock';
   const constraint3 = 'stock < ordered';
@@ -50,36 +50,36 @@ describe('ConstraintParser', () => {
   };
 
   beforeAll(() => {
-    constraintParser = new ConstraintParser();
+    constraintParser = new ConditionParser();
   });
 
   describe('parseConstraints', () => {
     it('should parse undefined', () => {
-      const result = constraintParser.parseConstraint(constraint1!, new Map());
+      const result = constraintParser.parseCondition(constraint1!, new Map());
       expect(result).toEqual(result1);
     });
     it('should parse text', () => {
-      const result = constraintParser.parseConstraint(constraint2, new Map());
+      const result = constraintParser.parseCondition(constraint2, new Map());
       expect(result).toEqual(result2);
     });
     it('should parse constraint without messageIds', () => {
-      const result = constraintParser.parseConstraint(constraint3, new Map());
+      const result = constraintParser.parseCondition(constraint3, new Map());
       expect(result).toEqual(result2);
     });
     it('should parse constraint3', () => {
-      const result = constraintParser.parseConstraint(constraint3, messages3);
+      const result = constraintParser.parseCondition(constraint3, messages3);
       expect(result).toEqual(result3);
     });
     it('should parse constraint4', () => {
-      const result = constraintParser.parseConstraint(constraint4, messages4);
+      const result = constraintParser.parseCondition(constraint4, messages4);
       expect(result).toEqual(result4);
     });
     it('should parse constraint5', () => {
-      const result = constraintParser.parseConstraint(constraint5, messages5);
+      const result = constraintParser.parseCondition(constraint5, messages5);
       expect(result).toEqual(result5);
     });
     it('should parse constraint6', () => {
-      const result = constraintParser.parseConstraint(constraint6, messages6);
+      const result = constraintParser.parseCondition(constraint6, messages6);
       expect(result).toEqual(result6);
     });
   });
