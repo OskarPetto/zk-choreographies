@@ -1,5 +1,19 @@
 # ZK-Choreographies
 
+## Bpmn-Service
+
+You can start the bpmn-service with 
+
+```
+npm run start
+```
+
+You can run the tests of the bpmn-service with 
+```
+npm run test
+```
+This has to be done at least once before the execution service tests can be run.
+
 ## Execution-Service
 
 You can run the execution-service in its folder with 
@@ -18,19 +32,6 @@ go test  ./... -v
 The measurenents in the paper for proving time were obtained from the console output of the prover tests.
 
 To recreate proving keys and the verifier smart contracts you have to delete the contents of the `files/public` folder within the execution-service and restart the application or the tests. 
-
-## Bpmn-Service
-
-You can start the bpmn-service with 
-
-```
-npm run start
-```
-
-You can run the tests of the bpmn-service with 
-```
-npm run test
-```
 
 ## Smart Contracts
 
