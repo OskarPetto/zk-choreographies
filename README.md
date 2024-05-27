@@ -38,7 +38,14 @@ You can run the smart contract tests in the `solidity` folder with
 ```
 truffle test
 ```
-The measurenents in the paper for gas usage were obtained by running these tests.
+The measurenents in the paper for gas usage were obtained by running 
+```
+truffle develop
+```
+and then 
+```
+migrate
+```
 
 ## E2E Test 
 After starting the bpmn-service and the execution service, you can run the test in the `e2e` folder with 
