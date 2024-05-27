@@ -34,17 +34,19 @@ You can run the tests of the execution-service with
 ``` 
 go test  ./... -v
 ```
-The measurenents in the paper for proving time were obtained from the console output of the prover tests.
+The measurements in the paper for proving time were obtained from the console output of the prover tests.
 
 To recreate proving keys and the verifier smart contracts you have to delete the contents of the `files/public` folder within the execution-service and restart the application or the tests. 
 
 ## Smart Contracts
 
-You can run the smart contract tests in the `solidity` folder with
+Before the smart contract tests in the `solidity` can be executed, you must first run the execution service or the execution service tests at least once to generate the verifier smart contracts.
+
+Then you can run the smart contract tests in the `solidity` folder with
 ```
 truffle test
 ```
-The measurenents in the paper for gas usage were obtained by running 
+The measurements in the paper for transaction gas usage were obtained this way. The deployment gas usage was obtained by running 
 ```
 truffle develop
 ```
