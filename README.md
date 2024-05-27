@@ -15,7 +15,7 @@ You can run the tests of the execution-service with
 ``` 
 go test  ./... -v
 ```
-The measurenents in the paper for proving time were obtained by running the prover tests.
+The measurenents in the paper for proving time were obtained from the console output of the prover tests.
 
 To recreate proving keys and the verifier smart contracts you have to delete the contents of the `files/public` folder within the execution-service and restart the application or the tests. 
 
