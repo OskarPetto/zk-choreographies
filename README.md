@@ -2,6 +2,12 @@
 
 ## Bpmn-Service
 
+You can install the dependencies with
+
+```
+npm i
+```
+
 You can start the bpmn-service with 
 
 ```
