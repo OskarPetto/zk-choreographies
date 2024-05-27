@@ -18,7 +18,6 @@ You can run the tests of the bpmn-service with
 ```
 npm run test
 ```
-This has to be done at least once before the execution service tests can be run.
 
 ## Execution-Service
 
