@@ -42,18 +42,15 @@ To recreate proving keys and the verifier smart contracts you have to delete the
 
 Before the smart contract tests in the `solidity` can be executed, you must first run the execution service or the execution service tests at least once to generate the verifier smart contracts.
 
-Then you can run the smart contract tests in the `solidity` folder with
+Then you must install all dependencies with 
 ```
-truffle test
+npm install
 ```
-The measurements in the paper for transaction gas usage were obtained this way. The deployment gas usage was obtained by running 
+after which you can run the smart contract tests in the `solidity` folder with
 ```
-truffle develop
+npx hardhat test
 ```
-and then 
-```
-migrate
-```
+The measurements in the paper for gas usage were obtained this way. 
 
 ## E2E Test 
 After starting the bpmn-service and the execution service, you can run the test in the `e2e` folder with 
