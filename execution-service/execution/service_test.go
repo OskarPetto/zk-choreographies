@@ -134,6 +134,23 @@ func TestProveMessageExchangeTransition2(t *testing.T) {
 	assert.Equal(t, cmd.NextInstance, event.Instance)
 }
 
+func TestProveMessageExchangeTransition2WithNull(t *testing.T) {
+	currentInstance := states[1].Instance
+	model := states[1].Model
+	cmd := execution.ProveMessageExchangeCommand{
+		CurrentInstance:                currentInstance.Id(),
+		Transition:                     model.Transitions[2].Id,
+		Identity:                       *states[2].RespondingParticipant,
+		InitiatingMessage:              nil,
+		NextInstance:                   states[2].Instance,
+		RespondingMessage:              nil,
+		RespondingParticipantSignature: *states[2].RespondingParticipantSignature,
+	}
+	event, err := executionService.ProveMessageExchange(cmd)
+	assert.Nil(t, err)
+	assert.Equal(t, cmd.NextInstance, event.Instance)
+}
+
 func TestProveTermination(t *testing.T) {
 	instance := states[len(states)-1].Instance
 	identity := states[len(states)-1].InitiatingParticipant
