@@ -151,24 +151,23 @@ func (service *ExecutionService) CreateInitiatingMessage(cmd CreateInitiatingMes
 	if err != nil {
 		return InitiatingMessageCreatedEvent{}, err
 	}
-	if transition.InitiatingMessage == domain.EmptyMessageId {
-		return InitiatingMessageCreatedEvent{}, fmt.Errorf("transition %s of model %s does not have an InitiatingMessage", transition.Id, model.Id())
-	}
-	var initiatingMessage domain.Message
+	var initiatingMessage *domain.Message = nil
 	if cmd.BytesMessage != nil {
-		initiatingMessage, err = domain.NewInitiatingBytesMessage(currentInstance, transition, cmd.BytesMessage)
+		tmp, err := domain.NewInitiatingBytesMessage(currentInstance, transition, cmd.BytesMessage)
 		if err != nil {
 			return InitiatingMessageCreatedEvent{}, err
 		}
+		initiatingMessage = &tmp
 	} else if cmd.IntegerMessage != nil {
-		initiatingMessage, err = domain.NewInitiatingIntegerMessage(currentInstance, transition, *cmd.IntegerMessage)
+		tmp, err := domain.NewInitiatingIntegerMessage(currentInstance, transition, *cmd.IntegerMessage)
 		if err != nil {
 			return InitiatingMessageCreatedEvent{}, err
 		}
-	} else {
-		return InitiatingMessageCreatedEvent{}, fmt.Errorf("neither bytes nor integer message was provided for createInitiatingMessage of instance %s", cmd.Instance)
+		initiatingMessage = &tmp
 	}
-	service.MessageService.ImportMessage(initiatingMessage)
+	if initiatingMessage != nil {
+		service.MessageService.ImportMessage(*initiatingMessage)
+	}
 	return InitiatingMessageCreatedEvent{
 		Model:              model,
 		Instance:           currentInstance,
@@ -184,7 +183,7 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 	if !bytes.Equal(instance.Model.Value[:], model.SaltedHash.Hash.Value[:]) {
 		return InitiatingMessageReceivedEvent{}, fmt.Errorf("instance %s is not of model %s", instance.Id(), model.Id())
 	}
-	if !bytes.Equal(initiatingMessage.Instance.Value[:], instance.SaltedHash.Hash.Value[:]) {
+	if initiatingMessage != nil && !bytes.Equal(initiatingMessage.Instance.Value[:], instance.SaltedHash.Hash.Value[:]) {
 		return InitiatingMessageReceivedEvent{}, fmt.Errorf("message %s is not of instance %s", initiatingMessage.Id(), instance.Id())
 	}
 	err := service.ModelService.ImportModel(model)
@@ -199,9 +198,14 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 	if err != nil {
 		return InitiatingMessageReceivedEvent{}, err
 	}
-	err = service.MessageService.ImportMessage(initiatingMessage)
-	if err != nil {
-		return InitiatingMessageReceivedEvent{}, err
+	var initiatingMessageId *string = nil
+	if initiatingMessage != nil {
+		err = service.MessageService.ImportMessage(*initiatingMessage)
+		if err != nil {
+			return InitiatingMessageReceivedEvent{}, err
+		}
+		tmp := initiatingMessage.Id()
+		initiatingMessageId = &tmp
 	}
 	var respondingMessage *domain.Message
 	if cmd.BytesMessage != nil {
@@ -225,7 +229,7 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 	if err != nil {
 		return InitiatingMessageReceivedEvent{}, err
 	}
-	nextInstance, err := instance.ExecuteTransition(transition, conditionInput, &initiatingMessage, respondingMessage)
+	nextInstance, err := instance.ExecuteTransition(transition, conditionInput, initiatingMessage, respondingMessage)
 	if err != nil {
 		return InitiatingMessageReceivedEvent{}, err
 	}
@@ -236,11 +240,15 @@ func (service *ExecutionService) ReceiveInitiatingMessage(cmd ReceiveInitiatingM
 	}
 	respondingParticipantSignature := nextInstance.Sign(privateKey)
 
+	if initiatingMessage != nil {
+
+	}
+
 	return InitiatingMessageReceivedEvent{
 		Model:                          model.Id(),
 		CurrentInstance:                instance.Id(),
 		Transition:                     cmd.Transition,
-		InitiatingMessage:              initiatingMessage.Id(),
+		InitiatingMessage:              initiatingMessageId,
 		NextInstance:                   nextInstance,
 		RespondingMessage:              respondingMessage,
 		RespondingParticipantSignature: respondingParticipantSignature,
@@ -261,11 +269,16 @@ func (service *ExecutionService) ProveMessageExchange(cmd ProveMessageExchangeCo
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}
-	initiatingMessage, err := service.MessageService.FindMessageById(cmd.InitiatingMessage)
-	if err != nil {
-		return InstanceCreatedEvent{}, err
+	var initiatingMessage *domain.Message = nil
+	if cmd.InitiatingMessage != nil {
+		tmp, err := service.MessageService.FindMessageById(*cmd.InitiatingMessage)
+		if err != nil {
+			return InstanceCreatedEvent{}, err
+		}
+		initiatingMessage = &tmp
 	}
-	err = cmd.NextInstance.ValidateMessages(transition, &initiatingMessage, cmd.RespondingMessage)
+
+	err = cmd.NextInstance.ValidateMessages(transition, initiatingMessage, cmd.RespondingMessage)
 	if err != nil {
 		return InstanceCreatedEvent{}, err
 	}

@@ -93,7 +93,7 @@ func TestCreateInitiatingMessageTransition2(t *testing.T) {
 func TestReceiveInitiatingMessageTransition2(t *testing.T) {
 	currentInstance := states[1].Instance
 	model := states[1].Model
-	initiatingMessage := *states[2].InitiatingMessage
+	initiatingMessage := states[2].InitiatingMessage
 	integerMessage := states[2].RespondingMessage.IntegerMessage
 	cmd := execution.ReceiveInitiatingMessageCommand{
 		Model:             model,
@@ -118,12 +118,13 @@ func TestReceiveInitiatingMessageTransition2(t *testing.T) {
 func TestProveMessageExchangeTransition2(t *testing.T) {
 	currentInstance := states[1].Instance
 	model := states[1].Model
-	initiatingMessage := *states[2].InitiatingMessage
+	initiatingMessage := states[2].InitiatingMessage
+	initiatingMessageId := initiatingMessage.Id()
 	cmd := execution.ProveMessageExchangeCommand{
 		CurrentInstance:                currentInstance.Id(),
 		Transition:                     model.Transitions[2].Id,
 		Identity:                       *states[2].RespondingParticipant,
-		InitiatingMessage:              initiatingMessage.Id(),
+		InitiatingMessage:              &initiatingMessageId,
 		NextInstance:                   states[2].Instance,
 		RespondingMessage:              states[2].RespondingMessage,
 		RespondingParticipantSignature: *states[2].RespondingParticipantSignature,

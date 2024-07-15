@@ -47,14 +47,14 @@ type createdInitiatingMessageEventJson struct {
 	Model             model.ModelJson       `json:"model"`
 	Instance          instance.InstanceJson `json:"instance"`
 	Transition        string                `json:"transition"`
-	InitiatingMessage message.MessageJson   `json:"initiatingMessage"`
+	InitiatingMessage *message.MessageJson  `json:"initiatingMessage,omitempty"`
 }
 
 type receiveInitiatingMessageCommandJson struct {
 	Model             model.ModelJson       `json:"model"`
 	Instance          instance.InstanceJson `json:"instance"`
 	Transition        string                `json:"transition"`
-	InitiatingMessage message.MessageJson   `json:"initiatingMessage"`
+	InitiatingMessage *message.MessageJson  `json:"initiatingMessage,omitempty"`
 	Identity          uint                  `json:"identity"`
 	BytesMessage      *string               `json:"bytesMessage,omitempty"`
 	IntegerMessage    *uint                 `json:"integerMessage,omitempty"`
@@ -64,7 +64,7 @@ type receivedInitiatingMessageEventJson struct {
 	Model                          string                  `json:"model"`
 	CurrentInstance                string                  `json:"currentInstance"`
 	Transition                     string                  `json:"transition"`
-	InitiatingMessage              string                  `json:"initiatingMessage"`
+	InitiatingMessage              *string                 `json:"initiatingMessage,omitempty"`
 	NextInstance                   instance.InstanceJson   `json:"nextInstance"`
 	RespondingMessage              *message.MessageJson    `json:"respondingMessage,omitempty"`
 	RespondingParticipantSignature signature.SignatureJson `json:"respondingParticipantSignature"`
@@ -73,7 +73,7 @@ type receivedInitiatingMessageEventJson struct {
 type proveMessageExchangeCommandJson struct {
 	CurrentInstance                string                  `json:"currentInstance"`
 	Transition                     string                  `json:"transition"`
-	InitiatingMessage              string                  `json:"initiatingMessage"`
+	InitiatingMessage              *string                 `json:"initiatingMessage,omitempty"`
 	Identity                       uint                    `json:"identity"`
 	NextInstance                   instance.InstanceJson   `json:"nextInstance"`
 	RespondingMessage              *message.MessageJson    `json:"respondingMessage,omitempty"`
@@ -149,9 +149,13 @@ func (cmd *receiveInitiatingMessageCommandJson) ToExecutionCommand() (ReceiveIni
 	if err != nil {
 		return ReceiveInitiatingMessageCommand{}, err
 	}
-	initiatingMessage, err := cmd.InitiatingMessage.ToMessage()
-	if err != nil {
-		return ReceiveInitiatingMessageCommand{}, err
+	var initiatingMessage *domain.Message = nil
+	if cmd.InitiatingMessage != nil {
+		tmp, err := cmd.InitiatingMessage.ToMessage()
+		if err != nil {
+			return ReceiveInitiatingMessageCommand{}, err
+		}
+		initiatingMessage = &tmp
 	}
 	var bytesMessage []byte = nil
 	var integerMessage *domain.IntegerType = nil
@@ -226,11 +230,16 @@ func TerminatedInstanceEventToJson(event TerminationProvedEvent) provedTerminati
 }
 
 func CreatedInitiatingMessageEventToJson(event InitiatingMessageCreatedEvent) createdInitiatingMessageEventJson {
+	var initiatingMessage *message.MessageJson
+	if event.InintiatingMessage != nil {
+		tmp := message.ToJson(*event.InintiatingMessage)
+		initiatingMessage = &tmp
+	}
 	return createdInitiatingMessageEventJson{
 		Model:             model.ToJson(event.Model),
 		Instance:          instance.ToJson(event.Instance),
 		Transition:        event.Transition,
-		InitiatingMessage: message.ToJson(event.InintiatingMessage),
+		InitiatingMessage: initiatingMessage,
 	}
 }
 

@@ -42,7 +42,7 @@ type InitiatingMessageCreatedEvent struct {
 	Model              domain.Model
 	Instance           domain.Instance
 	Transition         domain.TransitionId
-	InintiatingMessage domain.Message
+	InintiatingMessage *domain.Message
 }
 
 type ReceiveInitiatingMessageCommand struct {
@@ -50,7 +50,7 @@ type ReceiveInitiatingMessageCommand struct {
 	Instance          domain.Instance
 	Transition        domain.TransitionId
 	Identity          domain.IdentityId
-	InitiatingMessage domain.Message
+	InitiatingMessage *domain.Message
 	BytesMessage      []byte
 	IntegerMessage    *domain.IntegerType
 }
@@ -59,7 +59,7 @@ type InitiatingMessageReceivedEvent struct {
 	Model                          domain.ModelId
 	CurrentInstance                domain.InstanceId
 	Transition                     domain.TransitionId
-	InitiatingMessage              domain.MessageId
+	InitiatingMessage              *domain.MessageId
 	NextInstance                   domain.Instance
 	RespondingMessage              *domain.Message
 	RespondingParticipantSignature domain.Signature
@@ -69,7 +69,7 @@ type ProveMessageExchangeCommand struct {
 	CurrentInstance                domain.InstanceId
 	Transition                     domain.TransitionId
 	Identity                       domain.IdentityId
-	InitiatingMessage              domain.MessageId
+	InitiatingMessage              *domain.MessageId
 	NextInstance                   domain.Instance
 	RespondingMessage              *domain.Message
 	RespondingParticipantSignature domain.Signature
